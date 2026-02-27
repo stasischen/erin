@@ -487,11 +487,7 @@ button:disabled {
   }
 
   .arena {
-    height: 380px;
-  }
-
-  .side-panel {
-    order: -1;
+    height: min(64vh, 520px);
   }
 }
 
@@ -506,7 +502,7 @@ button:disabled {
   }
 
   .arena {
-    height: 330px;
+    height: min(62vh, 500px);
   }
 
   .mobile-controls {
@@ -523,5 +519,19 @@ button:disabled {
 
   #countdownText {
     font-size: 72px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+  }
+
+  .controls {
+    display: none;
+  }
+
+  .arena {
+    height: min(66vh, 560px);
   }
 }

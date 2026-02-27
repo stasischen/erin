@@ -394,6 +394,30 @@ function bindTouchMove(btn, direction) {
 bindTouchMove(leftBtn, "left");
 bindTouchMove(rightBtn, "right");
 
+function bindArenaSwipeMove() {
+  const moveToClientX = (clientX) => {
+    const rect = arena.getBoundingClientRect();
+    const targetX = clientX - rect.left - coneEl.clientWidth / 2;
+    const maxX = arena.clientWidth - coneEl.clientWidth;
+    state.coneX = Math.max(0, Math.min(maxX, targetX));
+    applyConePosition();
+  };
+
+  arena.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch") {
+      moveToClientX(e.clientX);
+    }
+  });
+
+  arena.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch" && e.buttons) {
+      moveToClientX(e.clientX);
+    }
+  });
+}
+
+bindArenaSwipeMove();
+
 window.addEventListener("resize", () => {
   const maxX = arena.clientWidth - coneEl.clientWidth;
   state.coneX = Math.max(0, Math.min(maxX, state.coneX));
