@@ -351,6 +351,11 @@ body {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.music-btn {
+  min-width: 120px;
 }
 
 .mobile-controls {

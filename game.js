@@ -18,9 +18,12 @@ const resultText = document.getElementById("resultText");
 const starText = document.getElementById("starText");
 const startBtn = document.getElementById("startBtn");
 const retryBtn = document.getElementById("retryBtn");
+const musicBtn = document.getElementById("musicBtn");
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 let audioCtx = null;
+let bgmIntervalId = 0;
+let bgmStep = 0;
 
 const flavors = ["strawberry", "vanilla", "mint", "choco"];
 const flavorName = {
@@ -54,6 +57,7 @@ const state = {
   coneLevel: 1,
   loopId: 0,
   timerId: 0,
+  bgmOn: true,
 };
 
 function randomFlavor() {
@@ -185,6 +189,49 @@ function getAudioContext() {
     audioCtx.resume();
   }
   return audioCtx;
+}
+
+function playTone(freq, duration = 0.18, volume = 0.04, type = "triangle") {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.exponentialRampToValueAtTime(volume, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration + 0.02);
+}
+
+function startBgm() {
+  if (!state.bgmOn || bgmIntervalId) return;
+  const melody = [523, 659, 784, 659, 587, 659, 523, 494];
+  bgmStep = 0;
+  bgmIntervalId = setInterval(() => {
+    if (!state.bgmOn) return;
+    const note = melody[bgmStep % melody.length];
+    playTone(note, 0.16, 0.025, "sine");
+    if (bgmStep % 2 === 0) {
+      playTone(note / 2, 0.14, 0.018, "triangle");
+    }
+    bgmStep += 1;
+  }, 260);
+}
+
+function stopBgm() {
+  if (bgmIntervalId) {
+    clearInterval(bgmIntervalId);
+    bgmIntervalId = 0;
+  }
+}
+
+function updateMusicBtn() {
+  musicBtn.textContent = `音樂：${state.bgmOn ? "開" : "關"}`;
 }
 
 function playLevelUpSound(level) {
@@ -354,6 +401,7 @@ function stopGame() {
 
 function startGame() {
   if (state.running) return;
+  startBgm();
   resetRound();
   state.running = true;
   startBtn.disabled = true;
@@ -363,6 +411,15 @@ function startGame() {
 
 startBtn.addEventListener("click", startGame);
 retryBtn.addEventListener("click", startGame);
+musicBtn.addEventListener("click", () => {
+  state.bgmOn = !state.bgmOn;
+  if (state.bgmOn) {
+    startBgm();
+  } else {
+    stopBgm();
+  }
+  updateMusicBtn();
+});
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") state.moveLeft = true;
@@ -426,3 +483,4 @@ window.addEventListener("resize", () => {
 
 pickNewTarget();
 placeConeAtCenter();
+updateMusicBtn();
