@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>冰淇淋甜筒店</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <h1>ICE CREAM STACKER</h1>
+        <p>冰淇淋甜筒店</p>
+      </header>
+
+      <section class="game-layout">
+        <section class="play-panel">
+          <section class="arena" id="arena">
+            <div class="machine-row">
+              <div class="machine"><span class="machine-name">莓果機</span><span class="spout"></span></div>
+              <div class="machine"><span class="machine-name">香草機</span><span class="spout"></span></div>
+              <div class="machine"><span class="machine-name">薄荷機</span><span class="spout"></span></div>
+              <div class="machine"><span class="machine-name">可可機</span><span class="spout"></span></div>
+            </div>
+            <div id="drops"></div>
+            <div id="hitFlash" class="hit-flash"></div>
+            <div id="countdownOverlay" class="countdown-overlay hidden">
+              <span id="countdownText">3</span>
+            </div>
+            <div id="cone" class="cone classic">
+              <div id="stackTower" class="stack-tower"></div>
+              <div id="coneLevelBadge" class="cone-level-badge level-1">L1</div>
+              <div id="coneBody" class="cone-body level-1"></div>
+            </div>
+          </section>
+
+          <section class="controls">
+            <button id="startBtn">開始</button>
+            <button id="retryBtn" disabled>重做</button>
+          </section>
+
+          <section class="mobile-controls" aria-label="手機控制按鈕">
+            <button id="leftBtn" class="dir-btn">◀ 左</button>
+            <button id="rightBtn" class="dir-btn">右 ▶</button>
+          </section>
+        </section>
+
+        <aside class="side-panel">
+          <section class="hud">
+            <div class="hud-item">目標口味 <span id="targetFlavor">草莓</span></div>
+            <div class="hud-item">分數 <span id="score">0</span></div>
+            <div class="hud-item">已疊顆數 <span id="stackCount">0</span></div>
+            <div class="hud-item">剩餘時間 <span id="time">40</span></div>
+            <div class="hud-item">甜筒 <span id="coneName">彩色甜筒</span></div>
+            <div class="hud-item">等級 <span id="coneLevel">L1 黃色</span></div>
+          </section>
+
+          <section class="target-card" aria-label="目標圖片">
+            <div class="label">目標圖案</div>
+            <div id="targetPreview" class="target-preview strawberry"></div>
+          </section>
+
+          <section class="result" id="resultBox" aria-live="polite">
+            <p id="resultText">按開始就出發！</p>
+            <p id="starText">星星：☆☆☆</p>
+          </section>
+
+          <section class="help">
+            <p>← → 移動甜筒；接對會疊球升級，接錯扣 5~7 分。</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
