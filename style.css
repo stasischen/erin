@@ -354,13 +354,33 @@ body {
 }
 
 .mobile-controls {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
+  position: absolute;
+  inset: 90px 0 58px;
+  display: none;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 7;
 }
 
 .dir-btn {
-  flex: 1;
+  width: 64px;
+  border-radius: 16px;
+  border: 2px solid rgba(48, 66, 102, 0.45);
+  background: rgba(255, 230, 179, 0.4);
+  box-shadow: none;
+  color: #2f220f;
+  font-size: 26px;
+  font-weight: 900;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#leftBtn {
+  margin-left: 8px;
+}
+
+#rightBtn {
+  margin-right: 8px;
 }
 
 button {
@@ -537,8 +557,8 @@ button:disabled {
   .controls button,
   .mobile-controls button {
     flex: 1;
-    font-size: 16px;
-    padding: 8px 10px;
+    font-size: 24px;
+    padding: 8px 6px;
   }
 
   .side-panel {

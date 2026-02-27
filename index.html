@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>冰淇淋甜筒店</title>
-    <link rel="stylesheet" href="style.css?v=20260227d" />
+    <link rel="stylesheet" href="style.css?v=20260227e" />
   </head>
   <body>
     <main class="game-shell">
@@ -27,6 +27,10 @@
             <div id="countdownOverlay" class="countdown-overlay hidden">
               <span id="countdownText">3</span>
             </div>
+            <section class="mobile-controls" aria-label="手機控制按鈕">
+              <button id="leftBtn" class="dir-btn">◀</button>
+              <button id="rightBtn" class="dir-btn">▶</button>
+            </section>
             <div id="cone" class="cone classic">
               <div id="stackTower" class="stack-tower"></div>
               <div id="coneLevelBadge" class="cone-level-badge level-1">L1</div>
@@ -39,10 +43,6 @@
             <button id="retryBtn" disabled>重做</button>
           </section>
 
-          <section class="mobile-controls" aria-label="手機控制按鈕">
-            <button id="leftBtn" class="dir-btn">◀ 左</button>
-            <button id="rightBtn" class="dir-btn">右 ▶</button>
-          </section>
         </section>
 
         <aside class="side-panel">
@@ -72,6 +72,6 @@
       </section>
     </main>
 
-    <script src="game.js?v=20260227d"></script>
+    <script src="game.js?v=20260227e"></script>
   </body>
 </html>
