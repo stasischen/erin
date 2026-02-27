@@ -456,9 +456,13 @@ bindTouchMove(leftBtn, "left");
 bindTouchMove(rightBtn, "right");
 
 function bindArenaSwipeMove() {
+  let dragging = false;
+  let draggingPointerId = null;
+  let dragOffsetX = 0;
+
   const moveToClientX = (clientX) => {
     const rect = arena.getBoundingClientRect();
-    const targetX = clientX - rect.left - coneEl.clientWidth / 2;
+    const targetX = clientX - rect.left - dragOffsetX;
     const maxX = arena.clientWidth - coneEl.clientWidth;
     state.coneX = Math.max(0, Math.min(maxX, targetX));
     applyConePosition();
@@ -466,16 +470,35 @@ function bindArenaSwipeMove() {
 
   arena.addEventListener("pointerdown", (e) => {
     if (e.target.closest(".mobile-controls")) return;
-    if (e.pointerType === "touch") {
-      moveToClientX(e.clientX);
+    if (e.pointerType !== "touch") return;
+    if (!coneEl.contains(e.target)) return;
+    const rect = arena.getBoundingClientRect();
+    dragging = true;
+    draggingPointerId = e.pointerId;
+    dragOffsetX = e.clientX - rect.left - state.coneX;
+    moveToClientX(e.clientX);
+  });
+
+  arena.addEventListener("pointerup", (e) => {
+    if (e.pointerId === draggingPointerId) {
+      dragging = false;
+      draggingPointerId = null;
+    }
+  });
+
+  arena.addEventListener("pointercancel", (e) => {
+    if (e.pointerId === draggingPointerId) {
+      dragging = false;
+      draggingPointerId = null;
     }
   });
 
   arena.addEventListener("pointermove", (e) => {
     if (e.target.closest(".mobile-controls")) return;
-    if (e.pointerType === "touch" && e.buttons) {
-      moveToClientX(e.clientX);
-    }
+    if (e.pointerType !== "touch") return;
+    if (!dragging) return;
+    if (e.pointerId !== draggingPointerId) return;
+    moveToClientX(e.clientX);
   });
 }
 
