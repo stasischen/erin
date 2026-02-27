@@ -487,12 +487,92 @@ button:disabled {
 }
 
 @media (max-width: 860px) {
+  body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .game-shell {
+    height: 100dvh;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .topbar {
+    padding: 8px 12px;
+  }
+
+  .topbar p {
+    display: none;
+  }
+
   .game-layout {
+    margin-top: 0;
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .play-panel {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .arena {
-    height: min(64vh, 520px);
+    height: auto;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .controls,
+  .mobile-controls {
+    margin-top: 6px;
+  }
+
+  .controls button,
+  .mobile-controls button {
+    flex: 1;
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+
+  .side-panel {
+    padding: 6px;
+  }
+
+  .hud {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .hud-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 12px;
+  }
+
+  .hud-item span {
+    width: 100%;
+    text-align: center;
+    padding: 1px 4px;
+    font-size: 12px;
+  }
+
+  .target-card,
+  .help {
+    display: none;
+  }
+
+  .result {
+    margin-top: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
   }
 }
 
@@ -503,11 +583,7 @@ button:disabled {
 
   .play-panel,
   .side-panel {
-    padding: 8px;
-  }
-
-  .arena {
-    height: min(62vh, 500px);
+    padding: 6px;
   }
 
   .mobile-controls {
@@ -515,11 +591,11 @@ button:disabled {
   }
 
   .controls {
-    display: none;
+    display: flex;
   }
 
   .hud {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   #countdownText {
@@ -533,10 +609,6 @@ button:disabled {
   }
 
   .controls {
-    display: none;
-  }
-
-  .arena {
-    height: min(66vh, 560px);
+    display: flex;
   }
 }
