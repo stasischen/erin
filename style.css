@@ -438,6 +438,36 @@ button:disabled {
   padding: 0 8px;
 }
 
+.target-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.target-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.24);
+  display: inline-block;
+}
+
+.target-dot.strawberry {
+  background: #ff5a8b;
+}
+
+.target-dot.vanilla {
+  background: #f5dc7e;
+}
+
+.target-dot.mint {
+  background: #7ce6b2;
+}
+
+.target-dot.choco {
+  background: #996244;
+}
+
 .target-card {
   margin-top: 10px;
 }
@@ -587,6 +617,12 @@ button:disabled {
     text-align: center;
     padding: 1px 4px;
     font-size: 12px;
+  }
+
+  .target-dot {
+    width: 13px;
+    height: 13px;
+    border-width: 1px;
   }
 
   .target-card,

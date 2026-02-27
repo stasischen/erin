@@ -12,6 +12,7 @@ const stackCountEl = document.getElementById("stackCount");
 const coneLevelEl = document.getElementById("coneLevel");
 const timeEl = document.getElementById("time");
 const targetFlavorEl = document.getElementById("targetFlavor");
+const targetColorDot = document.getElementById("targetColorDot");
 const targetPreview = document.getElementById("targetPreview");
 const coneNameEl = document.getElementById("coneName");
 const resultText = document.getElementById("resultText");
@@ -67,6 +68,7 @@ function randomFlavor() {
 function pickNewTarget() {
   state.targetFlavor = randomFlavor();
   targetFlavorEl.textContent = flavorName[state.targetFlavor];
+  targetColorDot.className = `target-dot ${state.targetFlavor}`;
   targetPreview.className = `target-preview ${state.targetFlavor}`;
 }
 
