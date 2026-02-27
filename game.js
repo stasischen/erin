@@ -436,10 +436,12 @@ window.addEventListener("keyup", (e) => {
 function bindTouchMove(btn, direction) {
   const press = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (direction === "left") state.moveLeft = true;
     if (direction === "right") state.moveRight = true;
   };
-  const release = () => {
+  const release = (e) => {
+    if (e) e.stopPropagation();
     if (direction === "left") state.moveLeft = false;
     if (direction === "right") state.moveRight = false;
   };
@@ -463,12 +465,14 @@ function bindArenaSwipeMove() {
   };
 
   arena.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".mobile-controls")) return;
     if (e.pointerType === "touch") {
       moveToClientX(e.clientX);
     }
   });
 
   arena.addEventListener("pointermove", (e) => {
+    if (e.target.closest(".mobile-controls")) return;
     if (e.pointerType === "touch" && e.buttons) {
       moveToClientX(e.clientX);
     }
