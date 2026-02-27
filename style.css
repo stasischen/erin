@@ -72,6 +72,7 @@ body {
   border: 4px solid #32456f;
   border-radius: 16px;
   overflow: hidden;
+  touch-action: none;
   background:
     linear-gradient(180deg, #ffebcc 0%, #ffd5a1 54%, #f5b978 100%);
 }
@@ -241,6 +242,7 @@ body {
   width: 72px;
   height: 138px;
   user-select: none;
+  touch-action: none;
 }
 
 .cone-body {

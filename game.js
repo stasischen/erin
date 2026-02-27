@@ -472,10 +472,12 @@ function bindArenaSwipeMove() {
     if (e.target.closest(".mobile-controls")) return;
     if (e.pointerType !== "touch") return;
     if (!coneEl.contains(e.target)) return;
+    e.preventDefault();
     const rect = arena.getBoundingClientRect();
     dragging = true;
     draggingPointerId = e.pointerId;
     dragOffsetX = e.clientX - rect.left - state.coneX;
+    coneEl.setPointerCapture(e.pointerId);
     moveToClientX(e.clientX);
   });
 
@@ -494,15 +496,19 @@ function bindArenaSwipeMove() {
   });
 
   arena.addEventListener("pointermove", (e) => {
-    if (e.target.closest(".mobile-controls")) return;
     if (e.pointerType !== "touch") return;
     if (!dragging) return;
     if (e.pointerId !== draggingPointerId) return;
+    e.preventDefault();
     moveToClientX(e.clientX);
   });
 }
 
 bindArenaSwipeMove();
+
+window.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
 
 window.addEventListener("resize", () => {
   const maxX = arena.clientWidth - coneEl.clientWidth;
