@@ -375,9 +375,9 @@ body {
   border: 1px solid rgba(48, 66, 102, 0.08);
   background: rgba(255, 230, 179, 0.06);
   box-shadow: none;
-  color: rgba(47, 34, 15, 0.16);
-  font-size: 24px;
-  font-weight: 900;
+  color: transparent;
+  font-size: 0;
+  font-weight: 400;
   pointer-events: auto;
   touch-action: none;
   backdrop-filter: blur(1px);
