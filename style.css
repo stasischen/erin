@@ -384,9 +384,15 @@ body {
 }
 
 .dir-btn:active {
-  background: rgba(255, 230, 179, 0.14);
-  color: rgba(47, 34, 15, 0.34);
-  border-color: rgba(48, 66, 102, 0.2);
+  background: rgba(255, 255, 255, 0.09);
+  color: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dir-btn:focus,
+.dir-btn:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 #leftBtn {
