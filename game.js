@@ -10,6 +10,7 @@ const coneLevelBadge = document.getElementById("coneLevelBadge");
 const scoreEl = document.getElementById("score");
 const stackCountEl = document.getElementById("stackCount");
 const stageLevelEl = document.getElementById("stageLevel");
+const keyCountEl = document.getElementById("keyCount");
 const coneLevelEl = document.getElementById("coneLevel");
 const timeEl = document.getElementById("time");
 const targetFlavorEl = document.getElementById("targetFlavor");
@@ -57,6 +58,9 @@ const state = {
   lastSpawnAt: 0,
   targetFlavor: "strawberry",
   stageLevel: 1,
+  keysCollected: 0,
+  stage4Unlocked: false,
+  stage3KeyPlan: [],
   coneLevel: 1,
   loopId: 0,
   timerId: 0,
@@ -74,11 +78,26 @@ function pickNewTarget() {
   targetPreview.className = `target-preview ${state.targetFlavor}`;
 }
 
+function buildStage3KeyPlan() {
+  const plan = [true, true, true, false, false, false, false];
+  for (let i = plan.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = plan[i];
+    plan[i] = plan[j];
+    plan[j] = tmp;
+  }
+  return plan;
+}
+
 function resetRound() {
   state.score = 0;
   state.stackCount = 0;
   state.timeLeft = 40;
   state.coneLevel = 1;
+  if (state.stageLevel === 3) {
+    state.keysCollected = 0;
+    state.stage3KeyPlan = buildStage3KeyPlan();
+  }
   state.drops = [];
   dropsLayer.innerHTML = "";
   stackTower.innerHTML = "";
@@ -89,6 +108,7 @@ function resetRound() {
   resultText.textContent = "快接冰淇淋！";
   starText.textContent = "星星：☆☆☆";
   stageLevelEl.textContent = String(state.stageLevel);
+  keyCountEl.textContent = state.stageLevel === 3 ? `${state.keysCollected}/3` : "0/3";
   hitFlash.className = "hit-flash";
   updateConeLevel();
   pickNewTarget();
@@ -117,20 +137,43 @@ function spawnDrop() {
 
   const baseSpeed = state.stageLevel >= 2 ? 3.8 : 2.2;
   const speedRange = state.stageLevel >= 2 ? 2.8 : 2.0;
-  const mode = state.stageLevel >= 2 && Math.random() < 0.55 ? "diagonal" : "vertical";
+  const mode =
+    state.stageLevel === 3 ? "diagonal" : state.stageLevel >= 2 && Math.random() < 0.55 ? "diagonal" : "vertical";
   let vx = 0;
   if (mode === "diagonal") {
     const dir = Math.random() < 0.5 ? -1 : 1;
-    vx = dir * (0.9 + Math.random() * 1.3);
+    vx = dir * (state.stageLevel === 3 ? 1.4 + Math.random() * 1.5 : 0.9 + Math.random() * 1.3);
   }
 
-  const drop = { x, y: 45, speed: baseSpeed + Math.random() * speedRange, flavor, el, vx };
+  let hasKey = false;
+  if (state.stageLevel === 3) {
+    if (!state.stage3KeyPlan.length) {
+      state.stage3KeyPlan = buildStage3KeyPlan();
+    }
+    hasKey = state.stage3KeyPlan.shift();
+    if (hasKey) {
+      el.classList.add("has-key");
+    }
+  }
+
+  const drop = { x, y: 45, speed: baseSpeed + Math.random() * speedRange, flavor, el, vx, hasKey };
   el.style.left = `${x}px`;
   el.style.top = `${drop.y}px`;
   state.drops.push(drop);
 }
 
-function handleCatch(flavor) {
+function handleCatch(drop) {
+  const flavor = drop.flavor;
+  if (state.stageLevel === 3 && drop.hasKey && state.keysCollected < 3) {
+    state.keysCollected += 1;
+    keyCountEl.textContent = `${state.keysCollected}/3`;
+    showHitText("Key!", true);
+    if (state.keysCollected >= 3 && !state.stage4Unlocked) {
+      state.stage4Unlocked = true;
+      resultText.textContent = "你集滿 3 把鑰匙，已解鎖新關卡！";
+    }
+  }
+
   if (flavor === state.targetFlavor) {
     state.score += 10;
     state.stackCount += 1;
@@ -311,7 +354,7 @@ function updateDrops() {
     );
 
     if (hit) {
-      handleCatch(drop.flavor);
+      handleCatch(drop);
       drop.el.remove();
       return false;
     }
@@ -370,6 +413,12 @@ function showResult(stars) {
       state.stageLevel = 2;
       stageLevelEl.textContent = "2";
       resultText.textContent += " 已解鎖第 2 關（更快、會斜落）！";
+    } else if (state.stageLevel === 2) {
+      state.stageLevel = 3;
+      stageLevelEl.textContent = "3";
+      resultText.textContent += " 已解鎖第 3 關（斜落+反彈+鑰匙球）！";
+    } else if (state.stageLevel === 3 && state.stage4Unlocked) {
+      resultText.textContent += " 你也成功解鎖了新關卡！";
     }
   } else if (stars === 2) {
     resultText.textContent = `你疊了 ${state.stackCount} 顆，拿到 2 星，要再重做一次喔！`;
