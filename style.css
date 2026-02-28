@@ -365,13 +365,15 @@ body {
   inset: 90px 0 58px;
   display: none;
   justify-content: space-between;
+  align-items: stretch;
   pointer-events: none;
   z-index: 7;
 }
 
 .dir-btn {
-  width: 64px;
-  border-radius: 16px;
+  width: 34px;
+  height: 100%;
+  border-radius: 0;
   border: 1px solid rgba(48, 66, 102, 0.08);
   background: rgba(255, 230, 179, 0.06);
   box-shadow: none;
@@ -396,11 +398,11 @@ body {
 }
 
 #leftBtn {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 #rightBtn {
-  margin-right: 8px;
+  margin-right: 0;
 }
 
 button {
@@ -604,8 +606,7 @@ button:disabled {
     margin-top: 6px;
   }
 
-  .controls button,
-  .mobile-controls button {
+  .controls button {
     flex: 1;
     font-size: 24px;
     padding: 8px 6px;
@@ -668,6 +669,10 @@ button:disabled {
 
   .controls {
     display: flex;
+  }
+
+  .mobile-controls {
+    inset: 76px 0 50px;
   }
 
   .hud {
