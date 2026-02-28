@@ -9,6 +9,7 @@ const coneBody = document.getElementById("coneBody");
 const coneLevelBadge = document.getElementById("coneLevelBadge");
 const scoreEl = document.getElementById("score");
 const stackCountEl = document.getElementById("stackCount");
+const stageLevelEl = document.getElementById("stageLevel");
 const coneLevelEl = document.getElementById("coneLevel");
 const timeEl = document.getElementById("time");
 const targetFlavorEl = document.getElementById("targetFlavor");
@@ -55,6 +56,7 @@ const state = {
   drops: [],
   lastSpawnAt: 0,
   targetFlavor: "strawberry",
+  stageLevel: 1,
   coneLevel: 1,
   loopId: 0,
   timerId: 0,
@@ -86,6 +88,7 @@ function resetRound() {
   timeEl.textContent = "40";
   resultText.textContent = "快接冰淇淋！";
   starText.textContent = "星星：☆☆☆";
+  stageLevelEl.textContent = String(state.stageLevel);
   hitFlash.className = "hit-flash";
   updateConeLevel();
   pickNewTarget();
@@ -112,7 +115,16 @@ function spawnDrop() {
   el.className = `drop ${flavor}`;
   dropsLayer.appendChild(el);
 
-  const drop = { x, y: 45, speed: 2 + Math.random() * 2.2, flavor, el };
+  const baseSpeed = state.stageLevel >= 2 ? 3.8 : 2.2;
+  const speedRange = state.stageLevel >= 2 ? 2.8 : 2.0;
+  const mode = state.stageLevel >= 2 && Math.random() < 0.55 ? "diagonal" : "vertical";
+  let vx = 0;
+  if (mode === "diagonal") {
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    vx = dir * (0.9 + Math.random() * 1.3);
+  }
+
+  const drop = { x, y: 45, speed: baseSpeed + Math.random() * speedRange, flavor, el, vx };
   el.style.left = `${x}px`;
   el.style.top = `${drop.y}px`;
   state.drops.push(drop);
@@ -278,6 +290,16 @@ function updateDrops() {
 
   state.drops = state.drops.filter((drop) => {
     drop.y += drop.speed;
+    drop.x += drop.vx || 0;
+    if (drop.x < 0) {
+      drop.x = 0;
+      drop.vx = Math.abs(drop.vx || 0);
+    }
+    if (drop.x > arena.clientWidth - 30) {
+      drop.x = arena.clientWidth - 30;
+      drop.vx = -Math.abs(drop.vx || 0);
+    }
+    drop.el.style.left = `${drop.x}px`;
     drop.el.style.top = `${drop.y}px`;
 
     const dropRect = drop.el.getBoundingClientRect();
@@ -314,7 +336,8 @@ function moveCone() {
 function gameLoop(now) {
   if (!state.running) return;
 
-  if (now - state.lastSpawnAt > 600) {
+  const spawnInterval = state.stageLevel >= 2 ? 360 : 600;
+  if (now - state.lastSpawnAt > spawnInterval) {
     spawnDrop();
     state.lastSpawnAt = now;
   }
@@ -343,6 +366,11 @@ function showResult(stars) {
     resultText.textContent = `太棒了！你疊了 ${state.stackCount} 顆，3 星過關！`;
     coneNameEl.textContent = "彩色甜筒";
     playFireworks();
+    if (state.stageLevel === 1) {
+      state.stageLevel = 2;
+      stageLevelEl.textContent = "2";
+      resultText.textContent += " 已解鎖第 2 關（更快、會斜落）！";
+    }
   } else if (stars === 2) {
     resultText.textContent = `你疊了 ${state.stackCount} 顆，拿到 2 星，要再重做一次喔！`;
     retryBtn.disabled = false;
