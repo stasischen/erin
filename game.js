@@ -135,8 +135,8 @@ function spawnDrop() {
   el.className = `drop ${flavor}`;
   dropsLayer.appendChild(el);
 
-  const baseSpeed = state.stageLevel === 3 ? 2.9 : state.stageLevel >= 2 ? 3.8 : 2.2;
-  const speedRange = state.stageLevel === 3 ? 1.4 : state.stageLevel >= 2 ? 2.8 : 2.0;
+  const baseSpeed = state.stageLevel === 3 ? 2.9 : state.stageLevel >= 2 ? 3.2 : 2.2;
+  const speedRange = state.stageLevel === 3 ? 1.4 : state.stageLevel >= 2 ? 2.0 : 2.0;
   const mode =
     state.stageLevel === 3 ? "diagonal" : state.stageLevel >= 2 && Math.random() < 0.55 ? "diagonal" : "vertical";
   let vx = 0;
@@ -379,7 +379,7 @@ function moveCone() {
 function gameLoop(now) {
   if (!state.running) return;
 
-  const spawnInterval = state.stageLevel === 3 ? 500 : state.stageLevel >= 2 ? 360 : 600;
+  const spawnInterval = state.stageLevel === 3 ? 500 : state.stageLevel >= 2 ? 460 : 600;
   if (now - state.lastSpawnAt > spawnInterval) {
     spawnDrop();
     state.lastSpawnAt = now;
