@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>小冒險家</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <h1>小冒險家</h1>
+        <p>← → 移動 &nbsp; 空白鍵跳躍</p>
+      </header>
+
+      <section class="arena" id="arena">
+        <div id="world">
+          <div id="player" class="player">
+            <div class="player-body"></div>
+            <div class="player-eye"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hud">
+        <div class="hud-item">金幣 <span id="coinCount">0</span></div>
+        <div class="hud-item">分數 <span id="score">0</span></div>
+      </section>
+
+      <section class="controls">
+        <button id="resetBtn">重新開始</button>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
