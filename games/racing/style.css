@@ -7,13 +7,14 @@
 body {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   font-family: "Baloo 2", "Trebuchet MS", "Noto Sans TC", sans-serif;
   background: linear-gradient(160deg, #0d3320, #1a4a2e);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
+  overflow-y: auto;
+  padding: 10px 0;
 }
 
 .game {
@@ -66,8 +67,8 @@ h1 {
 
 .arena {
   width: 100%;
-  max-width: 450px;
-  aspect-ratio: 1;
+  max-width: 400px;
+  aspect-ratio: 4/3;
   border: 4px solid #166534;
   border-radius: 16px;
   overflow: hidden;
@@ -149,13 +150,13 @@ canvas {
 }
 
 .touch-btn {
-  width: clamp(56px, 15vw, 72px);
-  height: clamp(56px, 15vw, 72px);
+  width: clamp(60px, 18vw, 80px);
+  height: clamp(60px, 18vw, 80px);
   border-radius: 16px;
-  background: rgba(255,255,255,0.15);
-  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.2);
+  border: 3px solid rgba(255,255,255,0.4);
   color: #fff;
-  font-size: clamp(20px, 5vw, 28px);
+  font-size: clamp(24px, 6vw, 32px);
   display: flex;
   align-items: center;
   justify-content: center;
