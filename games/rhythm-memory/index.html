@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>節奏記憶</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game">
+      <header>
+        <h1>🎮 節奏記憶</h1>
+        <p class="status" id="status">按「開始」來玩！</p>
+        <p class="score">分數：<span id="score">0</span></p>
+        <p class="round">回合：<span id="round">0</span></p>
+      </header>
+
+      <div class="board">
+        <button class="btn btn--green" id="btn-green" data-color="green"></button>
+        <button class="btn btn--red" id="btn-red" data-color="red"></button>
+        <button class="btn btn--yellow" id="btn-yellow" data-color="yellow"></button>
+        <button class="btn btn--blue" id="btn-blue" data-color="blue"></button>
+      </div>
+
+      <button class="start-btn" id="startBtn">▶ 開始遊戲</button>
+
+      <button class="back-btn" onclick="location.href='../../'">⬅ 回到遊戲樂園</button>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
