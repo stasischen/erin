@@ -1,0 +1,138 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Baloo 2", "Trebuchet MS", "Noto Sans TC", sans-serif;
+  background: linear-gradient(160deg, #0d1730, #1e2f59);
+  touch-action: manipulation;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  max-width: 480px;
+  width: 100%;
+  touch-action: manipulation;
+}
+
+header {
+  text-align: center;
+  color: #fff;
+}
+
+h1 {
+  font-size: clamp(24px, 6vw, 32px);
+  color: #fbbf24;
+  text-shadow: 0 3px 0 #92400e;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: clamp(14px, 3.5vw, 18px);
+  color: #fde68a;
+  font-weight: 600;
+  min-height: 28px;
+}
+
+.hud {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.hud-item {
+  font-size: clamp(14px, 3.5vw, 18px);
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.hud-item span {
+  color: #fff;
+}
+
+.arena {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 3/4;
+  border: 4px solid #304266;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1e3a5f, #0f172a);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.start-btn {
+  flex: 1;
+  padding: clamp(12px, 3vw, 16px) 0;
+  font-size: clamp(18px, 4.5vw, 22px);
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #4ade80, #16a34a);
+  color: #052e16;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
+
+.start-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.back-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #304266;
+  border-radius: 12px;
+  background: transparent;
+  color: #acc5f5;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .start-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

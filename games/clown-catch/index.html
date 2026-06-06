@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小丑拋接球</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game">
+      <header>
+        <h1>🎪 小丑拋接球</h1>
+        <p class="status" id="status">移動小丑接住球！</p>
+      </header>
+
+      <section class="hud">
+        <div class="hud-item">⭐ 分數：<span id="score">0</span></div>
+        <div class="hud-item">❤️ 生命：<span id="lives">3</span></div>
+        <div class="hud-item">🎯 連接：<span id="combo">0</span></div>
+      </section>
+
+      <section class="arena" id="arena">
+        <canvas id="canvas"></canvas>
+      </section>
+
+      <section class="controls">
+        <button class="start-btn" id="startBtn">▶ 開始遊戲</button>
+      </section>
+
+      <a href="../../" class="back-btn">← 回遊戲樂園</a>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
