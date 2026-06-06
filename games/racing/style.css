@@ -137,15 +137,19 @@ canvas {
 }
 
 .touch-controls {
-  display: grid;
-  gap: 8px;
+  display: flex !important;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
   max-width: 300px;
+  padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 16px;
 }
 
 .touch-row {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
 }
 
@@ -170,17 +174,17 @@ canvas {
 }
 
 .touch-btn-accel {
-  background: rgba(74, 222, 128, 0.2);
+  background: rgba(74, 222, 128, 0.4);
   border-color: #4ade80;
 }
 
 .touch-btn-brake {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.4);
   border-color: #ef4444;
 }
 
 .touch-btn-item {
-  background: rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.4);
   border-color: #fbbf24;
 }
 
@@ -199,10 +203,4 @@ canvas {
 
 .back-btn:hover {
   background: rgba(255,255,255,0.05);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .touch-controls {
-    display: none;
-  }
 }
