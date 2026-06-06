@@ -33,10 +33,11 @@ let playerY = 0;
 let obstacles = []; // { x, y, lane, type }
 let items = []; // { x, y, lane, type }
 let roadLines = []; // { y }
+let lineOffset = 0; // 車道線捲動偏移
 let obstacleTimer = 0;
 let itemTimer = 0;
 let invincibleTimer = 0;
-let slowTimer = 0;
+let boostTimer = 0;
 
 // ===== DOM =====
 const statusEl = document.getElementById("status");
@@ -86,10 +87,11 @@ function drawRoad() {
   ctx.fillStyle = "#555";
   ctx.fillRect(roadLeft, 0, roadRight - roadLeft, canvas.height);
 
-  // 車道線
+  // 車道線（會捲動）
   ctx.strokeStyle = "#fff";
   ctx.lineWidth = 2;
   ctx.setLineDash([20, 20]);
+  ctx.lineDashOffset = -lineOffset;
   for (let i = 1; i < LANES; i++) {
     const x = getLaneX(i) - getLaneWidth() / 2;
     ctx.beginPath();
@@ -98,10 +100,13 @@ function drawRoad() {
     ctx.stroke();
   }
   ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
 
-  // 路邊線
+  // 路邊線（會捲動）
   ctx.strokeStyle = "#fbbf24";
   ctx.lineWidth = 4;
+  ctx.setLineDash([30, 15]);
+  ctx.lineDashOffset = -lineOffset;
   ctx.beginPath();
   ctx.moveTo(roadLeft, 0);
   ctx.lineTo(roadLeft, canvas.height);
@@ -110,6 +115,8 @@ function drawRoad() {
   ctx.moveTo(roadRight, 0);
   ctx.lineTo(roadRight, canvas.height);
   ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
 }
 
 // ===== 畫玩家車子 =====
@@ -217,7 +224,7 @@ function spawnItem() {
   const types = [
     { emoji: "⭐", type: "star" },
     { emoji: "🛡️", type: "shield" },
-    { emoji: "🐢", type: "slow" },
+    { emoji: "🚀", type: "boost" },
   ];
   const t = types[Math.floor(Math.random() * types.length)];
   items.push({
@@ -237,12 +244,12 @@ function update() {
   // 加速
   gameSpeed += SPEED_UP;
 
+  // 車道線捲動（加速時更快）
+  lineOffset += gameSpeed * (boostTimer > 0 ? 2 : 1);
+
   // 無敵計時
   if (invincibleTimer > 0) invincibleTimer--;
-  if (slowTimer > 0) {
-    slowTimer--;
-    if (slowTimer <= 0) gameSpeed = 3 + gameTime * SPEED_UP;
-  }
+  if (boostTimer > 0) boostTimer--;
 
   // 移動玩家到目標車道
   const targetX = getLaneX(targetLane);
@@ -264,9 +271,8 @@ function update() {
   }
 
   // 更新障礙物
-  const currentSpeed = slowTimer > 0 ? gameSpeed * 0.5 : gameSpeed;
   for (let i = obstacles.length - 1; i >= 0; i--) {
-    obstacles[i].y += currentSpeed;
+    obstacles[i].y += gameSpeed;
     if (obstacles[i].y > canvas.height + 50) {
       obstacles.splice(i, 1);
       score += 10;
@@ -276,7 +282,7 @@ function update() {
 
   // 更新道具
   for (let i = items.length - 1; i >= 0; i--) {
-    items[i].y += currentSpeed;
+    items[i].y += gameSpeed;
     if (items[i].y > canvas.height + 50) {
       items.splice(i, 1);
     }
@@ -320,9 +326,8 @@ function update() {
         case "shield":
           invincibleTimer = 180; // 3秒無敵
           break;
-        case "slow":
-          slowTimer = 180; // 3秒減速
-          gameSpeed = 2;
+        case "boost":
+          boostTimer = 180; // 3秒加速
           break;
       }
       items.splice(i, 1);
@@ -348,10 +353,24 @@ function draw() {
   drawLives();
   drawScore();
 
-  // 減速效果
-  if (slowTimer > 0) {
-    ctx.fillStyle = "rgba(59,130,246,0.1)";
+  // 加速效果
+  if (boostTimer > 0) {
+    ctx.fillStyle = "rgba(251,191,36,0.15)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 速度線
+    ctx.strokeStyle = "rgba(251,191,36,0.5)";
+    ctx.lineWidth = 2;
+    const roadLeft = canvas.width * 0.1;
+    const roadRight = canvas.width * 0.9;
+    for (let i = 0; i < 8; i++) {
+      const x = roadLeft + Math.random() * (roadRight - roadLeft);
+      const y = Math.random() * canvas.height;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 20 + Math.random() * 30);
+      ctx.stroke();
+    }
   }
 }
 
@@ -379,7 +398,7 @@ function startGame() {
   obstacleTimer = 0;
   itemTimer = 0;
   invincibleTimer = 0;
-  slowTimer = 0;
+  boostTimer = 0;
 
   scoreEl.textContent = score;
   livesEl.textContent = lives;
