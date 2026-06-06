@@ -247,10 +247,6 @@ function update() {
   // 車道線捲動（加速時更快）
   lineOffset += gameSpeed * (boostTimer > 0 ? 2 : 1);
 
-  // 無敵計時
-  if (invincibleTimer > 0) invincibleTimer--;
-  if (boostTimer > 0) boostTimer--;
-
   // 移動玩家到目標車道
   const targetX = getLaneX(targetLane);
   playerX += (targetX - playerX) * 0.15;
@@ -333,6 +329,10 @@ function update() {
       items.splice(i, 1);
     }
   }
+
+  // 無敵/加速計時（碰撞偵測之後才扣，確保無敵期間不會被撞）
+  if (invincibleTimer > 0) invincibleTimer--;
+  if (boostTimer > 0) boostTimer--;
 }
 
 // ===== 畫面 =====
