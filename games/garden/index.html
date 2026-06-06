@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>種菜小園丁</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game">
+      <header>
+        <h1>🪴 種菜小園丁</h1>
+        <p class="status" id="status">選一種子，點空地種下去吧！</p>
+      </header>
+
+      <section class="hud">
+        <div class="hud-item">💰 金幣：<span id="coins">0</span></div>
+        <div class="hud-item">🌱 收成：<span id="harvested">0</span></div>
+      </section>
+
+      <section class="seed-bar">
+        <button class="seed-btn active" data-seed="carrot">🥕 胡蘿蔔</button>
+        <button class="seed-btn" data-seed="tomato">🍅 番茄</button>
+        <button class="seed-btn" data-seed="lettuce">🥬 生菜</button>
+        <button class="seed-btn" data-seed="corn">🌽 玉米</button>
+      </section>
+
+      <section class="garden" id="garden"></section>
+
+      <section class="actions">
+        <button class="action-btn water-btn" id="waterBtn">💧 澆水</button>
+        <button class="action-btn harvest-btn" id="harvestBtn">🧺 收成</button>
+      </section>
+
+      <a href="../../" class="back-btn">← 回遊戲樂園</a>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>

@@ -1,0 +1,252 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Baloo 2", "Trebuchet MS", "Noto Sans TC", sans-serif;
+  background: linear-gradient(160deg, #0d1730, #1e2f59);
+  touch-action: manipulation;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  touch-action: manipulation;
+}
+
+header {
+  text-align: center;
+  color: #fff;
+}
+
+h1 {
+  font-size: clamp(24px, 6vw, 32px);
+  color: #4ade80;
+  text-shadow: 0 3px 0 #166534;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: clamp(14px, 3.5vw, 18px);
+  color: #bbf7d0;
+  font-weight: 600;
+  min-height: 28px;
+}
+
+.hud {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.hud-item {
+  font-size: clamp(16px, 4vw, 20px);
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.hud-item span {
+  color: #fff;
+}
+
+.seed-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.seed-btn {
+  padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 18px);
+  font-size: clamp(14px, 3.5vw, 16px);
+  font-weight: 700;
+  border: 3px solid #374151;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #374151, #1f2937);
+  color: #d1d5db;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.seed-btn.active {
+  border-color: #4ade80;
+  background: linear-gradient(180deg, #166534, #14532d);
+  color: #4ade80;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.3);
+}
+
+.seed-btn:active {
+  transform: scale(0.95);
+}
+
+.garden {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(6px, 1.5vw, 10px);
+  width: 100%;
+  max-width: 360px;
+}
+
+.plot {
+  aspect-ratio: 1;
+  border: 3px solid #374151;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #4b5563, #374151);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.2s, background 0.3s;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plot:active {
+  transform: scale(0.95);
+}
+
+.plot.empty {
+  background: linear-gradient(180deg, #6b7280, #4b5563);
+}
+
+.plot.empty::after {
+  content: "+";
+  font-size: clamp(20px, 5vw, 28px);
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.plot.planted {
+  border-color: #a3e635;
+  background: linear-gradient(180deg, #365314, #1a2e05);
+}
+
+.plot.watered {
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.plot.ready {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+  animation: glow 1.5s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(251, 191, 36, 0.6); }
+}
+
+.plot-emoji {
+  font-size: clamp(24px, 7vw, 40px);
+  line-height: 1;
+  transition: transform 0.3s;
+}
+
+.plot.ready .plot-emoji {
+  animation: bounce 0.6s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.plot-label {
+  font-size: clamp(10px, 2.5vw, 12px);
+  color: #d1d5db;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.plot-bar {
+  width: 70%;
+  height: 4px;
+  background: #1f2937;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.plot-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #a3e635);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.action-btn {
+  flex: 1;
+  padding: clamp(12px, 3vw, 16px) 0;
+  font-size: clamp(16px, 4vw, 20px);
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+.water-btn {
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  color: #fff;
+}
+
+.harvest-btn {
+  background: linear-gradient(180deg, #fbbf24, #d97706);
+  color: #451a03;
+}
+
+.back-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #304266;
+  border-radius: 12px;
+  background: transparent;
+  color: #acc5f5;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .seed-btn,
+  .plot,
+  .action-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
