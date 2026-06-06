@@ -10,37 +10,30 @@
     <main class="game">
       <header>
         <h1>🏎️ 小飆車手</h1>
-        <p class="status" id="status">準備開始！</p>
+        <p class="status" id="status">閃避來車，吃道具！</p>
       </header>
 
       <section class="hud">
-        <div class="hud-item">🏁 圈數：<span id="lap">0</span> / 3</div>
-        <div class="hud-item">⏱️ 時間：<span id="time">0:00</span></div>
-        <div class="hud-item">🏅 名次：<span id="position">4</span></div>
+        <div class="hud-item">❤️ 生命：<span id="lives">3</span></div>
+        <div class="hud-item">⭐ 分數：<span id="score">0</span></div>
       </section>
 
       <section class="arena" id="arena">
         <canvas id="canvas"></canvas>
       </section>
 
-      <section class="item-bar" id="itemBar">
-        <div class="item-slot" id="itemSlot">?</div>
-      </section>
-
       <section class="controls">
-        <button class="start-btn" id="startBtn">▶ 開始比賽</button>
+        <button class="start-btn" id="startBtn">▶ 開始遊戲</button>
       </section>
 
       <section class="touch-controls" id="touchControls">
         <div class="touch-row">
-          <div class="touch-btn" id="turnLeft">◀ 轉左</div>
-          <div class="touch-btn touch-btn-brake" id="brake">▼ 煞車</div>
-          <div class="touch-btn" id="turnRight">轉右 ▶</div>
-        </div>
-        <div class="touch-row">
-          <div class="touch-btn touch-btn-item" id="useItem">🎁 道具</div>
+          <div class="touch-btn" id="turnLeft">◀ 左邊</div>
+          <div class="touch-btn" id="turnRight">右邊 ▶</div>
         </div>
       </section>
+
+      <p class="hint">💡 點螢幕左半 / 右半也可以控制！</p>
 
       <a href="../../" class="back-btn">← 回遊戲樂園</a>
     </main>
