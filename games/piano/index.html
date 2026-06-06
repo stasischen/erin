@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小小鋼琴家</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎹</text></svg>" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game">
+      <header>
+        <h1>🎹 小小鋼琴家</h1>
+        <p class="status" id="status">彈彈看吧！</p>
+      </header>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="recordBtn">⏺ 錄音</button>
+        <button class="ctrl-btn" id="playBtn" disabled>▶ 播放</button>
+        <button class="ctrl-btn" id="clearBtn">🗑 清除</button>
+      </div>
+
+      <div class="piano" id="piano">
+        <div class="key white" data-note="C"><span>Do</span></div>
+        <div class="key black" data-note="C#"></div>
+        <div class="key white" data-note="D"><span>Re</span></div>
+        <div class="key black" data-note="D#"></div>
+        <div class="key white" data-note="E"><span>Mi</span></div>
+        <div class="key white" data-note="F"><span>Fa</span></div>
+        <div class="key black" data-note="F#"></div>
+        <div class="key white" data-note="G"><span>Sol</span></div>
+        <div class="key black" data-note="G#"></div>
+        <div class="key white" data-note="A"><span>La</span></div>
+        <div class="key black" data-note="A#"></div>
+        <div class="key white" data-note="B"><span>Si</span></div>
+        <div class="key white" data-note="C2"><span>Do</span></div>
+      </div>
+
+      <button class="back-btn" onclick="location.href='../../'">⬅ 回到遊戲樂園</button>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>

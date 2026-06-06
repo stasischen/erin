@@ -1,0 +1,205 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Baloo 2", "Trebuchet MS", "Noto Sans TC", sans-serif;
+  background: linear-gradient(160deg, #0d1730, #1e2f59);
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+}
+
+header {
+  text-align: center;
+  color: #fff;
+}
+
+h1 {
+  font-size: 30px;
+  color: #ffd577;
+  text-shadow: 0 3px 0 #8d5f37;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #acc5f5;
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+.ctrl-btn {
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.1s;
+}
+
+.ctrl-btn:hover {
+  transform: translateY(-2px);
+}
+
+.ctrl-btn:active {
+  transform: translateY(0);
+}
+
+.ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+#recordBtn {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+  color: #fff;
+}
+
+#recordBtn.recording {
+  background: linear-gradient(180deg, #f97316, #ea580c);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+#playBtn {
+  background: linear-gradient(180deg, #4ade80, #22c55e);
+  color: #052e16;
+}
+
+#clearBtn {
+  background: linear-gradient(180deg, #94a3b8, #64748b);
+  color: #fff;
+}
+
+.piano {
+  display: flex;
+  position: relative;
+  height: 200px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.key {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+  transition: background 0.1s;
+}
+
+.key span {
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.key.white {
+  flex: 1;
+  background: linear-gradient(180deg, #fff, #e8e8e8);
+  border: 2px solid #999;
+  border-radius: 0 0 10px 10px;
+  z-index: 1;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.key.white span {
+  color: #666;
+}
+
+.key.white:hover {
+  background: linear-gradient(180deg, #e0e7ff, #c7d2fe);
+}
+
+.key.white:active,
+.key.white.active {
+  background: linear-gradient(180deg, #a5b4fc, #818cf8);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transform: translateY(2px);
+}
+
+.key.black {
+  width: 14%;
+  height: 130px;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border: 2px solid #000;
+  border-radius: 0 0 8px 8px;
+  margin: 0 -7%;
+  z-index: 2;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+.key.black:hover {
+  background: linear-gradient(180deg, #334155, #1e293b);
+}
+
+.key.black:active,
+.key.black.active {
+  background: linear-gradient(180deg, #475569, #334155);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  transform: translateY(2px);
+}
+
+.back-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #304266;
+  border-radius: 12px;
+  background: transparent;
+  color: #acc5f5;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+@media (max-width: 480px) {
+  .game {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  .piano {
+    height: 160px;
+  }
+
+  .key.black {
+    height: 100px;
+  }
+
+  .key span {
+    font-size: 11px;
+  }
+}
