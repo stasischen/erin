@@ -405,11 +405,10 @@ function updatePlayer() {
     player.angle += CAR_TURN_SPEED * (player.speed / MAX_SPEED);
   }
 
-  // 加速
-  let accel = 0;
-  if (keys.up || touchState.accel) {
-    accel = CAR_ACCEL;
-  }
+  // 自動加速（不用按）
+  let accel = CAR_ACCEL * 0.8;
+
+  // 煞車
   if (keys.down || touchState.brake) {
     accel = -CAR_BRAKE;
   }
@@ -438,7 +437,7 @@ function updatePlayer() {
 
   // 限制速度
   const maxSpd = player.isBoosted ? MAX_SPEED * 1.5 : MAX_SPEED;
-  player.speed = Math.max(-MAX_SPEED * 0.3, Math.min(maxSpd, player.speed));
+  player.speed = Math.max(0, Math.min(maxSpd, player.speed));
 
   // 移動
   player.x += Math.cos(player.angle) * player.speed;
@@ -813,7 +812,6 @@ function startGame() {
 const keys = {
   left: false,
   right: false,
-  up: false,
   down: false,
 };
 
@@ -821,7 +819,6 @@ document.addEventListener("keydown", (e) => {
   switch (e.key) {
     case "ArrowLeft": keys.left = true; break;
     case "ArrowRight": keys.right = true; break;
-    case "ArrowUp": keys.up = true; break;
     case "ArrowDown": keys.down = true; break;
     case " ": e.preventDefault(); useItem(); break;
   }
@@ -831,7 +828,6 @@ document.addEventListener("keyup", (e) => {
   switch (e.key) {
     case "ArrowLeft": keys.left = false; break;
     case "ArrowRight": keys.right = false; break;
-    case "ArrowUp": keys.up = false; break;
     case "ArrowDown": keys.down = false; break;
   }
 });
@@ -854,7 +850,6 @@ function setupTouchButton(id, stateKey) {
 
 setupTouchButton("turnLeft", "left");
 setupTouchButton("turnRight", "right");
-setupTouchButton("accel", "accel");
 setupTouchButton("brake", "brake");
 
 document.getElementById("useItem").addEventListener("touchstart", (e) => {
