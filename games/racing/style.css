@@ -200,7 +200,7 @@ canvas {
   background: rgba(255,255,255,0.05);
 }
 
-@media (min-width: 768px) {
+@media (hover: hover) and (pointer: fine) {
   .touch-controls {
     display: none;
   }
