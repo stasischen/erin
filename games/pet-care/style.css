@@ -21,6 +21,7 @@ body {
   padding: 24px;
   max-width: 400px;
   width: 100%;
+  touch-action: manipulation;
 }
 
 header {
@@ -49,7 +50,7 @@ h1 {
 }
 
 .pet-face {
-  font-size: 96px;
+  font-size: clamp(72px, 20vmin, 120px);
   line-height: 1;
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
   transition: transform 0.3s;
@@ -93,7 +94,7 @@ h1 {
 
 .stat-bar {
   flex: 1;
-  height: 18px;
+  height: clamp(18px, 3vmin, 26px);
   background: #1e1036;
   border-radius: 9px;
   overflow: hidden;
@@ -129,14 +130,15 @@ h1 {
 
 .action-btn {
   flex: 1;
-  padding: 14px 0;
-  font-size: 18px;
+  padding: clamp(14px, 3vmin, 20px) 0;
+  font-size: clamp(16px, 4vmin, 22px);
   font-weight: 700;
   border: none;
   border-radius: 16px;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(0,0,0,0.3);
   transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .action-btn:hover {
@@ -186,8 +188,10 @@ h1 {
   h1 {
     font-size: 26px;
   }
+}
 
-  .pet-face {
-    font-size: 72px;
+@media (hover: none) and (pointer: coarse) {
+  .action-btn {
+    -webkit-tap-highlight-color: transparent;
   }
 }

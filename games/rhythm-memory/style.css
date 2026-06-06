@@ -21,6 +21,7 @@ body {
   padding: 24px;
   max-width: 420px;
   width: 100%;
+  touch-action: manipulation;
 }
 
 header {
@@ -52,8 +53,8 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  width: 280px;
-  height: 280px;
+  width: min(70vmin, 280px);
+  aspect-ratio: 1;
 }
 
 .btn {
@@ -133,12 +134,17 @@ h1 {
 
 @media (max-width: 480px) {
   .board {
-    width: 240px;
-    height: 240px;
+    width: min(75vmin, 240px);
     gap: 12px;
   }
 
   h1 {
     font-size: 26px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn {
+    -webkit-tap-highlight-color: transparent;
   }
 }
