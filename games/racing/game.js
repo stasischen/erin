@@ -1,24 +1,20 @@
 // ===== 遊戲設定 =====
-// ✏️ 可自訂：賽道參數
-const TRACK_POINTS = 60; // 賽道控制點數量
-const ROAD_WIDTH = 80;   // 路寬
-const LAPS_TO_WIN = 3;   // 幾圈完成
+const ROAD_WIDTH = 100;
+const LAPS_TO_WIN = 3;
 
-// ✏️ 可自訂：車輛參數
-const CAR_ACCEL = 0.15;   // 加速度
-const CAR_BRAKE = 0.1;    // 煞車力
-const CAR_FRICTION = 0.98; // 摩擦力（越大滑越遠）
-const CAR_TURN_SPEED = 0.04; // 轉向速度
-const MAX_SPEED = 4;       // 最高速度
-const GRASS_PENALTY = 0.6; // 草地減速倍率
+// 車子物理
+const CAR_ACCEL = 0.12;
+const CAR_BRAKE = 0.15;
+const CAR_FRICTION = 0.97;
+const CAR_TURN_SPEED = 0.045;
+const MAX_SPEED = 3.5;
+const GRASS_PENALTY = 0.85;
 
-// ✏️ 可自訂：AI 數量
+// AI
 const AI_COUNT = 3;
 
-// ✏️ 可自訂：道具出現間隔（幀數）
-const ITEM_SPAWN_INTERVAL = 180;
-
-// ===== 道具定義 =====
+// 道具
+const ITEM_SPAWN_INTERVAL = 200;
 const ITEM_TYPES = [
   { id: "mushroom", emoji: "🍄", name: "蘑菇", duration: 90 },
   { id: "star", emoji: "⭐", name: "星星", duration: 120 },
@@ -31,26 +27,24 @@ let isPlaying = false;
 let isFinished = false;
 let gameTime = 0;
 let itemCountdown = 0;
-let bestTime = Infinity;
 
 // ===== 賽道 =====
-let trackCenter = []; // 賽道中心線點
-let trackNormals = []; // 法線方向
+// 用一系列控制點定義賽道（俯視座標）
+let trackPoints = [];
+const TRACK_SEGMENT_LEN = 8; // 每段長度（像素）
 
 // ===== 車輛 =====
 class Car {
   constructor(color, isPlayer = false) {
     this.x = 0;
     this.y = 0;
-    this.angle = 0;
+    this.angle = 0; // 朝向（弧度）
     this.speed = 0;
     this.color = color;
     this.isPlayer = isPlayer;
     this.lap = 0;
-    this.lastCheckpoint = 0;
-    this.checkpointProgress = 0;
+    this.trackProgress = 0; // 在賽道上的位置（0~1）
     this.item = null;
-    this.itemTimer = 0;
     this.isInvincible = false;
     this.invincibleTimer = 0;
     this.isBoosted = false;
@@ -64,11 +58,9 @@ let player;
 let aiCars = [];
 let allCars = [];
 
-// ===== 道具 =====
-let items = [];
-let bananas = []; // 地上的香蕉皮
-
-// ===== 特效 =====
+// ===== 道具 & 特效 =====
+let trackItems = [];
+let bananas = [];
 let particles = [];
 
 // ===== DOM =====
@@ -82,106 +74,202 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const itemSlot = document.getElementById("itemSlot");
 
-// ===== 觸控狀態 =====
-const touchState = {
-  left: false,
-  right: false,
-  accel: false,
-  brake: false,
-};
+// ===== 觸控 =====
+const touchState = { left: false, right: false, brake: false };
 
-// ===== Canvas 尺寸 =====
+// ===== Canvas =====
 function resizeCanvas() {
   const rect = arena.getBoundingClientRect();
   canvas.width = rect.width;
   canvas.height = rect.height;
 }
 
-// ===== 生成賽道 =====
+// ===== 生成賽道（橢圓形） =====
 function generateTrack() {
-  trackCenter = [];
-  trackNormals = [];
+  trackPoints = [];
+  const cx = 0;
+  const cy = 0;
+  const rx = 600;
+  const ry = 400;
+  const totalPoints = 120;
 
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const rx = canvas.width * 0.35; // 水平半徑
-  const ry = canvas.height * 0.3; // 垂直半徑
-
-  for (let i = 0; i < TRACK_POINTS; i++) {
-    const angle = (Math.PI * 2 * i) / TRACK_POINTS;
-    const x = cx + Math.cos(angle) * rx;
-    const y = cy + Math.sin(angle) * ry;
-    trackCenter.push({ x, y });
-  }
-
-  // 計算法線
-  for (let i = 0; i < TRACK_POINTS; i++) {
-    const next = trackCenter[(i + 1) % TRACK_POINTS];
-    const prev = trackCenter[(i - 1 + TRACK_POINTS) % TRACK_POINTS];
-    const dx = next.x - prev.x;
-    const dy = next.y - prev.y;
-    const len = Math.sqrt(dx * dx + dy * dy);
-    trackNormals.push({ x: -dy / len, y: dx / len });
+  for (let i = 0; i < totalPoints; i++) {
+    const angle = (Math.PI * 2 * i) / totalPoints;
+    trackPoints.push({
+      x: cx + Math.cos(angle) * rx,
+      y: cy + Math.sin(angle) * ry,
+    });
   }
 }
 
-// ===== 找最近的賽道點 =====
-function getClosestTrackPoint(x, y) {
-  let minDist = Infinity;
-  let closestIdx = 0;
+// ===== 取得賽道上某個位置的座標和方向 =====
+function getTrackPosition(progress) {
+  const totalPoints = trackPoints.length;
+  const idx = ((progress % 1) + 1) % 1 * totalPoints;
+  const i = Math.floor(idx);
+  const t = idx - i;
+  const p0 = trackPoints[i % totalPoints];
+  const p1 = trackPoints[(i + 1) % totalPoints];
 
-  for (let i = 0; i < TRACK_POINTS; i++) {
-    const dx = x - trackCenter[i].x;
-    const dy = y - trackCenter[i].y;
-    const dist = dx * dx + dy * dy;
-    if (dist < minDist) {
-      minDist = dist;
-      closestIdx = i;
-    }
-  }
+  const x = p0.x + (p1.x - p0.x) * t;
+  const y = p0.y + (p1.y - p0.y) * t;
 
-  return { idx: closestIdx, dist: Math.sqrt(minDist) };
-}
+  // 方向
+  const dx = p1.x - p0.x;
+  const dy = p1.y - p0.y;
+  const angle = Math.atan2(dy, dx);
 
-// ===== 判斷是否在賽道上 =====
-function isOnRoad(x, y) {
-  const { dist } = getClosestTrackPoint(x, y);
-  return dist < ROAD_WIDTH / 2;
+  return { x, y, angle };
 }
 
 // ===== 初始化車輛 =====
 function initCars() {
-  const startAngle = -Math.PI / 2; // 從上方開始
-  const startX = trackCenter[0].x;
-  const startY = trackCenter[0].y;
+  const startPos = getTrackPosition(0);
 
   // 玩家
   player = new Car("#ef4444", true);
-  player.x = startX;
-  player.y = startY + 20;
-  player.angle = startAngle;
+  player.x = startPos.x;
+  player.y = startPos.y;
+  player.angle = startPos.angle;
+  player.trackProgress = 0;
 
   // AI
   aiCars = [];
   const aiColors = ["#3b82f6", "#22c55e", "#a855f7"];
   for (let i = 0; i < AI_COUNT; i++) {
     const car = new Car(aiColors[i]);
-    car.x = startX + (i + 1) * 30 - 30;
-    car.y = startY + 20 + (i + 1) * 25;
-    car.angle = startAngle;
-    car.aiTarget = 0;
-    car.aiSpeed = 2 + Math.random() * 0.5;
+    const startOffset = 0.02 + i * 0.02;
+    const pos = getTrackPosition(startOffset);
+    car.x = pos.x;
+    car.y = pos.y;
+    car.angle = pos.angle;
+    car.trackProgress = startOffset;
+    car.aiTargetProgress = startOffset;
+    car.aiSpeed = 2.2 + Math.random() * 0.5;
+    car.aiSteerSmooth = 0;
     aiCars.push(car);
   }
 
   allCars = [player, ...aiCars];
 }
 
+// ===== 座標轉換：世界座標 → 螢幕座標 =====
+// 鏡頭跟著玩家，玩家永遠在螢幕中央偏下，朝上
+function worldToScreen(wx, wy) {
+  const screenCX = canvas.width / 2;
+  const screenCY = canvas.height * 0.65;
+
+  // 相對於玩家的位置
+  const dx = wx - player.x;
+  const dy = wy - player.y;
+
+  // 旋轉（玩家朝上 = -PI/2）
+  const camAngle = player.angle + Math.PI / 2;
+  const cos = Math.cos(-camAngle);
+  const sin = Math.sin(-camAngle);
+
+  const sx = dx * cos - dy * sin + screenCX;
+  const sy = dx * sin + dy * cos + screenCY;
+
+  return { x: sx, y: sy };
+}
+
+// ===== 畫賽道 =====
+function drawTrack() {
+  // 背景草地
+  ctx.fillStyle = "#2d5a27";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 草地紋理
+  ctx.fillStyle = "#3a6b32";
+  for (let i = 0; i < 60; i++) {
+    const wx = (i * 173.7) % 2000 - 1000;
+    const wy = (i * 131.3) % 2000 - 1000;
+    const sp = worldToScreen(wx, wy);
+    if (sp.x < -20 || sp.x > canvas.width + 20 || sp.y < -20 || sp.y > canvas.height + 20) continue;
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 畫路面（只畫可見部分）
+  const totalPoints = trackPoints.length;
+  const viewRange = 0.15; // 畫玩家前後 15% 的賽道
+
+  for (let pass = 0; pass < 2; pass++) {
+    // pass 0: 路面外框, pass 1: 路面本體
+    const lineWidth = pass === 0 ? ROAD_WIDTH + 10 : ROAD_WIDTH;
+    const color = pass === 0 ? "#555" : "#666";
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+
+    let started = false;
+    for (let t = -viewRange; t <= viewRange; t += 0.005) {
+      const progress = ((player.trackProgress + t) % 1 + 1) % 1;
+      const pos = getTrackPosition(progress);
+      const sp = worldToScreen(pos.x, pos.y);
+
+      if (!started) {
+        ctx.moveTo(sp.x, sp.y);
+        started = true;
+      } else {
+        ctx.lineTo(sp.x, sp.y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // 車道線（虛線）
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 10]);
+  ctx.beginPath();
+  let started = false;
+  for (let t = -viewRange; t <= viewRange; t += 0.005) {
+    const progress = ((player.trackProgress + t) % 1 + 1) % 1;
+    const pos = getTrackPosition(progress);
+    const sp = worldToScreen(pos.x, pos.y);
+    if (!started) {
+      ctx.moveTo(sp.x, sp.y);
+      started = true;
+    } else {
+      ctx.lineTo(sp.x, sp.y);
+    }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 起跑線
+  const startLine = getTrackPosition(0);
+  const startSp = worldToScreen(startLine.x, startLine.y);
+  const perpAngle = startLine.angle + Math.PI / 2;
+  const halfW = ROAD_WIDTH / 2;
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(startSp.x + Math.cos(perpAngle) * halfW, startSp.y + Math.sin(perpAngle) * halfW);
+  ctx.lineTo(startSp.x - Math.cos(perpAngle) * halfW, startSp.y - Math.sin(perpAngle) * halfW);
+  ctx.stroke();
+}
+
 // ===== 畫車子 =====
 function drawCar(car) {
+  const sp = worldToScreen(car.x, car.y);
+
+  // 不在畫面內就跳過
+  if (sp.x < -30 || sp.x > canvas.width + 30 || sp.y < -30 || sp.y > canvas.height + 30) return;
+
   ctx.save();
-  ctx.translate(car.x, car.y);
-  ctx.rotate(car.angle + Math.PI / 2);
+  ctx.translate(sp.x, sp.y);
+
+  // 車子角度（相對於鏡頭）
+  const camAngle = player.angle + Math.PI / 2;
+  const drawAngle = car.angle - camAngle;
+  ctx.rotate(drawAngle);
 
   // 無敵閃爍
   if (car.isInvincible && Math.floor(gameTime / 4) % 2 === 0) {
@@ -214,7 +302,7 @@ function drawCar(car) {
     ctx.fill();
   }
 
-  // 加速特效
+  // 加速火焰
   if (car.isBoosted) {
     ctx.fillStyle = "#f97316";
     ctx.beginPath();
@@ -228,142 +316,79 @@ function drawCar(car) {
   ctx.restore();
 }
 
-// ===== 畫賽道 =====
-function drawTrack() {
-  // 草地背景
-  ctx.fillStyle = "#2d5a27";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 草地紋理
-  ctx.fillStyle = "#3a6b32";
-  for (let i = 0; i < 40; i++) {
-    const x = (i * 137.5) % canvas.width;
-    const y = (i * 97.3) % canvas.height;
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // 賽道路面
-  ctx.strokeStyle = "#555";
-  ctx.lineWidth = ROAD_WIDTH + 8;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  ctx.moveTo(trackCenter[0].x, trackCenter[0].y);
-  for (let i = 1; i <= TRACK_POINTS; i++) {
-    const p = trackCenter[i % TRACK_POINTS];
-    ctx.lineTo(p.x, p.y);
-  }
-  ctx.closePath();
-  ctx.stroke();
-
-  // 路面
-  ctx.strokeStyle = "#666";
-  ctx.lineWidth = ROAD_WIDTH;
-  ctx.beginPath();
-  ctx.moveTo(trackCenter[0].x, trackCenter[0].y);
-  for (let i = 1; i <= TRACK_POINTS; i++) {
-    const p = trackCenter[i % TRACK_POINTS];
-    ctx.lineTo(p.x, p.y);
-  }
-  ctx.closePath();
-  ctx.stroke();
-
-  // 車道線（虛線）
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 8]);
-  ctx.beginPath();
-  ctx.moveTo(trackCenter[0].x, trackCenter[0].y);
-  for (let i = 1; i <= TRACK_POINTS; i++) {
-    const p = trackCenter[i % TRACK_POINTS];
-    ctx.lineTo(p.x, p.y);
-  }
-  ctx.closePath();
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // 起跑線
-  const startP = trackCenter[0];
-  const startN = trackNormals[0];
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(startP.x + startN.x * ROAD_WIDTH / 2, startP.y + startN.y * ROAD_WIDTH / 2);
-  ctx.lineTo(startP.x - startN.x * ROAD_WIDTH / 2, startP.y - startN.y * ROAD_WIDTH / 2);
-  ctx.stroke();
-
-  // 起跑線格子紋
-  const steps = 6;
-  for (let i = 0; i < steps; i++) {
-    if (i % 2 === 0) {
-      const t = i / steps;
-      const t2 = (i + 1) / steps;
-      const x1 = startP.x + startN.x * ROAD_WIDTH / 2 * (1 - 2 * t);
-      const y1 = startP.y + startN.y * ROAD_WIDTH / 2 * (1 - 2 * t);
-      const x2 = startP.x + startN.x * ROAD_WIDTH / 2 * (1 - 2 * t2);
-      const y2 = startP.y + startN.y * ROAD_WIDTH / 2 * (1 - 2 * t2);
-      ctx.fillStyle = "#333";
-      ctx.fillRect(x1 - 3, y1 - 3, 6, 6);
-    }
-  }
-}
-
 // ===== 畫道具 =====
 function drawItems() {
-  for (const item of items) {
+  for (const item of trackItems) {
+    const sp = worldToScreen(item.x, item.y);
+    if (sp.x < -30 || sp.x > canvas.width + 30 || sp.y < -30 || sp.y > canvas.height + 30) continue;
+
     ctx.font = "24px serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(item.emoji, item.x, item.y);
+    ctx.fillText(item.emoji, sp.x, sp.y);
 
     // 光暈
     ctx.strokeStyle = "rgba(251,191,36,0.3)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(item.x, item.y, 16, 0, Math.PI * 2);
+    ctx.arc(sp.x, sp.y, 16, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  // 地上的香蕉皮
+  // 香蕉皮
   for (const banana of bananas) {
+    const sp = worldToScreen(banana.x, banana.y);
+    if (sp.x < -30 || sp.x > canvas.width + 30 || sp.y < -30 || sp.y > canvas.height + 30) continue;
     ctx.font = "20px serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("🍌", banana.x, banana.y);
+    ctx.fillText("🍌", sp.x, sp.y);
   }
 }
 
-// ===== 畫特效 =====
+// ===== 畫粒子 =====
 function drawParticles() {
   for (const p of particles) {
+    const sp = worldToScreen(p.x, p.y);
     ctx.globalAlpha = p.life;
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.arc(sp.x, sp.y, p.size, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 }
 
+// ===== 畫 HUD（方向提示） =====
+function drawDirectionHint() {
+  // 畫一個小箭頭提示賽道方向
+  const hintProgress = player.trackProgress + 0.05;
+  const hintPos = getTrackPosition(hintProgress);
+  const sp = worldToScreen(hintPos.x, hintPos.y);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.3)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(sp.x, sp.y, 20, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
 // ===== 生成道具 =====
 function spawnItem() {
-  const idx = Math.floor(Math.random() * TRACK_POINTS);
-  const p = trackCenter[idx];
-  const n = trackNormals[idx];
-  const offset = (Math.random() - 0.5) * ROAD_WIDTH * 0.5;
-
+  const progress = Math.random();
+  const pos = getTrackPosition(progress);
+  const perpAngle = pos.angle + Math.PI / 2;
+  const offset = (Math.random() - 0.5) * ROAD_WIDTH * 0.4;
   const type = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
 
-  items.push({
-    x: p.x + n.x * offset,
-    y: p.y + n.y * offset,
+  trackItems.push({
+    x: pos.x + Math.cos(perpAngle) * offset,
+    y: pos.y + Math.sin(perpAngle) * offset,
     ...type,
   });
 }
 
-// ===== 粒子特效 =====
+// ===== 粒子 =====
 function spawnParticles(x, y, color, count = 6) {
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
@@ -378,7 +403,6 @@ function spawnParticles(x, y, color, count = 6) {
   }
 }
 
-// ===== 更新粒子 =====
 function updateParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -397,19 +421,19 @@ function updatePlayer() {
     return;
   }
 
-  // 轉向
+  // 轉向（相對於車子前方）
   if (keys.left || touchState.left) {
-    player.angle -= CAR_TURN_SPEED * (player.speed / MAX_SPEED);
+    player.angle -= CAR_TURN_SPEED;
   }
   if (keys.right || touchState.right) {
-    player.angle += CAR_TURN_SPEED * (player.speed / MAX_SPEED);
+    player.angle += CAR_TURN_SPEED;
   }
 
-  // 自動加速（不用按）
-  let accel = CAR_ACCEL * 0.8;
+  // 自動加速
+  let accel = CAR_ACCEL;
 
   // 煞車
-  if (keys.down || touchState.brake) {
+  if (keys.brake || touchState.brake) {
     accel = -CAR_BRAKE;
   }
 
@@ -424,18 +448,14 @@ function updatePlayer() {
     if (player.invincibleTimer <= 0) player.isInvincible = false;
   }
 
-  // 應用加速度
   player.speed += accel;
 
   // 草地減速
-  if (!isOnRoad(player.x, player.y)) {
+  if (!isOnTrack(player.x, player.y)) {
     player.speed *= GRASS_PENALTY;
   }
 
-  // 摩擦力
   player.speed *= CAR_FRICTION;
-
-  // 限制速度
   const maxSpd = player.isBoosted ? MAX_SPEED * 1.5 : MAX_SPEED;
   player.speed = Math.max(0, Math.min(maxSpd, player.speed));
 
@@ -443,9 +463,57 @@ function updatePlayer() {
   player.x += Math.cos(player.angle) * player.speed;
   player.y += Math.sin(player.angle) * player.speed;
 
-  // 邊界限制
-  player.x = Math.max(10, Math.min(canvas.width - 10, player.x));
-  player.y = Math.max(10, Math.min(canvas.height - 10, player.y));
+  // 更新賽道進度
+  updateTrackProgress(player);
+}
+
+// ===== 判斷是否在賽道上 =====
+function isOnTrack(x, y) {
+  let minDist = Infinity;
+  for (const p of trackPoints) {
+    const dx = x - p.x;
+    const dy = y - p.y;
+    const dist = dx * dx + dy * dy;
+    if (dist < minDist) minDist = dist;
+  }
+  return Math.sqrt(minDist) < ROAD_WIDTH / 2;
+}
+
+// ===== 更新賽道進度 =====
+function updateTrackProgress(car) {
+  let minDist = Infinity;
+  let closestIdx = 0;
+  for (let i = 0; i < trackPoints.length; i++) {
+    const dx = car.x - trackPoints[i].x;
+    const dy = car.y - trackPoints[i].y;
+    const dist = dx * dx + dy * dy;
+    if (dist < minDist) {
+      minDist = dist;
+      closestIdx = i;
+    }
+  }
+
+  const newProgress = closestIdx / trackPoints.length;
+  const oldProgress = car.trackProgress;
+
+  // 檢查是否完成一圈
+  if (oldProgress > 0.9 && newProgress < 0.1) {
+    car.lap++;
+    if (car.isPlayer) {
+      lapEl.textContent = car.lap;
+      spawnParticles(car.x, car.y, "#fbbf24", 10);
+      if (car.lap >= LAPS_TO_WIN) {
+        finishRace();
+      }
+    }
+  }
+  // 倒退
+  if (oldProgress < 0.1 && newProgress > 0.9) {
+    car.lap = Math.max(0, car.lap - 1);
+    if (car.isPlayer) lapEl.textContent = car.lap;
+  }
+
+  car.trackProgress = newProgress;
 }
 
 // ===== 更新 AI =====
@@ -456,27 +524,30 @@ function updateAI(car) {
     return;
   }
 
-  // 目標點
-  const target = trackCenter[car.aiTarget];
-  const dx = target.x - car.x;
-  const dy = target.y - car.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
+  // AI 目標：往前看一段距離
+  const lookAhead = 0.03;
+  const targetProgress = car.trackProgress + lookAhead;
+  const targetPos = getTrackPosition(targetProgress);
 
-  // 轉向目標
+  // 計算需要轉多少
+  const dx = targetPos.x - car.x;
+  const dy = targetPos.y - car.y;
   const targetAngle = Math.atan2(dy, dx);
+
   let angleDiff = targetAngle - car.angle;
   while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
   while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-  car.angle += angleDiff * 0.08;
+  // 平滑轉向
+  car.angle += angleDiff * 0.1;
 
-  // 速度控制
-  const turnFactor = 1 - Math.abs(angleDiff) / Math.PI;
+  // 速度（轉彎時減速）
+  const turnFactor = 1 - Math.abs(angleDiff) / Math.PI * 0.5;
   car.speed = car.aiSpeed * turnFactor;
 
-  // 加速效果
+  // 道具效果
   if (car.isBoosted) {
-    car.speed *= 1.5;
+    car.speed *= 1.4;
     car.boostTimer--;
     if (car.boostTimer <= 0) car.isBoosted = false;
   }
@@ -489,53 +560,45 @@ function updateAI(car) {
   car.x += Math.cos(car.angle) * car.speed;
   car.y += Math.sin(car.angle) * car.speed;
 
-  // 到達目標點，前往下一個
-  if (dist < 30) {
-    car.aiTarget = (car.aiTarget + 1) % TRACK_POINTS;
-  }
+  // 更新進度
+  updateTrackProgress(car);
 
-  // 撿道具（AI 偶爾會撿）
+  // AI 撿道具
   if (Math.random() < 0.01 && !car.item) {
-    for (let i = items.length - 1; i >= 0; i--) {
-      const item = items[i];
+    for (let i = trackItems.length - 1; i >= 0; i--) {
+      const item = trackItems[i];
       const d = Math.hypot(item.x - car.x, item.y - car.y);
       if (d < 30) {
         car.item = item;
-        items.splice(i, 1);
+        trackItems.splice(i, 1);
         break;
       }
     }
   }
-}
 
-// ===== 更新圈數 =====
-function updateLap(car) {
-  const { idx } = getClosestTrackPoint(car.x, car.y);
-
-  // 檢查是否通過檢查點
-  if (idx >= TRACK_POINTS * 0.75 && car.lastCheckpoint < TRACK_POINTS * 0.75) {
-    car.checkpointProgress = 1;
-  }
-
-  // 檢查是否通過起跑線
-  if (idx < TRACK_POINTS * 0.1 && car.lastCheckpoint >= TRACK_POINTS * 0.75 && car.checkpointProgress) {
-    car.lap++;
-    car.checkpointProgress = 0;
-
-    if (car.isPlayer) {
-      lapEl.textContent = car.lap;
-      spawnParticles(car.x, car.y, "#fbbf24", 10);
-
-      if (car.lap >= LAPS_TO_WIN) {
-        finishRace();
+  // AI 用道具
+  if (car.item && Math.random() < 0.02) {
+    if (car.item.id === "mushroom") {
+      car.isBoosted = true;
+      car.boostTimer = car.item.duration;
+    } else if (car.item.id === "star") {
+      car.isInvincible = true;
+      car.invincibleTimer = car.item.duration;
+    } else if (car.item.id === "banana") {
+      bananas.push({ x: car.x, y: car.y });
+    } else if (car.item.id === "bomb") {
+      const d = Math.hypot(player.x - car.x, player.y - car.y);
+      if (d < 150) {
+        player.stunTimer = 40;
+        player.speed = 0;
+        spawnParticles(player.x, player.y, "#ef4444", 10);
       }
     }
+    car.item = null;
   }
-
-  car.lastCheckpoint = idx;
 }
 
-// ===== 碰撞偵測 =====
+// ===== 碰撞 =====
 function checkCollisions() {
   // 車對車
   for (let i = 0; i < allCars.length; i++) {
@@ -547,7 +610,6 @@ function checkCollisions() {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist < 24) {
-        // 推開
         const nx = dx / dist;
         const ny = dy / dist;
         a.x += nx * 2;
@@ -555,37 +617,29 @@ function checkCollisions() {
         b.x -= nx * 2;
         b.y -= ny * 2;
 
-        // 無敵車撞人
         if (a.isInvincible && !b.isInvincible) {
           b.stunTimer = 30;
           b.speed = 0;
-          spawnParticles(b.x, b.y, "#fbbf24");
         } else if (b.isInvincible && !a.isInvincible) {
           a.stunTimer = 30;
           a.speed = 0;
-          spawnParticles(a.x, a.y, "#fbbf24");
         } else {
-          // 一般碰撞
           a.speed *= 0.5;
           b.speed *= 0.5;
-          spawnParticles((a.x + b.x) / 2, (a.y + b.y) / 2, "#fff", 4);
         }
       }
     }
   }
 
   // 玩家撿道具
-  for (let i = items.length - 1; i >= 0; i--) {
-    const item = items[i];
-    const dx = item.x - player.x;
-    const dy = item.y - player.y;
-    if (Math.sqrt(dx * dx + dy * dy) < 24) {
-      if (!player.item) {
-        player.item = item;
-        itemSlot.textContent = item.emoji;
-        items.splice(i, 1);
-        spawnParticles(item.x, item.y, "#fbbf24");
-      }
+  for (let i = trackItems.length - 1; i >= 0; i--) {
+    const item = trackItems[i];
+    const d = Math.hypot(item.x - player.x, item.y - player.y);
+    if (d < 24 && !player.item) {
+      player.item = item;
+      itemSlot.textContent = item.emoji;
+      trackItems.splice(i, 1);
+      spawnParticles(item.x, item.y, "#fbbf24");
     }
   }
 
@@ -594,9 +648,8 @@ function checkCollisions() {
     const banana = bananas[i];
     for (const car of allCars) {
       if (car.isInvincible) continue;
-      const dx = banana.x - car.x;
-      const dy = banana.y - car.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 20) {
+      const d = Math.hypot(banana.x - car.x, banana.y - car.y);
+      if (d < 20) {
         car.stunTimer = 40;
         car.speed *= 0.2;
         spawnParticles(banana.x, banana.y, "#fbbf24");
@@ -621,32 +674,25 @@ function useItem() {
       player.boostTimer = item.duration;
       spawnParticles(player.x, player.y, "#f97316", 8);
       break;
-
     case "star":
       player.isInvincible = true;
       player.invincibleTimer = item.duration;
       spawnParticles(player.x, player.y, "#fbbf24", 12);
       break;
-
     case "banana":
       bananas.push({
         x: player.x - Math.cos(player.angle) * 30,
         y: player.y - Math.sin(player.angle) * 30,
       });
       break;
-
     case "bomb":
-      // 往前方丟
       const bombX = player.x + Math.cos(player.angle) * 80;
       const bombY = player.y + Math.sin(player.angle) * 80;
       spawnParticles(bombX, bombY, "#ef4444", 15);
-
-      // 命中檢測
       for (const car of allCars) {
         if (car === player) continue;
-        const dx = bombX - car.x;
-        const dy = bombY - car.y;
-        if (Math.sqrt(dx * dx + dy * dy) < 50) {
+        const d = Math.hypot(bombX - car.x, bombY - car.y);
+        if (d < 50) {
           car.stunTimer = 60;
           car.speed = 0;
           spawnParticles(car.x, car.y, "#ef4444", 10);
@@ -656,24 +702,19 @@ function useItem() {
   }
 }
 
-// ===== 計算排名 =====
+// ===== 排名 =====
 function updateRanking() {
-  // 用圈數和賽道位置計算進度
   for (const car of allCars) {
-    const { idx } = getClosestTrackPoint(car.x, car.y);
-    car.rank = car.lap * TRACK_POINTS + idx;
+    car.rank = car.lap * 1000 + car.trackProgress * 1000;
   }
-
-  // 排序
   const sorted = [...allCars].sort((a, b) => b.rank - a.rank);
   for (let i = 0; i < sorted.length; i++) {
     sorted[i].position = i + 1;
   }
-
   positionEl.textContent = player.position;
 }
 
-// ===== 計時 =====
+// ===== 時間 =====
 function formatTime(frames) {
   const seconds = Math.floor(frames / 60);
   const mins = Math.floor(seconds / 60);
@@ -686,9 +727,6 @@ function finishRace() {
   isFinished = true;
   isPlaying = false;
 
-  const time = gameTime;
-  if (time < bestTime) bestTime = time;
-
   const pos = player.position;
   let msg = "";
   if (pos === 1) msg = "🏆 冠軍！太棒了！";
@@ -696,7 +734,7 @@ function finishRace() {
   else if (pos === 3) msg = "🥉 第三名！不錯喔！";
   else msg = `第 ${pos} 名，再試試！`;
 
-  statusEl.textContent = `${msg} 時間：${formatTime(time)}`;
+  statusEl.textContent = `${msg} 時間：${formatTime(gameTime)}`;
   startBtn.disabled = false;
   startBtn.textContent = "▶ 再來一場";
 }
@@ -707,89 +745,46 @@ function gameLoop() {
 
   gameTime++;
 
-  // 更新玩家
   updatePlayer();
-
-  // 更新 AI
-  for (const car of aiCars) {
-    updateAI(car);
-  }
-
-  // 更新圈數
-  for (const car of allCars) {
-    updateLap(car);
-  }
-
-  // 碰撞
+  for (const car of aiCars) updateAI(car);
   checkCollisions();
-
-  // 排名
   updateRanking();
 
-  // 計時
   timeEl.textContent = formatTime(gameTime);
 
   // 道具生成
   itemCountdown++;
-  if (itemCountdown >= ITEM_SPAWN_INTERVAL && items.length < 5) {
+  if (itemCountdown >= ITEM_SPAWN_INTERVAL && trackItems.length < 5) {
     spawnItem();
     itemCountdown = 0;
   }
 
-  // 更新粒子
   updateParticles();
 
-  // AI 使用道具
-  for (const car of aiCars) {
-    if (car.item && Math.random() < 0.02) {
-      // AI 簡單使用道具
-      if (car.item.id === "mushroom") {
-        car.isBoosted = true;
-        car.boostTimer = car.item.duration;
-      } else if (car.item.id === "star") {
-        car.isInvincible = true;
-        car.invincibleTimer = car.item.duration;
-      } else if (car.item.id === "banana") {
-        bananas.push({ x: car.x, y: car.y });
-      } else if (car.item.id === "bomb") {
-        // 往玩家方向丟
-        const dx = player.x - car.x;
-        const dy = player.y - car.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
-          player.stunTimer = 40;
-          player.speed = 0;
-          spawnParticles(player.x, player.y, "#ef4444", 10);
-        }
-      }
-      car.item = null;
-    }
-  }
-
-  // 繪製
   draw();
-
   requestAnimationFrame(gameLoop);
 }
 
 // ===== 繪製 =====
 function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawTrack();
+  drawDirectionHint();
   drawItems();
   drawParticles();
 
-  // 畫所有車（玩家最後畫，在最上層）
+  // AI 先畫，玩家最後畫（在最上層）
   for (const car of aiCars) drawCar(car);
   drawCar(player);
 }
 
-// ===== 開始遊戲 =====
+// ===== 開始 =====
 function startGame() {
   isPlaying = true;
   isFinished = false;
   gameTime = 0;
   itemCountdown = 0;
-  items = [];
+  trackItems = [];
   bananas = [];
   particles = [];
 
@@ -800,7 +795,7 @@ function startGame() {
   timeEl.textContent = "0:00";
   positionEl.textContent = "4";
   itemSlot.textContent = "?";
-  statusEl.textContent = "🏁 出發！";
+  statusEl.textContent = "🏁 出發！轉彎控制方向！";
   startBtn.disabled = true;
   startBtn.textContent = "🏁 比賽中…";
 
@@ -808,55 +803,47 @@ function startGame() {
   requestAnimationFrame(gameLoop);
 }
 
-// ===== 鍵盤控制 =====
-const keys = {
-  left: false,
-  right: false,
-  down: false,
-};
+// ===== 鍵盤 =====
+const keys = { left: false, right: false, brake: false };
 
 document.addEventListener("keydown", (e) => {
   switch (e.key) {
-    case "ArrowLeft": keys.left = true; break;
-    case "ArrowRight": keys.right = true; break;
-    case "ArrowDown": keys.down = true; break;
+    case "ArrowLeft": case "a": case "A": keys.left = true; break;
+    case "ArrowRight": case "d": case "D": keys.right = true; break;
+    case "ArrowDown": case "s": case "S": keys.brake = true; break;
     case " ": e.preventDefault(); useItem(); break;
   }
 });
 
 document.addEventListener("keyup", (e) => {
   switch (e.key) {
-    case "ArrowLeft": keys.left = false; break;
-    case "ArrowRight": keys.right = false; break;
-    case "ArrowDown": keys.down = false; break;
+    case "ArrowLeft": case "a": case "A": keys.left = false; break;
+    case "ArrowRight": case "d": case "D": keys.right = false; break;
+    case "ArrowDown": case "s": case "S": keys.brake = false; break;
   }
 });
 
-// ===== 觸控控制 =====
-function setupTouchButton(id, stateKey) {
+// ===== 觸控按鈕 =====
+function setupTouch(id, stateKey) {
   const el = document.getElementById(id);
-  el.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    touchState[stateKey] = true;
-  }, { passive: false });
-  el.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    touchState[stateKey] = false;
-  }, { passive: false });
-  el.addEventListener("mousedown", () => touchState[stateKey] = true);
-  el.addEventListener("mouseup", () => touchState[stateKey] = false);
-  el.addEventListener("mouseleave", () => touchState[stateKey] = false);
+  if (!el) return;
+  el.addEventListener("touchstart", (e) => { e.preventDefault(); touchState[stateKey] = true; }, { passive: false });
+  el.addEventListener("touchend", (e) => { e.preventDefault(); touchState[stateKey] = false; }, { passive: false });
+  el.addEventListener("touchcancel", () => { touchState[stateKey] = false; });
+  el.addEventListener("mousedown", () => { touchState[stateKey] = true; });
+  el.addEventListener("mouseup", () => { touchState[stateKey] = false; });
+  el.addEventListener("mouseleave", () => { touchState[stateKey] = false; });
 }
 
-setupTouchButton("turnLeft", "left");
-setupTouchButton("turnRight", "right");
-setupTouchButton("brake", "brake");
+setupTouch("turnLeft", "left");
+setupTouch("turnRight", "right");
+setupTouch("brake", "brake");
 
-document.getElementById("useItem").addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  useItem();
-}, { passive: false });
-document.getElementById("useItem").addEventListener("click", useItem);
+const useItemBtn = document.getElementById("useItem");
+if (useItemBtn) {
+  useItemBtn.addEventListener("touchstart", (e) => { e.preventDefault(); useItem(); }, { passive: false });
+  useItemBtn.addEventListener("click", useItem);
+}
 
 // ===== 按鈕 =====
 startBtn.addEventListener("click", startGame);
@@ -867,11 +854,11 @@ window.addEventListener("resize", () => {
   resizeCanvas();
   if (!isPlaying) {
     generateTrack();
+    initCars();
     draw();
   }
 });
 
-// 初始畫面
 generateTrack();
 initCars();
 draw();
