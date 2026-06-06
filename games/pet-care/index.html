@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>寵物養成</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game">
+      <header>
+        <h1>🐱 我的小寵物</h1>
+        <p class="status" id="status">好好照顧牠吧！</p>
+      </header>
+
+      <div class="pet-area">
+        <div class="pet-face" id="petFace">😺</div>
+        <p class="pet-name" id="petName">小咪</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label">🍗 飢餓</span>
+          <div class="stat-bar"><div class="stat-fill stat-fill--hunger" id="hungerBar"></div></div>
+          <span class="stat-value" id="hungerVal">100</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">🛁 清潔</span>
+          <div class="stat-bar"><div class="stat-fill stat-fill--clean" id="cleanBar"></div></div>
+          <span class="stat-value" id="cleanVal">100</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">💛 快樂</span>
+          <div class="stat-bar"><div class="stat-fill stat-fill--happy" id="happyBar"></div></div>
+          <span class="stat-value" id="happyVal">100</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="action-btn" id="feedBtn">🍗 餵食</button>
+        <button class="action-btn" id="washBtn">🛁 洗澡</button>
+        <button class="action-btn" id="playBtn">🎾 玩耍</button>
+      </div>
+
+      <button class="back-btn" onclick="location.href='../../'">⬅ 回到遊戲樂園</button>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
