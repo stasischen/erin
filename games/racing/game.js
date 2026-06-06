@@ -191,7 +191,7 @@ function drawCar(car) {
   // 車身
   ctx.fillStyle = car.color;
   ctx.beginPath();
-  ctx.roundRect(-10, -16, 20, 32, 6);
+  ctx.rect(-10, -16, 20, 32);
   ctx.fill();
   ctx.strokeStyle = "rgba(0,0,0,0.3)";
   ctx.lineWidth = 2;
