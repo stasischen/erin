@@ -16,14 +16,17 @@ const NOTES = {
   "C2": 523,  // 高音 Do
 };
 
-// ✏️ 她可以改的地方：每個音持續多久（毫秒）
-const NOTE_DURATION = 300;
+// ✏️ 她可以改的地方：音色類型 ("sine", "triangle", "square", "sawtooth")
+const WAVE_TYPE = "sine";
 
 // ===== 遊戲狀態 =====
 let isRecording = false;
-let recordedNotes = [];   // 儲存錄下的音符
+let recordedNotes = [];   // { note, start, end }
 let recordStartTime = 0;
 let isPlaying = false;
+
+// 正在響的音符 → { osc, gain }
+const activeOscillators = {};
 
 // ===== DOM =====
 const statusEl = document.getElementById("status");
@@ -31,53 +34,103 @@ const recordBtn = document.getElementById("recordBtn");
 const playBtn = document.getElementById("playBtn");
 const clearBtn = document.getElementById("clearBtn");
 const piano = document.getElementById("piano");
+const indicator = document.getElementById("indicator");
 const keys = piano.querySelectorAll(".key");
 
 // ===== 音效（Web Audio API）=====
 let audioCtx = null;
-function playNote(note) {
+function ensureAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function startNote(note) {
+  ensureAudioCtx();
+  if (activeOscillators[note]) return; // 已在響
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.type = "sine";
+  osc.type = WAVE_TYPE;
   osc.frequency.value = NOTES[note];
   gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + NOTE_DURATION / 1000);
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
-  osc.stop(audioCtx.currentTime + NOTE_DURATION / 1000);
+  activeOscillators[note] = { osc, gain };
+}
+
+function stopNote(note) {
+  const entry = activeOscillators[note];
+  if (!entry) return;
+
+  const { osc, gain } = entry;
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+  osc.stop(audioCtx.currentTime + 0.06);
+  delete activeOscillators[note];
 }
 
 // ===== 視覺回饋 =====
-function flashKey(keyEl) {
-  keyEl.classList.add("active");
-  setTimeout(() => keyEl.classList.remove("active"), NOTE_DURATION);
+const NOTE_NAMES = { "C": "Do", "C#": "Do#", "D": "Re", "D#": "Re#", "E": "Mi", "F": "Fa", "F#": "Fa#", "G": "Sol", "G#": "Sol#", "A": "La", "A#": "La#", "B": "Si", "C2": "Do" };
+
+function showIndicator(note) {
+  indicator.textContent = NOTE_NAMES[note] || note;
+  indicator.classList.add("visible");
 }
 
-// ===== 彈奏音符 =====
-function handleKeyPress(note, keyEl) {
-  playNote(note);
-  flashKey(keyEl);
+function hideIndicator() {
+  indicator.classList.remove("visible");
+}
 
-  // 錄音中就記錄下來
+function highlightKey(note) {
+  const keyEl = piano.querySelector(`[data-note="${note}"]`);
+  if (keyEl) keyEl.classList.add("active");
+}
+
+function unhighlightKey(note) {
+  const keyEl = piano.querySelector(`[data-note="${note}"]`);
+  if (keyEl) keyEl.classList.remove("active");
+}
+
+// ===== 彈奏音符（按下）=====
+function handleKeyDown(note) {
+  startNote(note);
+  highlightKey(note);
+  showIndicator(note);
+
+  // 錄音中就記錄 note-on
   if (isRecording) {
     const elapsed = Date.now() - recordStartTime;
-    recordedNotes.push({ note, time: elapsed });
+    recordedNotes.push({ note, start: elapsed, end: null });
+  }
+}
+
+// ===== 放開音符 =====
+function handleKeyUp(note) {
+  stopNote(note);
+  unhighlightKey(note);
+  hideIndicator();
+
+  // 錄音中記錄 note-off
+  if (isRecording) {
+    const elapsed = Date.now() - recordStartTime;
+    // 找到最近一個同音的 note-on 且還沒結束的
+    for (let i = recordedNotes.length - 1; i >= 0; i--) {
+      if (recordedNotes[i].note === note && recordedNotes[i].end === null) {
+        recordedNotes[i].end = elapsed;
+        break;
+      }
+    }
   }
 }
 
 // ===== 錄音 =====
 function toggleRecord() {
   if (isRecording) {
-    // 停止錄音
     isRecording = false;
     recordBtn.classList.remove("recording");
     recordBtn.textContent = "⏺ 錄音";
     statusEl.textContent = `錄音完成！錄了 ${recordedNotes.length} 個音`;
     playBtn.disabled = recordedNotes.length === 0;
   } else {
-    // 開始錄音
     recordedNotes = [];
     recordStartTime = Date.now();
     isRecording = true;
@@ -95,19 +148,34 @@ async function playRecording() {
   playBtn.disabled = true;
   statusEl.textContent = "播放中…";
 
-  for (let i = 0; i < recordedNotes.length; i++) {
-    const { note, time } = recordedNotes[i];
-    const nextTime = i < recordedNotes.length - 1 ? recordedNotes[i + 1].time : time + NOTE_DURATION;
-    const delay = i === 0 ? 0 : nextTime - time;
+  // 產生所有事件（note-on 和 note-off）
+  const events = [];
+  for (const n of recordedNotes) {
+    events.push({ type: "on", note: n.note, time: n.start });
+    if (n.end !== null) {
+      events.push({ type: "off", note: n.note, time: n.end });
+    }
+  }
+  events.sort((a, b) => a.time - b.time);
 
-    await sleep(delay);
+  let prevTime = 0;
+  for (const ev of events) {
+    const delay = ev.time - prevTime;
+    if (delay > 0) await sleep(delay);
+    prevTime = ev.time;
 
-    // 找到對應的按鍵並亮起
-    const keyEl = piano.querySelector(`[data-note="${note}"]`);
-    handleKeyPress(note, keyEl);
+    if (ev.type === "on") {
+      startNote(ev.note);
+      highlightKey(ev.note);
+      showIndicator(ev.note);
+    } else {
+      stopNote(ev.note);
+      unhighlightKey(ev.note);
+      hideIndicator();
+    }
   }
 
-  await sleep(NOTE_DURATION);
+  await sleep(200);
   isPlaying = false;
   playBtn.disabled = false;
   statusEl.textContent = "播放完成！再彈一次吧！";
@@ -133,9 +201,30 @@ recordBtn.addEventListener("click", toggleRecord);
 playBtn.addEventListener("click", playRecording);
 clearBtn.addEventListener("click", clearRecording);
 
+// 滑鼠：按下 + 放開
 keys.forEach(key => {
   const note = key.dataset.note;
-  key.addEventListener("click", () => handleKeyPress(note, key));
+
+  key.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    handleKeyDown(note);
+  });
+  key.addEventListener("mouseup", () => handleKeyUp(note));
+  key.addEventListener("mouseleave", () => handleKeyUp(note));
+
+  // 觸控
+  key.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    handleKeyDown(note);
+  });
+  key.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    handleKeyUp(note);
+  });
+  key.addEventListener("touchcancel", (e) => {
+    e.preventDefault();
+    handleKeyUp(note);
+  });
 });
 
 // ===== 鍵盤快捷鍵 =====
@@ -151,11 +240,24 @@ const KEY_MAP = {
   "k": "C2",
 };
 
+const heldKeys = new Set();
+
 document.addEventListener("keydown", (e) => {
   if (isPlaying) return;
-  const note = KEY_MAP[e.key.toLowerCase()];
+  const key = e.key.toLowerCase();
+  if (heldKeys.has(key)) return; // 防止重複觸發
+  const note = KEY_MAP[key];
   if (note) {
-    const keyEl = piano.querySelector(`[data-note="${note}"]`);
-    if (keyEl) handleKeyPress(note, keyEl);
+    heldKeys.add(key);
+    handleKeyDown(note);
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  const key = e.key.toLowerCase();
+  const note = KEY_MAP[key];
+  if (note) {
+    heldKeys.delete(key);
+    handleKeyUp(note);
   }
 });

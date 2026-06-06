@@ -273,22 +273,26 @@ resetBtn.addEventListener("click", () => {
 
 // 觸控支援
 function setupTouch() {
-  let touchLeft = false;
-  let touchRight = false;
+  const touchLeft = document.getElementById("touchLeft");
+  const touchRight = document.getElementById("touchRight");
+  const touchJump = document.getElementById("touchJump");
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") moveLeft = true;
-    if (e.key === "ArrowRight") moveRight = true;
-    if (e.key === " " || e.key === "ArrowUp") {
-      e.preventDefault();
-      jumping = true;
-    }
-  });
-  document.addEventListener("keyup", (e) => {
-    if (e.key === "ArrowLeft") moveLeft = false;
-    if (e.key === "ArrowRight") moveRight = false;
-  });
+  if (!touchLeft) return;
+
+  function bind(el, onDown, onUp) {
+    el.addEventListener("touchstart", (e) => { e.preventDefault(); onDown(); el.classList.add("pressed"); });
+    el.addEventListener("touchend", (e) => { e.preventDefault(); onUp(); el.classList.remove("pressed"); });
+    el.addEventListener("touchcancel", (e) => { e.preventDefault(); onUp(); el.classList.remove("pressed"); });
+    el.addEventListener("mousedown", (e) => { e.preventDefault(); onDown(); el.classList.add("pressed"); });
+    el.addEventListener("mouseup", (e) => { e.preventDefault(); onUp(); el.classList.remove("pressed"); });
+    el.addEventListener("mouseleave", (e) => { onUp(); el.classList.remove("pressed"); });
+  }
+
+  bind(touchLeft, () => { moveLeft = true; }, () => { moveLeft = false; });
+  bind(touchRight, () => { moveRight = true; }, () => { moveRight = false; });
+  bind(touchJump, () => { jumping = true; }, () => { jumping = false; });
 }
 
 // 開始
 init();
+setupTouch();

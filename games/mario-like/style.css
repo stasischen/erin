@@ -104,6 +104,42 @@ button:active {
   box-shadow: 0 2px 0 #8d5f37;
 }
 
+.touch-controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.touch-btn {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #304266;
+  background: linear-gradient(180deg, #ffe6b3, #ffc978);
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #4b2f13;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #8d5f37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.touch-btn:active,
+.touch-btn.pressed {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #8d5f37;
+}
+
+.touch-left { flex: 0 0 80px; }
+.touch-right { flex: 0 0 80px; }
+.touch-jump { flex: 1; max-width: 160px; }
+
 @media (max-width: 640px) {
   .game-shell {
     padding: 8px;
@@ -123,5 +159,16 @@ button:active {
     flex: 1;
     font-size: 20px;
     padding: 10px 12px;
+  }
+
+  .touch-btn {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .touch-left,
+  .touch-right {
+    flex: 0 0 72px;
   }
 }
