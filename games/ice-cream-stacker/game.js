@@ -28,6 +28,17 @@ let audioCtx = null;
 let bgmIntervalId = 0;
 let bgmStep = 0;
 
+const assetSounds = {
+  click: new Audio("assets/audio/click1.ogg"),
+  catch: new Audio("assets/audio/switch7.ogg"),
+  miss: new Audio("assets/audio/switch33.ogg"),
+};
+
+for (const sound of Object.values(assetSounds)) {
+  sound.volume = 0.24;
+  sound.preload = "auto";
+}
+
 const flavors = ["strawberry", "vanilla", "mint", "choco"];
 const flavorName = {
   strawberry: "草莓",
@@ -106,7 +117,7 @@ function resetRound() {
   stackCountEl.textContent = "0";
   timeEl.textContent = "40";
   resultText.textContent = "快接冰淇淋！";
-  starText.textContent = "星星：☆☆☆";
+  renderStars(0);
   stageLevelEl.textContent = String(state.stageLevel);
   keyCountEl.textContent = state.stageLevel === 3 ? `${state.keysCollected}/3` : "0/3";
   hitFlash.className = "hit-flash";
@@ -183,15 +194,25 @@ function handleCatch(drop) {
     stackTower.appendChild(scoop);
     updateConeLevel();
     showHitText("+1", true);
+    playAssetSound("catch");
   } else {
     state.score -= 5 + Math.floor(Math.random() * 3);
     showHitText("Oops!", false);
+    playAssetSound("miss");
     vibrate(80);
     arena.classList.add("shake");
     setTimeout(() => arena.classList.remove("shake"), 180);
   }
   state.score = Math.max(0, Math.min(100, state.score));
   scoreEl.textContent = String(state.score);
+}
+
+function playAssetSound(name) {
+  const baseSound = assetSounds[name];
+  if (!baseSound) return;
+  const sound = baseSound.cloneNode();
+  sound.volume = baseSound.volume;
+  sound.play().catch(() => {});
 }
 
 function showHitText(text, isGood) {
@@ -401,9 +422,20 @@ function getStars() {
   return 0;
 }
 
+function renderStars(stars) {
+  const safeStars = Math.max(0, Math.min(3, stars));
+  starText.innerHTML = "";
+  for (let i = 0; i < 3; i += 1) {
+    const icon = document.createElement("span");
+    icon.className = `star-icon${i < safeStars ? " filled" : ""}`;
+    icon.setAttribute("aria-hidden", "true");
+    starText.appendChild(icon);
+  }
+  starText.setAttribute("aria-label", `星星：${safeStars} 顆`);
+}
+
 function showResult(stars) {
-  const starsStr = "★".repeat(stars) + "☆".repeat(3 - stars);
-  starText.textContent = `星星：${starsStr}`;
+  renderStars(stars);
 
   if (stars === 3) {
     resultText.textContent = `太棒了！你疊了 ${state.stackCount} 顆，3 星過關！`;
@@ -480,6 +512,7 @@ function stopGame() {
 
 function startGame() {
   if (state.running) return;
+  playAssetSound("click");
   startBgm();
   resetRound();
   state.running = true;
@@ -491,6 +524,7 @@ function startGame() {
 startBtn.addEventListener("click", startGame);
 retryBtn.addEventListener("click", startGame);
 musicBtn.addEventListener("click", () => {
+  playAssetSound("click");
   state.bgmOn = !state.bgmOn;
   if (state.bgmOn) {
     startBgm();
@@ -594,5 +628,6 @@ window.addEventListener("resize", () => {
 });
 
 pickNewTarget();
+renderStars(0);
 placeConeAtCenter();
 updateMusicBtn();
