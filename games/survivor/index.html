@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#dff4ff" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261022j" />
+  <link rel="stylesheet" href="style.css?v=20261022k" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,17 +32,31 @@
           <p>點選卡片，或按鍵盤 1、2、3</p>
           <div id="upgradeCards" class="upgrade-cards"></div>
         </section>
+        <section id="settingsPanel" class="settings-panel" hidden aria-label="遊戲設定">
+          <h2>⚙️ 遊戲設定</h2>
+          <p>調整後會自動記住這台裝置的設定。</p>
+          <div id="settingsControls" class="settings-controls"></div>
+          <div class="settings-toggles">
+            <button id="soundToggle" class="settings-action" type="button"></button>
+            <button id="vibrationToggle" class="settings-action" type="button"></button>
+          </div>
+          <div class="settings-actions">
+            <button id="resetSettingsButton" class="settings-action" type="button">恢復預設</button>
+            <button id="closeSettingsButton" class="settings-action settings-done" type="button">完成</button>
+          </div>
+        </section>
         <div class="message-card">
           <div id="messageIcon" class="message-icon">🧅</div>
           <h2 id="messageTitle">小怪獸</h2>
           <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
+          <button id="settingsButton" class="settings-action menu-settings" type="button">⚙️ 遊戲設定</button>
           <button id="startButton" class="start-button" type="button">開始遊戲</button>
         </div>
       </div>
     </section>
     <footer class="help">移動：方向鍵／WASD／觸控搖桿　自動發射水球、收集寶石升級</footer>
   </main>
-  <script src="game.js?v=20261022j"></script>
+  <script src="game.js?v=20261022k"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>
