@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-stage-0-setup",
+  "title": "割草遊戲階段 0：開工準備",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-stage-0-setup",
+  "pr": null,
+  "brief": "docs/survivor-game-plan.md",
+  "next": "請 Grok 審查階段 0 文件、任務卡與 Erin 設計單紀錄",
+  "reviewers": ["grok"],
+  "waitingFor": null,
+  "risk": "medium",
+  "updated": "2026-10-22T05:37:28Z",
+  "updatedBy": "codex"
+}
