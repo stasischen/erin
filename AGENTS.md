@@ -4,7 +4,7 @@
 
 ## 角色
 
-- `codex`：讀卡與收件匣、實作、開分支與提交、更新自己的卡、啟動試玩伺服器。不得審查自己的程式、push 或 merge 到 `main`。
+- `codex`：讀卡與收件匣、實作、開分支與提交、更新自己的卡、啟動試玩伺服器。不得審查自己的程式；可 push 自己的 `codex/<卡片id>` 分支並開 PR，但不得 push 或 merge 到 `main`。
 - `grok`：家長與 agent 之間的溝通窗口：轉述家長和 Erin 的原話、寫入 `coord/inbox/`、整理給家長的回報；審查 Codex 分支並寫自己的審查紀錄。不修改 Codex 的程式或卡片、不 merge。
 - `claude`：只處理 Codex 與 Grok 無法解決或意見衝突的問題，以及架構決定。
 - `erin`：遊戲總監，決定設計並試玩；可自己改程式、素材與設定值。她不自行開 AI 對話，也不當審查者。
@@ -16,11 +16,11 @@
 
 - 任務卡放 `coord/tasks/<id>.json`；審查放 `coord/reviews/<id>/<reviewer>.md`；原話收件匣放 `coord/inbox/`，處理完移到 `coord/inbox/done/`。
 - 知識紀錄放 `coord/knowledge/DECISIONS.md`、`PITFALLS.md`、`SETUP.md`。
-- 暫不建立協調器專用的 `lanes/`、`requests/`、`results/`、`approvals/`，不安裝排程或自動協調器。
+- 暫不建立協調器專用的 `lanes/`、`requests/`、`results/`、`approvals/`。Mac Studio 上有本機監看服務 `erin-watch`（launchd `com.stasischen.erin-watch`）：`coord/inbox/` 或 `coord/tasks/` 有變動時自動叫醒 Codex 一輪；結束後在 `codex/*` 分支上提交 Codex 改動的檔案（逐一指名），push 該分支並在沒有 PR 時開 PR 到 `main`，Grok 透過 GitHub PR 事件收到通知。
 - 卡片依計畫 §3.4 欄位，`dependsOn` 可省略。`id` 用小寫英數與連字號；未完成卡的 `next` 必填。UTC 時間用 ISO 8601。`pr` 是數字或 `null`。等待另一張卡用 `dependsOn`；等待某人回答才用 `blocked` 並填 `waitingFor`。
 - 狀態：`todo` 排隊中、`doing` 製作中、`peer_review` 等 Grok、`review` 等 Erin 試玩與家長確認、`blocked` 等待指定對象、`done` 已 merge 並 push。
 - 只更新自己負責的卡。交接時更新 `state`、`next`、`updated`、`updatedBy`。
-- `risk` 由家長決定；只改遊戲、首頁卡片與文件預設 `low`。改本檔或協作規則屬 B 級，需家長決定。無論風險，merge 與 push 都必須有家長明確同意。
+- `risk` 由家長決定；只改遊戲、首頁卡片與文件預設 `low`。改本檔或協作規則屬 B 級，需家長決定。無論風險，merge 與 push 到 `main` 都必須有家長明確同意；agent 與 erin-watch 只可 push 自己的 `codex/<卡片id>` 分支。
 
 ## 收件匣與審查
 
@@ -33,7 +33,7 @@
 1. 從最新 `main` 建立 `codex/<卡片id>` 分支，將卡設為 `doing` 並填 `branch`。
 2. 完成後提交指定檔案，卡設為 `peer_review`，請 Grok 審查 `git diff main...<branch>`。
 3. Grok 審查通過後更新卡為 `review`，讓 Erin 試玩；有修改回饋則回到 `doing`。
-4. 家長明確核准後才可記錄 `approve`，並由家長 merge、push。不得 force-push 或做破壞性刪除。
+4. 家長明確核准後才可記錄 `approve`，並由家長 merge、push。任何人都不得 force-push 或做破壞性刪除。
 
 commit 只加入指名檔案，不使用 `git add .` 或 `git commit -a`。卡片提交訊息用 `task: <id> <state>`；審查用 `review: <id> grok <approve|changes>`；Erin 的提交用 `erin:` 開頭。
 
@@ -41,7 +41,7 @@ commit 只加入指名檔案，不使用 `git add .` 或 `git commit -a`。卡�
 
 ## 安全與隱私
 
-AI 工具由家長操作；遊戲專用 Codex 工作階段限於工作資料夾並採 on-request 權限；Grok 本機工具每次執行前詢問。Agent 不 push；只有家長核准才能上線。家長可另用不登入 GitHub 的標準 macOS 帳號隔離遊戲工作。詳細設定依 `docs/survivor-game-plan.md` §4。
+AI 工具由家長操作；遊戲專用 Codex 工作階段限於工作資料夾並採 on-request 權限；Grok 本機工具每次執行前詢問。Agent 與 erin-watch 只可 push 自己的 `codex/*` 分支並開 PR；push 或 merge 到 `main`（上線）只由家長在明確核准後進行。家長可另用不登入 GitHub 的標準 macOS 帳號隔離遊戲工作。詳細設定依 `docs/survivor-game-plan.md` §4。
 
 ## 叫醒方式
 
