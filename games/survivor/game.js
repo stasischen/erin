@@ -17,6 +17,11 @@ const UPGRADE_TUNING = {
   enemyRadius: 17, // 甲本有多大；改大會變大隻
   enemyDamage: 12, // 甲本撞一下扣多少血；改大會更危險
   enemyHealth: 100, // 打倒甲本要打掉多少血；改大要多打幾下
+  secondEnemySpeed: 88, // 乙本每秒走多遠；比甲本快
+  secondEnemyHealth: 60, // 乙本有多少血；比甲本少
+  waveSeconds: 120, // 幾秒後老師出場；120 秒就是 2 分鐘
+  teacherHealth: 1400, // 老師血條有多長；改大要打更久
+  teacherShotInterval: 1.35, // 老師隔幾秒發射一次文字
   shotInterval: 0.72, // 平常隔幾秒射一顆水球；改小會射更快
   projectileDamage: 35, // 水球打中扣多少甲本的血；改大打得更痛
   projectileSpeed: 390, // 水球飛多快；改大會飛更快
@@ -30,9 +35,10 @@ const PLAYER_SPEED = UPGRADE_TUNING.playerSpeed; // 請改上面的 playerSpeed
 const PLAYER_HEALTH = UPGRADE_TUNING.playerHealth; // 請改上面的 playerHealth
 const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 請改上面的 enemyLimit
 const ENEMY_TYPES = [
-  { id: "jaben", name: "甲本", color: "#d58b55", speed: UPGRADE_TUNING.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.enemyHealth }
+  { id: "jaben", name: "甲本", color: "#d58b55", speed: UPGRADE_TUNING.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.enemyHealth },
+  { id: "otsubon", name: "乙本", color: "#a879d8", speed: UPGRADE_TUNING.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.secondEnemyHealth }
 ];
-const SPRITES = { player: null, jaben: null }; // null 會用程式畫色塊
+const SPRITES = { player: null, jaben: null, otsubon: null }; // null 會用程式畫色塊
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
 const SHOT_INTERVAL = UPGRADE_TUNING.shotInterval; // 請改上面的 shotInterval
 const PROJECTILE_DAMAGE = UPGRADE_TUNING.projectileDamage; // 請改上面的 projectileDamage
@@ -82,12 +88,14 @@ const pauseButton = document.getElementById("pauseButton");
 const healthFill = document.getElementById("healthFill");
 const statusEl = document.getElementById("status");
 const experienceFill = document.getElementById("experienceFill");
+const bossHud = document.getElementById("bossHud");
+const bossHealthFill = document.getElementById("bossHealthFill");
 const levelLabel = document.getElementById("levelLabel");
 const messageCard = document.querySelector(".message-card");
 const upgradePanel = document.getElementById("upgradePanel");
 const upgradeCards = document.getElementById("upgradeCards");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
@@ -115,6 +123,8 @@ function resetGame() {
   for (const item of state.effects) state.effectPool.push(item);
   state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 };
   state.enemies = [];
+  state.enemyShots = [];
+  state.boss = null; state.bossShotTimer = 0; state.bossIntro = 0;
   state.projectiles = [];
   state.gems = [];
   state.effects = [];
@@ -144,7 +154,8 @@ function showOverlay(mode) {
   state.mode = mode;
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true;
   if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
-  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = "甲本把血條撞光了，按下按鈕重新開始。"; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
+  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = "水星人的血條用完了，按下按鈕重新開始。"; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
+  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = "老師的血條清空，這一局勝利！"; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "Ⅱ"; }
   else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用方向鍵、WASD 或手指搖桿移動，躲開甲本！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
@@ -155,17 +166,24 @@ function updateHud() {
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
   experienceFill.style.width = `${state.xp / XP_TO_LEVEL * 100}%`;
   levelLabel.textContent = `Lv.${state.level}`;
+  bossHud.hidden = !state.boss;
+  if (state.boss) bossHealthFill.style.width = `${Math.max(0, state.boss.hp / state.boss.maxHp) * 100}%`;
 }
 
 function spawnEnemy() {
   if (state.enemies.length >= ENEMY_LIMIT) return;
-  const type = ENEMY_TYPES[0];
+  const type = state.elapsed >= 35 && Math.random() < 0.42 ? ENEMY_TYPES[1] : ENEMY_TYPES[0];
   const side = Math.floor(Math.random() * 4);
   const pad = type.radius + 3;
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
   let y = side === 2 ? -pad : side === 3 ? state.height + pad : Math.random() * state.height;
   if (Math.hypot(x - state.player.x, y - state.player.y) < Math.min(state.width, state.height) * 0.32) { x = side < 2 ? x : (x + state.width / 2) % state.width; y = side >= 2 ? y : (y + state.height / 2) % state.height; }
-  state.enemies.push({ x, y, r: type.radius, speed: type.speed, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
+  state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
+}
+
+function summonTeacher() {
+  state.boss = { x: state.width / 2, y: -64, r: 32, speed: 24, hp: UPGRADE_TUNING.teacherHealth, maxHp: UPGRADE_TUNING.teacherHealth, flash: 0, wobble: 0 };
+  state.bossShotTimer = 1; state.bossIntro = 2.2;
 }
 
 function closestEnemy() {
@@ -174,6 +192,10 @@ function closestEnemy() {
     if (!enemy.alive) continue;
     const distance = (enemy.x - state.player.x) ** 2 + (enemy.y - state.player.y) ** 2;
     if (distance < best) { best = distance; target = enemy; }
+  }
+  if (state.boss) {
+    const distance = (state.boss.x - state.player.x) ** 2 + (state.boss.y - state.player.y) ** 2;
+    if (distance < best) target = state.boss;
   }
   return target;
 }
@@ -275,8 +297,16 @@ function tick(dt) {
   state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
 
   state.spawnTimer -= dt;
-  const spawnEvery = Math.max(0.72, 2.1 - state.elapsed * 0.015);
-  while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
+  if (!state.boss && state.elapsed >= UPGRADE_TUNING.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.boss) {
+    const spawnEvery = Math.max(0.72, 2.1 - state.elapsed * 0.015);
+    while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
+  }
+  if (state.bossIntro > 0) {
+    state.bossIntro -= dt;
+    for (const enemy of state.enemies) { enemy.x += (state.width / 2 - enemy.x) * Math.min(1, dt * 3); enemy.y += (state.height / 2 - enemy.y) * Math.min(1, dt * 3); }
+    if (state.bossIntro <= 0) { state.enemies = []; burst(state.width / 2, state.height / 2, "#fff36b", 32); state.boss.y = Math.min(100, state.height * 0.25); updateHud(); }
+  }
   state.shotTimer -= dt;
   if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += effectiveShotInterval(); }
   for (const enemy of state.enemies) {
@@ -304,11 +334,34 @@ function tick(dt) {
         if (shot.pierce > 0) shot.pierce--; else { shot.alive = false; break; }
       }
     }
+    if (state.boss && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
+      state.boss.hp -= shot.damage; state.boss.flash = HIT_FLASH_SECONDS; updateHud();
+      if (shot.pierce > 0) shot.pierce--; else shot.alive = false;
+      if (state.boss.hp <= 0) { state.boss = null; showOverlay("won"); return; }
+    }
   }
   for (let i = state.projectiles.length - 1; i >= 0; i--) {
     if (!state.projectiles[i].alive) state.projectilePool.push(state.projectiles.splice(i, 1)[0]);
   }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
+  if (state.boss && state.bossIntro <= 0) {
+    state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
+    const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
+    state.boss.x += bx / distance * state.boss.speed * dt; state.boss.y += by / distance * state.boss.speed * dt;
+    state.bossShotTimer -= dt;
+    if (state.bossShotTimer <= 0 && state.enemyShots.length < 18) {
+      const angle = Math.atan2(by, bx); state.enemyShots.push({ x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(angle) * 135, vy: Math.sin(angle) * 135, text: ["作業！", "認真！", "加油！"][Math.floor(Math.random() * 3)], r: 17 });
+      state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval;
+    }
+  }
+  for (let i = state.enemyShots.length - 1; i >= 0; i--) {
+    const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
+    if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
+      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage); state.player.invincible = INVINCIBLE_SECONDS; updateHud(); }
+      state.enemyShots.splice(i, 1);
+    } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShots.splice(i, 1);
+  }
+  for (const shot of state.enemyShots) { ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y); }
   for (const gem of state.gems) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
@@ -320,6 +373,15 @@ function tick(dt) {
   if (state.mode === "levelup") return;
   for (let i = state.gems.length - 1; i >= 0; i--) {
     if (!state.gems[i].alive) state.gemPool.push(state.gems.splice(i, 1)[0]);
+  }
+  if (state.boss) {
+    const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
+    ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
+    ctx.fillStyle = b.flash ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
+    ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
+    ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
+    ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
+    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
   }
   for (const effect of state.effects) { effect.life -= dt; effect.x += effect.vx * dt; effect.y += effect.vy * dt; }
   for (let i = state.effects.length - 1; i >= 0; i--) {
@@ -340,7 +402,7 @@ function tick(dt) {
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { showOverlay("over"); return; }
-  statusEl.textContent = `躲避中　${Math.floor(state.elapsed)} 秒`;
+  statusEl.textContent = state.boss ? "老師出現！打完血條" : `躲避中　${Math.floor(state.elapsed)} 秒`;
 }
 
 function drawClassroom() {

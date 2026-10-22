@@ -3,16 +3,20 @@
   "id": "survivor-stage-4-waves",
   "title": "割草遊戲階段 4：時間、難度與 Boss",
   "owner": "codex",
-  "state": "blocked",
+  "state": "peer_review",
   "repo": "erin",
   "branch": "codex/survivor-stage-4-waves",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "等待 Erin 決定階段 4 新敵人的名字、顏色、速度與血量；Boss 名稱和外觀；以及波次結束時間。收到決定後實作波次、Boss 血條與勝利畫面",
-  "reviewers": ["grok"],
-  "waitingFor": "erin",
+  "next": "請 Grok 審查階段 4 波次、乙本、老師 Boss 與勝利流程",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-22T10:20:00Z",
+  "updated": "2026-10-22T11:10:00Z",
   "updatedBy": "codex",
-  "dependsOn": ["survivor-stage-3-levelup"]
+  "dependsOn": [
+    "survivor-stage-3-levelup"
+  ]
 }
