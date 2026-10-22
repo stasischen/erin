@@ -1,23 +1,43 @@
 // ✏️ Erin 設定區：改大會變多或變快，改小會變少或變慢。
-const PLAYER_SPEED = 190; // 主角每秒走幾步；改大跑更快，改小跑更慢
-const PLAYER_HEALTH = 100; // 主角血條長度；改大比較耐撞，改小比較容易輸
-const ENEMY_LIMIT = 18; // 最多同時幾個甲本；改大畫面更熱鬧
+const UPGRADE_TUNING = {
+  maxUpgradeLevel: 5, hitFlashSeconds: 0.08, knockbackSpeed: 90, splashBaseRadius: 22, splashPerLevel: 10, invincibleSeconds: 1.15, maxDt: 0.05,
+  waterSizePerLevel: 0.20, damagePerLevel: 0.25, fireRateReduction: 0.15, extraShotAngle: 0.18, moveSpeedPerLevel: 0.12, magnetPerLevel: 0.40,
+  playerSpeed: 190, playerHealth: 100, enemyLimit: 18, enemySpeed: 62, enemyRadius: 17, enemyDamage: 12, enemyHealth: 100,
+  shotInterval: 0.72, projectileDamage: 35, projectileSpeed: 390, projectileLimit: 24, gemLimit: 24, gemPullRadius: 105, xpToLevel: 5
+};
+const PLAYER_SPEED = UPGRADE_TUNING.playerSpeed; // 主角每秒走幾步；改大跑更快，改小跑更慢
+const PLAYER_HEALTH = UPGRADE_TUNING.playerHealth; // 主角血條長度；改大比較耐撞，改小比較容易輸
+const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 最多同時幾個甲本；改大畫面更熱鬧
 const ENEMY_TYPES = [
-  { id: "jaben", name: "甲本", color: "#d58b55", speed: 62, radius: 17, damage: 12, hp: 100 }
+  { id: "jaben", name: "甲本", color: "#d58b55", speed: UPGRADE_TUNING.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.enemyHealth }
 ];
 const SPRITES = { player: null, jaben: null }; // null 會用程式畫色塊
-const INVINCIBLE_SECONDS = 1.15; // 被撞後閃爍幾秒，這段時間不會再扣血
-const SHOT_INTERVAL = 0.72; // 每隔幾秒自動發射一顆水球
-const PROJECTILE_DAMAGE = 35; // 每顆水球造成多少傷害
-const PROJECTILE_SPEED = 390; // 水球飛行速度
-const PROJECTILE_LIMIT = 24; // 同時存在的水球上限
-const GEM_LIMIT = 24; // 同時存在的經驗寶石上限
-const GEM_PULL_RADIUS = 105; // 靠多近時，寶石會被吸過來
-const XP_TO_LEVEL = 5; // 升級需要收集幾顆寶石
+const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 被撞後閃爍幾秒，這段時間不會再扣血
+const SHOT_INTERVAL = UPGRADE_TUNING.shotInterval; // 每隔幾秒自動發射一顆水球
+const PROJECTILE_DAMAGE = UPGRADE_TUNING.projectileDamage; // 每顆水球造成多少傷害
+const PROJECTILE_SPEED = UPGRADE_TUNING.projectileSpeed; // 水球飛行速度
+const PROJECTILE_LIMIT = UPGRADE_TUNING.projectileLimit; // 同時存在的水球上限
+const GEM_LIMIT = UPGRADE_TUNING.gemLimit; // 同時存在的經驗寶石上限
+const GEM_PULL_RADIUS = UPGRADE_TUNING.gemPullRadius; // 靠多近時，寶石會被吸過來
+const XP_TO_LEVEL = UPGRADE_TUNING.xpToLevel; // 升級需要收集幾顆寶石
 const WATER_COLOR = "#168cff"; // Erin 可以改水球顏色
 const GEM_COLOR = "#ff9f24"; // Erin 可以改經驗寶石顏色
 
-const MAX_DT = 0.05; // 切回遊戲時，限制單次更新不要跳太遠
+
+// Erin 可以在這裡調整升級卡；專屬卡等 Erin 決定名稱、圖示和效果後再加入。
+const UPGRADES = [
+  { id: "big-water", icon: "💧", name: "水球加大", description: "水球更大、傷害更高" },
+  { id: "rapid-water", icon: "⚡", name: "連發水球", description: "發射速度提升" },
+  { id: "multi-water", icon: "🌊", name: "多重水球", description: "每次多發一顆" },
+  { id: "onion-dash", icon: "🧅", name: "洋蔥衝刺", description: "移動速度提升" },
+  { id: "bubble-shield", icon: "❤️", name: "泡泡護盾", description: "最大血量 +1，並回復 1" },
+  { id: "gem-magnet", icon: "🧲", name: "寶石磁鐵", description: "撿取範圍提升" },
+  { id: "piercing-water", icon: "🫧", name: "穿透水球", description: "水球多穿透一隻敵人" },
+  { id: "splash-water", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" }
+  // Erin 決定專屬卡後，在這裡新增卡片資料並請 Codex 加上對應效果。
+];
+
+const MAX_DT = UPGRADE_TUNING.maxDt; // 切回遊戲時，限制單次更新不要跳太遠
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -31,8 +51,11 @@ const healthFill = document.getElementById("healthFill");
 const statusEl = document.getElementById("status");
 const experienceFill = document.getElementById("experienceFill");
 const levelLabel = document.getElementById("levelLabel");
+const messageCard = document.querySelector(".message-card");
+const upgradePanel = document.getElementById("upgradePanel");
+const upgradeCards = document.getElementById("upgradeCards");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
@@ -68,6 +91,7 @@ function resetGame() {
   state.shotTimer = 0.15;
   state.xp = 0;
   state.level = 1;
+  state.upgrades = {}; state.pendingChoices = [];
   state.keys.clear();
   state.joy = null;
   updateHud();
@@ -85,14 +109,15 @@ function startGame() {
 
 function showOverlay(mode) {
   state.mode = mode;
-  overlay.classList.remove("hidden");
+  overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true;
   if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
   else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = "甲本把血條撞光了，按下按鈕重新開始。"; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
   else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用方向鍵、WASD 或手指搖桿移動，躲開甲本！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
 function updateHud() {
-  const ratio = Math.max(0, state.player.health / PLAYER_HEALTH);
+  const maxHealth = PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5);
+  const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
   experienceFill.style.width = `${state.xp / XP_TO_LEVEL * 100}%`;
@@ -124,7 +149,11 @@ function fireAtNearest() {
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
   const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
-  state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(angle) * PROJECTILE_SPEED, vy: Math.sin(angle) * PROJECTILE_SPEED, r: state.player.r * 2 / 3, alive: true }));
+  const count = 1 + upgradeLevel("multi-water");
+  for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
+    const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), pierce: upgradeLevel("piercing-water"), alive: true }));
+  }
 }
 
 function burst(x, y, color, count = 8) {
@@ -134,10 +163,10 @@ function burst(x, y, color, count = 8) {
   }
 }
 
-function damageEnemy(enemy) {
-  enemy.hp -= PROJECTILE_DAMAGE;
-  enemy.flash = 0.12;
-  if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${PROJECTILE_DAMAGE}` }));
+function damageEnemy(enemy, damage = effectiveDamage()) {
+  enemy.hp -= damage;
+  enemy.flash = UPGRADE_TUNING.hitFlashSeconds; enemy.knockX = enemy.x - state.player.x; enemy.knockY = enemy.y - state.player.y; enemy.knockback = UPGRADE_TUNING.knockbackSpeed;
+  if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${Math.round(damage)}` }));
   if (enemy.hp <= 0) {
     enemy.alive = false;
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
@@ -146,6 +175,39 @@ function damageEnemy(enemy) {
   } else burst(enemy.x, enemy.y, "#ffffff", 4);
 }
 
+function upgradeLevel(id) { return state.upgrades[id] || 0; }
+function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
+function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - upgradeLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction)); }
+function chooseUpgradeCards() {
+  const available = UPGRADES.filter((card) => upgradeLevel(card.id) < UPGRADE_TUNING.maxUpgradeLevel);
+  if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "❤️", name: "回血", description: "恢復 1 顆心" }]; }
+  else {
+    const shuffled = available.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+    state.pendingChoices = shuffled.slice(0, Math.min(3, shuffled.length));
+  }
+  showUpgradeChoices();
+}
+function showUpgradeChoices() {
+  state.mode = "levelup"; overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
+  state.pendingChoices.forEach((card, index) => {
+    const level = card.id === "heal" ? "" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`;
+    const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
+    button.innerHTML = `<span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level}</small>`;
+    button.addEventListener("click", () => applyUpgrade(index)); upgradeCards.appendChild(button);
+  });
+  statusEl.textContent = "選一張升級卡";
+}
+function applyUpgrade(index) {
+  const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup") return;
+  if (card.id === "heal") state.player.health = Math.min(PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5), state.player.health + Math.ceil(PLAYER_HEALTH / 5));
+  else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
+  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateHud(); state.lastTime = performance.now(); scheduleFrame();
+}
+function grantExperience(value) {
+  state.xp += value;
+  if (state.xp >= XP_TO_LEVEL) { state.xp -= XP_TO_LEVEL; state.level++; updateHud(); chooseUpgradeCards(); } else updateHud();
+}
 function tick(dt) {
   if (state.mode !== "playing") return;
   state.elapsed += dt;
@@ -157,20 +219,21 @@ function tick(dt) {
   if (state.joy) { dx += state.joy.x; dy += state.joy.y; }
   const length = Math.hypot(dx, dy);
   if (length > 1) { dx /= length; dy /= length; }
-  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x + dx * PLAYER_SPEED * dt));
-  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * dt));
+  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x + dx * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
+  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
 
   state.spawnTimer -= dt;
   const spawnEvery = Math.max(0.72, 2.1 - state.elapsed * 0.015);
   while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   state.shotTimer -= dt;
-  if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += SHOT_INTERVAL; }
+  if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += effectiveShotInterval(); }
   for (const enemy of state.enemies) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     enemy.x += vx / distance * enemy.speed * dt;
     enemy.y += vy / distance * enemy.speed * dt;
+    if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, UPGRADE_TUNING.knockbackSpeed) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - UPGRADE_TUNING.knockbackSpeed * dt); }
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
@@ -180,7 +243,12 @@ function tick(dt) {
     if (shot.x < -12 || shot.y < -12 || shot.x > state.width + 12 || shot.y > state.height + 12) { shot.alive = false; continue; }
     for (const enemy of state.enemies) {
       if (enemy.alive && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
-        shot.alive = false; damageEnemy(enemy); break;
+        damageEnemy(enemy, shot.damage);
+        if (upgradeLevel("splash-water") > 0) {
+          const radius = UPGRADE_TUNING.splashBaseRadius + upgradeLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
+          for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) damageEnemy(nearby, shot.damage * 0.35);
+        }
+        if (shot.pierce > 0) shot.pierce--; else { shot.alive = false; break; }
       }
     }
   }
@@ -192,9 +260,11 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = state.player.x - gem.x, dy = state.player.y - gem.y, distance = Math.hypot(dx, dy);
-    if (distance < GEM_PULL_RADIUS && distance > 0.1) { const speed = 150 + (GEM_PULL_RADIUS - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
-    if (distance < state.player.r + gem.r + 3) { gem.alive = false; state.xp += gem.value; if (state.xp >= XP_TO_LEVEL) { state.xp -= XP_TO_LEVEL; state.level++; } updateHud(); }
+    const pullRadius = GEM_PULL_RADIUS * (1 + upgradeLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
+    if (distance < state.player.r + gem.r + 3) { gem.alive = false; grantExperience(gem.value); if (state.mode === "levelup") break; }
   }
+  if (state.mode === "levelup") return;
   for (let i = state.gems.length - 1; i >= 0; i--) {
     if (!state.gems[i].alive) state.gemPool.push(state.gems.splice(i, 1)[0]);
   }
@@ -257,7 +327,6 @@ function render() {
     drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
-  for (const shot of state.projectiles) { ctx.fillStyle = "rgba(28,93,125,.25)"; ctx.beginPath(); ctx.arc(shot.x + 2, shot.y + 3, shot.r + 1, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = WATER_COLOR; ctx.strokeStyle = "#2877a8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(shot.x - 2, shot.y - 2, 2, 0, Math.PI * 2); ctx.fill(); }
   for (const effect of state.effects) {
     const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
     if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
@@ -276,11 +345,12 @@ function render() {
 let frameRequest = null;
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
 function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
-function togglePause() { if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); scheduleFrame(); } }
+function togglePause() { if (state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); scheduleFrame(); } }
 
 startButton.addEventListener("click", () => state.mode === "paused" ? togglePause() : startGame());
 pauseButton.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => { const key = event.key.length === 1 ? event.key.toLowerCase() : event.key; if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(key)) event.preventDefault(); state.keys.add(key); if (key === "Escape" || key === " ") togglePause(); });
+window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
 window.addEventListener("keyup", (event) => state.keys.delete(event.key.length === 1 ? event.key.toLowerCase() : event.key));
 window.addEventListener("blur", () => { state.keys.clear(); if (state.mode === "playing") showOverlay("paused"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); });
