@@ -1,6 +1,6 @@
 # Erin 的新遊戲企劃：像素割草生存遊戲（類 Vampire Survivors / Brotato）
 
-Erin 當遊戲總監，Codex、Grok、Claude 分工協作，家長把關上線。
+Erin 當遊戲總監出主意，家長操作 Codex、Grok、Claude 分工協作，並把關上線。
 
 > **怎麼讀這份文件**
 > - **家長**：先看 §0 總覽、§4 安全設定、§5 的階段 0。
@@ -14,7 +14,8 @@ Erin 當遊戲總監，Codex、Grok、Claude 分工協作，家長把關上線�
 | 做什麼 | iPad、手機、電腦都能玩的像素風「割草」生存遊戲，放在 `games/survivor/` |
 | 誰決定 | **Erin 是遊戲總監**：遊戲叫什麼、主角和敵人長怎樣、好不好玩，都由她決定 |
 | 誰寫程式 | Codex 寫、Grok 審查；兩個都解決不了才找 Claude；家長核准才上線 |
-| 怎麼協作 | 照 agent-coord-kit 的任務卡、審查紀錄、收件匣格式，放在本 repo 的 `coord/`。先用**輕量模式**：不裝自動協調器、不排程，由 Erin 或家長說「看卡片」叫 agent 接手 |
+| 誰操作 AI | **家長**：AI 工具都登入家長的帳號，由家長打字、把回覆唸給 Erin 聽；Erin 在旁邊出主意、試玩、自己改設定數字，不自己開 AI 對話（原因見 §4） |
+| 怎麼協作 | 照 agent-coord-kit 的任務卡、審查紀錄、收件匣格式，放在本 repo 的 `coord/`。先用**輕量模式**：不裝自動協調器、不排程，由家長說「看卡片」叫 agent 接手 |
 | 節奏 | 一次只做一個階段（0～6）；每個階段結束都能玩，Erin 試玩、自己動手改一點，再進下一階段 |
 
 每個階段都照這個循環走：
@@ -25,7 +26,9 @@ Erin 說想法 → Codex 寫程式 → Grok 檢查 → Erin 試玩 ─→ 家長
      └──────── 想改的地方（Erin 的回饋）←────┘
 ```
 
-`GAME_WORKFLOW.md` 的 Gem 這次這樣用：遊戲規劃師 → 階段 0 的設計單；範圍裁切 → 已切成 §5 的階段；遊戲程式設計師 → 由 Codex 直接在 repo 裡做；除錯教練 → Erin 說回饋的方式（§2）；遊戲美術素材 → 階段 5 畫圖前找靈感；作品分享 → 階段 6。
+圖裡 Erin 說的想法和回饋，都由家長打給 Codex、Grok；它們的回覆也由家長唸給 Erin 聽，或兩人一起看。
+
+`GAME_WORKFLOW.md` 的 Gem 這次這樣用（Gem 也是 AI，一樣由家長操作）：遊戲規劃師 → 階段 0 的設計單；範圍裁切 → 已切成 §5 的階段；遊戲程式設計師 → 由 Codex 直接在 repo 裡做；除錯教練 → Erin 說回饋的方式（§2）；遊戲美術素材 → 階段 5 畫圖前找靈感；作品分享 → 階段 6。
 
 ## 1. 遊戲規格
 
@@ -72,24 +75,26 @@ Erin 說想法 → Codex 寫程式 → Grok 檢查 → Erin 試玩 ─→ 家長
 
 這是 **Erin 的作品**。AI 幫忙寫程式，但想法、決定和試玩都是 Erin 的工作。跟 `GAME_WORKFLOW.md` 說的一樣：重點不是讓 AI 一次做完，而是讓 Erin 先說清楚想法，再一步一步測試、修改、分享。
 
+AI 由家長操作：Erin 把想法說給家長聽，家長打給 AI，再把 AI 的回答唸給她聽，或兩人一起看。
+
 ### 工作室成員
 
 | 誰 | 工作室裡的角色 | 負責 |
 |---|---|---|
 | Erin | 🎬 遊戲總監 | 決定遊戲長怎樣；試玩；說哪裡好玩、哪裡要改；自己改數字、畫角色 |
-| Codex | 🛠️ 程式工程師 | 照 Erin 的想法寫程式，把她說的話整理成任務 |
+| Codex | 🛠️ 程式工程師 | 照 Erin 的想法（家長轉述）寫程式，把她說的話整理成任務 |
 | Grok | 🔍 測試審查員 | 檢查 Codex 寫的程式有沒有問題、在 iPad 上會不會壞 |
 | Claude | 🧭 顧問 | Codex 和 Grok 意見不合、或都不會的時候才出場 |
-| 家長 | 🎟️ 製作人 | 管安全；決定什麼時候可以上線（放到網站上給大家玩） |
+| 家長 | 🎟️ 製作人 | 操作 Codex、Grok、Claude，幫 Erin 把想法告訴它們；管安全；決定什麼時候可以上線（放到網站上給大家玩） |
 
 ### Erin 每個階段做的四件事
 1. **先決定**：回答這個階段的設計問題（§5 每個階段都有），例如「敵人叫什麼？什麼顏色？」
-2. **叫隊友**：對 Codex 說「看卡片」，它就會開工；它說做好了，再對 Grok 說「看卡片」請它檢查（Grok 開新對話時要先請它讀 `AGENTS.md`，見 §3.1）。
+2. **請家長叫隊友**：跟家長說「可以叫 Codex 開工了」，家長就會去叫它；Codex 做好了，家長再請 Grok 檢查（家長的做法見 §3.9）。
 3. **試玩**：在 iPad 和電腦上玩，說出好玩和想改的地方。
-4. **自己改**：用 VS Code 打開 `games/survivor/game.js`，在最上面的 ✏️ 設定區改一個數字，重新整理看看變怎樣。
+4. **自己改**：用 VS Code 打開 `games/survivor/game.js`，在最上面的 ✏️ 設定區改一個數字，重新整理看看變怎樣。這一步不用 AI，自己動手。
 
 ### 怎麼說出想改的地方
-用 `GAME_WORKFLOW.md`「遊戲除錯教練」的四個問題，一次只講一件事：
+說給家長聽，家長會照你的話打給 Codex。用 `GAME_WORKFLOW.md`「遊戲除錯教練」的四個問題，一次只講一件事：
 1. 我按了什麼、做了什麼？
 2. 畫面發生什麼？
 3. 我原本希望發生什麼？
@@ -99,9 +104,10 @@ Erin 說想法 → Codex 寫程式 → Grok 檢查 → Erin 試玩 ─→ 家長
 
 ### Erin 的小規則
 - 一次講一件事；講清楚比講很多重要。
-- 聽不懂 AI 說的話，就請它「用小學生聽得懂的話再說一次」。
-- 不跟 AI 說自己的全名、學校、住址，也不傳自己的照片。
-- 自己在改檔案的時候，先不要叫 agent 做事；改完請 Codex 幫忙存檔（commit）。
+- 想跟 AI 說的話，說給家長聽，由家長打字；不自己開 AI 對話。
+- 聽不懂 AI 說的話，就請家長問它「用小學生聽得懂的話再說一次」。
+- 說想法時不用講自己的全名、學校、住址，也不給 AI 看自己的照片。
+- 自己在改檔案的時候，先不要請家長叫 agent 做事；改完再請家長叫 Codex 幫忙存檔（commit）。
 - 要放到網站上（上線），一定要家長說 OK。
 - 每次坐下來只完成一個小目標，做完就休息。
 
@@ -117,6 +123,8 @@ Erin 說想法 → Codex 寫程式 → Grok 檢查 → Erin 試玩 ─→ 家長
 | `grok` | Grok Bot.app | 開新對話先說：「先讀 `~/Dev/projects/erin/AGENTS.md`，然後看卡片」 |
 | `claude` | Claude 桌面版／Claude Code | 家長在 erin 資料夾另開 session |
 
+三個工具都登入家長的帳號，由家長操作；Erin 不自己開 AI 對話（見 §4）。
+
 卡片和審查都存在 repo 裡，所以別台電腦（macOS 或 Windows）上的 agent 也能接手：clone 後照同一份 `AGENTS.md` 做。工作分支要先由家長 push，別台才看得到。
 
 ### 3.2 角色與權限
@@ -124,15 +132,16 @@ Erin 說想法 → Codex 寫程式 → Grok 檢查 → Erin 試玩 ─→ 家長
 | 名稱 | 做什麼 | 不做什麼 |
 |---|---|---|
 | `codex` | 協調與實作：讀卡片和收件匣、開卡、寫程式、開分支、commit、更新自己的卡、開試玩伺服器 | 不審自己的程式；不 push；不 merge 到 `main` |
-| `grok` | 照 §6 審查 `codex` 的分支；需要時幫 Erin 找靈感、照 `ASSETS.md` 查素材授權 | 不改 `codex` 的程式和卡片；不審自己寫的東西；不 merge |
+| `grok` | 照 §6 審查 `codex` 的分支；需要時透過家長幫 Erin 找靈感、照 `ASSETS.md` 查素材授權 | 不改 `codex` 的程式和卡片；不審自己寫的東西；不 merge |
 | `claude` | 只處理 `codex`、`grok` 解決不了或意見衝突的問題，以及架構類決定 | 不做日常工作 |
-| `erin` | 遊戲總監：設計、試玩、決定好不好玩；可以是 `waitingFor` 的對象 | 不當審查者（kit 規定審查者必須是非人類 agent） |
-| `user`（家長） | 最後審查者（kit 的 `finalReviewer`）；決定 `risk`；核准上線；管安全設定 | — |
+| `erin` | 遊戲總監：設計、試玩、決定好不好玩；可以是 `waitingFor` 的對象 | 不自己操作 AI（她的話由 `user` 轉述）；不當審查者（kit 規定審查者必須是非人類 agent） |
+| `user`（家長） | 操作 Codex、Grok、Claude，轉述 Erin 的話；最後審查者（kit 的 `finalReviewer`）；決定 `risk`；核准上線；管安全設定 | — |
 
 - 作者和審查者必須不同：`codex` 寫的給 `grok` 審；`grok` 寫的（例如素材建議）給 `codex` 核對。
 - 同一時間只有一個人改檔案（包括 Erin）：`codex` 做完並 commit 後才叫 `grok`；`grok` 只寫自己的審查檔。
 - commit 只加指名的檔案，不用 `git add .`／`git commit -a`（別人可能有還沒存的東西）。
-- Erin 在這個階段範圍內的修改要求，`codex` 直接做；超出企劃的新點子先記到收件匣，等 Erin 和家長決定後才開卡。
+- 跟你對話的是家長（`user`）。家長轉述的 Erin 的話照原話記進收件匣；要給 Erin 的回覆，寫成家長可以直接唸給她聽的話。不要請 Erin 自己操作 AI。
+- Erin 的修改要求（家長轉述）在這個階段範圍內的，`codex` 直接做；超出企劃的新點子先記到收件匣，等 Erin 和家長決定後才開卡。
 - 不確定能不能做、或缺資訊時不要猜：卡片改 `blocked`，`waitingFor` 寫要問誰。
 
 ### 3.3 檔案放哪裡
@@ -213,7 +222,7 @@ sha: <被審 commit 的完整 40 碼 SHA>
 
 ### 3.6 收件匣：記下 Erin 和家長的原話
 
-Erin 的想法和試玩回饋、家長的核准，由正在跟他們對話的 agent 寫成 `coord/inbox/<UTC時間>-<短名>.md`（例：`coord/inbox/20261022T083000Z-erin-slime-speed.md`），格式照 kit 的 `coord/inbox.py`，**原話照抄、不改寫**：
+家長轉述的 Erin 想法和試玩回饋，以及家長自己的核准，由正在跟家長對話的 agent 寫成 `coord/inbox/<UTC時間>-<短名>.md`（例：`coord/inbox/20261022T083000Z-erin-slime-speed.md`），格式照 kit 的 `coord/inbox.py`，**原話照抄、不改寫**。家長盡量照 Erin 說的打；repo 是公開的，原話裡如果有 Erin 的全名、學校、住址這類個人資料，要先拿掉：
 
 ```text
 kind: feedback
@@ -230,9 +239,9 @@ ref: survivor-stage-1-move
 
 ### 3.7 Git 流程
 1. `codex` 從最新的 `main` 開分支 `codex/<卡片id>`（例：`codex/survivor-stage-1-move`），卡片改 `doing`、填 `branch`。
-2. 做完並 commit，卡片改 `peer_review`，告訴 Erin「可以請 Grok 檢查了」。
+2. 做完並 commit，卡片改 `peer_review`，告訴家長「可以請 Grok 檢查了」。
 3. `grok` 在本機看 `git diff main...codex/<卡片id>`，照 §6 審查，把審查檔 commit 到同一個分支。
-4. 通過後 `codex` 把卡片改 `review`，開試玩伺服器（§3.8）讓 Erin 試玩。Erin 想改就回到 `doing`。
+4. 通過後 `codex` 把卡片改 `review`，開試玩伺服器（§3.8）讓 Erin 試玩。Erin 有想改的地方（家長轉述），就回到 `doing`。
 5. Erin 滿意、家長說 OK：agent 把家長的話寫成 `approve` 收件匣檔，`codex` 把卡片改 `done`；家長（或家長當場指定的 agent）merge 到 `main` 並 push。GitHub Pages 約 1～3 分鐘後更新。
 
 - commit 訊息：卡片用 `task: <卡片id> <state>`、審查用 `review: <卡片id> grok <approve|changes>`（kit 的寫法）；Erin 自己改的用 `erin:` 開頭（例：`erin: 主角速度改成 200`），讓 git 紀錄看得到她的貢獻；其他照 repo 現有的 `feat:`、`fix:`。
@@ -246,11 +255,11 @@ ref: survivor-stage-1-move
 - 改版後更新 `?v=` 版本號；iPad 還是舊畫面就重新整理。
 
 ### 3.9 叫醒方式：「看卡片」
-沒有排程、不輪詢。Erin 或家長對 agent 說「看卡片」：
+沒有排程、不輪詢。由家長對 agent 說「看卡片」：
 - `codex`：先處理 `coord/inbox/` 還沒處理的原話；再看自己 `doing` 的卡（有審查意見先修）；都沒有，就照 `dependsOn` 開下一張 `todo`。
 - `grok`：找 `reviewers` 有 `grok`、狀態 `peer_review` 的卡，審分支目前的 head。
 - `claude`：找 `blocked` 且 `waitingFor` 是 `claude` 的卡。
-- 做完用 Erin 聽得懂的話回報：做了什麼、她現在可以做什麼。
+- 做完的回報寫成家長可以直接唸給 Erin 聽的話：做了什麼、她現在可以做什麼。
 
 ### 3.10 什麼時候才裝自動協調器
 現在不裝。出現這些需求再評估：同時進行的卡約 5 張以上、要照 `dependsOn` 自動派工、要無人值守、要控制模型額度，或想在手機收到「可以試玩了」的通知（只要通知的話，先評估 kit 的 `notifyOnly` 模式）。到時設定檔放 `~/.config/agent-coord/erin.json`（不進 repo），角色對應大致如下，安裝前再照 kit README 補齊 `stateDir`、`coordClone` 等：
@@ -271,21 +280,21 @@ ref: survivor-stage-1-move
 }
 ```
 
-kit 目前沒有 Grok 的介接，`grok` 只能設成 `cloud`：協調器不會自動叫它，還是要有人去叫 Grok 看卡片。
+kit 目前沒有 Grok 的介接，`grok` 只能設成 `cloud`：協調器不會自動叫它，還是要家長去叫 Grok 看卡片。
 
 ## 4. 安全設定（家長在階段 0 完成）
 
-Erin 會自己跟 agent 對話，而這台電腦上有家長的 GitHub 登入和其他專案，所以：
-1. **Codex 權限**：Erin 使用時選「只能改工作資料夾、其他動作先詢問」，不要用完整權限。終端機版用 `codex -s workspace-write -a on-request -C ~/Dev/projects/erin`，或建立 `~/.codex/erin.config.toml`（內容 `sandbox_mode = "workspace-write"`、`approval_policy = "on-request"`），再用 `codex -p erin` 開。
-2. **Grok Bot 權限**：本機工具改成每次執行前詢問，家長在旁邊時才按允許。
-3. **上線權限**：agent 不 push；上線由家長做，或家長當場指示。
-4. **陪伴**：Erin 跟 agent 對話時，家長在旁邊，或事後看一下對話紀錄。
-5. **建議再多一層**：幫 Erin 開一個 macOS「標準」使用者帳號，只 clone `erin` repo、不登入家長的 GitHub。agent 在她的帳號裡碰不到家長的其他專案和憑證；要上線時家長再用自己的帳號 push。
-6. **隱私**：照 §2「Erin 的小規則」與 §3.3，不把 Erin 的個人資料給 AI 或寫進公開 repo。
+AI 工具都登入家長的帳號，這台電腦上也有家長的 GitHub 登入和其他專案，所以：
+1. **由家長操作 AI**：Codex、Grok、Claude 和 `GAME_WORKFLOW.md` 的 Gem 都由家長打字、讀回覆；Erin 在旁邊出主意，不自己開 AI 對話，家長不在時也不用。各服務都有使用年齡限制：OpenAI 規定 13 歲以上（未滿 18 要家長同意），Claude 要 18 歲以上，Grok 也有年齡規定，以各服務最新條款為準。Erin 自己改設定數字、用 Piskel 畫圖和試玩都不用 AI。
+2. **Codex 權限**：Codex 每個對話可以各自選權限。開給這個遊戲用的對話選「只能改工作資料夾、其他動作先詢問」，不要用完整權限；也讓它直接在 `~/Dev/projects/erin` 工作，不要開雲端任務或另一個工作副本，不然 Grok 和 Erin 看不到同一份檔案。終端機版用 `codex -s workspace-write -a on-request -C ~/Dev/projects/erin`，或建立 `~/.codex/erin.config.toml`（內容 `sandbox_mode = "workspace-write"`、`approval_policy = "on-request"`），再用 `codex -p erin` 開。
+3. **Grok Bot 權限**：本機工具改成每次執行前詢問，家長看過再按允許。
+4. **上線權限**：agent 不 push；上線由家長做，或家長當場指示。
+5. **建議再多一層**：開一個專門做這個遊戲的 macOS「標準」使用者帳號，只 clone `erin` repo、不登入家長的 GitHub。家長在這個帳號裡操作 Codex 和 Grok，agent 就碰不到家長的其他專案和憑證；要上線時家長再用自己的帳號 push。家長離開時鎖定這個帳號，避免 Erin 單獨使用 AI。
+6. **隱私**：家長打給 AI 的內容和收件匣的原話，都不放 Erin 的全名、學校、年齡、照片或住址（見 §3.3、§3.6）。
 
 ## 5. 分階段計畫
 
-一次只做一個階段，每個階段都要能玩。每個階段一張卡（owner `codex`、reviewers `["grok"]`，用 `dependsOn` 串起來）。「Grok 特別檢查」是除了 §6 通用清單以外，這個階段要多看的地方。
+一次只做一個階段，每個階段都要能玩。每個階段一張卡（owner `codex`、reviewers `["grok"]`，用 `dependsOn` 串起來）。「Grok 特別檢查」是除了 §6 通用清單以外，這個階段要多看的地方。「Erin 先決定」由 Erin 回答、家長打給 Codex；「Erin 試玩」的回饋也由家長轉述。
 
 ### 階段 0：開工準備（`survivor-stage-0-setup`）
 - **開始方式**：家長在 Codex 打開 erin 資料夾，說「讀 `docs/survivor-game-plan.md`，做階段 0」。`AGENTS.md` 建好以前，這份文件就是規則。
@@ -298,7 +307,7 @@ Erin 會自己跟 agent 對話，而這台電腦上有家長的 GitHub 登入和
   - 要撐幾分鐘才算贏？
   - 你最想看到的一個畫面是什麼？
 
-  答案由 agent 記成收件匣 `kind: request`，原話照抄。
+  Erin 說，家長照她的話打給 Codex；Codex 記成收件匣 `kind: request`，原話照抄。
 - **家長**：完成 §4 安全設定；確認 §3 的分工。
 - **Codex 做**：建立 `AGENTS.md`（整理 §3）、`CLAUDE.md`（只寫一行 `@AGENTS.md`，讓 Claude Code 讀同一份規則）、`coord/` 目錄和 `knowledge/` 三個檔、階段 0～6 的任務卡；把 Erin 的設計單整理進 `DECISIONS.md`。這個階段不寫遊戲程式。
 - **Grok 特別檢查**：卡片、審查、收件匣格式符合 §3；`AGENTS.md` 沒有和 kit 的 `RULES.md` 衝突。
@@ -351,7 +360,7 @@ Erin 會自己跟 agent 對話，而這台電腦上有家長的 GitHub 登入和
 - **完成條件**：一局有開始、變難、Boss、勝利或失敗；Erin 覺得難度剛好。
 
 ### 階段 5：打磨和 Erin 的美術（`survivor-stage-5-polish`）
-- **Erin 先決定／動手做**：用 Piskel 畫主角和 1～2 種敵人（建議 16×16 或 32×32、背景透明），匯出 PNG；想不出來可以先用 `GAME_WORKFLOW.md` 的「遊戲美術素材 Gem」找靈感。選音效：程式合成，或照 `ASSETS.md` 用 Kenney 音效。
+- **Erin 先決定／動手做**：用 Piskel 畫主角和 1～2 種敵人（建議 16×16 或 32×32、背景透明），匯出 PNG；想不出來，可以請家長用 `GAME_WORKFLOW.md` 的「遊戲美術素材 Gem」一起找靈感。選音效：程式合成，或照 `ASSETS.md` 用 Kenney 音效。
 - **Codex 做**：
   - 把 Erin 的圖放進 `games/survivor/assets/`，在 `SPRITES` 表換上（還沒畫的繼續用色塊）。
   - 音效（Web Audio 簡單合成即可；iPad 要等第一次點擊後才能出聲）。
@@ -365,7 +374,7 @@ Erin 會自己跟 agent 對話，而這台電腦上有家長的 GitHub 登入和
 - **完成條件**：Erin 畫的角色出現在遊戲裡；首頁卡片點得進來。
 
 ### 階段 6：發表會（`survivor-stage-6-share`）
-- **Erin**：用 `GAME_WORKFLOW.md` 的「作品分享 Gem」準備介紹，講給家人或同學聽：原本想做什麼、做出了什麼、遇到什麼問題、怎麼跟 AI 說明問題、最喜歡哪一段、下次想改什麼。
+- **Erin**：和家長一起用 `GAME_WORKFLOW.md` 的「作品分享 Gem」準備介紹（家長操作），講給家人或同學聽：原本想做什麼、做出了什麼、遇到什麼問題、怎麼跟 AI 說明問題、最喜歡哪一段、下次想改什麼。
 - **Codex 做**：把 `coord/inbox/done/` 裡 Erin 每個階段說過的話整理成時間軸給她參考（只整理，不替她寫講稿）。
 - **完成條件**：Erin 發表完；她「下次想改什麼」記進收件匣（`kind: request`），之後再決定要不要做。
 
