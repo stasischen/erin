@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#dff4ff" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261022f" />
+  <link rel="stylesheet" href="style.css?v=20261022j" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,6 +20,7 @@
     </header>
     <section class="stage" id="stage" aria-label="遊戲畫面">
       <canvas id="gameCanvas" aria-label="藍色水星人在教室躲避甲本"></canvas>
+      <div id="bossHud" class="boss-hud" hidden><strong>老師</strong><div class="boss-track"><div id="bossHealthFill" class="boss-health-fill"></div></div></div>
       <div class="hud" aria-live="polite">
         <div class="health-wrap"><span class="health-label">血條</span><div class="health-track"><div id="healthFill" class="health-fill"></div></div></div>
         <div class="experience-wrap"><span class="experience-label">經驗</span><div class="experience-track"><div id="experienceFill" class="experience-fill"></div></div><span id="levelLabel" class="level-label">Lv.1</span></div>
@@ -41,7 +42,7 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／觸控搖桿　自動發射水球、收集寶石升級</footer>
   </main>
-  <script src="game.js?v=20261022g"></script>
+  <script src="game.js?v=20261022j"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>
