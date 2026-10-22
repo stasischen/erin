@@ -79,7 +79,7 @@ function startGame() {
   overlay.classList.add("hidden");
   pauseButton.textContent = "Ⅱ";
   state.lastTime = performance.now();
-  requestAnimationFrame(frame);
+  scheduleFrame();
   spawnEnemy();
 }
 
@@ -250,7 +250,7 @@ function render() {
   drawClassroom();
   for (const gem of state.gems) {
     ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#268b64"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
+    ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
     ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
   }
   for (const enemy of state.enemies) {

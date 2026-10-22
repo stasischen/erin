@@ -1,5 +1,7 @@
-// 換新版網站時增加這個版本號，舊快取會在新快取準備好後清掉。
-const CACHE_NAME = 'erin-games-v2';
+// 換新版網站時增加版本號，啟用後會清除舊快取。
+// /erin/ 底下的檔案一律先問網路並更新快取，確保 ?v= 新版會立即生效；
+// 只有離線時才忽略查詢字串，退回已快取的同名檔案。
+const CACHE_NAME = 'erin-games-v3';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
   '',
@@ -48,23 +50,13 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || !url.pathname.startsWith(ROOT)) return;
-  if (request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        if (response.ok) (await caches.open(CACHE_NAME)).put(request, response.clone());
-        return response;
-      } catch (_) {
-        return (await caches.match(request, { ignoreSearch: true })) || (await caches.match(ROOT));
-      }
-    })());
-    return;
-  }
   event.respondWith((async () => {
-    const cached = await caches.match(request, { ignoreSearch: true });
-    if (cached) return cached;
-    const response = await fetch(request);
-    if (response.ok) (await caches.open(CACHE_NAME)).put(request, response.clone());
-    return response;
+    try {
+      const response = await fetch(request);
+      if (response.ok) (await caches.open(CACHE_NAME)).put(request, response.clone());
+      return response;
+    } catch (_) {
+      return (await caches.match(request, { ignoreSearch: true })) || (await caches.match(ROOT));
+    }
   })());
 });
