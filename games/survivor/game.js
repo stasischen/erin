@@ -14,8 +14,8 @@ const PROJECTILE_LIMIT = 24; // 同時存在的水球上限
 const GEM_LIMIT = 24; // 同時存在的經驗寶石上限
 const GEM_PULL_RADIUS = 105; // 靠多近時，寶石會被吸過來
 const XP_TO_LEVEL = 5; // 升級需要收集幾顆寶石
-const WATER_COLOR = "#55c9ff"; // Erin 可以改水球顏色
-const GEM_COLOR = "#55df9a"; // Erin 可以改經驗寶石顏色
+const WATER_COLOR = "#168cff"; // Erin 可以改水球顏色
+const GEM_COLOR = "#ff9f24"; // Erin 可以改經驗寶石顏色
 
 const MAX_DT = 0.05; // 切回遊戲時，限制單次更新不要跳太遠
 const stage = document.getElementById("stage");
@@ -32,7 +32,13 @@ const statusEl = document.getElementById("status");
 const experienceFill = document.getElementById("experienceFill");
 const levelLabel = document.getElementById("levelLabel");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, lastTime: 0, width: 0, height: 0 };
+
+function takeFromPool(pool, values) {
+  const item = pool.pop() || {};
+  Object.assign(item, values);
+  return item;
+}
 
 function resize() {
   const rect = stage.getBoundingClientRect();
@@ -49,6 +55,9 @@ function resize() {
 }
 
 function resetGame() {
+  for (const item of state.projectiles) state.projectilePool.push(item);
+  for (const item of state.gems) state.gemPool.push(item);
+  for (const item of state.effects) state.effectPool.push(item);
   state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 };
   state.enemies = [];
   state.projectiles = [];
@@ -115,24 +124,25 @@ function fireAtNearest() {
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
   const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
-  state.projectiles.push({ x: state.player.x, y: state.player.y, vx: Math.cos(angle) * PROJECTILE_SPEED, vy: Math.sin(angle) * PROJECTILE_SPEED, r: 7, alive: true });
+  state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(angle) * PROJECTILE_SPEED, vy: Math.sin(angle) * PROJECTILE_SPEED, r: state.player.r * 2 / 3, alive: true }));
 }
 
 function burst(x, y, color, count = 8) {
   for (let i = 0; i < count && state.effects.length < 90; i++) {
     const angle = Math.random() * Math.PI * 2, speed = 45 + Math.random() * 110;
-    state.effects.push({ kind: "spark", x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.42 + Math.random() * 0.22, maxLife: 0.64, text: "" });
+    state.effects.push(takeFromPool(state.effectPool, { kind: "spark", x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.42 + Math.random() * 0.22, maxLife: 0.64, text: "" }));
   }
 }
 
 function damageEnemy(enemy) {
   enemy.hp -= PROJECTILE_DAMAGE;
   enemy.flash = 0.12;
-  state.effects.push({ kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${PROJECTILE_DAMAGE}` });
+  if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${PROJECTILE_DAMAGE}` }));
   if (enemy.hp <= 0) {
     enemy.alive = false;
-    burst(enemy.x, enemy.y, "#8bd7ff", 12);
-    if (state.gems.length < GEM_LIMIT) state.gems.push({ x: enemy.x, y: enemy.y, r: 8, value: 1, alive: true, wobble: Math.random() * 6 });
+    if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
+    burst(enemy.x, enemy.y, "#ffe2a8", 8);
+    if (state.gems.length < GEM_LIMIT) state.gems.push(takeFromPool(state.gemPool, { x: enemy.x, y: enemy.y, r: 8, value: 1, alive: true, wobble: Math.random() * 6 }));
   } else burst(enemy.x, enemy.y, "#ffffff", 4);
 }
 
@@ -174,7 +184,9 @@ function tick(dt) {
       }
     }
   }
-  state.projectiles = state.projectiles.filter((shot) => shot.alive);
+  for (let i = state.projectiles.length - 1; i >= 0; i--) {
+    if (!state.projectiles[i].alive) state.projectilePool.push(state.projectiles.splice(i, 1)[0]);
+  }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   for (const gem of state.gems) {
     if (!gem.alive) continue;
@@ -183,9 +195,13 @@ function tick(dt) {
     if (distance < GEM_PULL_RADIUS && distance > 0.1) { const speed = 150 + (GEM_PULL_RADIUS - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     if (distance < state.player.r + gem.r + 3) { gem.alive = false; state.xp += gem.value; if (state.xp >= XP_TO_LEVEL) { state.xp -= XP_TO_LEVEL; state.level++; } updateHud(); }
   }
-  state.gems = state.gems.filter((gem) => gem.alive);
+  for (let i = state.gems.length - 1; i >= 0; i--) {
+    if (!state.gems[i].alive) state.gemPool.push(state.gems.splice(i, 1)[0]);
+  }
   for (const effect of state.effects) { effect.life -= dt; effect.x += effect.vx * dt; effect.y += effect.vy * dt; }
-  state.effects = state.effects.filter((effect) => effect.life > 0);
+  for (let i = state.effects.length - 1; i >= 0; i--) {
+    if (state.effects[i].life <= 0) state.effectPool.push(state.effects.splice(i, 1)[0]);
+  }
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (state.player.invincible <= 0) {
     for (const enemy of state.enemies) {
@@ -245,6 +261,7 @@ function render() {
   for (const effect of state.effects) {
     const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
     if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+    else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
     ctx.globalAlpha = 1;
   }

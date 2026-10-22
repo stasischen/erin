@@ -3,18 +3,18 @@
   "id": "survivor-stage-2-attack",
   "title": "割草遊戲階段 2：自動攻擊與經驗",
   "owner": "codex",
-  "state": "blocked",
+  "state": "peer_review",
   "repo": "erin",
   "branch": "codex/survivor-stage-2-attack",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "等 Erin 決定水球大小與顏色、經驗寶石顏色和甲本被打倒的消失方式；收到後定稿再交 Grok 審查",
+  "next": "請 Grok 審查本分支階段 2 改動",
   "reviewers": [
     "grok"
   ],
-  "waitingFor": "erin",
+  "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-22T06:22:31Z",
+  "updated": "2026-10-22T06:48:24Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-1-move"
