@@ -1,24 +1,19 @@
-verdict: changes
-1dcf135853e460c00b31fac273c669ddd2c51e93
+verdict: approve
+ed55aab12f2d691e3a25bc130988be47428ed2bc
 
 看了什麼：
-- `git diff main...codex/survivor-stage-3-levelup`：`games/survivor/game.js`、`index.html`、`style.css`、任務卡、`DECISIONS.md`、`coord/inbox/done/20261022T070615Z-parent-stage3.md`。
+- `git diff main...codex/survivor-stage-3-levelup`（重審，重點看 ed55aab 對上次三點的修正）：`games/survivor/game.js`、`index.html`、任務卡、收件匣回饋歸檔。
 - `node --check games/survivor/game.js` 語法通過；沒有 `roundRect`、`.at()`、`structuredClone`。
-- 對照 §6 清單與收件匣的階段 3 規格。
+- 對照 §6 清單與上一輪 grok.md 的必須修項目。
 
-做得好的：
-- 三選一暫停、卡片不重複、Lv 顯示、鍵盤 1／2／3、全部滿級給回血卡、Erin 專屬卡空位都有。
-- 升級時暫停、Esc／空白鍵在選卡時不會誤觸暫停；切 App 只在 playing 時暫停，不會蓋掉選卡畫面。
-- `?v=` 已升到 `20261022f`；物件仍走物件池；重新開始會清掉 `upgrades`、`pendingChoices`。
-- 打擊閃白 0.08 秒、擊退、傷害數字、寶石磁鐵都依規格。
-- DECISIONS.md 有記階段 4／5 路線與勝利條件待定。
+上次三點都修好了：
+1. 水球畫回來了：`render()` 開頭依 `shot.r` 畫水球，加大升級看得出來。
+2. 穿透不再重複打同一隻：每顆水球有 `hitList`（`takeFromPool` 用 `Object.assign` 每次發射給新陣列，等於清空），同一隻只打一次；水花四濺只在首次命中時觸發，被濺到的也記進清單。
+3. Erin 設定區一行一個值、每行有小學生看得懂的註解；舊常數改成「請改上面的 xxx」；`MAX_DT`、`HIT_FLASH_SECONDS`、`KNOCKBACK_SPEED` 移出設定物件。
 
-必須修：
-1. 水球不見了：`render()` 裡畫水球的那一行（`for (const shot of state.projectiles) { ... }`）在這次 diff 被刪掉，現在水球完全不會畫出來。請加回來（大小用 `shot.r`，加大升級才看得出來）。
-2. 穿透水球會重複打同一隻：水球打中後若 `pierce > 0` 會繼續飛，但下一幀還和同一隻甲本重疊，又會再打一次並再扣 `pierce`，等於同一隻被連打多次、穿透數被浪費。請讓每顆水球記住已經打過哪些敵人（例如 `shot.hitList` 陣列，從物件池拿出來時要清空），同一隻只打一次。水花四濺的範圍傷害也只在第一次命中該敵人時觸發。
-3. ✏️ Erin 設定區：`UPGRADE_TUNING` 一整行塞了很多數字但沒有註解，下面 `PLAYER_SPEED` 等的註解還在，但 Erin 改那幾行已經不會生效（要改物件裡的值）。請把設定物件拆成一行一個值、每行附小學生看得懂的註解（改大會怎樣），舊的常數註解移到物件裡或註明「請改上面的數字」；`maxDt`、`hitFlashSeconds` 這類不給 Erin 調的值移出設定區。
+小建議也做了：`render()` 不再自己排程，改由 `renderLoop()` 驅動，所以 `showUpgradeChoices()` 前呼叫 `render()` 不會多開一條動畫迴圈；`UPGRADES` 每張卡有註解指向調整欄位；泡泡護盾說明已改。`?v=` 升到 `20261022g`。
 
-小建議（可一起做）：
-- 升級跳出時 `tick()` 直接 return，那一幀沒 `render()`；選卡回來沒差，但可在 `showUpgradeChoices()` 前呼叫一次 `render()`，讓背景停在最新畫面。
-- `UPGRADES` 裡加一欄註解說明每張卡的效果數字在 `UPGRADE_TUNING` 哪個欄位，Erin 比較好找。
-- 泡泡護盾說明「最大血量 +1」因為是血條，可改成「血條變長一點，並回一點血」。
+可之後再看（不擋）：
+- 被水花濺到的敵人會進 `hitList`，之後這顆穿透水球不會再直接打它；目前可接受。
+- 敵人物件會回收再用，理論上同一顆水球飛行中遇到「重生」的甲本會略過它，極少發生、影響很小。
+- `MAX_DT` 等三個常數緊貼在 Erin 設定區下方，可加一行註解「這幾個不用改」讓 Erin 分得清楚。
