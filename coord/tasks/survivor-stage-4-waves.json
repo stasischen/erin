@@ -8,11 +8,11 @@
   "branch": "codex/survivor-stage-4-waves",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "等待 Erin 決定新敵人的名字、顏色、速度與血量；Boss 名稱和外觀；以及撐幾分鐘獲勝。收到決定後繼續波次、難度曲線、Boss 與勝利畫面",
+  "next": "等待 Erin 決定階段 4 新敵人的名字、顏色、速度與血量；Boss 名稱和外觀；以及波次結束時間。收到決定後實作波次、Boss 血條與勝利畫面",
   "reviewers": ["grok"],
   "waitingFor": "erin",
   "risk": "low",
-  "updated": "2026-10-22T10:06:55Z",
+  "updated": "2026-10-22T10:20:00Z",
   "updatedBy": "codex",
   "dependsOn": ["survivor-stage-3-levelup"]
 }
