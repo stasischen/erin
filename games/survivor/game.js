@@ -34,9 +34,11 @@ const UPGRADE_TUNING = {
 const SETTINGS_KEY = "erin-survivor-settings-v1";
 const RECORD_KEY = "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
-  playerSpeed: 190, playerHealth: 100, enemySpeed: 62, enemyHealth: 100,
-  secondEnemySpeed: 88, secondEnemyHealth: 60, waveSeconds: 120,
-  teacherHealth: 1400, shotInterval: 0.72, spawnScale: 1,
+  playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
+  enemySpeed: UPGRADE_TUNING.enemySpeed, enemyHealth: UPGRADE_TUNING.enemyHealth,
+  secondEnemySpeed: UPGRADE_TUNING.secondEnemySpeed, secondEnemyHealth: UPGRADE_TUNING.secondEnemyHealth,
+  waveSeconds: UPGRADE_TUNING.waveSeconds, teacherHealth: UPGRADE_TUNING.teacherHealth,
+  shotInterval: UPGRADE_TUNING.shotInterval, spawnScale: 1,
   sound: true, vibration: true
 };
 const SETTING_CONTROLS = [
@@ -88,11 +90,13 @@ const WAVES = [
   { start: 60, jaben: 0.45, otsubon: 0.55, every: 1.2 }, // 60 秒後出怪更快
   { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.95 } // 老師出場前最熱鬧
 ];
-const SPRITES = { player: null, jaben: null, otsubon: null }; // null 會用程式畫色塊
+const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入檔名才載入；null 會用程式畫色塊
 for (const name of Object.keys(SPRITES)) {
+  const filename = SPRITES[name];
+  if (!filename) continue;
   const picture = new Image();
   picture.onload = () => { SPRITES[name] = picture; };
-  picture.src = `assets/${name}.png`;
+  picture.src = `assets/${filename}`;
 }
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
 let SHOT_INTERVAL = gameSettings.shotInterval; // 請改上面的 shotInterval
@@ -159,19 +163,25 @@ const vibrationToggle = document.getElementById("vibrationToggle");
 
 const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
-function playTone(frequency, duration = 0.07, type = "sine") {
-  if (!gameSettings.sound) return;
+let sharedAudio = null;
+function startAudio() {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
-    const audio = new AudioContextClass();
-    const oscillator = audio.createOscillator(), gain = audio.createGain();
+    if (!sharedAudio) sharedAudio = new AudioContextClass();
+    if (sharedAudio.state === "suspended") sharedAudio.resume();
+  } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
+}
+function playTone(frequency, duration = 0.07, type = "sine") {
+  if (!gameSettings.sound) return;
+  try {
+    if (!sharedAudio || sharedAudio.state !== "running") return;
+    const oscillator = sharedAudio.createOscillator(), gain = sharedAudio.createGain();
     oscillator.type = type; oscillator.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.055, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
-    oscillator.connect(gain); gain.connect(audio.destination);
-    oscillator.start(); oscillator.stop(audio.currentTime + duration);
-    oscillator.onended = () => audio.close();
+    gain.gain.setValueAtTime(0.055, sharedAudio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, sharedAudio.currentTime + duration);
+    oscillator.connect(gain); gain.connect(sharedAudio.destination);
+    oscillator.start(); oscillator.stop(sharedAudio.currentTime + duration);
   } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
 }
 
@@ -548,9 +558,9 @@ function drawClassroom() {
   ctx.fillStyle = "#f4c76e"; ctx.fillRect(14, 42, 72, 18); ctx.fillStyle = "#9bc7e8"; ctx.fillRect(92, 42, 55, 18);
 }
 
-function drawBlob(x, y, r, color, isPlayer, bounce, flash) {
+function drawBlob(x, y, r, color, isPlayer, bounce, flash, enemyId = "jaben") {
   ctx.save(); ctx.translate(x, y + Math.sin(bounce) * 2);
-  const sprite = SPRITES[isPlayer ? "player" : (color === ENEMY_TYPES[1].color ? "otsubon" : "jaben")];
+  const sprite = SPRITES[isPlayer ? "player" : enemyId];
   if (sprite) {
     if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
     ctx.drawImage(sprite, -r, -r, r * 2, r * 2); ctx.restore(); return;
@@ -591,7 +601,7 @@ function render() {
     ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
   }
   for (const enemy of state.enemies) {
-    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0);
+    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0, enemy.typeId);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
   for (const effect of state.effects) {
@@ -628,7 +638,7 @@ resetSettingsButton.addEventListener("click", () => {
 });
 soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playTone(660); });
 vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
-startButton.addEventListener("click", () => state.mode === "paused" ? togglePause() : startGame());
+startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
 pauseButton.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => { const key = event.key.length === 1 ? event.key.toLowerCase() : event.key; if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(key)) event.preventDefault(); state.keys.add(key); if (key === "Escape" || key === " ") togglePause(); });
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
