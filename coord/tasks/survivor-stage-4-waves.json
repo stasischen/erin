@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-stage-4-waves",
+  "title": "割草遊戲階段 4：時間、難度與 Boss",
+  "owner": "codex",
+  "state": "todo",
+  "repo": "erin",
+  "branch": null,
+  "pr": null,
+  "brief": "docs/survivor-game-plan.md",
+  "next": "階段 3 完成後開工：敵人波次、難度曲線、Boss 與勝利畫面",
+  "reviewers": ["grok"],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-22T04:53:13Z",
+  "updatedBy": "codex",
+  "dependsOn": ["survivor-stage-3-levelup"]
+}
