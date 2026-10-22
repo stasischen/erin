@@ -6,9 +6,9 @@ const ENEMY_TYPES = [
   { id: "jaben", name: "甲本", color: "#d58b55", speed: 62, radius: 17, damage: 12, hp: 100 }
 ];
 const SPRITES = { player: null, jaben: null }; // null 會用程式畫色塊
-const INVINCIBLE_SECONDS = 1.15;
-const MAX_DT = 0.05;
+const INVINCIBLE_SECONDS = 1.15; // 被撞後閃爍幾秒，這段時間不會再扣血
 
+const MAX_DT = 0.05; // 切回遊戲時，限制單次更新不要跳太遠
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -85,8 +85,6 @@ function spawnEnemy() {
 function tick(dt) {
   if (state.mode !== "playing") return;
   state.elapsed += dt;
-  state.player.invincible = Math.max(0, state.player.invincible - dt);
-  state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   let dx = 0, dy = 0;
   if (state.keys.has("ArrowLeft") || state.keys.has("a")) dx -= 1;
   if (state.keys.has("ArrowRight") || state.keys.has("d")) dx += 1;
@@ -121,7 +119,9 @@ function tick(dt) {
       }
     }
   }
-  if (state.player.health <= 0) showOverlay("over");
+  state.player.invincible = Math.max(0, state.player.invincible - dt);
+  state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
+  if (state.player.health <= 0) { showOverlay("over"); return; }
   statusEl.textContent = `躲避中　${Math.floor(state.elapsed)} 秒`;
 }
 
@@ -162,8 +162,10 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function frame(now) { const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") requestAnimationFrame(frame); }
-function togglePause() { if (state.mode === "playing") { showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); requestAnimationFrame(frame); } }
+let frameRequest = null;
+function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
+function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
+function togglePause() { if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); scheduleFrame(); } }
 
 startButton.addEventListener("click", () => state.mode === "paused" ? togglePause() : startGame());
 pauseButton.addEventListener("click", togglePause);
