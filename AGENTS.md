@@ -5,7 +5,7 @@
 ## 角色
 
 - `codex`：讀卡與收件匣、實作、開分支與提交、更新自己的卡、啟動試玩伺服器。不得審查自己的程式、push 或 merge 到 `main`。
-- `grok`：審查 Codex 分支並只寫自己的審查紀錄；不修改 Codex 的程式或卡片、不 merge。
+- `grok`：家長與 agent 之間的溝通窗口：轉述家長和 Erin 的原話、寫入 `coord/inbox/`、整理給家長的回報；審查 Codex 分支並寫自己的審查紀錄。不修改 Codex 的程式或卡片、不 merge。
 - `claude`：只處理 Codex 與 Grok 無法解決或意見衝突的問題，以及架構決定。
 - `erin`：遊戲總監，決定設計並試玩；可自己改程式、素材與設定值。她不自行開 AI 對話，也不當審查者。
 - `user`（家長）：操作 AI、轉述 Erin 原話、決定風險、最後審查、管理安全設定並核准上線。
@@ -24,7 +24,7 @@
 
 ## 收件匣與審查
 
-- 收件匣檔名為 `<UTC時間>-<短名>.md`，格式：`kind: request|feedback|approve`、`lane: none`、`ref: <卡片id>`、分隔線 `---`，接著放原話。Erin 的話照抄；家長核准才可用 `approve`，並在內文附 `sha: <完整40碼>`。
+- 收件匣檔名為 `<UTC時間>-<短名>.md`，格式：`kind: request|feedback|approve`、`lane: none`、`ref: <卡片id>`、分隔線 `---`，接著放原話。收件匣由 Grok 依家長轉述寫入（Codex 也可在家長直接交代時寫入）；Erin 的話照抄；家長核准才可用 `approve`，並在內文附 `sha: <完整40碼>`。
 - 審查檔第一行只能是 `verdict: approve` 或 `verdict: changes`，第二行是被審完整 40 碼 SHA，後面記錄看過的檔案與檢查結果。Approve 只對該 SHA 有效；新實質程式提交需重審。
 - Erin 在本階段範圍內的要求直接處理並記錄。超出範圍且會大改架構或拖慢進度的點子，先記錄再由 Erin 和家長決定是否開卡。資訊不足時標 `blocked` 並說明等待對象與所需答案。
 
