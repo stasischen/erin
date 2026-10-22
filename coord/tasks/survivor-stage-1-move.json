@@ -3,16 +3,20 @@
   "id": "survivor-stage-1-move",
   "title": "割草遊戲階段 1：移動與敵人",
   "owner": "codex",
-  "state": "todo",
+  "state": "peer_review",
   "repo": "erin",
-  "branch": null,
+  "branch": "codex/survivor-stage-1-move",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "階段 0 完成後開工：搖桿、WASD、敵人追逐與碰撞",
-  "reviewers": ["grok"],
+  "next": "請 Grok 審查階段 1 的操作、碰撞、暫停與重開；通過後交 Erin 試玩",
+  "reviewers": [
+    "grok"
+  ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-22T04:53:13Z",
+  "updated": "2026-10-22T06:01:24Z",
   "updatedBy": "codex",
-  "dependsOn": ["survivor-stage-0-setup"]
+  "dependsOn": [
+    "survivor-stage-0-setup"
+  ]
 }
