@@ -6,7 +6,12 @@
     <title>寵物養成</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>" />
     <link rel="stylesheet" href="style.css" />
-  </head>
+    <link rel="manifest" href="../../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+  <meta name="theme-color" content="#dff4ff" />
+</head>
   <body>
     <div class="game">
       <header>
@@ -47,5 +52,6 @@
     </div>
 
     <script src="game.js"></script>
-  </body>
+    <script src="../../register-sw.js" defer></script>
+</body>
 </html>

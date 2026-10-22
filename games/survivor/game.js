@@ -7,6 +7,15 @@ const ENEMY_TYPES = [
 ];
 const SPRITES = { player: null, jaben: null }; // null 會用程式畫色塊
 const INVINCIBLE_SECONDS = 1.15; // 被撞後閃爍幾秒，這段時間不會再扣血
+const SHOT_INTERVAL = 0.72; // 每隔幾秒自動發射一顆水球
+const PROJECTILE_DAMAGE = 35; // 每顆水球造成多少傷害
+const PROJECTILE_SPEED = 390; // 水球飛行速度
+const PROJECTILE_LIMIT = 24; // 同時存在的水球上限
+const GEM_LIMIT = 24; // 同時存在的經驗寶石上限
+const GEM_PULL_RADIUS = 105; // 靠多近時，寶石會被吸過來
+const XP_TO_LEVEL = 5; // 升級需要收集幾顆寶石
+const WATER_COLOR = "#55c9ff"; // Erin 可以改水球顏色
+const GEM_COLOR = "#55df9a"; // Erin 可以改經驗寶石顏色
 
 const MAX_DT = 0.05; // 切回遊戲時，限制單次更新不要跳太遠
 const stage = document.getElementById("stage");
@@ -20,8 +29,10 @@ const startButton = document.getElementById("startButton");
 const pauseButton = document.getElementById("pauseButton");
 const healthFill = document.getElementById("healthFill");
 const statusEl = document.getElementById("status");
+const experienceFill = document.getElementById("experienceFill");
+const levelLabel = document.getElementById("levelLabel");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, lastTime: 0, width: 0, height: 0 };
 
 function resize() {
   const rect = stage.getBoundingClientRect();
@@ -40,8 +51,14 @@ function resize() {
 function resetGame() {
   state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 };
   state.enemies = [];
+  state.projectiles = [];
+  state.gems = [];
+  state.effects = [];
   state.elapsed = 0;
   state.spawnTimer = 0.5;
+  state.shotTimer = 0.15;
+  state.xp = 0;
+  state.level = 1;
   state.keys.clear();
   state.joy = null;
   updateHud();
@@ -69,6 +86,8 @@ function updateHud() {
   const ratio = Math.max(0, state.player.health / PLAYER_HEALTH);
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
+  experienceFill.style.width = `${state.xp / XP_TO_LEVEL * 100}%`;
+  levelLabel.textContent = `Lv.${state.level}`;
 }
 
 function spawnEnemy() {
@@ -79,7 +98,42 @@ function spawnEnemy() {
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
   let y = side === 2 ? -pad : side === 3 ? state.height + pad : Math.random() * state.height;
   if (Math.hypot(x - state.player.x, y - state.player.y) < Math.min(state.width, state.height) * 0.32) { x = side < 2 ? x : (x + state.width / 2) % state.width; y = side >= 2 ? y : (y + state.height / 2) % state.height; }
-  state.enemies.push({ x, y, r: type.radius, speed: type.speed, color: type.color, wobble: Math.random() * Math.PI * 2, alive: true });
+  state.enemies.push({ x, y, r: type.radius, speed: type.speed, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
+}
+
+function closestEnemy() {
+  let target = null, best = Infinity;
+  for (const enemy of state.enemies) {
+    if (!enemy.alive) continue;
+    const distance = (enemy.x - state.player.x) ** 2 + (enemy.y - state.player.y) ** 2;
+    if (distance < best) { best = distance; target = enemy; }
+  }
+  return target;
+}
+
+function fireAtNearest() {
+  const target = closestEnemy();
+  if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
+  const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
+  state.projectiles.push({ x: state.player.x, y: state.player.y, vx: Math.cos(angle) * PROJECTILE_SPEED, vy: Math.sin(angle) * PROJECTILE_SPEED, r: 7, alive: true });
+}
+
+function burst(x, y, color, count = 8) {
+  for (let i = 0; i < count && state.effects.length < 90; i++) {
+    const angle = Math.random() * Math.PI * 2, speed = 45 + Math.random() * 110;
+    state.effects.push({ kind: "spark", x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.42 + Math.random() * 0.22, maxLife: 0.64, text: "" });
+  }
+}
+
+function damageEnemy(enemy) {
+  enemy.hp -= PROJECTILE_DAMAGE;
+  enemy.flash = 0.12;
+  state.effects.push({ kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${PROJECTILE_DAMAGE}` });
+  if (enemy.hp <= 0) {
+    enemy.alive = false;
+    burst(enemy.x, enemy.y, "#8bd7ff", 12);
+    if (state.gems.length < GEM_LIMIT) state.gems.push({ x: enemy.x, y: enemy.y, r: 8, value: 1, alive: true, wobble: Math.random() * 6 });
+  } else burst(enemy.x, enemy.y, "#ffffff", 4);
 }
 
 function tick(dt) {
@@ -99,6 +153,8 @@ function tick(dt) {
   state.spawnTimer -= dt;
   const spawnEvery = Math.max(0.72, 2.1 - state.elapsed * 0.015);
   while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
+  state.shotTimer -= dt;
+  if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += SHOT_INTERVAL; }
   for (const enemy of state.enemies) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
@@ -106,7 +162,30 @@ function tick(dt) {
     enemy.x += vx / distance * enemy.speed * dt;
     enemy.y += vy / distance * enemy.speed * dt;
     enemy.wobble += dt * 6;
+    enemy.flash = Math.max(0, enemy.flash - dt);
   }
+  for (const shot of state.projectiles) {
+    if (!shot.alive) continue;
+    shot.x += shot.vx * dt; shot.y += shot.vy * dt;
+    if (shot.x < -12 || shot.y < -12 || shot.x > state.width + 12 || shot.y > state.height + 12) { shot.alive = false; continue; }
+    for (const enemy of state.enemies) {
+      if (enemy.alive && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
+        shot.alive = false; damageEnemy(enemy); break;
+      }
+    }
+  }
+  state.projectiles = state.projectiles.filter((shot) => shot.alive);
+  state.enemies = state.enemies.filter((enemy) => enemy.alive);
+  for (const gem of state.gems) {
+    if (!gem.alive) continue;
+    gem.wobble += dt * 5;
+    const dx = state.player.x - gem.x, dy = state.player.y - gem.y, distance = Math.hypot(dx, dy);
+    if (distance < GEM_PULL_RADIUS && distance > 0.1) { const speed = 150 + (GEM_PULL_RADIUS - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
+    if (distance < state.player.r + gem.r + 3) { gem.alive = false; state.xp += gem.value; if (state.xp >= XP_TO_LEVEL) { state.xp -= XP_TO_LEVEL; state.level++; } updateHud(); }
+  }
+  state.gems = state.gems.filter((gem) => gem.alive);
+  for (const effect of state.effects) { effect.life -= dt; effect.x += effect.vx * dt; effect.y += effect.vy * dt; }
+  state.effects = state.effects.filter((effect) => effect.life > 0);
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (state.player.invincible <= 0) {
     for (const enemy of state.enemies) {
@@ -153,7 +232,22 @@ function drawBlob(x, y, r, color, isPlayer, bounce, flash) {
 
 function render() {
   drawClassroom();
-  for (const enemy of state.enemies) if (enemy.alive) drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, false);
+  for (const gem of state.gems) {
+    ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#268b64"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
+    ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
+  }
+  for (const enemy of state.enemies) {
+    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0);
+    if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
+  }
+  for (const shot of state.projectiles) { ctx.fillStyle = "rgba(28,93,125,.25)"; ctx.beginPath(); ctx.arc(shot.x + 2, shot.y + 3, shot.r + 1, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = WATER_COLOR; ctx.strokeStyle = "#2877a8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(shot.x - 2, shot.y - 2, 2, 0, Math.PI * 2); ctx.fill(); }
+  for (const effect of state.effects) {
+    const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
+    if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+    else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
+    ctx.globalAlpha = 1;
+  }
   const blinking = state.player.invincible > 0 && Math.floor(performance.now() / 90) % 2 === 0;
   if (!blinking || state.player.hitFlash > 0) drawBlob(state.player.x, state.player.y, state.player.r, "#4a9dff", true, state.elapsed * 9, state.player.hitFlash > 0);
   if (state.joy) {

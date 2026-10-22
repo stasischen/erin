@@ -14,6 +14,10 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .health-label { font-size: 13px; font-weight: 900; color: #18334c; text-shadow: 0 1px #fff; }
 .health-track { flex: 1; height: 18px; border: 3px solid #293e50; border-radius: 8px; background: #fee2e2; overflow: hidden; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
 .health-fill { width: 100%; height: 100%; background: linear-gradient(#5be08b 0 48%, #24b75c 49%); transition: width .15s; }
+.experience-wrap { display: flex; align-items: center; gap: 6px; min-width: 112px; }
+.experience-label, .level-label { font-size: 12px; font-weight: 900; color: #18334c; text-shadow: 0 1px #fff; white-space: nowrap; }
+.experience-track { width: 72px; height: 12px; border: 2px solid #293e50; border-radius: 7px; background: #e6e4fa; overflow: hidden; }
+.experience-fill { width: 0; height: 100%; background: linear-gradient(#d1a5ff 0 48%, #8d53dc 49%); transition: width .15s; }
 .status { padding: 4px 9px; border-radius: 9px; background: rgba(255,255,255,.86); font-size: 13px; font-weight: 800; }
 .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(22,45,60,.35); }
 .overlay.hidden { display: none; }

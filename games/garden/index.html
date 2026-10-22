@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>種菜小園丁</title>
     <link rel="stylesheet" href="style.css" />
-  </head>
+    <link rel="manifest" href="../../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+  <meta name="theme-color" content="#dff4ff" />
+</head>
   <body>
     <main class="game">
       <header>
@@ -36,5 +41,6 @@
     </main>
 
     <script src="game.js"></script>
-  </body>
+    <script src="../../register-sw.js" defer></script>
+</body>
 </html>
