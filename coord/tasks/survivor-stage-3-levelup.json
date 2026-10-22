@@ -8,13 +8,13 @@
   "branch": "codex/survivor-stage-3-levelup",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "請 Grok 審查本分支；通過後讓 Erin 試玩並決定專屬升級卡",
+  "next": "請 Grok 重審本分支；通過後讓 Erin 試玩並決定專屬升級卡",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-22T07:09:42Z",
+  "updated": "2026-10-22T07:14:07Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-2-attack"
