@@ -8,13 +8,13 @@
   "branch": "codex/survivor-stage-4-waves",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "請 Grok 審查階段 4 波次、乙本、老師 Boss 與勝利流程",
+  "next": "請 Grok 複審繪圖位置、WAVES 波次控制與 Boss 碰撞",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-22T11:10:00Z",
+  "updated": "2026-10-22T10:50:36Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-3-levelup"

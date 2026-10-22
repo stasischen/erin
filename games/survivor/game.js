@@ -38,6 +38,15 @@ const ENEMY_TYPES = [
   { id: "jaben", name: "甲本", color: "#d58b55", speed: UPGRADE_TUNING.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.enemyHealth },
   { id: "otsubon", name: "乙本", color: "#a879d8", speed: UPGRADE_TUNING.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.secondEnemyHealth }
 ];
+// ✏️ Erin 可以改每一波：開始秒數、甲本比例、乙本比例、幾秒出一隻。
+// 比例加起來請等於 1；秒數越小，怪物越常出現。
+const WAVES = [
+  { start: 0, jaben: 1, otsubon: 0, every: 2.1 }, // 一開始只有甲本，慢慢熟悉玩法
+  { start: 20, jaben: 0.8, otsubon: 0.2, every: 1.8 }, // 20 秒後少量乙本加入
+  { start: 35, jaben: 0.58, otsubon: 0.42, every: 1.5 }, // 35 秒後乙本變多
+  { start: 60, jaben: 0.45, otsubon: 0.55, every: 1.2 }, // 60 秒後出怪更快
+  { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.95 } // 老師出場前最熱鬧
+];
 const SPRITES = { player: null, jaben: null, otsubon: null }; // null 會用程式畫色塊
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
 const SHOT_INTERVAL = UPGRADE_TUNING.shotInterval; // 請改上面的 shotInterval
@@ -172,7 +181,9 @@ function updateHud() {
 
 function spawnEnemy() {
   if (state.enemies.length >= ENEMY_LIMIT) return;
-  const type = state.elapsed >= 35 && Math.random() < 0.42 ? ENEMY_TYPES[1] : ENEMY_TYPES[0];
+  let wave = WAVES[0];
+  for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
+  const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? ENEMY_TYPES[1] : ENEMY_TYPES[0];
   const side = Math.floor(Math.random() * 4);
   const pad = type.radius + 3;
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
@@ -299,7 +310,9 @@ function tick(dt) {
   state.spawnTimer -= dt;
   if (!state.boss && state.elapsed >= UPGRADE_TUNING.waveSeconds && state.bossIntro <= 0) summonTeacher();
   if (!state.boss) {
-    const spawnEvery = Math.max(0.72, 2.1 - state.elapsed * 0.015);
+    let wave = WAVES[0];
+    for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
+    const spawnEvery = wave.every;
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
   if (state.bossIntro > 0) {
@@ -334,7 +347,8 @@ function tick(dt) {
         if (shot.pierce > 0) shot.pierce--; else { shot.alive = false; break; }
       }
     }
-    if (state.boss && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
+    if (state.boss && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
+      shot.hitList.push(state.boss);
       state.boss.hp -= shot.damage; state.boss.flash = HIT_FLASH_SECONDS; updateHud();
       if (shot.pierce > 0) shot.pierce--; else shot.alive = false;
       if (state.boss.hp <= 0) { state.boss = null; showOverlay("won"); return; }
@@ -361,7 +375,6 @@ function tick(dt) {
       state.enemyShots.splice(i, 1);
     } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShots.splice(i, 1);
   }
-  for (const shot of state.enemyShots) { ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y); }
   for (const gem of state.gems) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
@@ -374,29 +387,20 @@ function tick(dt) {
   for (let i = state.gems.length - 1; i >= 0; i--) {
     if (!state.gems[i].alive) state.gemPool.push(state.gems.splice(i, 1)[0]);
   }
-  if (state.boss) {
-    const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
-    ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
-    ctx.fillStyle = b.flash ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
-    ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
-    ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
-    ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
-    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
-  }
+
   for (const effect of state.effects) { effect.life -= dt; effect.x += effect.vx * dt; effect.y += effect.vy * dt; }
   for (let i = state.effects.length - 1; i >= 0; i--) {
     if (state.effects[i].life <= 0) state.effectPool.push(state.effects.splice(i, 1)[0]);
   }
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (state.player.invincible <= 0) {
-    for (const enemy of state.enemies) {
-      if (enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2) {
-        state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage);
-        state.player.invincible = INVINCIBLE_SECONDS;
-        state.player.hitFlash = 0.16;
-        updateHud();
-        break;
-      }
+    let touchingEnemy = state.enemies.some((enemy) => enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2);
+    if (!touchingEnemy && state.boss && state.bossIntro <= 0) touchingEnemy = Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
+    if (touchingEnemy) {
+      state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage);
+      state.player.invincible = INVINCIBLE_SECONDS;
+      state.player.hitFlash = 0.16;
+      updateHud();
     }
   }
   state.player.invincible = Math.max(0, state.player.invincible - dt);
@@ -442,6 +446,16 @@ function render() {
     ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
     ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
     ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
+  }
+  for (const shot of state.enemyShots) { ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y); }
+  if (state.boss) {
+    const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
+    ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
+    ctx.fillStyle = b.flash ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
+    ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
+    ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
+    ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
+    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
   }
   for (const enemy of state.enemies) {
     drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0);
