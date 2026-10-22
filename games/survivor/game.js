@@ -31,12 +31,55 @@ const UPGRADE_TUNING = {
   xpToLevel: 5, // 撿幾顆寶石會升級；改小會更快升級
   autoHealSeconds: 8 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
-const PLAYER_SPEED = UPGRADE_TUNING.playerSpeed; // 請改上面的 playerSpeed
-const PLAYER_HEALTH = UPGRADE_TUNING.playerHealth; // 請改上面的 playerHealth
+const SETTINGS_KEY = "erin-survivor-settings-v1";
+const RECORD_KEY = "erin-survivor-best-seconds-v1";
+const SETTING_DEFAULTS = {
+  playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
+  enemySpeed: UPGRADE_TUNING.enemySpeed, enemyHealth: UPGRADE_TUNING.enemyHealth,
+  secondEnemySpeed: UPGRADE_TUNING.secondEnemySpeed, secondEnemyHealth: UPGRADE_TUNING.secondEnemyHealth,
+  waveSeconds: UPGRADE_TUNING.waveSeconds, teacherHealth: UPGRADE_TUNING.teacherHealth,
+  shotInterval: UPGRADE_TUNING.shotInterval, spawnScale: 1,
+  sound: true, vibration: true
+};
+const SETTING_CONTROLS = [
+  { key: "playerSpeed", label: "水星人速度", min: 100, max: 320, step: 10, unit: "" },
+  { key: "playerHealth", label: "水星人血量", min: 40, max: 200, step: 10, unit: "" },
+  { key: "enemySpeed", label: "甲本速度", min: 30, max: 130, step: 5, unit: "" },
+  { key: "enemyHealth", label: "甲本血量", min: 40, max: 240, step: 10, unit: "" },
+  { key: "secondEnemySpeed", label: "乙本速度", min: 45, max: 170, step: 5, unit: "" },
+  { key: "secondEnemyHealth", label: "乙本血量", min: 30, max: 180, step: 10, unit: "" },
+  { key: "waveSeconds", label: "老師出場時間", min: 60, max: 300, step: 10, unit: " 秒" },
+  { key: "teacherHealth", label: "老師血量", min: 500, max: 3000, step: 100, unit: "" },
+  { key: "shotInterval", label: "水球發射間隔", min: 0.25, max: 1.5, step: 0.05, unit: " 秒" },
+  { key: "spawnScale", label: "波次出怪速度", min: 0.5, max: 2, step: 0.1, unit: " 倍", format: (value) => value.toFixed(1) }
+];
+function loadSavedSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+    const result = { ...SETTING_DEFAULTS };
+    for (const item of SETTING_CONTROLS) {
+      const value = Number(saved[item.key]);
+      if (Number.isFinite(value)) result[item.key] = Math.max(item.min, Math.min(item.max, value));
+    }
+    if (typeof saved.sound === "boolean") result.sound = saved.sound;
+    if (typeof saved.vibration === "boolean") result.vibration = saved.vibration;
+    return result;
+  } catch (_) { return { ...SETTING_DEFAULTS }; }
+}
+let gameSettings = loadSavedSettings();
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(gameSettings)); } catch (_) { /* 儲存空間不可用時仍可正常遊玩 */ }
+}
+function loadBestRecord() {
+  try { const value = Number(localStorage.getItem(RECORD_KEY)); return Number.isFinite(value) && value > 0 ? value : 0; } catch (_) { return 0; }
+}
+let bestRecord = loadBestRecord();
+let PLAYER_SPEED = gameSettings.playerSpeed; // 請改上面的 playerSpeed
+let PLAYER_HEALTH = gameSettings.playerHealth; // 請改上面的 playerHealth
 const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 請改上面的 enemyLimit
 const ENEMY_TYPES = [
-  { id: "jaben", name: "甲本", color: "#d58b55", speed: UPGRADE_TUNING.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.enemyHealth },
-  { id: "otsubon", name: "乙本", color: "#a879d8", speed: UPGRADE_TUNING.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.enemyDamage, hp: UPGRADE_TUNING.secondEnemyHealth }
+  { id: "jaben", name: "甲本", color: "#d58b55", speed: gameSettings.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: gameSettings.enemyHealth },
+  { id: "otsubon", name: "乙本", color: "#a879d8", speed: gameSettings.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.enemyDamage, hp: gameSettings.secondEnemyHealth }
 ];
 // ✏️ Erin 可以改每一波：開始秒數、甲本比例、乙本比例、幾秒出一隻。
 // 比例加起來請等於 1；秒數越小，怪物越常出現。
@@ -47,9 +90,16 @@ const WAVES = [
   { start: 60, jaben: 0.45, otsubon: 0.55, every: 1.2 }, // 60 秒後出怪更快
   { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.95 } // 老師出場前最熱鬧
 ];
-const SPRITES = { player: null, jaben: null, otsubon: null }; // null 會用程式畫色塊
+const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入檔名才載入；null 會用程式畫色塊
+for (const name of Object.keys(SPRITES)) {
+  const filename = SPRITES[name];
+  if (!filename) continue;
+  const picture = new Image();
+  picture.onload = () => { SPRITES[name] = picture; };
+  picture.src = `assets/${filename}`;
+}
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
-const SHOT_INTERVAL = UPGRADE_TUNING.shotInterval; // 請改上面的 shotInterval
+let SHOT_INTERVAL = gameSettings.shotInterval; // 請改上面的 shotInterval
 const PROJECTILE_DAMAGE = UPGRADE_TUNING.projectileDamage; // 請改上面的 projectileDamage
 const PROJECTILE_SPEED = UPGRADE_TUNING.projectileSpeed; // 請改上面的 projectileSpeed
 const PROJECTILE_LIMIT = UPGRADE_TUNING.projectileLimit; // 請改上面的 projectileLimit
@@ -103,8 +153,80 @@ const levelLabel = document.getElementById("levelLabel");
 const messageCard = document.querySelector(".message-card");
 const upgradePanel = document.getElementById("upgradePanel");
 const upgradeCards = document.getElementById("upgradeCards");
+const settingsPanel = document.getElementById("settingsPanel");
+const settingsControls = document.getElementById("settingsControls");
+const settingsButton = document.getElementById("settingsButton");
+const closeSettingsButton = document.getElementById("closeSettingsButton");
+const resetSettingsButton = document.getElementById("resetSettingsButton");
+const soundToggle = document.getElementById("soundToggle");
+const vibrationToggle = document.getElementById("vibrationToggle");
 
 const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+
+let sharedAudio = null;
+function startAudio() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!sharedAudio) sharedAudio = new AudioContextClass();
+    if (sharedAudio.state === "suspended") sharedAudio.resume();
+  } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
+}
+function playTone(frequency, duration = 0.07, type = "sine") {
+  if (!gameSettings.sound) return;
+  try {
+    if (!sharedAudio || sharedAudio.state !== "running") return;
+    const oscillator = sharedAudio.createOscillator(), gain = sharedAudio.createGain();
+    oscillator.type = type; oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.055, sharedAudio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, sharedAudio.currentTime + duration);
+    oscillator.connect(gain); gain.connect(sharedAudio.destination);
+    oscillator.start(); oscillator.stop(sharedAudio.currentTime + duration);
+  } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
+}
+
+function updateSettingsButtons() {
+  soundToggle.textContent = gameSettings.sound ? "🔊 音效：開" : "🔇 音效：關";
+  vibrationToggle.textContent = gameSettings.vibration ? "📳 震動：開" : "📳 震動：關";
+}
+
+function updateSettingValue(key, value) {
+  gameSettings[key] = Number(value);
+  const enemy = ENEMY_TYPES;
+  enemy[0].speed = gameSettings.enemySpeed; enemy[0].hp = gameSettings.enemyHealth;
+  enemy[1].speed = gameSettings.secondEnemySpeed; enemy[1].hp = gameSettings.secondEnemyHealth;
+  PLAYER_SPEED = gameSettings.playerSpeed; PLAYER_HEALTH = gameSettings.playerHealth; SHOT_INTERVAL = gameSettings.shotInterval;
+  if (state.mode !== "playing" && state.mode !== "levelup") state.player.health = PLAYER_HEALTH;
+  saveSettings(); updateHud();
+}
+
+function makeSettingsControls() {
+  settingsControls.innerHTML = "";
+  for (const setting of SETTING_CONTROLS) {
+    const row = document.createElement("label"); row.className = "setting-row";
+    const heading = document.createElement("span"); heading.className = "setting-heading";
+    const name = document.createElement("strong"); name.textContent = setting.label;
+    const value = document.createElement("span"); value.className = "setting-value";
+    const range = document.createElement("input"); range.type = "range"; range.min = setting.min; range.max = setting.max; range.step = setting.step; range.value = gameSettings[setting.key];
+    const showValue = () => { const shown = setting.format ? setting.format(Number(range.value)) : range.value; value.textContent = `${shown}${setting.unit}`; };
+    range.setAttribute("aria-label", setting.label);
+    range.addEventListener("input", () => { showValue(); updateSettingValue(setting.key, range.value); });
+    heading.append(name, value); row.append(heading, range); settingsControls.appendChild(row); showValue();
+  }
+  updateSettingsButtons();
+}
+
+let settingsReturnMode = "ready";
+function openSettings() {
+  if (state.mode === "playing") togglePause();
+  settingsReturnMode = state.mode;
+  makeSettingsControls(); messageCard.hidden = true; upgradePanel.hidden = true;
+  settingsPanel.hidden = false; overlay.classList.remove("hidden");
+}
+function closeSettings() {
+  settingsPanel.hidden = true; messageCard.hidden = false;
+  showOverlay(settingsReturnMode);
+}
 
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
@@ -146,6 +268,7 @@ function resetGame() {
   state.upgrades = {}; state.pendingChoices = [];
   state.keys.clear();
   state.joy = null;
+  state.player.health = PLAYER_HEALTH;
   updateHud();
 }
 
@@ -157,14 +280,22 @@ function startGame() {
   state.lastTime = performance.now();
   scheduleFrame();
   spawnEnemy();
+  playTone(520, 0.1, "triangle");
+}
+
+function finishRun(won) {
+  bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
+  try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
+  playTone(won ? 880 : 220, 0.28, "triangle");
+  showOverlay(won ? "won" : "over");
 }
 
 function showOverlay(mode) {
   state.mode = mode;
-  overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true;
+  overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
   if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
-  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = "水星人的血條用完了，按下按鈕重新開始。"; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
-  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = "老師的血條清空，這一局勝利！"; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "Ⅱ"; }
+  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
+  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = `老師的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "Ⅱ"; }
   else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用方向鍵、WASD 或手指搖桿移動，躲開甲本！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
@@ -183,7 +314,11 @@ function spawnEnemy() {
   if (state.enemies.length >= ENEMY_LIMIT) return;
   let wave = WAVES[0];
   for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
-  const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? ENEMY_TYPES[1] : ENEMY_TYPES[0];
+  const configuredTypes = [
+    { ...ENEMY_TYPES[0], speed: gameSettings.enemySpeed, hp: gameSettings.enemyHealth },
+    { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
+  ];
+  const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
   const side = Math.floor(Math.random() * 4);
   const pad = type.radius + 3;
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
@@ -193,7 +328,7 @@ function spawnEnemy() {
 }
 
 function summonTeacher() {
-  state.boss = { x: state.width / 2, y: -64, r: 32, speed: 24, hp: UPGRADE_TUNING.teacherHealth, maxHp: UPGRADE_TUNING.teacherHealth, flash: 0, wobble: 0 };
+  state.boss = { x: state.width / 2, y: -64, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
   state.bossShotTimer = 1; state.bossIntro = 2.2;
 }
 
@@ -232,6 +367,7 @@ function burst(x, y, color, count = 8) {
 function damageEnemy(enemy, damage = effectiveDamage()) {
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = enemy.x - state.player.x; enemy.knockY = enemy.y - state.player.y; enemy.knockback = KNOCKBACK_SPEED;
+  if (enemy.hp <= 0) playTone(620, 0.09, "triangle");
   if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${Math.round(damage)}` }));
   if (enemy.hp <= 0) {
     enemy.alive = false;
@@ -308,11 +444,11 @@ function tick(dt) {
   state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
 
   state.spawnTimer -= dt;
-  if (!state.boss && state.elapsed >= UPGRADE_TUNING.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.boss && state.elapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
   if (!state.boss) {
     let wave = WAVES[0];
     for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
-    const spawnEvery = wave.every;
+    const spawnEvery = wave.every / gameSettings.spawnScale;
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
   if (state.bossIntro > 0) {
@@ -351,7 +487,7 @@ function tick(dt) {
       shot.hitList.push(state.boss);
       state.boss.hp -= shot.damage; state.boss.flash = HIT_FLASH_SECONDS; updateHud();
       if (shot.pierce > 0) shot.pierce--; else shot.alive = false;
-      if (state.boss.hp <= 0) { state.boss = null; showOverlay("won"); return; }
+      if (state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
     }
   }
   for (let i = state.projectiles.length - 1; i >= 0; i--) {
@@ -371,7 +507,7 @@ function tick(dt) {
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
-      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage); state.player.invincible = INVINCIBLE_SECONDS; updateHud(); }
+      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage); state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShots.splice(i, 1);
     } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShots.splice(i, 1);
   }
@@ -400,12 +536,14 @@ function tick(dt) {
       state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage);
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;
+      if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35);
+      playTone(180, 0.12, "sawtooth");
       updateHud();
     }
   }
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
-  if (state.player.health <= 0) { showOverlay("over"); return; }
+  if (state.player.health <= 0) { finishRun(false); return; }
   statusEl.textContent = state.boss ? "老師出現！打完血條" : `躲避中　${Math.floor(state.elapsed)} 秒`;
 }
 
@@ -420,8 +558,13 @@ function drawClassroom() {
   ctx.fillStyle = "#f4c76e"; ctx.fillRect(14, 42, 72, 18); ctx.fillStyle = "#9bc7e8"; ctx.fillRect(92, 42, 55, 18);
 }
 
-function drawBlob(x, y, r, color, isPlayer, bounce, flash) {
+function drawBlob(x, y, r, color, isPlayer, bounce, flash, enemyId = "jaben") {
   ctx.save(); ctx.translate(x, y + Math.sin(bounce) * 2);
+  const sprite = SPRITES[isPlayer ? "player" : enemyId];
+  if (sprite) {
+    if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
+    ctx.drawImage(sprite, -r, -r, r * 2, r * 2); ctx.restore(); return;
+  }
   ctx.fillStyle = "rgba(36,57,67,.22)"; ctx.beginPath(); ctx.ellipse(1, r * .82, r * .9, r * .27, 0, 0, Math.PI * 2); ctx.fill();
   if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   ctx.fillStyle = flash ? "#fff" : color; ctx.strokeStyle = isPlayer ? "#2458a4" : "#87522f"; ctx.lineWidth = 3;
@@ -458,7 +601,7 @@ function render() {
     ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
   }
   for (const enemy of state.enemies) {
-    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0);
+    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0, enemy.typeId);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
   for (const effect of state.effects) {
@@ -483,7 +626,19 @@ function scheduleFrame() { if (frameRequest !== null) return; frameRequest = req
 function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
 function togglePause() { if (state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); scheduleFrame(); } }
 
-startButton.addEventListener("click", () => state.mode === "paused" ? togglePause() : startGame());
+settingsButton.addEventListener("click", openSettings);
+closeSettingsButton.addEventListener("click", closeSettings);
+resetSettingsButton.addEventListener("click", () => {
+  gameSettings = { ...SETTING_DEFAULTS };
+  saveSettings(); makeSettingsControls();
+  updateSettingValue("playerSpeed", gameSettings.playerSpeed);
+  ENEMY_TYPES[0].speed = gameSettings.enemySpeed; ENEMY_TYPES[0].hp = gameSettings.enemyHealth;
+  ENEMY_TYPES[1].speed = gameSettings.secondEnemySpeed; ENEMY_TYPES[1].hp = gameSettings.secondEnemyHealth;
+  if (state.mode !== "playing") { state.player.health = PLAYER_HEALTH; updateHud(); }
+});
+soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playTone(660); });
+vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
+startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
 pauseButton.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => { const key = event.key.length === 1 ? event.key.toLowerCase() : event.key; if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(key)) event.preventDefault(); state.keys.add(key); if (key === "Escape" || key === " ") togglePause(); });
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });

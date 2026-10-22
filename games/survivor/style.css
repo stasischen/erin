@@ -23,6 +23,19 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .overlay.hidden { display: none; }
 .message-card { width: min(420px, 100%); padding: 22px; border: 4px solid #406276; border-radius: 22px; background: #fffdf2; box-shadow: 0 8px 0 rgba(22,48,68,.35); text-align: center; }
 .upgrade-panel { width: min(900px, 100%); max-height: 100%; overflow: auto; padding: 18px; border: 4px solid #406276; border-radius: 22px; background: #fffdf2; box-shadow: 0 8px 0 rgba(22,48,68,.35); text-align: center; }
+.settings-panel { width: min(680px, 100%); max-height: 100%; overflow: auto; padding: 18px; border: 4px solid #406276; border-radius: 22px; background: #fffdf2; box-shadow: 0 8px 0 rgba(22,48,68,.35); }
+.settings-panel[hidden] { display: none; }
+.settings-panel h2 { margin: 0; text-align: center; font-size: clamp(23px, 4vw, 30px); }
+.settings-panel > p { margin: 5px 0 12px; text-align: center; font-size: 14px; font-weight: 700; }
+.settings-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; }
+.setting-row { min-width: 0; display: grid; gap: 2px; padding: 5px 8px; border-radius: 10px; background: #edf7fc; }
+.setting-heading { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.setting-value { color: #1e64a0; font-weight: 900; white-space: nowrap; }
+.setting-row input { width: 100%; min-height: 30px; margin: 0; accent-color: #3288e8; touch-action: pan-x; }
+.settings-toggles, .settings-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+.settings-action { min-height: 48px; padding: 8px 16px; border: 2px solid #93b9ce; border-radius: 13px; background: #fff; color: #17304d; font-size: 16px; font-weight: 850; }
+.settings-done { background: #3288e8; border-color: #1e5fae; color: white; }
+.menu-settings { display: block; margin: 0 auto 12px; }
 .upgrade-panel[hidden], .message-card[hidden] { display: none; }
 .upgrade-panel h2 { margin: 0 0 4px; font-size: clamp(23px, 4vw, 32px); }
 .upgrade-panel p { margin: 4px 0 14px; font-weight: 700; }
@@ -40,7 +53,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .start-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #1e5fae; }
 .help { flex: 0 0 auto; text-align: center; font-size: 13px; font-weight: 750; color: #36536a; }
 @media (orientation: landscape) and (max-height: 520px) { .game-shell { gap: 4px; padding-top: 4px; padding-bottom: 4px; } .topbar { height: 38px; flex-basis: 38px; } .message-card { padding: 12px 18px; } .message-icon { font-size: 34px; } .message-card p { margin: 5px 0 10px; } .help { font-size: 11px; } }
-@media (max-width: 600px) { .upgrade-panel { padding: 10px; } .upgrade-cards { gap: 7px; } .upgrade-card { min-height: 170px; padding: 9px 5px; } .upgrade-icon { font-size: 34px; } .upgrade-card span:not(.upgrade-icon) { font-size: 12px; } }
+@media (max-width: 600px) { .upgrade-panel { padding: 10px; } .upgrade-cards { gap: 7px; } .upgrade-card { min-height: 170px; padding: 9px 5px; } .upgrade-icon { font-size: 34px; } .upgrade-card span:not(.upgrade-icon) { font-size: 12px; } .settings-panel { padding: 10px; } .settings-controls { grid-template-columns: 1fr; gap: 4px; } .setting-row { grid-template-columns: 1fr; } .setting-heading { font-size: 13px; } .settings-action { min-height: 48px; } }
 
 .boss-hud { position: absolute; top: 48px; left: 50%; z-index: 2; transform: translateX(-50%); width: min(420px, 72vw); display: flex; align-items: center; gap: 8px; padding: 5px 9px; border: 2px solid #51394d; border-radius: 10px; background: rgba(255,255,255,.92); color: #402940; font-size: 14px; font-weight: 900; }
 .boss-hud[hidden] { display: none; }
