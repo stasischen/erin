@@ -23,7 +23,8 @@ const UPGRADE_TUNING = {
   projectileLimit: 24, // 畫面最多同時有幾顆水球；改大會有更多水球
   gemLimit: 24, // 畫面最多同時有幾顆寶石；改大會留下更多寶石
   gemPullRadius: 105, // 靠多近寶石會被吸過來；改大能從更遠撿到
-  xpToLevel: 5 // 撿幾顆寶石會升級；改小會更快升級
+  xpToLevel: 5, // 撿幾顆寶石會升級；改小會更快升級
+  autoHealSeconds: 8 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
 const PLAYER_SPEED = UPGRADE_TUNING.playerSpeed; // 請改上面的 playerSpeed
 const PLAYER_HEALTH = UPGRADE_TUNING.playerHealth; // 請改上面的 playerHealth
@@ -64,8 +65,9 @@ const UPGRADES = [
   // 穿透水球：每升一級多穿透一隻，不需要改數字。
   { id: "piercing-water", icon: "🫧", name: "穿透水球", description: "水球多穿透一隻敵人" },
   // 水花四濺：改 splashBaseRadius 和 splashPerLevel。
-  { id: "splash-water", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" }
-  // Erin 決定專屬卡後，在這裡新增卡片資料並請 Codex 加上對應效果。
+  { id: "splash-water", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" },
+  // 自動補血：改 autoHealSeconds，升級後每級回血間隔再快約 20%。
+  { id: "auto-heal", icon: "🩹", name: "自動補血", description: "慢慢恢復血條" }
 ];
 
 const stage = document.getElementById("stage");
@@ -85,7 +87,7 @@ const messageCard = document.querySelector(".message-card");
 const upgradePanel = document.getElementById("upgradePanel");
 const upgradeCards = document.getElementById("upgradeCards");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
@@ -119,6 +121,7 @@ function resetGame() {
   state.elapsed = 0;
   state.spawnTimer = 0.5;
   state.shotTimer = 0.15;
+  state.healTimer = 0;
   state.xp = 0;
   state.level = 1;
   state.upgrades = {}; state.pendingChoices = [];
@@ -208,6 +211,11 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
 function upgradeLevel(id) { return state.upgrades[id] || 0; }
 function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
 function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - upgradeLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction)); }
+function maxPlayerHealth() { return PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5); }
+function addHealEffect() {
+  if (state.effects.length >= 90) return;
+  state.effects.push(takeFromPool(state.effectPool, { kind: "heal", x: state.player.x, y: state.player.y - state.player.r, vx: 0, vy: -24, color: "#21b85b", life: 0.8, maxLife: 0.8, text: "+1" }));
+}
 function chooseUpgradeCards() {
   const available = UPGRADES.filter((card) => upgradeLevel(card.id) < UPGRADE_TUNING.maxUpgradeLevel);
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "❤️", name: "回血", description: "恢復 1 顆心" }]; }
@@ -242,6 +250,19 @@ function grantExperience(value) {
 function tick(dt) {
   if (state.mode !== "playing") return;
   state.elapsed += dt;
+  const healLevel = upgradeLevel("auto-heal");
+  if (healLevel > 0) {
+    state.healTimer += dt;
+    const healInterval = UPGRADE_TUNING.autoHealSeconds * Math.pow(0.8, healLevel - 1);
+    while (state.healTimer >= healInterval) {
+      state.healTimer -= healInterval;
+      if (state.player.health < maxPlayerHealth()) {
+        state.player.health = Math.min(maxPlayerHealth(), state.player.health + 1);
+        addHealEffect();
+        updateHud();
+      }
+    }
+  }
   let dx = 0, dy = 0;
   if (state.keys.has("ArrowLeft") || state.keys.has("a")) dx -= 1;
   if (state.keys.has("ArrowRight") || state.keys.has("d")) dx += 1;
@@ -367,6 +388,7 @@ function render() {
   for (const effect of state.effects) {
     const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
     if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+    else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
     else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
     ctx.globalAlpha = 1;
