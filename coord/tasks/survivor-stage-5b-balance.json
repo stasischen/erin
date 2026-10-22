@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-stage-5b-balance",
+  "title": "割草遊戲階段 5b：穿透修正與難度平衡",
+  "owner": "codex",
+  "state": "todo",
+  "repo": "erin",
+  "branch": null,
+  "pr": null,
+  "brief": "coord/inbox/done/20261022T111615Z-parent-balance.md",
+  "next": "在 survivor-stage-5-polish 完成後，檢查並修正水球穿透表現，調整難度和舊設定版本，再請 Grok 審查。",
+  "reviewers": ["grok"],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-22T11:17:27Z",
+  "updatedBy": "codex",
+  "dependsOn": ["survivor-stage-5-polish"]
+}
