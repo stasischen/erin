@@ -291,7 +291,7 @@ AI 工具都登入家長的帳號，這台電腦上也有家長的 GitHub 登入
 1. **由家長操作 AI**：Codex、Grok、Claude 和 `GAME_WORKFLOW.md` 的 Gem 都由家長打字、讀回覆；Erin 坐在旁邊可以直接口述想法，但不自己開 AI 對話，家長不在時也不用。各服務都有使用年齡限制：OpenAI 規定 13 歲以上（未滿 18 要家長同意），Claude 要 18 歲以上，Grok 也有年齡規定，以各服務最新條款為準。不碰 AI 的部分都放手讓 Erin 做：改程式和設定數字、用 Piskel 畫圖並放進 `assets/`、試玩、跑試玩伺服器，家長在旁邊時也可以自己打字和跑 git。
 2. **Codex 權限**：Codex 每個對話可以各自選權限。開給這個遊戲用的對話選「只能改工作資料夾、其他動作先詢問」，不要用完整權限；也讓它直接在 `~/Dev/projects/erin` 工作，不要開雲端任務或另一個工作副本，不然 Grok 和 Erin 看不到同一份檔案。終端機版用 `codex -s workspace-write -a on-request -C ~/Dev/projects/erin`，或建立 `~/.codex/erin.config.toml`（內容 `sandbox_mode = "workspace-write"`、`approval_policy = "on-request"`），再用 `codex -p erin` 開。
 3. **Grok Bot 權限**：本機工具改成每次執行前詢問，家長看過再按允許。
-4. **上線權限**：agent 不 push；上線由家長做，或家長當場指示。
+4. **上線權限**：agent 可 push 自己的 `codex/<卡片id>` 分支並開 PR，但不得 push 或 merge 到 `main`。合併上線由家長明確核准後執行。
 5. **建議再多一層**：開一個專門做這個遊戲的 macOS「標準」使用者帳號，只 clone `erin` repo、不登入家長的 GitHub。家長在這個帳號裡操作 Codex 和 Grok，agent 就碰不到家長的其他專案和憑證；要上線時家長再用自己的帳號 push。家長離開時鎖定這個帳號，避免 Erin 單獨使用 AI。
 6. **隱私**：家長打給 AI 的內容和收件匣的原話，都不放 Erin 的全名、學校、年齡、照片或住址（見 §3.3、§3.6）。
 

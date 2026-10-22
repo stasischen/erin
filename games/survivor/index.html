@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#dff4ff" />
+  <title>小怪獸</title>
+  <link rel="stylesheet" href="style.css?v=20261022b" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="back" href="../../">‹ 回遊戲樂園</a>
+      <h1>👾 小怪獸</h1>
+      <button id="pauseButton" class="pause-button" type="button" aria-label="暫停">Ⅱ</button>
+    </header>
+    <section class="stage" id="stage" aria-label="遊戲畫面">
+      <canvas id="gameCanvas" aria-label="藍色水星人在教室躲避甲本"></canvas>
+      <div class="hud" aria-live="polite">
+        <div class="health-wrap"><span class="health-label">血條</span><div class="health-track"><div id="healthFill" class="health-fill"></div></div></div>
+        <span id="status" class="status">準備開始</span>
+      </div>
+      <div id="overlay" class="overlay">
+        <div class="message-card">
+          <div id="messageIcon" class="message-icon">🧅</div>
+          <h2 id="messageTitle">小怪獸</h2>
+          <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
+          <button id="startButton" class="start-button" type="button">開始遊戲</button>
+        </div>
+      </div>
+    </section>
+    <footer class="help">移動：方向鍵／WASD／觸控搖桿</footer>
+  </main>
+  <script src="game.js?v=20261022b"></script>
+</body>
+</html>
