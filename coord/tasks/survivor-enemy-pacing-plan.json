@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-enemy-pacing-plan",
+  "title": "小怪獸：小怪行為與出怪節奏規劃（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-enemy-pacing-plan",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T190155Z-parent-enemy-pacing-plan.md",
+  "next": "請 Grok 審查八種行為、120 秒時間軸與隨機方案；未定細節見備忘。Godot §11：純文件，無資料／規則／素材改動。commit、push、PR 交 erin-watch。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T19:03:46.152691Z",
+  "updatedBy": "codex"
+}
