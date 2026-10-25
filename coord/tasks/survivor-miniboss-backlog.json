@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-miniboss-backlog",
+  "title": "小怪獸：小 Boss／精英怪備忘（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-miniboss-backlog",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T145457Z-parent-miniboss-backlog.md",
+  "next": "請 Grok 審查小 Boss／精英怪備忘：Hades 與 Brotato 收件匣靈感、⭐ 中段甜點小 Boss 提案，以及現有招式／造型與前節備忘的重疊說明。只改文件；是否採用與製作順序待 Erin 和家長決定。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T14:56:42.786166Z",
+  "updatedBy": "codex"
+}
