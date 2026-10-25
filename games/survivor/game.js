@@ -62,6 +62,13 @@ const BUILD_TUNING = {
   water: { name: "🌊 水", color: "#237bc2" },
   wind: { name: "🌪️ 風", color: "#23815e" },
   thunder: { name: "⚡ 雷", color: "#9755bb" },
+  ultimateSeconds: 10, // 海嘯每幾秒來一次
+  cloudSeconds: 2, // 雷雲隔幾秒劈一次
+  ultimateDamage: 80, ultimateGrowth: 0.3, // 終極傷害與每級增加比例
+  tornadoRadius: 80, tornadoSpeed: 2.5, tornadoTick: 0.4, // 龍捲風繞行半徑、速度與傷害間隔
+  shotRange: 720, // 普通水球最遠飛多遠；風入門會依等級加長
+  windSpeed: 0.18, movingRate: 0.12, // 風入門水球加速；疾風每級依移速增加攻速
+  stunSeconds: 0.5, counterRadius: 130, counterDamage: 25, // 暈眩秒數、反擊距離與每級傷害
   supportChance: 0.25, // 四次選卡約一次出現舊的支援卡
   slowSeconds: 1.2, slowMultiplier: 0.55, // 水讓敵人慢幾秒、剩多少速度
   pushDistance: 28, pullDistance: 38, // 風把敵人推多遠、技能拉近多遠
@@ -245,35 +252,50 @@ const UPGRADES = [
   // 水球加大：改 waterSizePerLevel、damagePerLevel。
   { id: "big-water", slot: "attack", icon: "💧", name: "水球加大", description: "水球更大、傷害更高" },
   // 連發水球：改 fireRateReduction。
-  { id: "rapid-water", slot: "attack", icon: "⚡", name: "連發水球", description: "發射速度提升" },
+  { id: "rapid-water", slot: "attack", icon: "⏩", name: "連發水球", description: "發射速度提升" },
   // 多重水球：目前每升一級多射一顆，角度改 extraShotAngle。
-  { id: "multi-water", slot: "attack", icon: "🌊", name: "多重水球", description: "每次多發一顆" },
+  { id: "multi-water", slot: "attack", icon: "🎯", name: "多重水球", description: "每次多發一顆" },
   // 洋蔥衝刺：改 moveSpeedPerLevel。
   { id: "onion-dash", slot: "passive", icon: "🧅", name: "洋蔥衝刺", description: "移動速度提升" },
   // 泡泡護盾：目前每升一級增加五分之一血條。
-  { id: "bubble-shield", school: "thunder", slot: "passive", icon: "❤️", name: "泡泡護盾", description: "血條變長一點，並回一點血" },
+  { id: "bubble-shield", slot: "passive", icon: "❤️", name: "泡泡護盾", description: "血條變長一點，並回一點血" },
   // 寶石磁鐵：改 magnetPerLevel。
-  { id: "gem-magnet", school: "wind", slot: "passive", icon: "🧲", name: "寶石磁鐵", description: "撿取範圍提升" },
+  { id: "gem-magnet", slot: "passive", icon: "🧲", name: "寶石磁鐵", description: "撿取範圍提升" },
   // 穿透水球：每升一級多穿透一隻，不需要改數字。
   { id: "piercing-water", slot: "attack", icon: "🫧", name: "穿透水球", description: "水球多穿透一隻敵人" },
   // 水花四濺：改 splashBaseRadius 和 splashPerLevel。
   { id: "splash-water", slot: "attack", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" },
   // 自動補血：改 autoHealSeconds，升級後每級回血間隔再快約 20%。
-  { id: "auto-heal", school: "water", slot: "passive", icon: "🩹", name: "自動補血", description: "慢慢恢復血條" }
+  { id: "auto-heal", slot: "passive", icon: "🩹", name: "自動補血", description: "慢慢恢復血條" }
 ];
 
-// 每條流派四張卡；新行為拿一次就開啟。重複強化與合體留給後續卡。
+// 樹的前置條件獨立於 HUD 欄位：入門各佔普攻／衝刺／技能，才能跨流派合體。
 UPGRADES.push(
-  { id: "water-attack", school: "water", slot: "attack", icon: "💧", name: "緩流水球", description: "水球命中讓敵人暫時變慢", maxLevel: 1 },
-  { id: "wind-attack", school: "wind", slot: "attack", icon: "🌬️", name: "推風水球", description: "水球命中把敵人往外推", maxLevel: 1 },
-  { id: "thunder-attack", school: "thunder", slot: "attack", icon: "⚡", name: "跳電水球", description: "命中後跳電到附近另一隻敵人", maxLevel: 1 },
-  { id: "water-skill", school: "water", slot: "skill", icon: "🌊", name: "泡泡水窪", description: "泡泡爆開後留下緩速水窪", maxLevel: 1 },
-  { id: "wind-skill", school: "wind", slot: "skill", icon: "🌪️", name: "聚風泡泡", description: "泡泡爆開時先把遠處敵人拉近", maxLevel: 1 },
-  { id: "thunder-skill", school: "thunder", slot: "skill", icon: "⛈️", name: "落雷泡泡", description: "泡泡爆開時加一道較大範圍落雷", maxLevel: 1 },
-  { id: "water-dash", school: "water", slot: "dash", icon: "💦", name: "水窪衝刺", description: "衝刺沿路留下傷敵、緩速水窪", maxLevel: 1 },
-  { id: "wind-dash", school: "wind", slot: "dash", icon: "🍃", name: "旋風衝刺", description: "衝刺沿路留下傷敵、推開敵人的旋風", maxLevel: 1 },
-  { id: "thunder-dash", school: "thunder", slot: "dash", icon: "〰️", name: "電痕衝刺", description: "衝刺沿路留下會跳電的傷害電痕", maxLevel: 1 }
+  { id: "water-attack", school: "water", slot: "attack", tier: "entry", icon: "🔹", name: "濺水入門", description: "水球命中濺水花，升級擴大水花" },
+  { id: "water-skill", school: "water", slot: "skill", requires: ["water-attack"], icon: "🏞️", name: "水窪 A", description: "水球落點與泡泡留下緩速水窪" },
+  { id: "water-dash", school: "water", slot: "dash", requires: ["water-attack"], icon: "🛤️", name: "水痕 B", description: "衝刺沿路留下緩速水痕" },
+  { id: "water-ultimate", school: "water", slot: "passive", tier: "ultimate", requires: ["water-skill", "water-dash"], icon: "🌊", name: "大海嘯", description: "每 10 秒一道巨浪掃過全場" },
+  { id: "wind-attack", school: "wind", slot: "dash", tier: "entry", icon: "🌬️", name: "疾風入門", description: "水球飛得更快、更遠" },
+  { id: "wind-dash", school: "wind", slot: "dash", requires: ["wind-attack"], icon: "🍃", name: "旋風 A", description: "衝刺旋風傷敵並推開敵人" },
+  { id: "wind-speed", school: "wind", slot: "passive", requires: ["wind-attack"], icon: "👟", name: "疾行 B", description: "移動越快，水球發射越快" },
+  { id: "wind-ultimate", school: "wind", slot: "passive", tier: "ultimate", requires: ["wind-dash", "wind-speed"], icon: "🌪️", name: "環繞龍捲風", description: "龍捲風繞主角旋轉，碰到就傷害" },
+  { id: "thunder-attack", school: "thunder", slot: "skill", tier: "entry", icon: "⚡", name: "跳電入門", description: "水球跳電到附近另一隻，升級更痛" },
+  { id: "thunder-skill", school: "thunder", slot: "skill", requires: ["thunder-attack"], icon: "🔋", name: "電泡泡 A", description: "泡泡帶電，炸中讓敵人暈眩" },
+  { id: "thunder-counter", school: "thunder", slot: "passive", requires: ["thunder-attack"], icon: "🛡️", name: "放電反擊 B", description: "每次受傷放電反擊附近敵人" },
+  { id: "thunder-ultimate", school: "thunder", slot: "passive", tier: "ultimate", requires: ["thunder-skill", "thunder-counter"], icon: "⛈️", name: "雷雲", description: "雷雲定期隨機劈中一隻敵人" },
+  { id: "fusion-puddle", school: "water", slot: "skill", tier: "fusion", requires: ["water-skill", "thunder-attack"], icon: "🔌", name: "導電水窪", description: "水窪額外放電，升級增加電傷害" },
+  { id: "fusion-storm", school: "wind", slot: "dash", tier: "fusion", requires: ["wind-dash", "water-attack"], icon: "🌧️", name: "暴風雨", description: "旋風衝刺同時灑下傷敵水窪" },
+  { id: "fusion-dash", school: "thunder", slot: "dash", tier: "fusion", requires: ["wind-speed", "thunder-attack"], icon: "☄️", name: "閃電衝刺", description: "衝刺留下會跳電的電痕" }
 );
+function canOffer(card) {
+  if (upgradeLevel(card.id) >= UPGRADE_TUNING.maxUpgradeLevel) return false;
+  if ((card.requires || []).some(id => !upgradeLevel(id))) return false;
+  if (card.tier === "entry" && UPGRADES.some(other => other.tier === "entry" && other.slot === card.slot && other.school !== card.school && upgradeLevel(other.id))) return false;
+  return card.tier !== "ultimate" || !UPGRADES.some(other => other.tier === "ultimate" && other.id !== card.id && upgradeLevel(other.id));
+}
+function cardRequirements(card) {
+  return (card.requires || []).map(id => UPGRADES.find(other => other.id === id).name + " Lv1").join(" ＋ ");
+}
 
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("gameCanvas");
@@ -399,7 +421,7 @@ function resize() {
 
 function resetGame() {
   for (const field of state.fields) state.fieldPool.push(field);
-  state.fields = []; state.trailDistance = 0;
+  state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateVisual = null; state.moveRate = 0;
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
   state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
   state.bomb = null; state.bombBlast = null; state.pointerId = null;
@@ -470,7 +492,8 @@ function updateHud() {
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
-    return `<span><b>${BUILD_SLOTS[slot]}</b> ${cards.length ? cards.map((card) => `<i title="${card.school ? BUILD_TUNING[card.school].name : "支援"}：${card.name}" style="color:${card.school ? BUILD_TUNING[card.school].color : "#426b85"}">${card.icon}</i>`).join(" ") : "—"}</span>`;
+    const detail = cards.map(card => `${card.name} Lv${upgradeLevel(card.id)}`).join("、");
+    return `<span title="${detail}"><b>${BUILD_SLOTS[slot]}</b> <i>${cards.length ? cards[cards.length - 1].icon : "—"}</i><small>${cards.length ? `+${cards.length}` : ""}</small></span>`;
   }).join("");
   if (slotMarkup !== lastSlotMarkup) { slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup; }
   bossHud.hidden = !state.boss;
@@ -510,7 +533,7 @@ function updateBookShooting(dt) {
   for (const enemy of state.enemies) enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => enemy.alive && enemy.shotCooldown <= 0 && enemy.x >= enemy.r && enemy.x <= state.width - enemy.r && enemy.y >= enemy.r && enemy.y <= state.height - enemy.r);
+  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && enemy.x >= enemy.r && enemy.x <= state.width - enemy.r && enemy.y >= enemy.r && enemy.y <= state.height - enemy.r);
   if (!ready.length) return;
   const enemy = ready[Math.floor(Math.random() * ready.length)];
   const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
@@ -549,7 +572,7 @@ function fireAtNearest() {
   const count = 1 + upgradeLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: upgradeLevel("piercing-water") > 0, pierce: upgradeLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => upgradeLevel(`${school}-attack`)), hitList: [], alive: true }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + upgradeLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + upgradeLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: upgradeLevel("piercing-water") > 0, pierce: upgradeLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => upgradeLevel(`${school}-attack`)), rangeLeft: BUILD_TUNING.shotRange * (1 + upgradeLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true }));
   }
 }
 
@@ -584,15 +607,15 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
 
 function upgradeLevel(id) { return state.upgrades[id] || 0; }
 function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
-function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - upgradeLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction)); }
+function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - upgradeLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / (1 + (state.moveRate || 0) * upgradeLevel("wind-speed") * BUILD_TUNING.movingRate)); }
 function maxPlayerHealth() { return PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5); }
 function addHealEffect() {
   if (state.effects.length >= 90) return;
   state.effects.push(takeFromPool(state.effectPool, { kind: "heal", x: state.player.x, y: state.player.y - state.player.r, vx: 0, vy: -24, color: "#21b85b", life: 0.8, maxLife: 0.8, text: "+1" }));
 }
 function chooseUpgradeCards() {
-  const available = UPGRADES.filter((card) => upgradeLevel(card.id) < (card.maxLevel || UPGRADE_TUNING.maxUpgradeLevel));
-  if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "❤️", name: "回血", description: "恢復 1 顆心" }]; }
+  const available = UPGRADES.filter(canOffer);
+  if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "🥤", name: "回血", description: "恢復 1 顆心" }]; }
   else {
     const shuffled = available.slice();
     for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
@@ -608,20 +631,23 @@ function chooseUpgradeCards() {
 function showUpgradeChoices() {
   render();
   state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
+  const tree = document.getElementById("skillTree");
+  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school && card.tier !== "fusion").map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires ? "；需要：" + cardRequirements(card) : ""}">${card.icon}${card.name} Lv${upgradeLevel(card.id)}${card.requires ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
-    if (card.school) button.style.borderColor = BUILD_TUNING[card.school].color;
+    button.dataset.rarity = card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires ? "rare" : "common";
+    if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
     const tag = card.school ? `${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
-    button.innerHTML = `<small>${tag}</small><span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level}</small>`;
+    button.innerHTML = `<small>${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level} / 5</small>${card.requires ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
     button.addEventListener("click", () => applyUpgrade(index)); upgradeCards.appendChild(button);
   });
   statusEl.textContent = "選一張升級卡";
 }
 function applyUpgrade(index) {
-  const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup") return;
+  const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
   if (card.id === "heal") state.player.health = Math.min(PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5), state.player.health + Math.ceil(PLAYER_HEALTH / 5));
-  else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
+  else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.tier === "ultimate" && upgradeLevel(card.id) === 1) state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : 0; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
   state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
@@ -655,17 +681,21 @@ function shiftTarget(target, x, y, distance) {
   target.x += dx / length * distance; target.y += dy / length * distance;
 }
 function schoolEffect(school, target, x, y, damage, excluded = []) {
-  if (school === "water") target.slowTimer = BUILD_TUNING.slowSeconds;
-  if (school === "wind") shiftTarget(target, x, y, BUILD_TUNING.pushDistance);
+  if (school === "water") {
+    const level = upgradeLevel("water-attack");
+    if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(other.x - x, other.y - y) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (0.2 + level * 0.1));
+    if (upgradeLevel("water-skill")) addField("water", x, y);
+  }
+  if (school === "wind") return; // 入門只提升水球速度；擊退由旋風處理。
   if (school === "thunder") {
     const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(enemy.x - x, enemy.y - y) <= BUILD_TUNING.chainRadius)
       .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
-    if (other) { hitBuildTarget(other, damage * BUILD_TUNING.chainDamage); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
+    if (other) { hitBuildTarget(other, damage * BUILD_TUNING.chainDamage * (1 + (upgradeLevel("thunder-attack") - 1) * .25)); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
   }
 }
 function addField(school, x, y, radius = BUILD_TUNING.fieldRadius) {
   if (state.fields.length >= BUILD_TUNING.fieldLimit) state.fieldPool.push(state.fields.shift());
-  state.fields.push(takeFromPool(state.fieldPool, { school, x, y, radius, life: BUILD_TUNING.fieldSeconds, timer: 0 }));
+  state.fields.push(takeFromPool(state.fieldPool, { school, x, y, radius: radius * (1 + Math.max(0, upgradeLevel(school === "water" ? "water-skill" : "wind-dash") - 1) * .1), life: BUILD_TUNING.fieldSeconds, timer: 0 }));
 }
 function updateFields(dt) {
   for (let i = state.fields.length - 1; i >= 0; i--) {
@@ -675,8 +705,14 @@ function updateFields(dt) {
     field.timer += BUILD_TUNING.fieldInterval;
     for (const target of combatTargets()) {
       if (Math.hypot(target.x - field.x, target.y - field.y) > field.radius + target.r) continue;
-      hitBuildTarget(target, BUILD_TUNING.fieldDamage);
-      schoolEffect(field.school, target, field.x, field.y, BUILD_TUNING.fieldDamage);
+      const level = field.school === "water" ? Math.max(upgradeLevel("water-skill"), upgradeLevel("water-dash"), upgradeLevel("fusion-storm")) : field.school === "wind" ? upgradeLevel("wind-dash") : upgradeLevel("fusion-dash");
+      hitBuildTarget(target, BUILD_TUNING.fieldDamage * Math.max(1, level));
+      if (field.school === "water") {
+        target.slowTimer = BUILD_TUNING.slowSeconds;
+        if (upgradeLevel("fusion-puddle")) { hitBuildTarget(target, BUILD_TUNING.fieldDamage * upgradeLevel("fusion-puddle")); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
+      }
+      if (field.school === "wind") shiftTarget(target, field.x, field.y, BUILD_TUNING.pushDistance * Math.max(1, level));
+      if (field.school === "thunder") schoolEffect("thunder", target, target.x, target.y, BUILD_TUNING.fieldDamage * Math.max(1, level));
       if (state.mode !== "playing") return;
     }
   }
@@ -687,10 +723,36 @@ function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
   let next = Math.max(0, spacing - state.trailDistance);
   while (next <= distance) {
     const fraction = distance > 0 ? next / distance : 0;
-    for (const school of ["water", "wind", "thunder"]) if (upgradeLevel(`${school}-dash`)) addField(school, fromX + (x - fromX) * fraction, fromY + (y - fromY) * fraction);
+    for (const school of ["water", "wind", "thunder"]) if ((school === "water" && (upgradeLevel("water-dash") || upgradeLevel("fusion-storm"))) || (school === "wind" && upgradeLevel("wind-dash")) || (school === "thunder" && upgradeLevel("fusion-dash"))) addField(school, fromX + (x - fromX) * fraction, fromY + (y - fromY) * fraction);
     next += spacing;
   }
   state.trailDistance = (state.trailDistance + distance) % spacing;
+}
+function counterDischarge() {
+  const level = upgradeLevel("thunder-counter");
+  if (!level) return;
+  for (const target of combatTargets()) {
+    if (Math.hypot(target.x - state.player.x, target.y - state.player.y) < BUILD_TUNING.counterRadius) {
+      hitBuildTarget(target, level * BUILD_TUNING.counterDamage); burst(target.x, target.y, BUILD_TUNING.thunder.color, 5);
+      if (state.mode !== "playing") return;
+    }
+  }
+}
+function updateUltimate(dt) {
+  if (state.ultimateVisual) { state.ultimateVisual.life -= dt; if (state.ultimateVisual.life <= 0) state.ultimateVisual = null; }
+  const card = UPGRADES.find(card => card.tier === "ultimate" && upgradeLevel(card.id));
+  if (!card) return;
+  state.ultimateTimer = countdown(state.ultimateTimer || 0, dt);
+  if (state.ultimateTimer > 0) return;
+  const level = upgradeLevel(card.id), damage = BUILD_TUNING.ultimateDamage * (1 + (level - 1) * BUILD_TUNING.ultimateGrowth);
+  let targets = combatTargets();
+  const x = state.player.x + Math.cos(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
+  const y = state.player.y + Math.sin(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
+  if (card.school === "thunder") targets = targets.length ? [targets[Math.floor(Math.random() * targets.length)]] : [];
+  if (card.school === "wind") targets = targets.filter(target => Math.hypot(target.x - x, target.y - y) < BUILD_TUNING.fieldRadius + target.r);
+  state.ultimateVisual = { school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: .5 };
+  state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : card.school === "wind" ? BUILD_TUNING.tornadoTick : BUILD_TUNING.cloudSeconds;
+  for (const target of targets) { hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }
 function activateDash() {
   if (state.mode !== "playing" || state.dashCooldown > 0) return;
@@ -724,7 +786,7 @@ function updateBomb(dt) {
   if (bomb.schools.includes("water")) addField("water", bomb.x, bomb.y, bomb.radius);
   if (bomb.schools.includes("thunder")) {
     for (const target of combatTargets()) {
-      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius * BUILD_TUNING.skillRadiusMultiplier + target.r) hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier);
+      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius + target.r) { target.stunTimer = BUILD_TUNING.stunSeconds * upgradeLevel("thunder-skill"); hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier * upgradeLevel("thunder-skill")); }
       if (state.mode !== "playing") return;
     }
   }
@@ -802,6 +864,9 @@ function tick(dt) {
   state.skillCooldown = countdown(state.skillCooldown, dt);
   updateActionControls();
   if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(state.player.x - oldX, state.player.y - oldY), oldX, oldY);
+  state.moveRate = Math.hypot(state.player.x - oldX, state.player.y - oldY) / Math.max(.001, dt) / PLAYER_SPEED;
+  updateUltimate(dt);
+  if (state.mode !== "playing") return;
   updateFields(dt);
   if (state.mode !== "playing") return;
   updateBomb(dt);
@@ -840,9 +905,10 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
-    enemy.y += vy / distance * enemy.speed * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.x += vx / distance * enemy.speed * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.y += vy / distance * enemy.speed * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
+    enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
     enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
@@ -850,6 +916,8 @@ function tick(dt) {
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
+    shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
+    if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
     if (shot.x < -12 || shot.y < -12 || shot.x > state.width + 12 || shot.y > state.height + 12) { shot.alive = false; continue; }
     for (const enemy of state.enemies) {
       if (enemy.alive && !shot.hitList.includes(enemy) && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
@@ -871,7 +939,8 @@ function tick(dt) {
       boss.hp -= shot.damage; boss.flash = HIT_FLASH_SECONDS; updateHud();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
-      if (state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
+      if (state.mode !== "playing") return;
+      if (state.boss && state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
     }
   }
   for (let i = state.projectiles.length - 1; i >= 0; i--) {
@@ -882,9 +951,10 @@ function tick(dt) {
   if (state.boss && state.bossIntro <= 0) {
     state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
     const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
-    state.boss.x += bx / distance * state.boss.speed * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt; state.boss.y += by / distance * state.boss.speed * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt;
+    state.boss.x += bx / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt; state.boss.y += by / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt;
     state.boss.slowTimer = Math.max(0, (state.boss.slowTimer || 0) - dt);
-    state.bossShotTimer -= dt;
+    state.boss.stunTimer = countdown(state.boss.stunTimer || 0, dt);
+    state.bossShotTimer -= state.boss.stunTimer > 0 ? 0 : dt;
     if (state.bossShotTimer <= 0) {
       const angle = Math.atan2(by, bx), count = UPGRADE_TUNING.teacherShotCount;
       for (let i = 0; i < count && state.enemyShots.filter((shot) => shot.source !== "book").length < UPGRADE_TUNING.teacherShotLimit; i++) {
@@ -897,7 +967,7 @@ function tick(dt) {
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
-      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
+      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
@@ -925,6 +995,7 @@ function tick(dt) {
     const touchingBoss = state.boss && state.bossIntro <= 0 && Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
       state.player.health = Math.max(0, state.player.health - (touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
+      counterDischarge(); if (state.mode !== "playing") return;
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;
       if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35);
@@ -1064,6 +1135,14 @@ function render() {
   if (state.bombBlast && state.bombBlast.schools) for (const school of state.bombBlast.schools) {
     ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * BUILD_TUNING.skillRadiusMultiplier, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (state.ultimateVisual) {
+    const v = state.ultimateVisual;
+    ctx.save(); ctx.strokeStyle = BUILD_TUNING[v.school].color; ctx.lineWidth = 12;
+    if (v.school === "water") { ctx.globalAlpha = .45; ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(state.width * (1 - v.life / .5) - 60, 0, 120, state.height); }
+    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, 0); ctx.lineTo(v.x + 10, v.y * .5); ctx.lineTo(v.x - 12, v.y * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
+    else { ctx.beginPath(); ctx.arc(v.x, v.y, BUILD_TUNING.fieldRadius, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
   }
   drawHero();
   if (state.joy) {

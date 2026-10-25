@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-skill-tree",
+  "title": "小怪獸：技能樹與滿版像素介面",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-skill-tree",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T090935Z-parent-skill-tree.md",
+  "next": "請 Grok 對 erin-watch 提交後 SHA 審查技能樹、合體與滿版介面；工程測試全通過，詳見 docs/survivor-skill-tree-validation.md。沙盒禁止開伺服器，尚待瀏覽器／iPad 視覺驗證。請 Erin／家長試玩確認入門分別放普攻／衝刺／技能欄的安排、最新卡圖示＋卡數 HUD、終極／合體數值及滿版操作。erin-watch 代辦 commit、push、PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T09:14:58.358804Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-build-variety"
+  ]
+}

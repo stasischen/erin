@@ -100,3 +100,67 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .boss-hud { top: 66px; }
   .upgrade-panel > p { font-size: 12px; margin-bottom: 6px; }
 }
+
+/* 技能樹版：畫布填滿視窗，HUD 各列固定，內容不改變列高。 */
+body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft JhengHei", monospace; }
+.game-shell { padding: 0; gap: 0; }
+.stage { position: absolute; inset: 0; border: 0; border-radius: 0; box-shadow: none; }
+.topbar { position: absolute; z-index: 3; top: max(8px, var(--safe-top)); left: max(10px, var(--safe-left)); right: max(10px, var(--safe-right)); height: 44px; display: flex; justify-content: flex-end; gap: 8px; pointer-events: none; }
+.topbar h1, .help { display: none; }
+.topbar .back, .pause-button { pointer-events: auto; background: #172c40; color: #effaff; border: 2px solid #75adc8; border-radius: 2px; box-shadow: 0 3px 0 #0b1927; }
+.back { padding: 10px; font-size: 12px; }
+.pause-button { width: 46px; height: 44px; }
+.hud { top: max(10px, var(--safe-top)); left: max(10px, var(--safe-left)); right: calc(max(10px, var(--safe-right)) + 180px); height: 38px; gap: 10px; }
+.health-wrap { width: 28%; min-width: 85px; }
+.health-label, .experience-label, .level-label { color: #fff; text-shadow: 1px 1px #142331; }
+.health-track, .experience-track, .boss-track { border-radius: 0; }
+.experience-wrap { min-width: 110px; }
+.status { color: #effaff; background: #172c40e8; border-radius: 0; white-space: nowrap; }
+.build-slots { top: calc(max(10px, var(--safe-top)) + 44px); left: max(10px, var(--safe-left)); right: max(10px, var(--safe-right)); max-width: 540px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; height: 30px; }
+.build-slots > span { min-width: 0; display: flex; align-items: center; gap: 4px; padding: 3px 6px; color: #e9f5ff; background: #172c40ed; border: 1px solid #547c96; border-radius: 0; font-size: 12px; white-space: nowrap; overflow: hidden; }
+.build-slots b { flex-shrink: 0; }
+.build-slots i { font-size: 15px; }
+.build-slots small { margin-left: auto; font-size: 10px; }
+.boss-hud { top: calc(max(10px, var(--safe-top)) + 82px); height: 28px; color: #ffe6f0; background: #302338ed; border: 2px solid #c17c9c; border-radius: 0; }
+.overlay { z-index: 4; padding: max(12px, var(--safe-top)) max(12px, var(--safe-right)) max(12px, var(--safe-bottom)) max(12px, var(--safe-left)); background: #091a2bb8; }
+.message-card, .upgrade-panel, .settings-panel { border: 2px solid #8cbad0; border-radius: 2px; background: #142b40; color: #eef8ff; box-shadow: 5px 5px 0 #071522; }
+.message-card p { color: #bdd5e7; }
+.start-button, .settings-action { border: 2px solid #8cbad0; border-radius: 2px; background: #244963; color: #fff; box-shadow: 0 4px 0 #071522; }
+.start-button { background: #2176a0; }
+.setting-row { border-radius: 0; background: #213d54; }
+.setting-value { color: #9adfff; }
+.upgrade-panel { width: min(900px, 100%); }
+.upgrade-card { --school-color: #7196ad; position: relative; border: 2px solid var(--school-color); border-top-width: 7px; border-radius: 2px; color: #f3faff; background: #1e394f; box-shadow: 0 4px 0 #071522; }
+.upgrade-card[data-rarity="rare"] { background: #204359; }
+.upgrade-card[data-rarity="epic"] { background: #3c3058; box-shadow: 0 4px 0 #9c70d0; }
+.upgrade-card[data-rarity="legendary"] { background: #504023; box-shadow: 0 4px 0 #efc971; }
+.upgrade-card small { color: #d1e4f3; }
+.upgrade-card .requirements { color: #ffe4a1; font-size: 12px; line-height: 1.4; }
+.upgrade-card:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
+.action-button { border-radius: 6px; box-shadow: 4px 4px 0 #122a40; }
+.action-button > span { border-radius: 2px; }
+.enemy-notice { border-radius: 0; }
+@media (orientation: landscape) and (max-height: 520px), (orientation: portrait) and (max-width: 520px) {
+  .game-shell { padding: 0; gap: 0; }
+  .hud { gap: 6px; }
+  .health-wrap { width: 25%; }
+  .experience-track { width: 50px; }
+  .status { font-size: 11px; padding: 4px; }
+  .upgrade-panel { padding: 10px; }
+  .upgrade-card { min-height: 176px; gap: 5px; }
+  .upgrade-card strong { font-size: 17px; }
+  .upgrade-icon { font-size: 28px; }
+  .upgrade-panel > p { font-size: 12px; margin-bottom: 8px; }
+}
+@media (orientation: landscape) and (max-width: 660px), (orientation: portrait) and (max-height: 660px) {
+  .topbar .back { font-size: 0; width: 38px; }
+  .topbar .back::before { content: "‹"; font-size: 22px; }
+  .hud { right: calc(max(10px, var(--safe-right)) + 105px); }
+  .status { font-size: 10px; }
+  .build-slots { max-width: 440px; }
+}
+.tree-details { margin-top: 14px; text-align: left; font-size: 13px; }
+.tree-details summary { cursor: pointer; padding: 8px; color: #c8eaff; }
+.skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.skill-tree span { display: block; padding: 7px; margin-top: 4px; border-left: 2px solid #506478; color: #aebccc; line-height: 1.5; }
+.skill-tree .owned { color: #fff; background: #26475b; border-color: #97d9f2; }
