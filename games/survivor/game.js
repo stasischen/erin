@@ -1,6 +1,7 @@
+const PREVIEW_MODE = !!globalThis.SURVIVOR_PREVIEW;
 // Maker 資料只在 ?maker=1 試玩時啟用；一般遊戲沿用預設與原設定。
-const MAKER_MODE = typeof location !== "undefined" && new URLSearchParams(location.search).get("maker") === "1";
-const MAKER_LOAD = MAKER_MODE ? SurvivorData.load() : null;
+const MAKER_MODE = PREVIEW_MODE || typeof location !== "undefined" && new URLSearchParams(location.search).get("maker") === "1";
+const MAKER_LOAD = PREVIEW_MODE ? { data: globalThis.SURVIVOR_PREVIEW.data, valid: true } : MAKER_MODE ? SurvivorData.load() : null;
 const GAME_DATA = MAKER_MODE ? MAKER_LOAD.data : SurvivorData.defaults();
 // ✏️ Erin 設定區：改下面的數字，就能改變遊戲玩法。
 const UPGRADE_TUNING = GAME_DATA.tuning;
@@ -81,7 +82,7 @@ function saveSettings() {
 function loadBestRecord() {
   try { const value = Number(localStorage.getItem(RECORD_KEY)); return Number.isFinite(value) && value > 0 ? value : 0; } catch (_) { return 0; }
 }
-let bestRecord = loadBestRecord();
+let bestRecord = PREVIEW_MODE ? 0 : loadBestRecord();
 let PLAYER_SPEED = gameSettings.playerSpeed; // 請改上面的 playerSpeed
 let PLAYER_HEALTH = gameSettings.playerHealth; // 請改上面的 playerHealth
 const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 請改上面的 enemyLimit
@@ -277,6 +278,7 @@ function openSettings() {
   settingsPanel.hidden = false; overlay.classList.remove("hidden");
 }
 function closeSettings() {
+  if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   settingsPanel.hidden = true; messageCard.hidden = false;
   showOverlay(settingsReturnMode);
 }
@@ -370,6 +372,7 @@ function resetGame() {
 }
 
 function startGame() {
+  if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   resetGame();
   state.mode = "playing";
   overlay.classList.add("hidden");
@@ -416,7 +419,14 @@ function updateHud() {
     const detail = cards.map(card => `${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
     return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
   }).join("");
-  if (slotMarkup !== lastSlotMarkup) { slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup; }
+  if (slotMarkup !== lastSlotMarkup) {
+    slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;
+    if (!PREVIEW_MODE && globalThis.SurvivorPreview) UPGRADES.filter(card => upgradeLevel(card.id)).forEach(card => {
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = card.name + '・看效果';
+      button.addEventListener('click', () => SurvivorPreview.mount(document.getElementById('ownedPreview'), GAME_DATA, {kind:'card',id:card.id,level:upgradeLevel(card.id)}));
+      slots.appendChild(button);
+    });
+  }
   bossHud.hidden = !state.boss;
   if (state.boss) bossHealthFill.style.width = `${Math.max(0, state.boss.hp / state.boss.maxHp) * 100}%`;
 }
@@ -819,6 +829,9 @@ function showUpgradeChoices() {
   render();
   state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
   renderSkillTree(document.getElementById("skillTree"));
+  let selectedIndex = 0;
+  const confirm = document.getElementById("confirmUpgrade");
+  confirm.onclick = () => applyUpgrade(selectedIndex);
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
@@ -826,12 +839,23 @@ function showUpgradeChoices() {
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
     const tag = card.school ? `${SurvivorIcons.html(card.school)}${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
     button.innerHTML = `<small>${SurvivorIcons.html(button.dataset.rarity === "legendary" ? "legendary" : button.dataset.rarity === "epic" ? "epic" : button.dataset.rarity === "rare" ? "rare" : "common")}${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
-    button.addEventListener("click", () => applyUpgrade(index)); upgradeCards.appendChild(button);
+    upgradeCards.appendChild(button);
+    if (!globalThis.SurvivorPreview) button.addEventListener("click", () => applyUpgrade(index));
+    if (globalThis.SurvivorPreview) {
+      const preview = () => {
+        selectedIndex = index; confirm.textContent = "選這張：" + card.name;
+        upgradeCards.querySelectorAll('button').forEach(node => node.setAttribute('aria-pressed', String(node === button)));
+        SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:upgradeLevel(card.id)+1});
+      };
+      button.addEventListener('click', preview); button.addEventListener('focus', preview); button.addEventListener('pointerenter', preview);
+      if (!index) preview();
+    }
   });
   statusEl.textContent = "選一張升級卡";
 }
 function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
+  if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
   skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
@@ -1634,13 +1658,13 @@ canvas.addEventListener("pointerdown", (event) => {
 canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const point = canvasPoint(event); const dx = point.x - state.joy.baseX, dy = point.y - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);
-window.addEventListener("resize", resize);
-if (window.visualViewport) {
+window.addEventListener("resize", () => { if (!PREVIEW_MODE) resize(); });
+if (window.visualViewport && !PREVIEW_MODE) {
   window.visualViewport.addEventListener("resize", resize);
   window.visualViewport.addEventListener("scroll", resize);
 }
-resize(); showOverlay("ready"); renderLoop();
-if (MAKER_MODE) {
+if (!PREVIEW_MODE) { resize(); showOverlay("ready"); renderLoop(); }
+if (MAKER_MODE && !PREVIEW_MODE) {
   const makerLink = document.getElementById("makerLink");
   makerLink.innerHTML = SurvivorIcons.html("maker") + " 回設計室";
   if (MAKER_LOAD.valid && new URLSearchParams(location.search).get("play") === "1") startGame();

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261025q" />
-  <link rel="stylesheet" href="maker/style.css?v=20261025q" />
+  <link rel="stylesheet" href="style.css?v=20261025r" />
+  <link rel="stylesheet" href="maker/style.css?v=20261025r" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -35,15 +35,16 @@
       <div id="overlay" class="overlay">
         <section id="upgradePanel" class="upgrade-panel" hidden aria-label="選擇升級">
           <h2>升級了！選一張卡</h2>
-          <p>入門 → A／B → 終極（每場一種）｜卡片依作品設定等級上限｜按 1、2、3</p>
+          <p>點卡片看效果，再按「選這張」｜鍵盤 1、2、3 直接選</p>
           <div id="upgradeCards" class="upgrade-cards"></div>
+          <div id="upgradePreview" class="skill-preview-host"></div><button id="confirmUpgrade" type="button" class="settings-action settings-done">選這張卡</button>
           <details class="tree-details"><summary>查看技能樹與前置條件</summary><div id="skillTree" class="skill-tree"></div></details>
         </section>
         <section id="settingsPanel" class="settings-panel" hidden aria-label="遊戲設定">
           <h2><span data-icon="settings" aria-hidden="true"></span> 遊戲設定</h2>
           <p>調整後會自動記住這台裝置的設定。</p>
           <h3>本局四欄位與已取得卡片</h3>
-          <div id="buildSlots" class="build-slots" aria-label="本局四欄位"></div>
+          <div id="buildSlots" class="build-slots" aria-label="本局四欄位"></div><div id="ownedPreview" class="skill-preview-host"></div>
           <details class="tree-details"><summary>技能樹、合體卡與終極卡前置條件</summary><p>卡片依作品設定等級上限；終極流派每局只能選一種。前置卡各達 Lv1 即可解鎖。</p><div id="settingsSkillTree" class="skill-tree"></div></details>
           <h3>遊戲設定</h3>
           <div id="settingsControls" class="settings-controls"></div>
@@ -74,12 +75,13 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261025q"></script>
+  <script src="icons.js?v=20261025r"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261025q"></script>
-  <script src="data/schema.js?v=20261025q"></script>
-  <script src="game.js?v=20261025q"></script>
-  <script src="maker/maker.js?v=20261025q"></script>
+  <script src="data/defaults.js?v=20261025r"></script>
+  <script src="data/schema.js?v=20261025r"></script>
+  <script src="preview.js?v=20261025r"></script>
+  <script src="game.js?v=20261025r"></script>
+  <script src="maker/maker.js?v=20261025r"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>
