@@ -182,7 +182,7 @@ function updateMakerEffects(dt) {
     const h=state.enemyHazards[i]; h.warning=countdown(h.warning,dt);
     if(h.warning>0) continue;
     state.enemyHazards.splice(i,1);
-    if(targetVisible(h) && state.player.invincible<=0 && Math.hypot(h.x-state.player.x,h.y-state.player.y)<h.r+state.player.r) {
+    if(targetVisible(h) && !state.player.damageDisabled && state.player.invincible<=0 && Math.hypot(h.x-state.player.x,h.y-state.player.y)<h.r+state.player.r) {
       state.player.health=Math.max(0,state.player.health-h.damage);state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }
@@ -285,7 +285,7 @@ function activateDash() {
   triggerMakerEffects("dash", state.player.x, state.player.y);
   skillVisual("gust", state.player.x, state.player.y, { x2: state.player.x + state.dashX * 60, y2: state.player.y + state.dashY * 60, color: "#23815e" });
   state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
-  state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
+  if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
   playTone(740, 0.08); updateActionControls();
 }
 function activateSkill() {

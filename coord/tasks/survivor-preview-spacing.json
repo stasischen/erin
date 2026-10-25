@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-preview-spacing",
+  "title": "小怪獸：展示縮小、拉開距離並修正受傷表情",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-preview-spacing",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T134827Z-parent-preview-spacing.md",
+  "next": "請 Grok 審查：1.35 倍、距離至少 120、免傷與反擊循環；程式測試通過。Chrome 因 SIGABRT 未能啟動，請補跑 tools/test.cjs --layout 並讓 Erin 試看。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T13:51:42.721114Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-refactor-1"
+  ]
+}

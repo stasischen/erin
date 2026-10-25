@@ -5,8 +5,9 @@ let previewVisible = frameElement._previewVisible !== false;
 const previewCard = UPGRADES.find(c=>c.id===previewSpec.id);
 if(previewCard && previewSpec.kind==='effect') previewCard.effects=[previewCard.effects[previewSpec.index]];
 gameSettings.sound = false; gameSettings.vibration = false;
-// 所有入口共用 1.65 倍基準；僅依真實效果的邊界拉遠，沒有另一套特寫。
-const PREVIEW_COMPOSITION = { scale: 1.65, padding: 12, targetDistances: [50,85,120], originX: 45 };
+// 所有入口共用 1.35 倍基準；大範圍效果仍依邊界拉遠。
+// 主角圖寬 40 格；假怪至少留三個主角寬，水球飛行和命中都有空間。
+const PREVIEW_COMPOSITION = { scale: 1.35, padding: 12, targetDistances: [125,165,200], minDistance: 120, originX: 80 };
 const previewFeatures = previewCard ? previewCard.effects.map(e=>e.feature).filter(Boolean) : [];
 const previewMove = previewSpec.kind === 'move' && BOSS_MOVES.find(m=>m.id===previewSpec.id);
 const previewDash = previewFeatures.some(id=>/dash|fusion-storm/.test(id)) || (previewCard && previewCard.effects.some(e=>!e.feature && e.trigger==='dash'));
@@ -19,7 +20,7 @@ function sizePreview() {
   const ratio = Math.max(.5, width / Math.max(1,height));
   const padding = PREVIEW_COMPOSITION.padding;
   const displacement = previewCard ? Math.max(0,...previewCard.effects.filter(e=>!e.feature && e.type==='knockback').map(e=>Math.abs(e.distance||0))) : 0;
-  const halfWidth = previewMove ? Math.max(250, previewMove.kind==='dash' ? previewMove.distance : 0) : previewDash ? PLAYER_SPEED*gameSettings.dashMultiplier*gameSettings.dashSeconds+padding : 92+displacement;
+  const halfWidth = previewMove ? Math.max(250, previewMove.kind==='dash' ? previewMove.distance : 0) : previewDash ? PLAYER_SPEED*gameSettings.dashMultiplier*gameSettings.dashSeconds+padding : 140+displacement;
   state.height = Math.max(height / PREVIEW_COMPOSITION.scale, (Math.max(halfWidth,previewRadius)+padding)*2/ratio, previewRadius ? (previewRadius+padding)*2 : 80);
   state.width = state.height * ratio;
   canvas.width = Math.round(state.width * 3); canvas.height = Math.round(state.height * 3);
@@ -34,10 +35,12 @@ sizePreview();
 window.addEventListener('resize',()=>{sizePreview();resetPreview();paintPreview();});
 function resetPreview() {
   resetGame(); state.mode = 'playing'; settingsPanel.hidden = true;
-  state.spawnTimer = 999; state.shotTimer = 999; state.player.invincible = 999;
+  state.spawnTimer = 999; state.shotTimer = 999;
+  // 免傷獨立於受傷／閃爍計時，衝刺也不會切成受傷表情。
+  state.player.damageDisabled = true;
   previewTime = 0; previewFired = false;
   const p = state.player;
-  previewOrigin = {x:p.x + PREVIEW_COMPOSITION.originX, y:p.y}; updateCamera();
+  previewOrigin = {x:p.x + (previewMove ? 0 : PREVIEW_COMPOSITION.originX), y:p.y}; updateCamera();
   state.enemies = PREVIEW_COMPOSITION.targetDistances.map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
   if (previewSpec.kind === 'move') {
     state.enemies = [];
@@ -66,23 +69,31 @@ function stepPreview(dt) {
       const p = state.player;
       const effects = previewCard ? previewCard.effects : [];
       const features = effects.map(e=>e.feature).filter(Boolean);
-      if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
+      // 導電水窪也示範普攻命中，讓前置水技能在假怪腳下留下會放電的水窪。
+      if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
         state.shotTimer=0; fireAtNearest(); triggerMakerEffects('hit',p.x+45,p.y);
       }
       if(features.some(id=>['water-skill','thunder-skill','fusion-puddle'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='skill')) activateSkill();
       if(features.some(id=>['water-dash','wind-dash','fusion-storm','fusion-dash'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='dash')) activateDash();
-      if(features.includes('thunder-counter')) counterDischarge();
+      if(features.includes('thunder-counter')) {
+        // 只有反擊卡每輪示範一次受傷；假怪本身不造成接觸傷害。
+        p.health = Math.max(1,p.health-1); p.hitFlash = .16; p.invincible = Math.min(.7,INVINCIBLE_SECONDS);
+        counterDischarge();
+      }
       if(previewSpec.id === 'heal') {state.player.health += Math.ceil(PLAYER_HEALTH/BUILD_TUNING.shieldHealthDivisor);addHealEffect();}
     }
   }
   // 不生成無關小怪、不抽卡、不結算；只推進這個沙盒的真實引擎。
   state.spawnTimer = 999; state.shotTimer = previewSpec.kind === 'move' ? 999 : state.shotTimer;
-  state.bossRest = 999; state.player.invincible = 999;
+  state.bossRest = 999;
   if (previewSpec.kind !== 'move') state.keys = new Set();
   const move = previewSpec.kind === 'move' && BOSS_MOVES.find(m=>m.id===previewSpec.id);
   const simulationSeconds = dt * (move ? Math.max(1,(move.warning+.7)/2.5) : 1);
   // 長預警加速展示，仍逐步跑真實引擎，單步不超過 .05 秒。
-  for(let left=simulationSeconds;left>0;left-=.05) tick(Math.min(.05,left));
+  for(let left=simulationSeconds;left>0;left-=.05) {
+    tick(Math.min(.05,left));
+    spacePreviewTargets();
+  }
   // 老師召喚在正式遊戲從鏡頭外進場，展示縮短走入鏡頭的等待。
   if(previewSpec.kind==='move') state.enemies.forEach(e=>{ if(!targetVisible(e)){e.x=state.player.x+100;e.y=state.player.y+40;} });
   // 命中時保留引擎的擊退／吸引位移，最後 .7 秒平順回位；重播不跳動。
@@ -90,7 +101,20 @@ function stepPreview(dt) {
     const blend = Math.min(1, dt / Math.max(dt, 3-previewTime));
     state.enemies.forEach(e=>{e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;e.knockback=0;});
   }
+  spacePreviewTargets();
   paintPreview();
+}
+// 保留擊退／拉近，但不讓拉近或衝刺把主角和假怪擠在一起。
+function spacePreviewTargets() {
+  if (previewSpec.kind === 'move') return;
+  const p = state.player;
+  state.enemies.forEach(e=>{
+    const dx=e.x-p.x, dy=e.y-p.y, distance=Math.hypot(dx,dy);
+    if(distance < PREVIEW_COMPOSITION.minDistance) {
+      const scale=PREVIEW_COMPOSITION.minDistance/Math.max(.001,distance);
+      e.x=p.x+(distance ? dx*scale : PREVIEW_COMPOSITION.minDistance); e.y=p.y+dy*scale;
+    }
+  });
 }
 function paintPreview() {
   render();
