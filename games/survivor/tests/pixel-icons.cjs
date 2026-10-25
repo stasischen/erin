@@ -2,7 +2,7 @@
 const fs = require('node:fs'), assert = require('node:assert/strict');
 const run = require('./maker-support.cjs')();
 const emoji = /[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D\u20E3]/u;
-for (const file of ['index.html','maker/index.html','game.js','maker/maker.js','data/defaults.js','icons.js']) {
+for (const file of ['index.html','maker/index.html',...require('./load-game.cjs').files,'maker/maker.js','data/defaults.js','icons.js']) {
   const source = fs.readFileSync(`${__dirname}/../${file}`, 'utf8').split('\n').filter(line => !line.trim().startsWith('//')).join('\n');
   assert.ok(!emoji.test(source), `${file} has emoji in UI/data`);
 }

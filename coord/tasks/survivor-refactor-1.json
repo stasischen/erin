@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-refactor-1",
+  "title": "小怪獸：零行為變更重構第一步",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-refactor-1",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T133300Z-parent-refactor-1.md",
+  "next": "請 Grok 審查 erin-watch 提交的 SHA，並在可啟動 Chrome 的環境跑 tools/test.cjs --layout；詳見重構驗證文件。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T13:44:01.141798Z",
+  "updatedBy": "codex"
+}

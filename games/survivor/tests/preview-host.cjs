@@ -13,14 +13,14 @@ const context=vm.createContext({URL,document:{currentScript:{src:'http://localho
 for(const f of ['data/defaults.js','data/schema.js','preview.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${f}`,'utf8'),context);
 const api=context.SurvivorPreview,data=context.SurvivorData.defaults(),a=new Node(),b=new Node();
 api.mount(a,data,{kind:'card',id:data.cards[0].id});
-const frame=a.children[1];assert.equal(frame.src,'http://localhost/erin/games/survivor/preview.html?v=20261025w');
+const frame=a.children[1];assert.equal(frame.src,'http://localhost/erin/games/survivor/preview.html?v='+require('../version.json').version);
 assert.notEqual(frame._previewPayload.data,data);
 observers[0].fn([{isIntersecting:false}]);assert.equal(frame._previewVisible,false);assert.deepEqual(frame.visible,[false]);
 api.mount(b,data,{kind:'move',id:data.boss.moves[0].id});assert.equal(a.children.length,0);assert.ok(observers[0].disconnected);
 data.boss.moves[0].warning=2.1;api.refresh();const refresh=pending;assert.ok(refresh);refresh();assert.ok(b.children[2].textContent.includes('2.1'));
 api.stop();assert.equal(b.children.length,0);assert.equal(pending,null);
 // Static dependencies and all engine element references are present in the offline shell.
-const game=fs.readFileSync(`${__dirname}/../game.js`,'utf8'),shell=fs.readFileSync(`${__dirname}/../preview.html`,'utf8');
+const game=require('./load-game.cjs').source(),shell=fs.readFileSync(`${__dirname}/../preview.html`,'utf8');
 for(const [,id] of game.matchAll(/getElementById\("([^"]+)"\)/g))assert.ok(shell.includes(`id="${id}"`),id);
 const sw=fs.readFileSync(`${__dirname}/../../../sw.js`,'utf8');
 for(const path of ['preview.html','preview.js','preview-engine.js'])assert.ok(sw.includes(`games/survivor/${path}`));

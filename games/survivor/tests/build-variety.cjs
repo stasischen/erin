@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const source = fs.readFileSync(process.env.SURVIVOR_SOURCE || `${__dirname}/../game.js`, 'utf8');
+const source = require('./load-game.cjs').source(process.env.SURVIVOR_SOURCE);
 function setup(saved = {}) {
   const elements = {}; const windowListeners = {}; const documentListeners = {};
   const context2d = new Proxy({}, { get: (target, key) => key in target ? target[key] : (() => {}) });
@@ -12,7 +12,7 @@ function setup(saved = {}) {
   vm.runInContext(fs.readFileSync(`${__dirname}/../icons.js`, "utf8"), context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/defaults.js`, "utf8"), context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/schema.js`, "utf8"), context);
-  vm.runInContext(source, context);
+  require('./load-game.cjs').load(context, process.env.SURVIVOR_SOURCE);
   context.windowListeners = windowListeners; context.elements = elements; context.storage = storage;
   return (code) => vm.runInContext(code, context);
 }

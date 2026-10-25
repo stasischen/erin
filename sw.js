@@ -1,9 +1,21 @@
-// 換新版網站時增加版本號，啟用後會清除舊快取。
+// 版號由 games/survivor/version.json 管理；執行 tools/version.cjs --write 同步。
 // /erin/ 底下的檔案一律先問網路並更新快取，確保 ?v= 新版會立即生效；
 // 只有離線時才忽略查詢字串，退回已快取的同名檔案。
-const CACHE_NAME = 'erin-games-v27';
+const CACHE_NAME = 'erin-games-20261025x';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
+  'games/survivor/input.js',
+  'games/survivor/ui/settings.js',
+  'games/survivor/ui/levelup.js',
+  'games/survivor/render/hud.js',
+  'games/survivor/render/world.js',
+  'games/survivor/stages.js',
+  'games/survivor/engine/boss.js',
+  'games/survivor/engine/spawn.js',
+  'games/survivor/engine/combat.js',
+  'games/survivor/engine/loop.js',
+  'games/survivor/engine/state.js',
+  'games/survivor/manifest.js',
   '',
   'style.css',
   'manifest.webmanifest',
