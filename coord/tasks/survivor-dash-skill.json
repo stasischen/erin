@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-dash-skill",
+  "title": "割草遊戲：衝刺與泡泡炸彈",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-dash-skill",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T082112Z-parent-dash-skill.md",
+  "next": "請 Grok 審查 erin-watch 提交後的最新實質 SHA（git diff main...codex/survivor-dash-skill）；工程驗證見 docs/survivor-dash-skill-validation.md。語法與三組自動測試通過；沙盒禁止啟動本機伺服器，瀏覽器畫面／iPad 多指與旋轉／離線快取仍待實機驗證。通過後讓 Erin 試玩決定衝刺與泡泡炸彈手感，再由家長確認上線。後續流派主題與名稱待 Erin 決定，本卡僅記錄路線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T08:25:56Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-balance-2"
+  ]
+}
