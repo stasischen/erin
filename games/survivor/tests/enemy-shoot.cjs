@@ -49,10 +49,10 @@ assert.equal(run('enemyNotice.hidden'), true);
 // 小兵國字和老師詞句各有上限，混用仍保留老師三發。
 fresh();
 run(`state.level = 8; for (let i = 0; i < 30; i++) { state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; updateBookShooting(0); }
-  summonTeacher(); state.boss.y = 100; state.bossIntro = 0; state.bossShotTimer = 0; tick(0); render();`);
+  summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0); render();`);
 assert.equal(run('state.enemyShots.filter(s => s.source === "book").length'), 12);
 assert.equal(run('state.enemyShots.filter(s => s.source === "teacher").length'), 3);
-run('for (let i = 0; i < 30; i++) { state.bossShotTimer = 0; tick(0); }');
+run('for (let i = 0; i < 30; i++) fireBossFan({id:"words",x:100,y:100,angle:0,count:3});');
 assert.equal(run('state.enemyShots.length'), 48);
 // 撞到只扣一次；受傷保護最後一幀也不能再扣血。
 fresh();
@@ -66,9 +66,9 @@ run('Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 
 assert.equal(run('state.player.health'), 84);
 // 出界回收，再由老師重用仍更新來源、傷害、半徑、文字。
 run(`state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);
-  state.enemyShots[0].x = -100; tick(0); summonTeacher(); state.boss.y = 100; state.bossIntro = 0; state.bossShotTimer = 0; tick(0);`);
+  state.enemyShots[0].x = -100; tick(0); summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0);`);
 assert.equal(run('bookShot.source'), 'teacher');
-assert.equal(run('bookShot.damage'), 20);
+assert.equal(run('bookShot.damage'), 12);
 assert.equal(run('bookShot.r'), 17);
 // 致命國字與升級寶石同幀時正確結束，不能卡在升級畫面。
 fresh();

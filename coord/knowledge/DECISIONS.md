@@ -42,3 +42,5 @@
 - 家長要求跟隨鏡頭、約 3×3 畫面的固定地圖、可見邊界及地磚，以及以 visualViewport／safe-area 修正直拿旋轉後按鈕被切掉的問題；已在 `survivor-camera-map` 製作。鏡頭一般置中、邊緣停止捲動；技能與衝刺右下並排、搖桿左側、HUD 精簡上方。工程測試通過，瀏覽器及實機仍待驗證；地圖大小與手感留待 Erin 試玩確認。來源：`coord/inbox/done/20261025T092439Z-parent-camera-map.md`；驗證：`docs/survivor-camera-map-validation.md`。
 
 - 家長回饋「完全沒看到老師 老師就被打倒了」，要求普攻與所有卡片效果只攻擊主角周圍可見範圍、限制連鎖距離、加上畫面外老師／菁英的方向標示及老師出場提示。`survivor-boss-range` 已製作試玩初版，既有遊戲沒有菁英怪，未新增種類；攻擊半徑 720 為可調工程初值，老師血量與生成距離是否需調整待 Erin 試玩。來源：`coord/inbox/done/20261025T095455Z-parent-boss-range.md`；工程驗證：`docs/survivor-boss-range-validation.md`。
+
+- 家長要求「老師的技能可以再多變一點 要讓玩家有壓迫感」；依 Grok 轉述規格，`survivor-boss-moves` 保留國字並新增粉筆、衝撞、考卷雨、點名、召喚與留缺口的罰站圈，招式先預警、血量 66%／33% 轉階段及隨機不連續重複出招。已完成工程初版與測試；0.9 秒預警、12 傷害及三階段節奏均為可調初值，待 Grok 審查、Erin 試玩確認壓迫感與公平性，不視為已確認平衡。資源版本 20261025n、sw 快取 v18。來源：`coord/inbox/done/20261025T100316Z-parent-boss-moves.md`；驗證與待試玩：`docs/survivor-boss-moves-validation.md`。

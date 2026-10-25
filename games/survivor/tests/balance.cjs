@@ -18,7 +18,7 @@ function targets(pierce, boss = false) {
   fresh();
   run(`state.enemies = [0, 1, 2, 3, 4, 5, 6].map(() => ({ x: 300, y: 300, r: 17, speed: 0, damage: 18, hp: 100, maxHp: 100, wobble: 0, alive: true, flash: 0 }));
   state.projectiles = [{ x: 300, y: 300, vx: 0, vy: 0, r: 12, damage: 35, pierce: ${pierce}, piercing: ${pierce > 0}, hitList: [], alive: true }];
-  ${boss ? 'state.boss = { x: 300, y: 300, r: 32, speed: 0, hp: 2400, maxHp: 2400, flash: 0, wobble: 0 }; state.bossSummonTimer = 99; state.bossShotTimer = 99;' : ''}
+  ${boss ? 'state.boss = { x: 300, y: 300, r: 32, speed: 0, hp: 2400, maxHp: 2400, flash: 0, wobble: 0 }; state.bossRest = 99;' : ''}
   tick(0);`);
 }
 // 同一顆普通水球只傷一隻；即使老師與小兵重疊，也不能再傷到老師。
@@ -54,24 +54,24 @@ for (const needed of [5, 6, 7]) {
   assert.equal(run('state.xp'), 0);
   run('applyUpgrade(0);');
 }
-// 老師出場保留小兵；之後每 6 秒叫 1 隻，上限 26。
+// 老師出場保留小兵；叫小怪改為預警後生成，仍有上限 26。
 fresh();
 run('spawnEnemy(); state.enemies[0].speed = 0; summonTeacher(); state.bossIntro = 0.01; tick(0.02);');
 assert.equal(run('state.enemies.length'), 1);
-run('state.bossSummonTimer = 0; tick(0);');
-assert.equal(run('state.enemies.length'), 2);
-assert.equal(run('state.bossSummonTimer'), 6);
+run('state.boss.x=100; state.boss.y=100; beginBossMove("summon"); updateBoss(0.45);');
+assert.equal(run('state.enemies.length'), 1);
+run('updateBoss(0.45);');
+assert.equal(run('state.enemies.length'), 3);
 run('for (let i = 0; i < 50; i++) spawnEnemy();');
 assert.equal(run('state.enemies.length'), 26);
-// 老師扇形三發，文字傷害獨立為 20。
+// 國字仍為三發扇形，預警後出手；老師傷害調為 12。
 fresh();
-run('summonTeacher(); state.boss.y = 100; state.bossIntro = 0; state.bossShotTimer = 0; tick(0);');
+run('summonTeacher(); state.boss.x=100; state.boss.y=100; state.bossIntro=0; beginBossMove("words"); updateBoss(0.9);');
 assert.equal(run('state.enemyShots.length'), 3);
-assert.equal(run('state.bossShotTimer'), 1);
 assert.equal(run('state.boss.maxHp'), 2000);
 assert.equal(run('new Set(state.enemyShots.map(s => Math.atan2(s.vy, s.vx))).size'), 3);
-run('state.enemyShots = [{ x: state.player.x, y: state.player.y, vx: 0, vy: 0, r: 17 }]; tick(0);');
-assert.equal(run('state.player.health'), 70);
+run('state.enemyShots = [{source:"teacher",life:4,damage:12,x:state.player.x,y:state.player.y,vx:0,vy:0,r:17}]; tick(0);');
+assert.equal(run('state.player.health'), 78);
 for (const [type, damage] of [['jaben', 15], ['otsubon', 12]]) {
   fresh();
   run(`state.elapsed = ${type === 'jaben' ? 0 : 60}; Math.random = () => ${type === 'jaben' ? 0.99 : 0}; spawnEnemy(); Math.random = Object.getPrototypeOf(Math).random; Object.assign(state.enemies[0], { x: state.player.x, y: state.player.y, speed: 0 }); tick(0);`);
@@ -116,6 +116,6 @@ const current = setup({ 'erin-survivor-settings-v3': JSON.stringify({ playerHeal
 assert.equal(current('gameSettings.playerHealth'), 110);
 assert.equal(setup({ 'erin-survivor-settings-v3': '{bad' })('gameSettings.teacherHealth'), 2000);
 fresh();
-assert.equal(run('state.bossSummonTimer'), 0);
+assert.equal(run('state.bossRest'), 0);
 assert.equal(run('experienceNeeded()'), 5);
 console.log('PASS: default/piercing collisions, pooled shots, XP growth, boss adds/fan/damage, enemy cap/growth/damage, settings migration, restart');

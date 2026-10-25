@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-moves",
+  "title": "小怪獸：老師多變招式與三階段魔王戰",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-moves",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T100316Z-parent-boss-moves.md",
+  "next": "請 Grok 審查 erin-watch 提交後的完整 SHA，重點為七招預警、階段轉換、鏡頭外取消與罰站圈缺口；全部工程測試通過，見 docs/survivor-boss-moves-validation.md。之後請 Erin 實機試玩壓迫感、預警及傷害初值。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T10:10:07.969107Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-range"
+  ]
+}

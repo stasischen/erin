@@ -30,14 +30,10 @@ const UPGRADE_TUNING = {
   secondEnemyHealth: 70, // 乙本有多少血；比甲本少
   waveSeconds: 120, // 幾秒後老師出場；120 秒就是 2 分鐘
   teacherHealth: 2000, // 老師血條有多長；改大要打更久
-  teacherShotInterval: 1.0, // 老師隔幾秒發射一次文字
-  teacherShotDamage: 20, // 老師文字打中扣多少血
+  teacherShotDamage: 12, // 老師文字打中扣多少血
   teacherShotCount: 3, // 每次發射幾個字
   teacherShotSpread: 0.28, // 文字扇形的間隔角度；改大比較分散
   teacherShotLimit: 36, // 畫面最多有幾個文字；避免太多文字卡住
-  teacherSummonSeconds: 6, // 老師每隔幾秒叫小兵
-  teacherSummonMin: 1, // 每次至少叫幾隻小兵
-  teacherSummonMax: 1, // 每次最多叫幾隻小兵
   shotInterval: 0.72, // 平常隔幾秒射一顆水球；改小會射更快
   projectileDamage: 35, // 水球打中扣多少甲本的血；改大打得更痛
   projectileSpeed: 390, // 水球飛多快；改大會飛更快
@@ -57,6 +53,25 @@ const UPGRADE_TUNING = {
   actionButtonSize: 88, // 右下角兩個動作按鈕有多大
   autoHealSeconds: 10 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
+// ✏️ Erin 可以改：老師每招先亮提示才出手；這些是待試玩的初值。
+const BOSS_TUNING = {
+  warningSeconds: 0.9, // 預告幾秒；建議維持 0.6～1 秒，讓大家有時間躲
+  rests: [1.7, 1.2, 0.8], // 三階段每招後休息幾秒；改大比較好喘氣
+  phasePause: 1.0, // 生氣喊話時休息幾秒
+  damage: 12, // 新招式打中扣多少血；仍共用受傷保護時間
+  chalkSpeed: 170, // 粉筆每秒飛多遠；主角走路比它快
+  dashSpeed: 420, dashDistance: 300, // 黑板擦衝刺速度、最遠距離
+  rainRadius: 34, callRadius: 48, // 考卷落點和點名圓圈的大小
+  ringRadius: 145, ringGap: 1.8, ringSeconds: 1.6, // 罰站圈大小、缺口角度、收縮時間
+  hazardLimit: 8, // 最多同時幾個預警招式，物件用完會回收
+  shakeSeconds: 0.18, shakePixels: 3 // 大招短暫震動；可從設定的震動開關關掉
+};
+const BOSS_MOVES = [
+  { id: "words", name: "發射國字" }, { id: "chalk", name: "粉筆連射" },
+  { id: "dash", name: "黑板擦衝撞" }, { id: "rain", name: "考卷雨" },
+  { id: "call", name: "點名" }, { id: "summon", name: "叫小怪" },
+  { id: "ring", name: "寫黑板罰站" }
+];
 // ✏️ Erin 可以改：這些是流派的試玩初值；水／風／雷也可以改名。
 const BUILD_TUNING = {
   water: { name: "🌊 水", color: "#237bc2" },
@@ -332,7 +347,7 @@ const skillButton = document.getElementById("skillButton");
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { bossMoves: [], bossMovePool: [], bossPhase: 1, bossPhasePause: 0, bossRest: 0, lastBossMoves: [], bossShout: 0, bossShake: 0, vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -468,7 +483,8 @@ function resetGame() {
   state.enemyShots = [];
   state.bookShotTimer = 0; state.bookNoticeTimer = 0; state.bookShootingStarted = false;
   enemyNotice.hidden = true;
-  state.boss = null; state.bossShotTimer = 0; state.bossSummonTimer = 0; state.bossIntro = 0;
+  state.boss = null; state.bossIntro = 0;
+  clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0;
   state.projectiles = [];
   state.gems = [];
   state.effects = [];
@@ -498,6 +514,7 @@ function startGame() {
 }
 
 function finishRun(won) {
+  clearBossMoves(); state.bossShake = 0;
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
   playTone(won ? 880 : 220, 0.28, "triangle");
@@ -600,8 +617,191 @@ function summonTeacher() {
   const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
   if (!position) return;
   state.boss = { ...position, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
-  state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval; state.bossSummonTimer = UPGRADE_TUNING.teacherSummonSeconds; state.bossIntro = 2.2;
+  clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
   updateHud();
+}
+
+// 老師招式的預告、位置和命中都用世界座標；鏡頭外取消，重新看見時重新預告。
+function clearBossMoves() {
+  for (const move of state.bossMoves) state.bossMovePool.push(move);
+  state.bossMoves = [];
+  for (let i = state.enemyShots.length - 1; i >= 0; i--) {
+    if (state.enemyShots[i].source === "teacher") state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
+  }
+}
+function bossHurtPlayer(damage) {
+  if (!state.boss || !targetVisible(state.boss) || state.player.invincible > 0) return;
+  state.player.health = Math.max(0, state.player.health - damage);
+  state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
+  playTone(180, 0.12, "sawtooth"); updateHud(); counterDischarge();
+  if (state.mode === "playing" && state.player.health <= 0) finishRun(false);
+}
+function beginBossMove(id) {
+  const b = state.boss, p = state.player;
+  if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
+  if (id === "ring" && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
+  const angle = Math.atan2(p.y - b.y, p.x - b.x);
+  const move = takeFromPool(state.bossMovePool, {
+    id, x: b.x, y: b.y, angle, warning: BOSS_TUNING.warningSeconds,
+    active: false, pulse: 0, life: 0, points: [], radius: 0, endX: b.x, endY: b.y,
+    count: id === "words" ? UPGRADE_TUNING.teacherShotCount : 4 + state.bossPhase
+  });
+  if (id === "dash") {
+    const length = Math.min(BOSS_TUNING.dashDistance, Math.hypot(p.x - b.x, p.y - b.y) + 70);
+    move.endX = Math.max(state.cameraX + b.r, Math.min(state.cameraX + state.width - b.r, b.x + Math.cos(angle) * length));
+    move.endY = Math.max(state.cameraY + b.r, Math.min(state.cameraY + state.height - b.r, b.y + Math.sin(angle) * length));
+  }
+  if (id === "rain" || id === "call") {
+    move.radius = id === "call" ? BOSS_TUNING.callRadius : BOSS_TUNING.rainRadius;
+    const count = id === "call" ? 1 : 2 + state.bossPhase;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, distance = i ? 85 + Math.random() * 65 : 0;
+      const point = { x: p.x + Math.cos(a) * distance, y: p.y + Math.sin(a) * distance, r: move.radius };
+      clampToMap(point);
+      if (targetVisible(point)) move.points.push(point);
+    }
+  }
+  if (id === "ring") {
+    move.radius = Math.min(BOSS_TUNING.ringRadius, state.width / 2 - 38, state.height / 2 - 38);
+    move.x = Math.max(state.cameraX + move.radius + 12, Math.min(state.cameraX + state.width - move.radius - 12, p.x));
+    move.y = Math.max(state.cameraY + move.radius + 12, Math.min(state.cameraY + state.height - move.radius - 12, p.y));
+    // 缺口朝向空間較多的一側，靠牆時也有出口；整段綠色弧線不會長出國字。
+    move.angle = Math.atan2(state.worldHeight / 2 - move.y, state.worldWidth / 2 - move.x);
+  }
+  state.bossMoves.push(move);
+}
+function fireBossFan(move) {
+  const spread = move.id === "chalk" ? 0.24 : UPGRADE_TUNING.teacherShotSpread;
+  const speed = move.id === "chalk" ? BOSS_TUNING.chalkSpeed : 135;
+  for (let i = 0; i < move.count; i++) {
+    if (state.enemyShots.filter(shot => shot.source === "teacher").length >= UPGRADE_TUNING.teacherShotLimit) break;
+    const a = move.angle + (i - (move.count - 1) / 2) * spread;
+    state.enemyShots.push(takeFromPool(state.enemyShotPool, {
+      source: "teacher", x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+      r: move.id === "chalk" ? 10 : 17, text: move.id === "chalk" ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
+      damage: UPGRADE_TUNING.teacherShotDamage, life: 4
+    }));
+  }
+}
+function ringPoints(move) {
+  const points = [], gap = BOSS_TUNING.ringGap;
+  const endRadius = Math.max(50, move.radius * 0.52); // 收到最後也留得下主角通過的缺口。
+  const radius = endRadius + (move.radius - endRadius) * Math.max(0, move.life / BOSS_TUNING.ringSeconds);
+  for (let i = 0; i <= 16; i++) {
+    const a = move.angle + gap / 2 + (Math.PI * 2 - gap) * i / 16;
+    points.push({ x: move.x + Math.cos(a) * radius, y: move.y + Math.sin(a) * radius, r: 10 });
+  }
+  return points;
+}
+function updateBoss(dt) {
+  state.bossShake = countdown(state.bossShake, dt); state.bossShout = countdown(state.bossShout, dt);
+  const b = state.boss;
+  if (!b || state.bossIntro > 0) { clearBossMoves(); return; }
+  b.wobble += dt * 3; b.flash = Math.max(0, b.flash - dt);
+  b.slowTimer = countdown(b.slowTimer || 0, dt); b.stunTimer = countdown(b.stunTimer || 0, dt);
+  // 逐一跨過 66%、33%；一次大傷害跨兩條線也會依序演出兩次轉場。
+  const nextPhase = b.hp / b.maxHp <= 0.33 ? 3 : b.hp / b.maxHp <= 0.66 ? 2 : 1;
+  if (nextPhase > state.bossPhase && state.bossPhasePause <= 0) {
+    state.bossPhase++; state.bossPhasePause = BOSS_TUNING.phasePause;
+    state.bossShout = BOSS_TUNING.phasePause; b.flash = 0.25;
+    clearBossMoves(); state.bossRest = BOSS_TUNING.rests[state.bossPhase - 1];
+    state.bossShake = BOSS_TUNING.shakeSeconds;
+  }
+  if (state.bossPhasePause > 0) { state.bossPhasePause = countdown(state.bossPhasePause, dt); updateHud(); return; }
+  if (!targetVisible(b)) {
+    clearBossMoves(); state.bossRest = Math.max(state.bossRest, 0.5);
+  }
+  // 預警時老師站定；衝撞只沿預告線走，不追蹤玩家。
+  if (!state.bossMoves.length && !(b.stunTimer > 0)) {
+    const dx = state.player.x - b.x, dy = state.player.y - b.y, length = Math.max(1, Math.hypot(dx, dy));
+    const speed = b.speed * (b.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1);
+    b.x += dx / length * speed * dt; b.y += dy / length * speed * dt; clampToMap(b);
+  }
+  if (!targetVisible(b) || b.stunTimer > 0) return;
+  if (!state.bossMoves.length) {
+    state.bossRest = countdown(state.bossRest, dt);
+    if (state.bossRest > 0) return;
+    if (state.bossRest <= 0) {
+      const previousMoves = state.lastBossMoves;
+      const choices = BOSS_MOVES.filter(move => !state.lastBossMoves.includes(move.id) && (move.id !== "ring" || Math.min(state.width, state.height) >= 196));
+      const id = choices[Math.floor(Math.random() * choices.length)].id;
+      beginBossMove(id); state.lastBossMoves = [id];
+      // 只搭配容易看懂的兩招，避開衝撞與收縮圈同時封路。
+      if (state.bossPhase >= 2 && (id === "rain" || id === "call")) {
+        const combo = state.bossPhase === 3 ? "chalk" : "words";
+        if (!previousMoves.includes(combo)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
+      }
+      return; // 開始預告的這幀不扣時間，保證完整預警。
+    }
+  }
+  for (let i = state.bossMoves.length - 1; i >= 0; i--) {
+    const move = state.bossMoves[i];
+    if (!move.active) {
+      move.warning = countdown(move.warning, dt);
+      if (move.warning > 0) continue;
+      move.active = true; move.life = move.id === "chalk" ? 0.7 : move.id === "ring" ? BOSS_TUNING.ringSeconds : move.id === "dash" ? Math.hypot(move.endX - move.x, move.endY - move.y) / BOSS_TUNING.dashSpeed : 0.3;
+      if (move.id === "words" || move.id === "chalk") { fireBossFan(move); move.pulse = 0.24; }
+      if (move.id === "summon") for (let n = 0; n < state.bossPhase + 1; n++) spawnEnemy();
+      if (move.id === "ring" || move.id === "dash" || move.id === "rain") state.bossShake = BOSS_TUNING.shakeSeconds;
+      continue; // 出手畫面至少呈現一幀，再開始範圍命中判斷。
+    }
+    if (move.id === "chalk") {
+      move.pulse = countdown(move.pulse, dt);
+      if (move.pulse <= 0) { fireBossFan(move); move.pulse = 0.24; }
+    } else if (move.id === "rain" || move.id === "call") {
+      for (const point of move.points) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(BOSS_TUNING.damage);
+    } else if (move.id === "ring") {
+      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(BOSS_TUNING.damage);
+    } else if (move.id === "dash") {
+      const dx = move.endX - b.x, dy = move.endY - b.y, length = Math.hypot(dx, dy);
+      const step = Math.min(length, BOSS_TUNING.dashSpeed * dt);
+      if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; }
+      if (Math.hypot(b.x - state.player.x, b.y - state.player.y) < b.r + state.player.r) bossHurtPlayer(BOSS_TUNING.damage);
+    }
+    if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
+    move.life = countdown(move.life, dt);
+    if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
+  }
+  if (!state.bossMoves.length) state.bossRest = BOSS_TUNING.rests[state.bossPhase - 1];
+  updateHud();
+}
+function drawBossMoves() {
+  for (const move of state.bossMoves) {
+    ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
+    if (move.id === "dash") {
+      ctx.lineWidth = state.boss.r * 2; ctx.strokeStyle = "rgba(220,65,83,.18)";
+      ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
+      ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
+    } else if (move.id === "rain" || move.id === "call") {
+      for (const point of move.points) {
+        ctx.beginPath(); ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        if (move.id === "rain") {
+          const height = move.active ? 0 : move.warning / BOSS_TUNING.warningSeconds * 70;
+          ctx.fillStyle = "#fff8dd"; ctx.fillRect(point.x - 12, point.y - height - 16, 24, 30); ctx.strokeRect(point.x - 12, point.y - height - 16, 24, 30);
+          ctx.fillStyle = "#713809"; ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.fillText("考", point.x, point.y - height + 5);
+          ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)";
+        }
+      }
+    } else if (move.id === "ring") {
+      for (const point of ringPoints(move.active ? move : { ...move, life: BOSS_TUNING.ringSeconds })) {
+        ctx.font = "bold 20px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = move.active ? "#b42f54" : "#78626b"; ctx.fillText("字", point.x, point.y + 7);
+      }
+      {
+        const radius = move.active ? Math.hypot(ringPoints(move)[0].x - move.x, ringPoints(move)[0].y - move.y) : move.radius;
+        ctx.strokeStyle = "#16804b"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(move.x, move.y, radius, move.angle - BOSS_TUNING.ringGap / 2, move.angle + BOSS_TUNING.ringGap / 2); ctx.stroke();
+      }
+    } else if (move.id === "words" || move.id === "chalk") {
+      const spread = move.id === "chalk" ? 0.24 : UPGRADE_TUNING.teacherShotSpread;
+      for (let n = 0; n < move.count; n++) {
+        const angle = move.angle + (n - (move.count - 1) / 2) * spread;
+        ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.x + Math.cos(angle) * 170, move.y + Math.sin(angle) * 170); ctx.stroke();
+      }
+    } else { ctx.beginPath(); ctx.arc(move.x, move.y, 50, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    const name = BOSS_MOVES.find(row => row.id === move.id).name;
+    ctx.font = "bold 17px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
+    ctx.strokeText(name + (move.active ? "！" : "…"), move.x, move.y - 44); ctx.fillStyle = "#9e253c"; ctx.fillText(name + (move.active ? "！" : "…"), move.x, move.y - 44);
+    ctx.restore();
+  }
 }
 
 // 敵人整隻進入鏡頭才可受傷；每次命中重新檢查，走遠留下的水窪也不會偷打。
@@ -990,14 +1190,6 @@ function tick(dt) {
     const spawnEvery = wave.every / gameSettings.spawnScale;
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
-  if (state.boss && state.bossIntro <= 0) {
-    state.bossSummonTimer -= dt;
-    if (state.bossSummonTimer <= 0) {
-      const count = UPGRADE_TUNING.teacherSummonMin + Math.floor(Math.random() * (UPGRADE_TUNING.teacherSummonMax - UPGRADE_TUNING.teacherSummonMin + 1));
-      for (let i = 0; i < count; i++) spawnEnemy();
-      state.bossSummonTimer += UPGRADE_TUNING.teacherSummonSeconds;
-    }
-  }
   if (state.bossIntro > 0) {
     state.bossIntro -= dt;
     for (const enemy of state.enemies) { enemy.x += (state.boss.x - enemy.x) * Math.min(1, dt * 3); enemy.y += (state.boss.y - enemy.y) * Math.min(1, dt * 3); }
@@ -1054,25 +1246,13 @@ function tick(dt) {
   }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   updateBookShooting(dt);
-  if (state.boss && state.bossIntro <= 0) {
-    state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
-    const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
-    state.boss.x += bx / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt; state.boss.y += by / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt;
-    clampToMap(state.boss);
-    state.boss.slowTimer = Math.max(0, (state.boss.slowTimer || 0) - dt);
-    state.boss.stunTimer = countdown(state.boss.stunTimer || 0, dt);
-    state.bossShotTimer -= state.boss.stunTimer > 0 ? 0 : dt;
-    if (state.bossShotTimer <= 0) {
-      const angle = Math.atan2(by, bx), count = UPGRADE_TUNING.teacherShotCount;
-      for (let i = 0; i < count && state.enemyShots.filter((shot) => shot.source !== "book").length < UPGRADE_TUNING.teacherShotLimit; i++) {
-        const a = angle + (i - (count - 1) / 2) * UPGRADE_TUNING.teacherShotSpread;
-        state.enemyShots.push(takeFromPool(state.enemyShotPool, { source: "teacher", damage: UPGRADE_TUNING.teacherShotDamage, x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, text: ["作業！", "認真！", "加油！"][i % 3], r: 17 }));
-      }
-      state.bossShotTimer += UPGRADE_TUNING.teacherShotInterval;
-    }
-  }
+  updateBoss(dt);
+  if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
+    if (shot.source === "teacher" && (!state.boss || !targetVisible(state.boss) || !targetVisible(shot) || (shot.life -= dt) <= 0)) {
+      state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
+    }
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
       if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
@@ -1099,7 +1279,7 @@ function tick(dt) {
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (state.player.invincible <= 0) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2);
-    const touchingBoss = state.boss && state.bossIntro <= 0 && Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
+    const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !state.bossMoves.some(move => move.id === "dash") && Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
       state.player.health = Math.max(0, state.player.health - (touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
       counterDischarge(); if (state.mode !== "playing") return;
@@ -1294,8 +1474,11 @@ function drawUltimate() {
 function render() {
   updateCamera();
   ctx.clearRect(0, 0, state.width, state.height);
-  ctx.save(); ctx.translate(-state.cameraX, -state.cameraY);
+  ctx.save();
+  const shake = gameSettings.vibration && state.bossShake > 0 ? BOSS_TUNING.shakePixels : 0;
+  ctx.translate(-state.cameraX + Math.sin(state.elapsed * 91) * shake, -state.cameraY + Math.cos(state.elapsed * 83) * shake);
   drawClassroom();
+  drawBossMoves();
   drawFields();
   drawSupportVisuals();
   for (const shot of state.projectiles) {
@@ -1328,6 +1511,10 @@ function render() {
       ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
       ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
       ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
+    } else if (shot.text === "粉筆") {
+      ctx.translate(shot.x, shot.y); ctx.rotate(Math.atan2(shot.vy, shot.vx));
+      ctx.fillStyle = "#fff"; ctx.strokeStyle = "#b42f54"; ctx.lineWidth = 2;
+      ctx.fillRect(-10, -4, 20, 8); ctx.strokeRect(-10, -4, 20, 8);
     } else {
       ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
     }
@@ -1336,11 +1523,11 @@ function render() {
   if (state.boss) {
     const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
     ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
-    ctx.fillStyle = b.flash ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
+    ctx.fillStyle = (b.flash || state.bossShout > 0) ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
     ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
     ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
     ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
-    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
+    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `老師 · ${state.bossPhase}階段`, x, y + 52);
   }
   for (const enemy of state.enemies) {
     drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId);
