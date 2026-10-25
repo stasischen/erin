@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-zone-summon-spawn",
+  "title": "老師戰敵人統一從畫面外生成",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-zone-summon-spawn",
+  "pr": null,
+  "brief": "docs/survivor-zone-summon-spawn-validation.md",
+  "next": "請 Grok 審查 erin-watch 提交後的完整 SHA；25 組非版面測試與版本檢查通過（含 140 組生成情境）。Chrome --layout 啟動 SIGABRT，請在可啟動環境補跑；Erin 試玩最小圈畫面邊緣進怪。提交、推送與 PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T16:45:52.894324Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-zone"
+  ]
+}
