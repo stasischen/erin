@@ -216,35 +216,37 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 .upgrade-panel, .settings-panel { touch-action: pan-y; overscroll-behavior: contain; }
 .upgrade-panel *, .settings-panel .skill-preview-host { touch-action: pan-y; }
 
-/* 升級區依實際可見高度縮排；確認鍵不參與內容捲動。 */
+/* 以面板內容尺寸排版；直拿旋轉也使用同一組橫向座標。 */
 body { touch-action: auto; }
 #gameCanvas { touch-action: none; }
 .overlay { min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
-.upgrade-panel { height: min(620px, 100%); min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; gap: 6px; padding: 10px; overflow: hidden; }
-.upgrade-panel h2 { font-size: 22px; margin: 0; }
-.upgrade-panel > p { font-size: 12px; margin: 0; }
-.upgrade-workspace { min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(180px, 1fr); gap: 10px; overflow: auto; touch-action: pan-x pan-y; padding: 4px; }
-.upgrade-panel .upgrade-cards { min-height: 0; gap: 8px; align-items: stretch; }
-.upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 6px; gap: 4px; overflow-wrap: anywhere; }
-.upgrade-panel .upgrade-card strong { font-size: 17px; }
-.upgrade-panel .upgrade-card span:not(.upgrade-icon), .upgrade-panel .upgrade-card small { font-size: 12px; }
-.upgrade-panel .upgrade-icon .pixel-icon { width: 30px; height: 30px; }
-#upgradePreview { min-width: 0; margin: 0; padding: 6px; overflow: auto; }
-#upgradePreview iframe { min-height: 0; height: auto; width: 100%; margin: 4px 0; }
-#upgradePreview strong, #upgradePreview p { font-size: 12px; }
-#confirmUpgrade { justify-self: center; width: 52px; height: 52px; min-height: 52px; padding: 0; border-radius: 50%; font-size: 32px; line-height: 1; margin: 0; }
-.upgrade-panel > .tree-details { margin: 0; max-height: 70px; overflow: auto; }
+.upgrade-panel { container-name: upgrade-panel; container-type: size; height: min(620px, 100%); min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr) 64px; gap: 4px 8px; padding: 8px; overflow: hidden; }
+.upgrade-panel h2 { grid-column: 1 / -1; font-size: 20px; margin: 0; }
+.upgrade-panel > p { grid-column: 1 / -1; font-size: 12px; margin: 0; }
+.upgrade-workspace { grid-column: 1 / -1; container-type: size; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 10px; padding: 4px; }
+.upgrade-panel .upgrade-cards { min-height: 0; gap: 6px; align-items: start; }
+.upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 5px; gap: 3px; line-height: 1.2; overflow-wrap: anywhere; }
+.upgrade-panel .upgrade-card strong { font-size: 15px; }
+.upgrade-panel .upgrade-card span:not(.upgrade-icon), .upgrade-panel .upgrade-card small { font-size: 11px; }
+.upgrade-panel .upgrade-icon { line-height: 0; }
+.upgrade-panel .upgrade-icon .pixel-icon { width: 24px; height: 24px; }
+#upgradePreview { min-width: 0; margin: 0; padding: 4px; text-align: center; }
+#upgradePreview iframe { min-height: 0; width: min(100%, calc((100cqh - 62px) * 16 / 9)); height: auto; aspect-ratio: 16 / 9; margin: 3px auto; }
+#upgradePreview strong, #upgradePreview p { display: block; font-size: 11px; line-height: 16px; margin: 0; }
+#upgradePreview p { white-space: nowrap; overflow: auto; }
+#confirmUpgrade { grid-column: 2; grid-row: 4; justify-self: end; align-self: end; display: flex; align-items: center; gap: 8px; min-width: 132px; width: auto; height: 64px; min-height: 64px; padding: 8px 12px; border-radius: 2px; font-size: 18px; margin: 0; }
+#confirmUpgrade .pixel-icon { width: 32px; height: 32px; }
+#confirmUpgrade:disabled { opacity: .45; cursor: default; }
+.upgrade-panel > .tree-details { grid-column: 1; grid-row: 4; align-self: end; margin: 0; max-height: 64px; overflow: auto; text-align: left; }
 .upgrade-panel .tree-details summary { padding: 4px; }
-.game-shell[data-short="true"] .upgrade-panel { gap: 3px; padding: 6px; }
-.game-shell[data-short="true"] .upgrade-workspace { grid-template-columns: minmax(0, 1fr); }
-.game-shell[data-short="true"] #upgradePreview, .game-shell[data-short="true"] .upgrade-panel > .tree-details { display: none; }
-.game-shell[data-short="true"] .upgrade-panel .upgrade-icon { display: none; }
-.game-shell[data-short="true"] .upgrade-panel .upgrade-card { gap: 2px; }
-.game-shell[data-short="true"] .upgrade-panel .upgrade-card strong { font-size: 15px; }
-/* 祖先也必須允許平移，手機才真的能捲到暫停與設計室的最後一項。 */
+/* 短面板將長說明交給右側展示與技能樹，卡片保留名稱、圖示和等級。 */
+@container upgrade-panel (height < 400px) {
+  .upgrade-card .upgrade-description, .upgrade-card .requirements { display: none; }
+}
+@container upgrade-panel (height < 200px) {
+  .upgrade-workspace { grid-template-columns: minmax(0, 1fr); }
+  #upgradePreview { display: none; }
+}
 .upgrade-panel, .settings-panel, .message-card, .maker-editor { min-height: 0; touch-action: pan-x pan-y; overscroll-behavior: contain; }
 .upgrade-panel *, .settings-panel .skill-preview-host, .maker-editor * { touch-action: pan-x pan-y; }
 .settings-panel, .message-card { max-width: 100%; overflow: auto; }
-
-.game-shell[data-short="true"] .upgrade-panel .upgrade-card { padding: 4px; line-height: 1.2; }
-.game-shell[data-short="true"] .upgrade-panel .upgrade-card small { font-size: 11px; }

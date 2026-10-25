@@ -59,15 +59,15 @@
     for (const school of ['water','wind','thunder']) text(p, api.defaults().build[school].name, draft.build[school], 'name');
   }
   function drawCards() {
-    const p = panel('設計技能樹');
-    const tree = el('div', undefined, p); tree.className = 'maker-tree';
+    const p = panel('設計技能樹'); p.className += ' maker-card-workspace';
+    const tree = el('div', undefined, p); tree.className = 'maker-tree'; tree.id = 'makerCardList';
     const tiers = ['', 'entry', 'advanced-a', 'advanced-b', 'fusion', 'ultimate'];
     for (const school of ['water', 'wind', 'thunder', '']) {
       const branch = el('section', undefined, tree); branch.className = 'maker-branch';
       const heading = el('h3', school ? draft.build[school].name : '支援', branch); heading.innerHTML = SurvivorIcons.html(school || 'passive') + heading.innerHTML;
       tiers.forEach(tier => draft.cards.forEach((card, index) => {
         if ((card.school || '') !== school || (card.tier || '') !== tier) return;
-        const tile = button(branch, card.name, () => { cardIndex = index; render(); document.getElementById('makerCardEdit').scrollIntoView({block:'start'}); }, index === cardIndex);
+        const tile = button(branch, card.name, () => { cardIndex = index; const top = tree.scrollTop; render(); document.getElementById('makerCardList').scrollTop = top; document.getElementById('makerCardEdit').scrollTop = 0; }, index === cardIndex);
         tile.innerHTML = SurvivorIcons.html(card.icon) + tile.innerHTML;
         tile.className = 'upgrade-card'; tile.style.setProperty('--school-color', school ? draft.build[school].color : '#7196ad');
         el('small', card.requires.length ? '↳ ' + card.requires.map(id => draft.cards.find(c => c.id === id).name).join(' ＋ ') : '起點', tile);

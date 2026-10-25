@@ -59,3 +59,15 @@
 .maker-slider::-moz-range-track { height: 8px; background: #091a2b; border: 2px solid #75adc8; }
 .maker-slider::-moz-range-thumb { width: 20px; height: 26px; border: 3px solid #d1efff; border-radius: 0; background: #2176a0; }
 .maker-room [role="switch"][aria-checked="true"] { background: #23604f; border-color: #a3f0ca; }
+
+/* 清單與編輯區各自捲動，頁尾不參與內容的高度競爭。 */
+.maker-room { grid-template-rows: 44px 44px minmax(0, 1fr) 56px; }
+.maker-editor:has(.maker-card-workspace) { overflow: hidden; padding: 0; }
+.maker-editor .maker-card-workspace { height: 100%; margin: 0; padding: 4px; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); grid-template-rows: auto minmax(0, 1fr); gap: 6px; }
+.maker-card-workspace > h2 { grid-column: 1 / -1; font-size: 16px; margin: 0; }
+.maker-card-workspace > .maker-tree, .maker-card-workspace > .maker-card-edit { min-height: 0; overflow: auto; touch-action: pan-y; }
+.maker-card-workspace > .maker-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.maker-card-workspace .maker-branch .upgrade-card { min-height: 64px; margin-bottom: 8px; padding: 4px; font-size: 13px; }
+.maker-card-workspace .maker-card-edit { padding: 4px; border: 2px solid #ffe4a1; }
+.maker-card-workspace .maker-card-edit > h3 { margin: 0; }
+.maker-footer { min-height: 0; }
