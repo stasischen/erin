@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-shadows",
+  "title": "小怪獸：角色地面影子與落點提示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-shadows",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T143659Z-parent-shadows.md",
+  "next": "請 Grok 審查 erin-watch 提交後的完整 SHA，檢查地面影子、老師飛撲與考卷落點、Maker 舊資料相容。17 支非瀏覽器測試及版號檢查通過；Chrome --layout 已執行但啟動 SIGABRT，需在可啟動 Chrome 的環境補跑，不能視為完成。見 docs/survivor-shadows-validation.md；之後請 Erin 實機試玩大小與深淺。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T14:41:29.077712Z",
+  "updatedBy": "codex"
+}

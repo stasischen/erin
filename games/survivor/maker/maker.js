@@ -117,7 +117,7 @@
   }
   function drawEnemies() {
     draft.enemies.forEach(e => {
-      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害');
+      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
       select(fields, '移動方式', e, 'behavior', {chase:'追著主角',still:'站在原地',retreat:'靠近時後退'});
       const attack = el('fieldset', undefined, p); el('legend','怪物的攻擊',attack);
       select(attack, '攻擊積木', e.attack, 'type', {none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
