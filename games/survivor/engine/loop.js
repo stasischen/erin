@@ -110,7 +110,7 @@ function startGame() {
   scheduleFrame();
   spawnEnemy();
   updateActionControls();
-  playTone(520, 0.1, "triangle");
+  playSound("click");
 }
 
 function finishRun(won) {
@@ -125,7 +125,7 @@ function finishRun(won) {
   clearBossMoves(); state.bossShake = 0;
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
-  playTone(won ? 880 : 220, 0.28, "triangle");
+  playSound(won ? "win" : "over");
   if (MAKER_MODE && window.openSurvivorMaker) window.openSurvivorMaker(won ? "過關了！繼續設計或再試玩。" : "試玩結束！繼續設計或再試玩。");
   else showOverlay(won ? "won" : "over");
 }
@@ -244,6 +244,7 @@ function tick(dt) {
     if (shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(deltaX(state.boss.x, shot.x), deltaY(state.boss.y, shot.y)) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
+      playSound("hit");
       boss.hp -= shot.damage; boss.flash = HIT_FLASH_SECONDS; updateHud();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
@@ -264,7 +265,7 @@ function tick(dt) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
-      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
+      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
@@ -297,7 +298,7 @@ function tick(dt) {
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;
       if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35);
-      playTone(180, 0.12, "sawtooth");
+      playSound("hurt");
       updateHud();
     }
   }
@@ -312,7 +313,7 @@ function tick(dt) {
 function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
-function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }
+function frame(now) { Survivor.audio.sync(); frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }
 function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 

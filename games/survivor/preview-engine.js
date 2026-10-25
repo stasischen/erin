@@ -4,7 +4,7 @@ let previewTime = 0, previewFired = false, previewRequest = null, previewLast = 
 let previewVisible = frameElement._previewVisible !== false;
 const previewCard = UPGRADES.find(c=>c.id===previewSpec.id);
 if(previewCard && previewSpec.kind==='effect') previewCard.effects=[previewCard.effects[previewSpec.index]];
-gameSettings.sound = false; gameSettings.vibration = false;
+gameSettings.music = false; gameSettings.sound = false; gameSettings.vibration = false;
 // 所有入口共用 1.35 倍基準；大範圍效果仍依邊界拉遠。
 // 主角圖寬 40 格；假怪至少留三個主角寬，水球飛行和命中都有空間。
 const PREVIEW_COMPOSITION = { scale: 1.35, padding: 12, targetDistances: [125,165,200], minDistance: 120, originX: 80 };

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261025ab" />
-  <link rel="stylesheet" href="maker/style.css?v=20261025ab" />
+  <link rel="stylesheet" href="style.css?v=20261025ac" />
+  <link rel="stylesheet" href="maker/style.css?v=20261025ac" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -49,7 +49,8 @@
           <h3>遊戲設定</h3>
           <div id="settingsControls" class="settings-controls"></div>
           <div class="settings-toggles">
-            <button id="soundToggle" class="settings-action" type="button"></button>
+            <button id="soundToggle" class="settings-action audio-toggle" type="button"></button>
+            <button id="musicToggle" class="settings-action audio-toggle" type="button"></button>
             <button id="vibrationToggle" class="settings-action" type="button"></button>
           </div>
           <div class="settings-actions">
@@ -75,13 +76,13 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261025ab"></script>
+  <script src="icons.js?v=20261025ac"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261025ab"></script>
-  <script src="data/schema.js?v=20261025ab"></script>
-  <script src="preview.js?v=20261025ab"></script>
-  <script src="manifest.js?v=20261025ab"></script><script src="game.js?v=20261025ab"></script>
-  <script src="maker/maker.js?v=20261025ab"></script>
+  <script src="data/defaults.js?v=20261025ac"></script>
+  <script src="data/schema.js?v=20261025ac"></script>
+  <script src="preview.js?v=20261025ac"></script>
+  <script src="manifest.js?v=20261025ac"></script><script src="game.js?v=20261025ac"></script>
+  <script src="maker/maker.js?v=20261025ac"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

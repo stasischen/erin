@@ -27,6 +27,7 @@ function updateHud() {
 
 
 function updateActionControls() {
+  Survivor.audio.sync();
   actionControls.hidden = state.mode !== "playing";
   actionControls.style.cssText = `--action-size: ${gameSettings.actionButtonSize}px`;
   for (const [button, remaining, total, label] of [

@@ -10,6 +10,7 @@ function movementInput() {
 }
 // 流派可以混搭；四欄顯示本局已拿到的效果，不會蓋掉先前選的卡。
 
+document.addEventListener("click", event => { if (event.target && event.target.closest && event.target.closest("button")) playSound("click"); });
 settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
 resetSettingsButton.addEventListener("click", () => {
@@ -20,7 +21,8 @@ resetSettingsButton.addEventListener("click", () => {
   ENEMY_TYPES[1].speed = gameSettings.secondEnemySpeed; ENEMY_TYPES[1].hp = gameSettings.secondEnemyHealth;
   if (state.mode !== "playing") { state.player.health = PLAYER_HEALTH; updateHud(); }
 });
-soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playTone(660); });
+soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playSound("click"); });
+document.getElementById("musicToggle").addEventListener("click", () => { gameSettings.music = !gameSettings.music; saveSettings(); updateSettingsButtons(); });
 vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
 startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
 pauseButton.addEventListener("click", () => { if (state.mode !== "levelup") openSettings(); });
@@ -37,7 +39,7 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
 window.addEventListener("keyup", (event) => state.keys.delete(event.key.length === 1 ? event.key.toLowerCase() : event.key));
 window.addEventListener("blur", () => { state.keys.clear(); if (state.mode === "playing") showOverlay("paused"); });
-document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); });
+document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); Survivor.audio.sync(); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());
 // CSS 直拿時順時針轉 90 度；把螢幕位置轉回遊戲位置（包含縮放）。
 function canvasPoint(event) {
