@@ -3,7 +3,7 @@ const UPGRADE_TUNING = {
   maxUpgradeLevel: 5, // 每張升級卡最多升幾級；改大可以升更多級
   splashBaseRadius: 22, // 水花一開始濺多遠；改大會打到更遠的甲本
   splashPerLevel: 10, // 水花每升一級多遠；改大會濺得更遠
-  invincibleSeconds: 1.15, // 被撞後保護幾秒；改大會比較不容易連續受傷
+  invincibleSeconds: 0.8, // 被撞後保護幾秒；改大會比較不容易連續受傷
   waterSizePerLevel: 0.20, // 水球每升一級變大多少；改大看起來會長更快
   damagePerLevel: 0.25, // 水球每升一級多痛多少；改大打倒甲本更快
   fireRateReduction: 0.15, // 連發卡每級讓等待時間少多少；改大會射得更快
@@ -11,27 +11,37 @@ const UPGRADE_TUNING = {
   moveSpeedPerLevel: 0.12, // 洋蔥衝刺每級加多少速度；改大跑得更快
   magnetPerLevel: 0.40, // 磁鐵每級增加多少吸取距離；改大更遠就能撿寶石
   playerSpeed: 190, // 主角每秒走多遠；改大跑更快
-  playerHealth: 100, // 主角血條有多長；改大比較耐撞
-  enemyLimit: 18, // 畫面最多同時有幾個甲本；改大會有更多甲本
-  enemySpeed: 62, // 甲本每秒走多遠；改大追得更快
+  playerHealth: 80, // 主角血條有多長；改大比較耐撞
+  enemyLimit: 32, // 畫面最多同時有幾個甲本；改大會有更多甲本
+  enemySpeed: 75, // 甲本每秒走多遠；改大追得更快
   enemyRadius: 17, // 甲本有多大；改大會變大隻
-  enemyDamage: 12, // 甲本撞一下扣多少血；改大會更危險
-  enemyHealth: 100, // 打倒甲本要打掉多少血；改大要多打幾下
-  secondEnemySpeed: 88, // 乙本每秒走多遠；比甲本快
-  secondEnemyHealth: 60, // 乙本有多少血；比甲本少
+  enemyDamage: 18, // 甲本撞一下扣多少血；改大會更危險
+  enemyHealth: 120, // 打倒甲本要打掉多少血；改大要多打幾下
+  secondEnemySpeed: 105, // 乙本每秒走多遠；比甲本快
+  secondEnemyDamage: 14, // 乙本撞一下扣多少血；改大會更危險
+  enemySpeedGrowth: 0.08, // 每過 30 秒多加多少原本速度；0.08 就是加 8%
+  secondEnemyHealth: 70, // 乙本有多少血；比甲本少
   waveSeconds: 120, // 幾秒後老師出場；120 秒就是 2 分鐘
-  teacherHealth: 1400, // 老師血條有多長；改大要打更久
-  teacherShotInterval: 1.35, // 老師隔幾秒發射一次文字
+  teacherHealth: 2400, // 老師血條有多長；改大要打更久
+  teacherShotInterval: 0.8, // 老師隔幾秒發射一次文字
+  teacherShotDamage: 20, // 老師文字打中扣多少血
+  teacherShotCount: 3, // 每次發射幾個字
+  teacherShotSpread: 0.28, // 文字扇形的間隔角度；改大比較分散
+  teacherShotLimit: 36, // 畫面最多有幾個文字；避免太多文字卡住
+  teacherSummonSeconds: 4, // 老師每隔幾秒叫小兵
+  teacherSummonMin: 1, // 每次至少叫幾隻小兵
+  teacherSummonMax: 2, // 每次最多叫幾隻小兵
   shotInterval: 0.72, // 平常隔幾秒射一顆水球；改小會射更快
   projectileDamage: 35, // 水球打中扣多少甲本的血；改大打得更痛
   projectileSpeed: 390, // 水球飛多快；改大會飛更快
   projectileLimit: 24, // 畫面最多同時有幾顆水球；改大會有更多水球
   gemLimit: 24, // 畫面最多同時有幾顆寶石；改大會留下更多寶石
   gemPullRadius: 105, // 靠多近寶石會被吸過來；改大能從更遠撿到
-  xpToLevel: 5, // 撿幾顆寶石會升級；改小會更快升級
-  autoHealSeconds: 8 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
+  xpToLevel: 5, // 第一次撿幾顆寶石會升級；改小會更快升級
+  xpGrowthPerLevel: 2, // 每升一級多需要幾顆寶石；改大升級更慢
+  autoHealSeconds: 12 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
-const SETTINGS_KEY = "erin-survivor-settings-v1";
+const SETTINGS_KEY = "erin-survivor-settings-v2";
 const RECORD_KEY = "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
   playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
@@ -79,16 +89,17 @@ let PLAYER_HEALTH = gameSettings.playerHealth; // 請改上面的 playerHealth
 const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 請改上面的 enemyLimit
 const ENEMY_TYPES = [
   { id: "jaben", name: "甲本", color: "#d58b55", speed: gameSettings.enemySpeed, radius: UPGRADE_TUNING.enemyRadius, damage: UPGRADE_TUNING.enemyDamage, hp: gameSettings.enemyHealth },
-  { id: "otsubon", name: "乙本", color: "#a879d8", speed: gameSettings.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.enemyDamage, hp: gameSettings.secondEnemyHealth }
+  { id: "otsubon", name: "乙本", color: "#a879d8", speed: gameSettings.secondEnemySpeed, radius: 15, damage: UPGRADE_TUNING.secondEnemyDamage, hp: gameSettings.secondEnemyHealth }
 ];
 // ✏️ Erin 可以改每一波：開始秒數、甲本比例、乙本比例、幾秒出一隻。
 // 比例加起來請等於 1；秒數越小，怪物越常出現。
 const WAVES = [
-  { start: 0, jaben: 1, otsubon: 0, every: 2.1 }, // 一開始只有甲本，慢慢熟悉玩法
-  { start: 20, jaben: 0.8, otsubon: 0.2, every: 1.8 }, // 20 秒後少量乙本加入
-  { start: 35, jaben: 0.58, otsubon: 0.42, every: 1.5 }, // 35 秒後乙本變多
-  { start: 60, jaben: 0.45, otsubon: 0.55, every: 1.2 }, // 60 秒後出怪更快
-  { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.95 } // 老師出場前最熱鬧
+  { start: 0, jaben: 1, otsubon: 0, every: 1.6 }, // 一開始只有甲本，慢慢熟悉玩法
+  { start: 20, jaben: 0.8, otsubon: 0.2, every: 1.3 }, // 20 秒後少量乙本加入
+  { start: 35, jaben: 0.58, otsubon: 0.42, every: 1.0 }, // 35 秒後乙本變多
+  { start: 60, jaben: 0.45, otsubon: 0.55, every: 0.75 }, // 60 秒後出怪更快
+  { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.55 },
+  { start: 105, jaben: 0.35, otsubon: 0.65, every: 0.45 } // 老師出場前最熱鬧
 ];
 const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入檔名才載入；null 會用程式畫色塊
 for (const name of Object.keys(SPRITES)) {
@@ -161,7 +172,7 @@ const resetSettingsButton = document.getElementById("resetSettingsButton");
 const soundToggle = document.getElementById("soundToggle");
 const vibrationToggle = document.getElementById("vibrationToggle");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -255,7 +266,7 @@ function resetGame() {
   state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 };
   state.enemies = [];
   state.enemyShots = [];
-  state.boss = null; state.bossShotTimer = 0; state.bossIntro = 0;
+  state.boss = null; state.bossShotTimer = 0; state.bossSummonTimer = 0; state.bossIntro = 0;
   state.projectiles = [];
   state.gems = [];
   state.effects = [];
@@ -304,7 +315,7 @@ function updateHud() {
   const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
-  experienceFill.style.width = `${state.xp / XP_TO_LEVEL * 100}%`;
+  experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
   levelLabel.textContent = `Lv.${state.level}`;
   bossHud.hidden = !state.boss;
   if (state.boss) bossHealthFill.style.width = `${Math.max(0, state.boss.hp / state.boss.maxHp) * 100}%`;
@@ -324,12 +335,13 @@ function spawnEnemy() {
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
   let y = side === 2 ? -pad : side === 3 ? state.height + pad : Math.random() * state.height;
   if (Math.hypot(x - state.player.x, y - state.player.y) < Math.min(state.width, state.height) * 0.32) { x = side < 2 ? x : (x + state.width / 2) % state.width; y = side >= 2 ? y : (y + state.height / 2) % state.height; }
-  state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
+  state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
 }
 
 function summonTeacher() {
   state.boss = { x: state.width / 2, y: -64, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
-  state.bossShotTimer = 1; state.bossIntro = 2.2;
+  state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval; state.bossSummonTimer = UPGRADE_TUNING.teacherSummonSeconds; state.bossIntro = 2.2;
+  updateHud();
 }
 
 function closestEnemy() {
@@ -353,8 +365,17 @@ function fireAtNearest() {
   const count = 1 + upgradeLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), pierce: upgradeLevel("piercing-water"), hitList: [], alive: true }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: upgradeLevel("piercing-water") > 0, pierce: upgradeLevel("piercing-water"), hitList: [], alive: true }));
   }
+}
+
+// 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
+function resolveWaterHit(shot) {
+  const continues = shot.pierce > 0;
+  if (continues) shot.pierce--; else shot.alive = false;
+  if (state.effects.length >= 90) state.effectPool.push(state.effects.shift());
+  state.effects.push(takeFromPool(state.effectPool, { kind: "water-hit", x: shot.x, y: shot.y, vx: 0, vy: -18, color: continues ? "#ffffff" : "#168cff", life: 0.35, maxLife: 0.35, text: continues ? "穿！" : "啪" }));
+  burst(shot.x, shot.y, "#75d7ff", 5);
 }
 
 function burst(x, y, color, count = 8) {
@@ -412,9 +433,10 @@ function applyUpgrade(index) {
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
   state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
+function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
   state.xp += value;
-  if (state.xp >= XP_TO_LEVEL) { state.xp -= XP_TO_LEVEL; state.level++; updateHud(); chooseUpgradeCards(); } else updateHud();
+  if (state.xp >= experienceNeeded()) { state.xp -= experienceNeeded(); state.level++; updateHud(); chooseUpgradeCards(); } else updateHud();
 }
 function tick(dt) {
   if (state.mode !== "playing") return;
@@ -451,10 +473,18 @@ function tick(dt) {
     const spawnEvery = wave.every / gameSettings.spawnScale;
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
+  if (state.boss && state.bossIntro <= 0) {
+    state.bossSummonTimer -= dt;
+    if (state.bossSummonTimer <= 0) {
+      const count = UPGRADE_TUNING.teacherSummonMin + Math.floor(Math.random() * (UPGRADE_TUNING.teacherSummonMax - UPGRADE_TUNING.teacherSummonMin + 1));
+      for (let i = 0; i < count; i++) spawnEnemy();
+      state.bossSummonTimer += UPGRADE_TUNING.teacherSummonSeconds;
+    }
+  }
   if (state.bossIntro > 0) {
     state.bossIntro -= dt;
     for (const enemy of state.enemies) { enemy.x += (state.width / 2 - enemy.x) * Math.min(1, dt * 3); enemy.y += (state.height / 2 - enemy.y) * Math.min(1, dt * 3); }
-    if (state.bossIntro <= 0) { state.enemies = []; burst(state.width / 2, state.height / 2, "#fff36b", 32); state.boss.y = Math.min(100, state.height * 0.25); updateHud(); }
+    if (state.bossIntro <= 0) { burst(state.width / 2, state.height / 2, "#fff36b", 32); state.boss.y = Math.min(100, state.height * 0.25); updateHud(); }
   }
   state.shotTimer -= dt;
   if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += effectiveShotInterval(); }
@@ -462,8 +492,8 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * dt;
-    enemy.y += vy / distance * enemy.speed * dt;
+    enemy.x += vx / distance * enemy.speed * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.y += vy / distance * enemy.speed * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
@@ -480,13 +510,14 @@ function tick(dt) {
           const radius = UPGRADE_TUNING.splashBaseRadius + upgradeLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
           for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && !shot.hitList.includes(nearby) && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * 0.35); }
         }
-        if (shot.pierce > 0) shot.pierce--; else { shot.alive = false; break; }
+        resolveWaterHit(shot);
+        if (!shot.alive) break;
       }
     }
-    if (state.boss && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
+    if (shot.alive && state.boss && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       state.boss.hp -= shot.damage; state.boss.flash = HIT_FLASH_SECONDS; updateHud();
-      if (shot.pierce > 0) shot.pierce--; else shot.alive = false;
+      resolveWaterHit(shot);
       if (state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
     }
   }
@@ -499,15 +530,19 @@ function tick(dt) {
     const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
     state.boss.x += bx / distance * state.boss.speed * dt; state.boss.y += by / distance * state.boss.speed * dt;
     state.bossShotTimer -= dt;
-    if (state.bossShotTimer <= 0 && state.enemyShots.length < 18) {
-      const angle = Math.atan2(by, bx); state.enemyShots.push({ x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(angle) * 135, vy: Math.sin(angle) * 135, text: ["作業！", "認真！", "加油！"][Math.floor(Math.random() * 3)], r: 17 });
-      state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval;
+    if (state.bossShotTimer <= 0) {
+      const angle = Math.atan2(by, bx), count = UPGRADE_TUNING.teacherShotCount;
+      for (let i = 0; i < count && state.enemyShots.length < UPGRADE_TUNING.teacherShotLimit; i++) {
+        const a = angle + (i - (count - 1) / 2) * UPGRADE_TUNING.teacherShotSpread;
+        state.enemyShots.push({ x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, text: ["作業！", "認真！", "加油！"][i % 3], r: 17 });
+      }
+      state.bossShotTimer += UPGRADE_TUNING.teacherShotInterval;
     }
   }
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
-      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage); state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
+      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - UPGRADE_TUNING.teacherShotDamage); state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShots.splice(i, 1);
     } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShots.splice(i, 1);
   }
@@ -530,10 +565,10 @@ function tick(dt) {
   }
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (state.player.invincible <= 0) {
-    let touchingEnemy = state.enemies.some((enemy) => enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2);
-    if (!touchingEnemy && state.boss && state.bossIntro <= 0) touchingEnemy = Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
-    if (touchingEnemy) {
-      state.player.health = Math.max(0, state.player.health - ENEMY_TYPES[0].damage);
+    const touchingEnemy = state.enemies.find((enemy) => enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2);
+    const touchingBoss = state.boss && state.bossIntro <= 0 && Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
+    if (touchingEnemy || touchingBoss) {
+      state.player.health = Math.max(0, state.player.health - (touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;
       if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35);
@@ -584,6 +619,13 @@ function render() {
     if (!shot.alive) continue;
     ctx.fillStyle = WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (shot.piercing) {
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
+      const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+      ctx.beginPath(); ctx.moveTo(shot.x - shot.vx / speed * (shot.r + 5), shot.y - shot.vy / speed * (shot.r + 5));
+      ctx.lineTo(shot.x - shot.vx / speed * (shot.r + 15), shot.y - shot.vy / speed * (shot.r + 15)); ctx.stroke();
+    }
   }
   for (const gem of state.gems) {
     ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
@@ -606,7 +648,11 @@ function render() {
   }
   for (const effect of state.effects) {
     const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
-    if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+    if (effect.kind === "water-hit") {
+      ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
+    }
+    else if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
     else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
     else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
