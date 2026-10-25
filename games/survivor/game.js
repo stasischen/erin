@@ -46,6 +46,15 @@ const UPGRADE_TUNING = {
   gemPullRadius: 105, // 靠多近寶石會被吸過來；改大能從更遠撿到
   xpToLevel: 5, // 第一次撿幾顆寶石會升級；改小會更快升級
   xpGrowthPerLevel: 1, // 每升一級多需要幾顆寶石；改大升級更慢
+  dashCooldown: 2.5, // 衝刺後休息幾秒
+  dashSeconds: 0.15, // 衝刺持續幾秒
+  dashMultiplier: 3, // 衝刺是平常速度的幾倍
+  bombCooldown: 8, // 泡泡炸彈用完休息幾秒
+  bombDelay: 0.6, // 泡泡放下後幾秒爆開
+  bombDamage: 100, // 泡泡爆開扣多少敵人的血
+  bombRadius: 110, // 泡泡能打到多遠
+  bombKnockback: 55, // 泡泡把敵人推多遠
+  actionButtonSize: 88, // 衝刺按鈕有多大；技能按鈕小一點
   autoHealSeconds: 10 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
 const SETTINGS_KEY = "erin-survivor-settings-v3";
@@ -59,9 +68,28 @@ const SETTING_DEFAULTS = {
   enemyShootLevel: UPGRADE_TUNING.enemyShootLevel,
   enemyShotInterval: UPGRADE_TUNING.enemyShotInterval, secondEnemyShotInterval: UPGRADE_TUNING.secondEnemyShotInterval,
   enemyShotSpeed: UPGRADE_TUNING.enemyShotSpeed, enemyShotDamage: UPGRADE_TUNING.enemyShotDamage,
+  dashCooldown: UPGRADE_TUNING.dashCooldown,
+  dashSeconds: UPGRADE_TUNING.dashSeconds,
+  dashMultiplier: UPGRADE_TUNING.dashMultiplier,
+  bombCooldown: UPGRADE_TUNING.bombCooldown,
+  bombDelay: UPGRADE_TUNING.bombDelay,
+  bombDamage: UPGRADE_TUNING.bombDamage,
+  bombRadius: UPGRADE_TUNING.bombRadius,
+  bombKnockback: UPGRADE_TUNING.bombKnockback,
+  actionButtonSize: UPGRADE_TUNING.actionButtonSize,
   sound: true, vibration: true
 };
 const SETTING_CONTROLS = [
+  { key: "dashCooldown", label: "衝刺後休息幾秒", min: 1, max: 8, step: 0.5, unit: " 秒" },
+  { key: "dashSeconds", label: "衝刺持續幾秒", min: 0.1, max: 0.4, step: 0.05, unit: " 秒" },
+  { key: "dashMultiplier", label: "衝刺是平常速度的幾倍", min: 2, max: 5, step: 0.5, unit: " 倍" },
+  { key: "bombCooldown", label: "泡泡炸彈用完休息幾秒", min: 2, max: 15, step: 1, unit: " 秒" },
+  { key: "bombDelay", label: "泡泡放下後幾秒爆開", min: 0.2, max: 1.5, step: 0.1, unit: " 秒" },
+  { key: "bombDamage", label: "泡泡爆開扣多少敵人的血", min: 20, max: 300, step: 10, unit: "" },
+  { key: "bombRadius", label: "泡泡能打到多遠", min: 50, max: 180, step: 10, unit: "" },
+  { key: "bombKnockback", label: "泡泡把敵人推多遠", min: 10, max: 100, step: 5, unit: "" },
+  { key: "actionButtonSize", label: "衝刺按鈕有多大；技能按鈕小一點", min: 72, max: 104, step: 4, unit: " px" },
+
   { key: "playerSpeed", label: "水星人速度", min: 100, max: 320, step: 10, unit: "" },
   { key: "playerHealth", label: "水星人血量", min: 40, max: 200, step: 10, unit: "" },
   { key: "enemySpeed", label: "甲本速度", min: 30, max: 130, step: 5, unit: "" },
@@ -245,10 +273,18 @@ const resetSettingsButton = document.getElementById("resetSettingsButton");
 const soundToggle = document.getElementById("soundToggle");
 const vibrationToggle = document.getElementById("vibrationToggle");
 
+const actionControls = document.getElementById("actionControls");
+const dashButton = document.getElementById("dashButton");
+const skillButton = document.getElementById("skillButton");
+const portraitHint = document.getElementById("portraitHint");
+const closePortraitHint = document.getElementById("closePortraitHint");
+let portraitHintSeen = false;
+try { portraitHintSeen = localStorage.getItem("erin-survivor-portrait-hint-v1") === "seen"; } catch (_) {}
+
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -284,7 +320,7 @@ function updateSettingValue(key, value) {
   enemy[1].speed = gameSettings.secondEnemySpeed; enemy[1].hp = gameSettings.secondEnemyHealth;
   PLAYER_SPEED = gameSettings.playerSpeed; PLAYER_HEALTH = gameSettings.playerHealth; SHOT_INTERVAL = gameSettings.shotInterval;
   if (state.mode !== "playing" && state.mode !== "levelup") state.player.health = PLAYER_HEALTH;
-  saveSettings(); updateHud();
+  saveSettings(); updateHud(); updateActionControls();
 }
 
 function makeSettingsControls() {
@@ -336,6 +372,9 @@ function resize() {
 }
 
 function resetGame() {
+  state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
+  state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
+  state.bomb = null; state.bombBlast = null; state.pointerId = null;
   for (const item of state.projectiles) state.projectilePool.push(item);
   for (const item of state.gems) state.gemPool.push(item);
   for (const item of state.effects) state.effectPool.push(item);
@@ -370,6 +409,7 @@ function startGame() {
   state.lastTime = performance.now();
   scheduleFrame();
   spawnEnemy();
+  updateActionControls(); maybeShowPortraitHint();
   playTone(520, 0.1, "triangle");
 }
 
@@ -382,11 +422,13 @@ function finishRun(won) {
 
 function showOverlay(mode) {
   state.mode = mode;
+  state.keys.clear(); state.pointerId = null; state.joy = null;
+  updateActionControls(); portraitHint.hidden = true;
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
   if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
   else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
   else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = `老師的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "Ⅱ"; }
-  else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用方向鍵、WASD 或手指搖桿移動，躲開甲本！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
+  else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，💨 衝刺躲字、🌀 放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
 function updateHud() {
@@ -525,7 +567,7 @@ function chooseUpgradeCards() {
 }
 function showUpgradeChoices() {
   render();
-  state.mode = "levelup"; overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
+  state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); portraitHint.hidden = true; overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`;
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
@@ -538,13 +580,90 @@ function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup") return;
   if (card.id === "heal") state.player.health = Math.min(PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5), state.player.health + Math.ceil(PLAYER_HEALTH / 5));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
-  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateHud(); state.lastTime = performance.now(); scheduleFrame();
+  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
   state.xp += value;
   if (state.xp >= experienceNeeded()) { state.xp -= experienceNeeded(); state.level++; startBookShooting(); updateHud(); chooseUpgradeCards(); } else updateHud();
 }
+function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
+function movementInput() {
+  let x = 0, y = 0;
+  if (state.keys.has("ArrowLeft") || state.keys.has("a")) x--;
+  if (state.keys.has("ArrowRight") || state.keys.has("d")) x++;
+  if (state.keys.has("ArrowUp") || state.keys.has("w")) y--;
+  if (state.keys.has("ArrowDown") || state.keys.has("s")) y++;
+  if (state.joy) { x += state.joy.x; y += state.joy.y; }
+  const length = Math.max(1, Math.hypot(x, y));
+  return { x: x / length, y: y / length };
+}
+function activateDash() {
+  if (state.mode !== "playing" || state.dashCooldown > 0) return;
+  const input = movementInput(), length = Math.hypot(input.x, input.y);
+  state.dashX = length > 0.01 ? input.x / length : state.faceX;
+  state.dashY = length > 0.01 ? input.y / length : state.faceY;
+  state.faceX = state.dashX; state.faceY = state.dashY;
+  state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
+  state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
+  playTone(740, 0.08); updateActionControls();
+}
+function activateSkill() {
+  if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
+  state.bomb = { x: state.player.x, y: state.player.y, timer: gameSettings.bombDelay,
+    delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback };
+  state.skillCooldown = gameSettings.bombCooldown;
+  playTone(480, 0.12); updateActionControls();
+}
+function updateBomb(dt) {
+  if (state.bombBlast) { state.bombBlast.life -= dt; if (state.bombBlast.life <= 0) state.bombBlast = null; }
+  const bomb = state.bomb;
+  if (!bomb) return;
+  bomb.timer -= dt;
+  if (bomb.timer > 0.000001) return;
+  state.bomb = null; state.bombBlast = { x: bomb.x, y: bomb.y, radius: bomb.radius, life: 0.35 };
+  function pushAway(target) {
+    const dx = target.x - bomb.x, dy = target.y - bomb.y, length = Math.hypot(dx, dy);
+    target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
+    target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback;
+  }
+  for (const enemy of state.enemies) {
+    if (!enemy.alive || Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y) > bomb.radius + enemy.r) continue;
+    damageEnemy(enemy, bomb.damage);
+    if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
+  }
+  if (state.boss && state.bossIntro <= 0 && Math.hypot(state.boss.x - bomb.x, state.boss.y - bomb.y) <= bomb.radius + state.boss.r) {
+    state.boss.hp -= bomb.damage; state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
+    if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
+  }
+  burst(bomb.x, bomb.y, "#80eaff", 20); playTone(230, 0.18, "triangle");
+}
+function updateActionControls() {
+  actionControls.hidden = state.mode !== "playing";
+  actionControls.style.cssText = `--action-size: ${gameSettings.actionButtonSize}px`;
+  for (const [button, remaining, total, label] of [
+    [dashButton, state.dashCooldown, gameSettings.dashCooldown, "衝刺"],
+    [skillButton, state.skillCooldown, gameSettings.bombCooldown, "泡泡炸彈"]
+  ]) {
+    const ready = remaining <= 0;
+    button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
+    button.setAttribute("aria-disabled", String(!ready || state.mode !== "playing"));
+    button.setAttribute("aria-label", ready ? label + "準備好了" : label + "冷卻中");
+    button.querySelector && (button.querySelector("small").textContent = ready ? "就緒" : `${Math.ceil(remaining)} 秒`);
+  }
+}
+function maybeShowPortraitHint() {
+  if (state.mode !== "playing" || portraitHintSeen || window.innerWidth >= window.innerHeight) return;
+  portraitHint.hidden = false; portraitHintSeen = true;
+  try { localStorage.setItem("erin-survivor-portrait-hint-v1", "seen"); } catch (_) {}
+}
+closePortraitHint.addEventListener("click", () => { portraitHint.hidden = true; });
+for (const [button, activate] of [[dashButton, activateDash], [skillButton, activateSkill]]) {
+  button.addEventListener("pointerdown", (event) => { event.preventDefault(); event.stopPropagation(); activate(); });
+  // 鍵盤與輔助操作仍可使用原生按鈕 click；指標按下已觸發，不重複施放。
+  button.addEventListener("click", (event) => { if (event.detail === 0) activate(); });
+}
+
 function tick(dt) {
   if (state.mode !== "playing") return;
   state.elapsed += dt;
@@ -564,17 +683,26 @@ function tick(dt) {
       }
     }
   }
-  let dx = 0, dy = 0;
-  if (state.keys.has("ArrowLeft") || state.keys.has("a")) dx -= 1;
-  if (state.keys.has("ArrowRight") || state.keys.has("d")) dx += 1;
-  if (state.keys.has("ArrowUp") || state.keys.has("w")) dy -= 1;
-  if (state.keys.has("ArrowDown") || state.keys.has("s")) dy += 1;
-  if (state.joy) { dx += state.joy.x; dy += state.joy.y; }
-  const length = Math.hypot(dx, dy);
-  if (length > 1) { dx /= length; dy /= length; }
+  const input = movementInput();
+  let dx = input.x, dy = input.y;
+  if (Math.hypot(dx, dy) > 0.01) {
+    const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
+  }
+  const dashTime = Math.min(dt, state.dashTimer);
+  const speed = PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel);
   const oldX = state.player.x, oldY = state.player.y;
-  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x + dx * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
-  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
+  state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
+  state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
+  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x));
+  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y));
+  // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
+  if (state.dashTimer > 0) state.player.invincible = Math.max(state.player.invincible, dt);
+  state.dashTimer = countdown(state.dashTimer, dt);
+  state.dashCooldown = countdown(state.dashCooldown, dt);
+  state.skillCooldown = countdown(state.skillCooldown, dt);
+  updateActionControls();
+  updateBomb(dt);
+  if (state.mode !== "playing") return;
 
   const moved = Math.hypot(state.player.x - oldX, state.player.y - oldY);
   state.player.moving = moved > 0.001;
@@ -809,6 +937,14 @@ function render() {
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
     ctx.globalAlpha = 1;
   }
+  if (state.bomb || state.bombBlast) {
+    const bubble = state.bomb || state.bombBlast;
+    const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
+    ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
+  }
+  if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
   drawHero();
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
@@ -820,7 +956,7 @@ function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 let frameRequest = null;
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
 function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
-function togglePause() { if (state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; state.lastTime = performance.now(); scheduleFrame(); } }
+function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
@@ -836,14 +972,23 @@ soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings
 vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
 startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
 pauseButton.addEventListener("click", togglePause);
-window.addEventListener("keydown", (event) => { const key = event.key.length === 1 ? event.key.toLowerCase() : event.key; if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(key)) event.preventDefault(); state.keys.add(key); if (key === "Escape" || key === " ") togglePause(); });
+window.addEventListener("keydown", (event) => {
+  const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+  if (settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "e"].includes(key)) event.preventDefault();
+  state.keys.add(key);
+  if (event.repeat) return;
+  if (key === "Escape") togglePause();
+  if (key === " ") activateDash();
+  if (key === "e") activateSkill();
+});
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
 window.addEventListener("keyup", (event) => state.keys.delete(event.key.length === 1 ? event.key.toLowerCase() : event.key));
 window.addEventListener("blur", () => { state.keys.clear(); if (state.mode === "playing") showOverlay("paused"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());
 canvas.addEventListener("pointerdown", (event) => {
-  if (event.target.closest("button")) return;
+  if (state.mode !== "playing" || event.target.closest("button")) return;
   if (state.pointerId !== null) return;
   event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
   const rect = canvas.getBoundingClientRect(); const baseX = event.clientX - rect.left; const baseY = event.clientY - rect.top;
@@ -852,5 +997,5 @@ canvas.addEventListener("pointerdown", (event) => {
 canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const rect = canvas.getBoundingClientRect(); const dx = event.clientX - rect.left - state.joy.baseX, dy = event.clientY - rect.top - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);
-window.addEventListener("resize", resize);
+window.addEventListener("resize", () => { resize(); maybeShowPortraitHint(); });
 resize(); showOverlay("ready"); renderLoop();

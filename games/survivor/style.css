@@ -62,3 +62,25 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 
 .enemy-notice { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 2; width: max-content; max-width: 95%; padding: 8px 12px; border: 2px solid #a85c13; border-radius: 12px; background: #fff3cc; color: #713809; font-size: 18px; font-weight: 800; pointer-events: none; }
 .enemy-notice[hidden] { display: none; }
+
+.action-controls { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); width: calc(var(--action-size) * 1.95); height: calc(var(--action-size) * 1.8); pointer-events: none; }
+.action-controls[hidden], .portrait-hint[hidden] { display: none; }
+.action-button { position: absolute; width: var(--action-size); height: var(--action-size); padding: 5px; border: 2px solid #efffff; border-radius: 50%; color: white; box-shadow: 0 3px 8px #163e67; pointer-events: auto; touch-action: none; cursor: pointer; }
+.action-button > span { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; background: #205b88; font-size: 23px; line-height: 1.05; }
+.action-button b { font-size: 16px; margin-top: 3px; }
+.action-button small { font-size: 12px; margin-top: 2px; }
+.action-button[aria-disabled="true"] > span { background: #334e68; color: #d1e3ee; }
+.action-button:active { transform: scale(.96); }
+.dash-button { right: 0; bottom: 0; }
+.skill-button { left: 0; top: 0; width: calc(var(--action-size) * .88); height: calc(var(--action-size) * .88); }
+.portrait-hint { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 10px; max-width: calc(100% - 185px); padding: 8px; border-radius: 12px; background: #fff7d8; font-size: 14px; font-weight: 800; }
+.portrait-hint button { display: block; margin: 4px auto 0; width: 44px; height: 44px; border: 0; border-radius: 10px; background: #f1dfad; }
+@media (orientation: portrait) {
+  .action-controls { --portrait-size: calc(var(--action-size) * .85); width: calc(var(--portrait-size) * 1.95); height: calc(var(--portrait-size) * 1.8); bottom: max(6px, env(safe-area-inset-bottom)); right: max(6px, env(safe-area-inset-right)); }
+  .dash-button { width: var(--portrait-size); height: var(--portrait-size); }
+  .skill-button { width: calc(var(--portrait-size) * .88); height: calc(var(--portrait-size) * .88); }
+  .hud { flex-wrap: wrap; gap: 5px 8px; }
+  .health-wrap { width: 45%; }
+  .help { font-size: 11px; }
+}
+@media (orientation: landscape) { .portrait-hint { display: none; } }

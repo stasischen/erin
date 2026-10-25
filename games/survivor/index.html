@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#dff4ff" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261025d" />
+  <link rel="stylesheet" href="style.css?v=20261025e" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -27,6 +27,11 @@
         <span id="status" class="status">準備開始</span>
       </div>
       <div id="enemyNotice" class="enemy-notice" role="status" hidden></div>
+      <div id="actionControls" class="action-controls" hidden aria-label="動作按鈕">
+        <button id="skillButton" class="action-button skill-button" type="button"><span>🌀<b>技能</b><small>就緒</small></span></button>
+        <button id="dashButton" class="action-button dash-button" type="button"><span>💨<b>衝刺</b><small>就緒</small></span></button>
+      </div>
+      <div id="portraitHint" class="portrait-hint" hidden><span>橫著拿更好玩喔</span><button id="closePortraitHint" type="button" aria-label="關閉提示">✕</button></div>
       <div id="overlay" class="overlay">
         <section id="upgradePanel" class="upgrade-panel" hidden aria-label="選擇升級">
           <h2>升級了！選一張卡</h2>
@@ -55,9 +60,9 @@
         </div>
       </div>
     </section>
-    <footer class="help">移動：方向鍵／WASD／觸控搖桿　自動發射水球、收集寶石升級</footer>
+    <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="game.js?v=20261025d"></script>
+  <script src="game.js?v=20261025e"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>
