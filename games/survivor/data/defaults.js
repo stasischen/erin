@@ -3,6 +3,7 @@ globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
   "tuning": {
     "maxUpgradeLevel": 5,
+    "levelupRerolls": 2,
     "splashBaseRadius": 22,
     "splashPerLevel": 10,
     "invincibleSeconds": 1,

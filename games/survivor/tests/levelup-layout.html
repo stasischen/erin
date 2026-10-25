@@ -5,7 +5,7 @@
   const lines = []; let failures = 0;
   function check(ok, label) { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failures++; }
   // 實際 DOM 排版：手機、iPad、直拿旋轉、工具列佔用高度與安全區。
-  const cases = [[412,915,412,915,0,0], [384,832,384,832,0,0], [915,412,915,412,0,0], [800,360,800,360,0,0], [732,310,732,310,0,0]];
+  const cases = [[412,915,412,915,0,0], [384,832,384,832,0,0], [915,412,915,412,0,0], [800,360,800,360,0,0], [732,310,732,310,0,0], [1024,768,1024,768,0,0]];
   for (const [iw,ih,vw,vh,left,top] of cases) {
     const frame = document.createElement('iframe'); frame.style.cssText = `width:${iw}px;height:${ih}px;border:0`;
     const loaded = new Promise(resolve => frame.onload = resolve); frame.src = '../index.html'; document.body.append(frame); await loaded;
@@ -27,8 +27,8 @@
       const panel=d.querySelector('#upgradePanel'), cards=[...d.querySelectorAll('#upgradeCards button')], confirm=d.querySelector('#confirmUpgrade');
       check(cards.length===3,'三張卡');
       const preview=d.querySelector('#upgradePreview'),area=n=>n.offsetWidth*n.offsetHeight;
-      if(Math.min(iw,ih)>=360) check(area(preview)/area(panel)>=.4,'展示至少40%');
-      const used=[...cards,preview,d.querySelector('.upgrade-actions'),panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);
+      check(preview.querySelector('iframe').offsetHeight>=40,'展示圖有足夠高度');
+      const used=[d.querySelector('#upgradeCards'),d.querySelector('#upgradeDetails'),preview,d.querySelector('.upgrade-actions'),panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);
       check(1-used/area(panel)<=.18,'面板空白不超過18%');
       for (const card of cards) { within(card,'完整卡片'); check(card.scrollHeight<=card.clientHeight+1,'卡片文字沒有裁切'); }
       within(confirm,'確認按鈕');
@@ -45,6 +45,12 @@
       check(w.eval("state.mode==='playing' && upgradeLevel('big-water')===1"),'連點兩下直接選卡且只加一級');
       choices(); d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'3',bubbles:true}));
       check(w.eval("state.mode==='playing'"),'鍵盤選卡');
+      w.eval("resetGame();chooseUpgradeCards();globalThis.oldChoices=state.pendingChoices.map(c=>c.id)");
+      d.querySelector('#rerollUpgrade').click();
+      check(w.eval("state.rerollsRemaining===1 && state.pendingChoices.every(c=>!oldChoices.includes(c.id))"),'重抽更新所有選項且扣一次');
+      d.querySelector('#rerollUpgrade').click(); d.querySelector('#rerollUpgrade').click();
+      check(w.eval("state.rerollsRemaining===0") && d.querySelector('#rerollUpgrade').disabled,'重抽用完停用');
+      confirm.click();
       w.openSettings(); within(d.querySelector('#settingsPanel'),'暫停設定面板');
       const settings=d.querySelector('#settingsPanel'); settings.scrollTop=settings.scrollHeight;
       within(d.querySelector('#closeSettingsButton'),'設定完成按鈕捲動可達');

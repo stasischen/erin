@@ -7,6 +7,8 @@ const MAKER_LOAD = PREVIEW_MODE ? { data: globalThis.SURVIVOR_PREVIEW.data, vali
 const GAME_DATA = MAKER_MODE ? MAKER_LOAD.data : SurvivorData.defaults();
 // ✏️ Erin 設定區：改下面的數字，就能改變遊戲玩法。
 const UPGRADE_TUNING = GAME_DATA.tuning;
+// ✏️ Erin 可以改：每場重抽次數預設 2；在 data/defaults.js 的 levelupRerolls 或 Maker 調整（0～9）。
+const LEVELUP_REROLLS = UPGRADE_TUNING.levelupRerolls;
 // ✏️ Erin 可以改：老師每招先亮提示才出手；這些是待試玩的初值。
 const BOSS_TUNING = GAME_DATA.bossTuning;
 const BOSS_MOVES = GAME_DATA.boss.moves;
@@ -211,7 +213,7 @@ const skillButton = document.getElementById("skillButton");
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { stageIndex: 0, stageElapsed: 0, stageTransition: 0, enemyHazards: [], makerFields: [], makerTimers: {}, bossMoves: [], bossMovePool: [], bossPhase: 1, bossPhasePause: 0, bossRest: 0, lastBossMoves: [], bossShout: 0, bossShake: 0, vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { stageIndex: 0, stageElapsed: 0, stageTransition: 0, enemyHazards: [], makerFields: [], makerTimers: {}, bossMoves: [], bossMovePool: [], bossPhase: 1, bossPhasePause: 0, bossRest: 0, lastBossMoves: [], bossShout: 0, bossShake: 0, vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], rerollsRemaining: LEVELUP_REROLLS, lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 
