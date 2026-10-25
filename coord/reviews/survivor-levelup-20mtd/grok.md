@@ -1,35 +1,26 @@
 verdict: changes
-8af29d697057ec1f2a2e471b683397379cc2efde
+467d72c92f48f477d941c4b5d38441a434d11349
 
-# Grok review: survivor-levelup-20mtd
+# Grok review: survivor-levelup-20mtd (round 2)
 
 ## Files checked
-- games/survivor/ui/levelup.js, index.html, style.css, icons.js
-- games/survivor/data/defaults.js, data/schema.js, engine/state.js, engine/loop.js, maker/maker.js
-- games/survivor/preview.html, preview.js, version.json, sw.js
-- games/survivor/tests/levelup-layout.cjs, levelup-layout.html, levelup-reroll.cjs
-- docs/survivor-skill-backlog.md
+- games/survivor/ui/levelup.js (reroll disabled/guarded when no fresh card can be offered)
+- games/survivor/tests/levelup-layout.cjs, levelup-reroll.cjs
+- games/survivor/index.html, preview.html, preview.js, version.json, sw.js (version 20261025ae, no leftover 20261025ad)
 
 ## Test run (Mac Studio, real Chrome)
-`node games/survivor/tools/test.cjs --layout` exits 1. Every suite passes except `levelup-layout.cjs`, which fails at line 67 on the very first size (412×915):
+`node games/survivor/tools/test.cjs --layout` exits 1. Every suite passes except `levelup-layout.cjs`, which now passes 412×915, 384×832, 915×412 and 800×360 but fails at 732×310, line 67:
 
-    await evaluate("openSettings();true");
-    assert.equal(await evaluate("!!document.querySelector('#ownedPreview iframe')"), true);
+    await evaluate("openSettings();true");await touch('#buildSlots button');
+    assert.equal(await evaluate("!!document.querySelector('#ownedPreview iframe')"),true);
 
-`openSettings()` never mounts a preview; `#ownedPreview` is only mounted when a `#buildSlots` button is clicked (render/hud.js:20), on main as well. So this new assertion is wrong, not the game. With that one line changed locally (temp copy, not committed) to click the first `#buildSlots button` after `openSettings()`, all six sizes pass:
-- 412×915 preview 31.9% / blank 10.1%
-- 384×832 29.9% / 10.9%
-- 915×412 31.9% / 10.1%
-- 800×360 27.7% / 11.6%
-- 732×310 22.4% / 13.3%
-- 1024×768 39.5% / 8.0%
+Reproduced 3 times. Cause: at 732×310 `#settingsPanel` scrolls (overflow-y auto, scrollHeight 1378 / clientHeight 282) and the first build-slot button sits below the fold (top 280, bottom 324 > 310). The touch point lands on `#overlay`, not the button, so no preview mounts. The game itself is fine: a JS click mounts the preview, and in a temp copy (not committed) adding `scrollIntoView({block:'center'})` on the button before `touch()` makes all six sizes pass (22.4% / 13.3% at 732×310).
 
 ## Findings
-1. (must fix) levelup-layout.cjs line 67: open the pause-menu preview the way a player does (click an owned build-slot card after `openSettings()`), then assert the iframe exists. Re-run the full `--layout` suite.
-2. (nice to have, optional) When the only offer is the heal fallback (all cards maxed), reroll still spends a charge and gives the same heal card back. Consider disabling the reroll button when the eligible pool has no fresh cards, or leave as-is and note it.
+1. (must fix) levelup-layout.cjs line 67: scroll the first `#buildSlots button` into view inside `#settingsPanel` (like a player scrolling) before touching it, then rerun the full suite with `--layout`. Do not change the game layout for this.
+2. Round-1 optional item is done well: reroll is disabled and the direct call keeps the charge when only the heal fallback remains; test updated. OK.
 
 ## Checklist (§6)
-- iPad/phone: no new touch-hiding media queries; round 64px buttons; no roundRect/at/structuredClone added. OK.
-- Logic: reroll guarded by mode and count, resets per run in resetGame, does not touch xp/level/health. OK.
-- Conventions: Erin 設定區 comment for LEVELUP_REROLLS, data-driven with Maker 0–9 bounds and legacy migration; version bumped to 20261025ad everywhere incl. sw.js. OK.
-- No external assets, no emoji; Traditional Chinese text; scope matches the card (reroll-adding cards only noted in backlog). OK.
+- iPad/phone: no new media queries or unsupported APIs. OK.
+- Logic: guard uses existing `canOffer`; xp/level/health untouched; per-run reset unchanged. OK.
+- Conventions: version bumped everywhere incl. sw.js; Traditional Chinese comment; no external assets or emoji; scope matches card. OK.
