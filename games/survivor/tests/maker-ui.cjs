@@ -59,3 +59,22 @@ ui.ids.save.fire('click');
 assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).bossZone,{enabled:false,steps:2,speed:75,damage:1.5});
 ui=setup({saved:ui.storage});ui.tab('boss');assert.ok(ui.nodes().some(n=>n._text==='紫霧縮圈：關'));
 console.log('PASS: Maker zone toggle/count/speed/damage controls persist and reload');
+
+// 精英與大熊：真正操作新開關、能力選擇、圖示加減、滑桿與儲存重載。
+ui=setup();ui.tab('enemies');
+const switchButton=label=>ui.nodes().find(n=>n.tag==='button'&&n.attrs['aria-label']===label);
+switchButton('啟用精英怪：開').fire('click');
+switchButton('啟用巧克力大熊：開').fire('click');
+switchButton('傳送：開').fire('click');
+for (const [label,value] of [['精英抽選間隔秒數',25],['每次抽選出現機率',.7],['糖衣盔甲血量',250],['重擊預警秒數',2]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider);slider.value=value;slider.fire('input');
+}
+const minus=ui.nodes().find(n=>n.tag==='button'&&n.attrs['aria-label']==='擊敗精英獎勵經驗 減少');
+assert.ok(minus.innerHTML.includes('pixel-icon'));assert.equal(minus._text,'');minus.fire('click');
+ui.field('小頭目名稱','糖衣大熊');ui.ids.save.fire('click');
+const encounterData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.equal(encounterData.elites.enabled,false);assert.equal(encounterData.chocobear.enabled,false);
+assert.equal(encounterData.elites.interval,25);assert.equal(encounterData.elites.chance,.7);assert.equal(encounterData.elites.rewardXp,4);
+assert.equal(encounterData.elites.abilities.includes('teleport'),false);assert.equal(encounterData.chocobear.armor,250);assert.equal(encounterData.chocobear.slamWarning,2);assert.equal(encounterData.chocobear.name,'糖衣大熊');
+ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(switchButton('啟用精英怪：關'));assert.ok(switchButton('傳送：關'));
+console.log('PASS: Maker elite/bear icon toggles, abilities, numeric controls, name, save/reload');

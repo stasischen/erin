@@ -64,6 +64,7 @@ function resize() {
 
 function resetGame() {
   state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
+  resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -145,6 +146,7 @@ function tick(dt) {
     return;
   }
   if (state.mode !== "playing") return;
+  if (openEncounterReward()) return;
   updateSkillVisuals(dt);
   updateMakerEffects(dt);
   if (state.mode !== "playing") return;
@@ -171,7 +173,7 @@ function tick(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(dt, state.dashTimer);
-  const speed = PLAYER_SPEED * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1);
+  const speed = PLAYER_SPEED * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -207,6 +209,7 @@ function tick(dt) {
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
 
+  updateEncounters(dt);
   state.spawnTimer -= dt;
   if (!state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
   if (!state.boss) {
@@ -217,7 +220,7 @@ function tick(dt) {
   }
   if (state.bossIntro > 0) {
     state.bossIntro -= dt;
-    for (const enemy of state.enemies) { enemy.x += (deltaX(state.boss.x, enemy.x)) * Math.min(1, dt * 3); enemy.y += (deltaY(state.boss.y, enemy.y)) * Math.min(1, dt * 3); }
+    for (const enemy of state.enemies) { if (enemy.miniboss) continue; enemy.x += (deltaX(state.boss.x, enemy.x)) * Math.min(1, dt * 3); enemy.y += (deltaY(state.boss.y, enemy.y)) * Math.min(1, dt * 3); }
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= dt;
@@ -226,8 +229,8 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
-    enemy.y += vy / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.x += vx / distance * enemy.speed * eliteSpeed(enemy) * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.y += vy / distance * enemy.speed * eliteSpeed(enemy) * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);

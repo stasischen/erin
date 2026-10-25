@@ -9,6 +9,7 @@ globalThis.SurvivorManifest = Object.freeze([
   "engine/combat.js",
   "engine/spawn.js",
   "engine/boss.js",
+  "engine/encounters.js",
   "stages.js",
   "render/world.js",
   "render/hud.js",

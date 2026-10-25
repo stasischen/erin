@@ -23,7 +23,7 @@ function showOverlay(mode) {
 
 
 function chooseUpgradeCards(excludedIds = []) {
-  const eligible = UPGRADES.filter(canOffer);
+  const eligible = UPGRADES.filter(card => canOffer(card) && !(state.rewardPicking && state.rewardPicked.includes(card.id)));
   const fresh = eligible.filter(card => !excludedIds.includes(card.id));
   // 卡池足夠時，整排換成沒看過的卡；卡池不足仍維持合法且不重複的選項。
   const available = fresh.length >= Math.min(3, eligible.length) ? fresh : eligible;
@@ -44,6 +44,7 @@ function renderSkillTree(tree) {
   tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${SurvivorIcons.html(school)}${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
 }
 function showUpgradeChoices() {
+  const choices = state.pendingChoices;
   playSound("levelup");
   render();
   state.mode = "levelup"; Survivor.audio.sync(); state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
@@ -51,7 +52,7 @@ function showUpgradeChoices() {
   let selectedIndex = -1;
   const confirm = document.getElementById("confirmUpgrade");
   confirm.disabled = true;
-  confirm.onclick = () => applyUpgrade(selectedIndex);
+  confirm.onclick = () => applyUpgrade(selectedIndex, choices);
   const reroll = document.getElementById("rerollUpgrade");
   reroll.disabled = state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
   document.getElementById("rerollCount").textContent = String(state.rerollsRemaining);
@@ -83,13 +84,15 @@ function showUpgradeChoices() {
     };
     button.addEventListener('click', () => {
       const now = performance.now();
-      if (lastTapIndex === index && now - lastTap < 350) { applyUpgrade(index); return; }
+      if (lastTapIndex === index && now - lastTap < 350) { applyUpgrade(index, choices); return; }
       lastTap = now; lastTapIndex = index; preview();
     });
-    button.addEventListener('dblclick', () => applyUpgrade(index)); button.addEventListener('focus', preview);
+    button.addEventListener('dblclick', () => applyUpgrade(index, choices)); button.addEventListener('focus', preview);
     if (!index) preview();
   });
-  statusEl.textContent = "選一張升級卡";
+  const rewardText = state.rewardPicking ? `大熊獎勵 · 選第 ${3-state.rewardChoices} 張／共 2 張` : '升級了！選一張卡';
+  document.getElementById('upgradeHeading').textContent = rewardText;
+  statusEl.textContent = state.rewardPicking ? rewardText : "選一張升級卡";
 }
 function rerollUpgradeCards() {
   // 只剩回血備案時，保留重抽次數。
@@ -97,13 +100,19 @@ function rerollUpgradeCards() {
   state.rerollsRemaining--;
   chooseUpgradeCards(state.pendingChoices.map(card => card.id));
 }
-function applyUpgrade(index) {
+function applyUpgrade(index, choices = state.pendingChoices) {
+  if (choices !== state.pendingChoices) return;
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
   if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
   skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
   playSound("select");
+  if (state.rewardPicking) {
+    state.rewardPicked.push(card.id); state.rewardChoices--;
+    if (state.rewardChoices > 0) { chooseUpgradeCards(); return; }
+    state.rewardPicking = false; state.rewardPicked = [];
+  }
   state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 
