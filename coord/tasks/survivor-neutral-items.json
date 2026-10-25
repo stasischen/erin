@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-neutral-items",
+  "title": "小怪獸：十種中立道具",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-neutral-items",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T184823Z-parent-neutral-items.md",
+  "next": "請 Grok 審查 erin-watch 提交的 codex/survivor-neutral-items 最後實質 SHA：十種中立卡、固定隨機池、純獎勵／反彈／傷害規則與事件、Maker 遷移／品質／數值、展示及跨關保留。版本 20261026h；完整 --layout 已執行，版本及所有非版面測試通過，Chrome SIGABRT 未取得版面結果，需補版面與 iPad 試玩。交接與 Godot §11 適用項目／差距見 docs/survivor-neutral-items-validation.md；每局五種為可調工程初值，待 Erin 確認手感。commit、push、PR 由 erin-watch 代勞，不核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T18:54:48.679258Z",
+  "updatedBy": "codex"
+}

@@ -17,11 +17,13 @@ globalThis.SurvivorSchools = (() => {
     const schools = shuffled(data.schools.map(s => s.id), draws).slice(0, data.schoolRules.schoolsPerRun);
     const pool = [];
     schools.forEach((id, i) => pool.push(...shuffled(data.cards.filter(c => c.school === id && !c.schools && c.tier !== 'ultimate' && c.rarity !== 'legendary'), draws.slice(i + 1).concat(draws.slice(0, i + 1))).slice(0, data.schoolRules.cardsPerSchool).map(c => c.id)));
-    return { schools, pool, starter: null };
+    const neutralPool = shuffled(data.cards.filter(c => c.neutral), draws.slice(7).concat(draws.slice(0,7))).slice(0,data.neutralRules.itemsPerRun).map(c=>c.id);
+    return { schools, pool, neutralPool, starter: null };
   }
   function eligible(card, cards, upgrades, run, rules, maxLevel) {
     if ((upgrades[card.id] || 0) >= Math.min(card.maxLevel, maxLevel)) return false;
     if ((card.requires || []).some(id => !upgrades[id])) return false;
+    if (card.neutral && run && run.neutralPool && !run.neutralPool.includes(card.id)) return false;
     if (!run) return true; // 獨立預覽／舊測試尚未建立一局。
     const schools = card.schools || (card.school ? [card.school] : []);
     if (schools.some(id => !run.schools.includes(id))) return false;

@@ -40,8 +40,9 @@ function fireAtNearest() {
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
+  prepareNeutralShots(angle);
 }
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
@@ -99,6 +100,7 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
   if (enemy.hp <= 0) {
     enemy.alive = false;
     if (state.schoolCombat) state.schoolCombat.kills++;
+    neutralEvent("death", enemy.x, enemy.y);
     encounterDefeated(enemy);
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
     burst(enemy.x, enemy.y, "#ffe2a8", 8);
@@ -112,7 +114,7 @@ function effectLevel(feature) {
 }
 function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + effectLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
 function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - effectLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / (1 + (state.moveRate || 0) * effectLevel("wind-speed") * BUILD_TUNING.movingRate)); }
-function maxPlayerHealth() { return PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor); }
+function maxPlayerHealth() { return Math.max(1, PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor) - (effectLevel("item-crown") ? GAME_DATA.neutralRules.crownHealth : 0)); }
 function addHealEffect() {
   if (state.effects.length >= 90) return;
   state.effects.push(takeFromPool(state.effectPool, { kind: "heal", x: state.player.x, y: state.player.y - state.player.r, vx: 0, vy: -24, color: "#21b85b", life: 0.8, maxLife: 0.8, text: "+1" }));
@@ -165,7 +167,7 @@ function executeMakerEffect(effect, x, y, level) {
     const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
-      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, colors: buildAppearance().colors, transformed:false, push:0, charged:false, blade:false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, boosted: false, maker: true }));
+      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, colors: buildAppearance().colors, transformed:false, push:0, charged:false, blade:false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, bounces:0, fragment:false, boosted: false, maker: true }));
     }
     return;
   }

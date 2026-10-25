@@ -2,6 +2,7 @@
 globalThis.SurvivorManifest = Object.freeze([
   "render/monsters.js",
   "engine/schools.js",
+  "engine/neutral.js",
   "engine/state.js",
   "engine/zzfx.js",
   "engine/music.js",
