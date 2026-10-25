@@ -22,7 +22,8 @@ function close(actual, expected) { assert.ok(Math.abs(actual - expected) < 1e-7,
 function step(seconds) { run(`for (let t = 0; t < ${seconds} - 1e-8; t += .05) tick(.05);`); }
 fresh();
 run('activateDash(); activateDash();');
-assert.equal(run('state.dashCooldown'), 2.5);
+assert.equal(run('state.dashCooldown'), 1.2);
+assert.equal(run('state.dashCharges'),1);
 assert.equal(run('actionControls.hidden'), false);
 const x = run('state.player.x');
 step(.15);
@@ -30,8 +31,10 @@ close(run('state.player.x') - x, 190 * 3 * .15);
 close(run('state.dashTimer'), 0);
 const end = run('state.player.x');
 run('tick(.05);'); close(run('state.player.x'), end);
-run('activateDash();'); close(run('state.dashCooldown'), 2.3);
-step(2.3); run('activateDash();'); close(run('state.dashCooldown'), 2.5);
+run('activateDash();'); close(run('state.dashCooldown'), 1);
+assert.equal(run('state.dashCharges'),0);
+step(1); assert.equal(run('state.dashCharges'),1);
+run('activateDash();'); close(run('state.dashCooldown'), 1.2);
 // 向上、斜向與最後面向；斜走不增加衝刺距離，短於一幀也按實際秒數。
 fresh(); run('state.keys.add("w"); tick(.05); state.keys.clear(); activateDash();');
 const y = run('state.player.y'); step(.15); close(y - run('state.player.y'), 85.5);
@@ -49,7 +52,7 @@ run(`activateDash(); for (let i = 0; i < 3; i++) {
   state.enemies = [{x:state.player.x+28.5,y:state.player.y,r:17,speed:0,damage:15,hp:999,alive:true,wobble:0,flash:0}]; tick(.05);
 }`);
 assert.equal(run('state.player.health'), 90);
-run('tick(.05);'); assert.equal(run('state.player.health'), 75);
+run('tick(.05); tick(.05);'); assert.equal(run('state.player.health'), 75);
 // 技能固定留在放置位置，延遲一次爆開，範圍外不受傷，向爆心外擊退。
 fresh();
 run(`state.enemies = [450, 650].map(x => ({x,y:300,r:17,speed:0,damage:15,hp:300,alive:true,wobble:0,flash:0}));
@@ -82,14 +85,16 @@ run(`globalThis.pointer = (id,x,y) => ({pointerId:id,clientX:x,clientY:y,target:
   elements.gameCanvas.listeners.pointerdown(pointer(11,100,300)); elements.gameCanvas.listeners.pointermove(pointer(11,135,300));
   elements.dashButton.listeners.pointerdown(pointer(22,700,500)); elements.skillButton.listeners.pointerdown(pointer(23,650,450));`);
 assert.equal(run('state.pointerId'), 11); assert.equal(run('state.joy.x'), 1);
-assert.equal(run('state.dashCooldown'), 2.5); assert.ok(run('state.bomb'));
+assert.equal(run('state.dashCooldown'), 1.2);
+assert.equal(run('state.dashCharges'),1); assert.ok(run('state.bomb'));
 run('elements.gameCanvas.listeners.pointerup(pointer(22,700,500));'); assert.equal(run('state.pointerId'), 11);
 run('elements.gameCanvas.listeners.pointerup(pointer(11,135,300));'); assert.equal(run('state.joy'), null);
 // 空白鍵改為衝刺、E 技能、Esc 暫停；長按不重播。開始按鈕仍聚焦時可用快捷鍵。
 fresh();
 run(`globalThis.key = (key,repeat=false) => ({key,repeat,preventDefault(){},target:{tagName:'BUTTON'}});
   windowListeners.keydown[0](key(' ')); windowListeners.keydown[0](key('e'));`);
-assert.equal(run('state.mode'), 'playing'); assert.equal(run('state.dashCooldown'), 2.5); assert.ok(run('state.bomb'));
+assert.equal(run('state.mode'), 'playing'); assert.equal(run('state.dashCooldown'), 1.2);
+assert.equal(run('state.dashCharges'),1); assert.ok(run('state.bomb'));
 run('state.dashCooldown = 0; windowListeners.keydown[0](key(" ",true));'); assert.equal(run('state.dashCooldown'), 0);
 run('windowListeners.keydown[0](key("Escape"));'); assert.equal(run('state.mode'), 'paused');
 // 設定相容 v3、缺欄位補預設。
@@ -110,7 +115,8 @@ assert.equal(run('state.joy.x'), 1); assert.equal(run('state.joy.y'), 0);
 run('elements.gameCanvas.listeners.pointermove(pointer(31,385,130));');
 assert.equal(run('state.joy.x'), 0); assert.equal(run('state.joy.y'), 1);
 run('elements.dashButton.listeners.pointerdown(pointer(32,60,750)); elements.skillButton.listeners.pointerdown(pointer(33,100,700));');
-assert.equal(run('state.pointerId'), 31); assert.equal(run('state.dashCooldown'), 2.5); assert.ok(run('state.bomb'));
+assert.equal(run('state.pointerId'), 31); assert.equal(run('state.dashCooldown'), 1.2);
+assert.equal(run('state.dashCharges'),1); assert.ok(run('state.bomb'));
 // 縮放後仍回到遊戲座標。
 run('elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:320,width:300,height:400});');
 assert.equal(run('canvasPoint({clientX:220,clientY:80}).x'), 100);
@@ -125,7 +131,8 @@ assert.equal(run('state.player.x'), 790); assert.equal(run('state.player.y'), 59
 assert.equal(run('ctx.imageSmoothingEnabled'), false);
 assert.equal(run('state.joy'), null); assert.equal(run('state.pointerId'), null);
 assert.equal(run('state.keys.size'), 0); assert.equal(run('state.elapsed'), 42);
-assert.equal(run('state.dashCooldown'), 2.5);
+assert.equal(run('state.dashCooldown'), 1.2);
+assert.equal(run('state.dashCharges'),1);
 run(`showOverlay('paused'); window.innerWidth = 900; window.innerHeight = 600;
   elements.gameCanvas.clientWidth = 800; elements.gameCanvas.clientHeight = 500; resize();`);
 assert.equal(run('state.mode'), 'paused'); assert.equal(run('state.width'), 800);
