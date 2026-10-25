@@ -66,42 +66,61 @@ function drawBossMoves() {
 
 
 const BACKGROUND_TILES = {};
-function backgroundTile(kind) {
-  if (BACKGROUND_TILES[kind]) return BACKGROUND_TILES[kind];
+// 84px 大地磚、三個相近色；裝飾是扁平地面刻紋，沒有臉、眼睛或亮點。
+function backgroundTile(kind, density) {
+  if (density === undefined) density = .25;
+  const key = density === .25 ? kind : kind + ":" + density;
+  if (BACKGROUND_TILES[key]) return BACKGROUND_TILES[key];
   const tile = document.createElement("canvas"); tile.width = 336; tile.height = 252;
   const g = tile.getContext("2d"); g.imageSmoothingEnabled = false;
   const cookie = kind === "cookie-forest" || kind === "playground";
-  g.fillStyle = cookie ? "#dec19a" : "#8fb887"; g.fillRect(0, 0, 336, 252);
-  // 42 格地磚整除兩邊；裝飾留在磚內，四條邊都保持相同地面。
-  for (let y = 0; y < 252; y += 42) for (let x = 0; x < 336; x += 42) {
-    if (cookie) {
-      g.fillStyle = "#cfaa7d"; g.fillRect(x + 2, y + 2, 38, 38);
-      g.fillStyle = "#eed3a9"; g.fillRect(x + 4, y + 4, 34, 3);
-      g.fillStyle = "#987151"; g.fillRect(x + 13, y + 17, 4, 4); g.fillRect(x + 27, y + 28, 4, 4);
-    } else {
-      g.fillStyle = "#7da779"; g.fillRect(x + 7, y + 9, 3, 6); g.fillRect(x + 10, y + 12, 4, 3);
-      g.fillStyle = "#9fc68d"; g.fillRect(x + 28, y + 30, 6, 3);
-    }
+  const colors = cookie ? ["#bcb3a3", "#b7ae9e", "#b2a999"] : ["#a5b1a1", "#a0ac9c", "#9ba797"];
+  g.fillStyle = colors[0]; g.fillRect(0, 0, 336, 252);
+  // 84 整除四邊；圖案遠離邊緣，拼接線兩側都是同一底色。
+  for (let y = 0; y < 252; y += 84) for (let x = 0; x < 336; x += 84) {
+    g.fillStyle = colors[1]; g.fillRect(x + 3, y + 3, 78, 78);
   }
-  // 棒棒糖、蘑菇和小樹：原創像素裝飾，都是可走過的地面。
-  for (const [x, y, type] of [[35,46,0],[170,114,1],[280,40,2],[75,200,2],[270,207,0],[195,219,1]]) {
-    g.fillStyle = "#805d4b"; g.fillRect(x - 2, y, 5, 16);
-    if (type === 0) {
-      g.fillStyle = cookie ? "#d994bc" : "#e89bac"; g.fillRect(x - 10, y - 15, 20, 19);
-      g.fillStyle = "#fff0cf"; g.fillRect(x - 6, y - 11, 12, 4); g.fillRect(x + 2, y - 7, 4, 7);
-    } else if (type === 1) {
-      g.fillStyle = "#f7e5bd"; g.fillRect(x - 4, y, 9, 10);
-      g.fillStyle = "#c77c91"; g.fillRect(x - 12, y - 5, 24, 8); g.fillRect(x - 8, y - 11, 16, 6);
-      g.fillStyle = "#fff0d4"; g.fillRect(x - 6, y - 8, 4, 4); g.fillRect(x + 4, y - 3, 4, 4);
-    } else {
-      g.fillStyle = "#608a70"; g.fillRect(x - 13, y - 12, 26, 19); g.fillRect(x - 8, y - 19, 16, 7);
-      g.fillStyle = "#7ca17a"; g.fillRect(x - 8, y - 14, 12, 5);
-    }
-  }
-  BACKGROUND_TILES[kind] = tile; return tile;
+  const marks = [[42,42], [210,126], [294,210], [126,42]];
+  g.fillStyle = colors[2];
+  marks.slice(0, Math.round(density * marks.length)).forEach(([x,y]) => {
+    // 只有 12×6 的落葉／餅乾碎屑，遠小於怪物，也不使用寶石的圓形輪廓。
+    g.fillRect(x - 6, y - 2, 8, 2); g.fillRect(x - 2, y, 8, 2);
+    if (cookie) g.fillRect(x + 3, y + 3, 3, 1);
+  });
+  BACKGROUND_TILES[key] = tile; return tile;
 }
+
+// 把不透明輪廓染成深色後快取；每幀只畫四個偏移，不讀取像素或使用濾鏡。
+const OUTLINE_MASKS = new WeakMap();
+function drawOutlinedSprite(g, sprite, x, y, w, h) {
+  if (GAME_DATA.visuals.spriteOutline) {
+    let mask = OUTLINE_MASKS.get(sprite);
+    if (!mask) {
+      mask = document.createElement("canvas"); mask.width = sprite.width; mask.height = sprite.height;
+      const ink = mask.getContext("2d"); ink.drawImage(sprite, 0, 0);
+      ink.globalCompositeOperation = "source-in"; ink.fillStyle = "#26313c";
+      ink.fillRect(0, 0, mask.width, mask.height); OUTLINE_MASKS.set(sprite, mask);
+    }
+    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) g.drawImage(mask, x+dx, y+dy, w, h);
+  }
+  g.drawImage(sprite, x, y, w, h);
+}
+const TEACHER_PICTURES = {};
+function teacherPicture(flash) {
+  const key = flash ? "flash" : "normal";
+  if (TEACHER_PICTURES[key]) return TEACHER_PICTURES[key];
+  const picture = document.createElement("canvas"); picture.width = 52; picture.height = 68;
+  const g = picture.getContext("2d");
+  g.fillStyle = "#3e2e35"; g.fillRect(6,1,40,10); g.fillRect(1,11,8,19);
+  g.fillStyle = flash ? "#fff" : "#ffd7ad"; g.fillRect(7,12,38,29);
+  g.fillStyle = "#263c5b"; g.fillRect(2,41,48,25);
+  g.fillRect(9,22,13,9); g.fillRect(30,22,13,9); g.fillRect(22,25,8,3);
+  g.fillStyle = "#fff"; g.fillRect(1,48,15,11); g.fillRect(36,48,15,11);
+  TEACHER_PICTURES[key] = picture; return picture;
+}
+
 function drawClassroom() {
-  const tile = backgroundTile(currentStage().background);
+  const tile = backgroundTile(currentStage().background, currentStage().decorationDensity);
   const left = Math.floor(state.cameraX / 336) * 336;
   const top = Math.floor(state.cameraY / 252) * 252;
   for (let y = top; y < state.cameraY + state.height + 16; y += 252)
@@ -134,11 +153,11 @@ function drawHero() {
   if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
   ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
   const sprite = SPRITES.player;
-  if (sprite) ctx.drawImage(sprite, -p.r, -p.r, p.r * 2, p.r * 2);
+  if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2);
   else {
     // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy, -20, -30, 40, 48);
+    drawOutlinedSprite(ctx, hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy, -20, -30, 40, 48);
   }
   ctx.restore();
 }
@@ -151,13 +170,13 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
   const sprite = SPRITES[enemyId];
   if (sprite) {
     if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-    drawingContext.drawImage(sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
   }
   const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
   if (skin) {
     drawingContext.imageSmoothingEnabled = false;
     if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-    drawingContext.drawImage(skin, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, skin, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
   }
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   drawingContext.fillStyle = flash ? "#fff" : color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
@@ -348,13 +367,8 @@ function render() {
       const b = state.boss, x = b.x, y = b.y;
       const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
       drawGroundShadow(x, y, b.r, hop);
-      ctx.save(); ctx.translate(x, y - hop); ctx.scale(b.r / 32, b.r / 32); ctx.translate(-x, -y);
-      ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
-      ctx.fillStyle = (b.flash || state.bossShout > 0) ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
-      ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
-      ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
-      ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
-      ctx.restore();
+      const scale = b.r / 32;
+      drawOutlinedSprite(ctx, teacherPicture(b.flash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
       ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {

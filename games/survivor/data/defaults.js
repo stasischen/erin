@@ -1,6 +1,8 @@
 // 純資料；Maker 預設作品。修改玩法請從 Maker 開始。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
+  // ✏️ Erin 可以改：false 關掉角色外面的一像素深色線。
+  "visuals": { "spriteOutline": true },
   "tuning": {
     "maxUpgradeLevel": 5,
     "levelupRerolls": 2,
@@ -800,6 +802,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "classroom",
       "name": "糖果森林",
       "background": "candy-forest",
+      // ✏️ 裝飾密度：0 沒有、1 最多；只影響地面。
+      "decorationDensity": 0.25,
       "enemyHealthScale": 1,
       "enemySpeedScale": 1,
       "bossHealthScale": 1,
@@ -846,6 +850,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "playground",
       "name": "餅乾森林",
       "background": "cookie-forest",
+      "decorationDensity": 0.25,
       "enemyHealthScale": 1.12,
       "enemySpeedScale": 1.06,
       "bossHealthScale": 1.12,

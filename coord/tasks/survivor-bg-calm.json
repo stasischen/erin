@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-bg-calm",
+  "title": "小怪獸：安靜森林背景與角色外框",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-bg-calm",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T155924Z-parent-bg-calm.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 獨立審查低對比無縫地面、密度與外框資料／舊作品相容、共用技能展示與版本快取。版本及 22 個非 Chrome 測試檔通過；真實 Chrome --layout 啟動 SIGABRT，需家長在可用環境補跑並與 Erin 在 iPad 確認背景、角色與預警辨識度。詳見 docs/survivor-bg-calm-validation.md。commit、push、開 PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T16:02:02.307042Z",
+  "updatedBy": "codex"
+}
