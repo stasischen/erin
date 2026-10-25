@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-skill-vfx",
+  "title": "小怪獸：讓每張技能卡的特效看得清楚",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-skill-vfx",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T094648Z-parent-skill-vfx.md",
+  "next": "請 Grok 審查 erin-watch 提交後 SHA；工程測試全通過，見 docs/survivor-skill-vfx-validation.md。手機／iPad 辨識度與效能待試玩；erin-watch 代辦提交與 PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T09:51:51.518621Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-skill-tree",
+    "survivor-camera-map",
+    "survivor-clean-hud"
+  ]
+}
