@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-enemy-damage-backlog",
+  "title": "小怪獸：敵人傷害機制備忘（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-enemy-damage-backlog",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T143304Z-parent-enemy-damage-backlog.md",
+  "next": "請 Grok 審查 17 項敵人傷害與干擾提案、可見預警規則及現有老師招式／Maker 積木重疊說明；只改文件，是否採用與製作順序待 Erin 和家長決定。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T14:35:19.978046Z",
+  "updatedBy": "codex"
+}
