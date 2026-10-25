@@ -64,7 +64,24 @@ function offscreenSpawn(r) {
     () => ({ x: left + Math.random() * state.width, y: top - gap }),
     () => ({ x: left + Math.random() * state.width, y: top + state.height + gap })
   ];
-  const point = sides[Math.floor(Math.random() * 4)](); clampToMap(point); return point;
+  // 回圈後必須再檢查，避免跨地圖接縫時出現在看得到的另一側。
+  const centerX = left + state.width / 2, centerY = top + state.height / 2;
+  function safe(point) {
+    clampToMap(point);
+    const dx = Math.abs(deltaX(point.x, centerX)), dy = Math.abs(deltaY(point.y, centerY));
+    const distance = Math.hypot(deltaX(point.x, state.player.x), deltaY(point.y, state.player.y));
+    return (dx >= state.width / 2 + gap || dy >= state.height / 2 + gap) && distance >= state.player.r + r + 160;
+  }
+  const point = sides[Math.floor(Math.random() * 4)]();
+  if (safe(point)) return point;
+  // 特大或很小的視窗改用中心與最遠座標的組合；沒有安全空間就暫停生成。
+  for (const x of [centerX, centerX + state.worldWidth / 2]) {
+    for (const y of [centerY, centerY + state.worldHeight / 2]) {
+      const fallback = { x, y };
+      if (safe(fallback)) return fallback;
+    }
+  }
+  return null;
 }
 
 // Live accessors preserve shared state and the legacy globals used by preview/VM callers.

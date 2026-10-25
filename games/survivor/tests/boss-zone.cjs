@@ -47,9 +47,9 @@ assert.ok(Math.abs(run('deltaX(state.player.x,beforeX)')-run('PLAYER_SPEED*.8*.0
 run('state.mode="paused";globalThis.zoneBefore=JSON.stringify(state.bossZone);globalThis.hpBefore=state.player.health;tick(.05)');
 assert.equal(run('JSON.stringify(state.bossZone)===zoneBefore && state.player.health===hpBefore'),true);
 run('state.mode="levelup";tick(.05)');assert.equal(run('JSON.stringify(state.bossZone)===zoneBefore'),true);
-// Boss summons spawn fully inside even when the safe circle crosses a seam.
+// Boss summons stay outside the camera even when the safe circle crosses a seam.
 fresh();run('state.bossZone.x=5;state.bossZone.y=5;state.bossZone.radius=600;state.enemies=[];for(let i=0;i<40;i++)spawnEnemy();');
-assert.equal(run('state.enemies.every(e=>bossZoneDistance(e)+e.r<=600 && e.x>=0 && e.x<state.worldWidth && e.y>=0 && e.y<state.worldHeight)'),true);
+assert.equal(run('state.enemies.every(e=>!targetVisible(e) && e.x>=0 && e.x<state.worldWidth && e.y>=0 && e.y<state.worldHeight)'),true);
 // Resize never reduces maneuvering room; restart/next stage never retains fog.
 run('state.width=1600;updateBossZone(0)');assert.ok(run('state.bossZone.radius>=1200'));
 run('finishRun(true)');assert.equal(run('state.bossZone'),null);run('resetGame()');assert.equal(run('state.bossZone'),null);

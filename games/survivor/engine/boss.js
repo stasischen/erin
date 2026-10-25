@@ -239,8 +239,6 @@ function updateBossZone(dt) {
   }
 }
 function bossZoneSpawn(r) {
-  const z = state.bossZone;
-  if (!state.boss || !z) return offscreenSpawn(r);
-  const angle = Math.random() * Math.PI * 2, radius = Math.sqrt(Math.random()) * Math.max(0, z.radius - r - 16);
-  return { x: wrapCoordinate(z.x + Math.cos(angle) * radius, state.worldWidth), y: wrapCoordinate(z.y + Math.sin(angle) * radius, state.worldHeight) };
+  // 安全圈只影響主角；小怪可在紫霧裡生成，再走向主角。
+  return offscreenSpawn(r);
 }
