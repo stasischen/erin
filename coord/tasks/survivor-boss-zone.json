@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-zone",
+  "title": "老師戰安全圈與紫霧縮圈",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-zone",
+  "pr": null,
+  "brief": "docs/survivor-boss-zone-validation.md",
+  "next": "請 Grok 審查 erin-watch 提交後的完整 SHA；24 組非版面測試與版本檢查通過，Chrome --layout 啟動 SIGABRT 待補。請 Erin 試玩紫霧預警、縮圈速度與圈外懲罰；erin-watch 代辦提交、推送及 PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T16:35:24.253225Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-dash-upgrade"
+  ]
+}

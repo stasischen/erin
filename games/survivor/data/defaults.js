@@ -118,6 +118,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     "skillRadiusMultiplier": 1.25,
     "skillDamageMultiplier": 0.5
   },
+  // ✏️ Erin 可以改：老師戰紫霧。傷害是每秒扣血；速度是每秒縮幾格。
+  "bossZone": { "enabled": true, "steps": 3, "speed": 40, "damage": 2 },
   "bossTuning": {
     "warningSeconds": 0.9,
     "rests": [

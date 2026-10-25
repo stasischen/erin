@@ -7,7 +7,7 @@ function spawnEnemy() {
     { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
   ];
   const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
-  const position = offscreenSpawn(type.radius);
+  const position = bossZoneSpawn(type.radius);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
   state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, x, y, r: type.radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale, maxHp: type.hp * currentStage().enemyHealthScale, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });

@@ -328,6 +328,7 @@ function render() {
   const shake = gameSettings.vibration && state.bossShake > 0 ? BOSS_TUNING.shakePixels : 0;
   ctx.translate(-state.cameraX + Math.sin(state.elapsed * 91) * shake, -state.cameraY + Math.cos(state.elapsed * 83) * shake);
   drawClassroom();
+  drawBossZone();
   for (const offset of visibleWorldOffsets()) {
   ctx.save(); ctx.translate(offset.x, offset.y);
     drawBossMoves();
@@ -428,6 +429,7 @@ function render() {
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
   drawBossGuide();
+  drawBossZoneGuide();
   if (state.mode === "transition") {
     ctx.fillStyle = "rgba(20,35,49,.78)"; ctx.fillRect(0, 0, state.width, state.height);
     ctx.fillStyle = "#fff3cc"; ctx.font = "bold 28px system-ui"; ctx.textAlign = "center";
@@ -471,6 +473,9 @@ function drawBossGuide() {
 globalThis.Survivor.render = globalThis.Survivor.render || {};
 globalThis.Survivor.render.world = globalThis.Survivor.render.world || {};
 Object.defineProperties(globalThis.Survivor.render.world, {
+  drawBossZone: { enumerable: true, get: () => drawBossZone },
+  bossZoneGuide: { enumerable: true, get: () => bossZoneGuide },
+  drawBossZoneGuide: { enumerable: true, get: () => drawBossZoneGuide },
   drawGroundShadow: { enumerable: true, get: () => drawGroundShadow },
   drawLandingShadow: { enumerable: true, get: () => drawLandingShadow },
   bossAirHeight: { enumerable: true, get: () => bossAirHeight },
@@ -493,3 +498,49 @@ Object.defineProperties(globalThis.Survivor.render.world, {
   bossGuide: { enumerable: true, get: () => bossGuide },
   drawBossGuide: { enumerable: true, get: () => drawBossGuide }
 });
+
+// 同一個環狀圓的可見副本：紫霧、圈線及扣血判定都以最短距離為準。
+function drawBossZone() {
+  const z = state.bossZone;
+  if (!state.boss || !z) return;
+  const x = state.player.x + deltaX(z.x, state.player.x), y = state.player.y + deltaY(z.y, state.player.y);
+  ctx.save(); ctx.beginPath(); ctx.rect(state.cameraX, state.cameraY, state.width, state.height);
+  for (const ox of [-state.worldWidth, 0, state.worldWidth]) for (const oy of [-state.worldHeight, 0, state.worldHeight]) {
+    ctx.moveTo(x + ox + z.radius, y + oy); ctx.arc(x + ox, y + oy, z.radius, 0, Math.PI * 2);
+  }
+  ctx.fillStyle = "rgba(116,57,155,.28)"; ctx.fill("evenodd");
+  ctx.lineWidth = 4; ctx.strokeStyle = "#b986db";
+  ctx.beginPath(); ctx.arc(x, y, z.radius, 0, Math.PI * 2); ctx.stroke();
+  if (z.warning > 0 || z.shrinking) {
+    ctx.setLineDash([12, 10]); ctx.lineWidth = 3; ctx.strokeStyle = "#ffe49a";
+    ctx.beginPath(); ctx.arc(x, y, z.target, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+function bossZoneGuide() {
+  const z = state.bossZone;
+  if (!state.boss || !z || bossZoneDistance(state.player) < z.radius - 100) return null;
+  const dx = deltaX(z.x, state.player.x), dy = deltaY(z.y, state.player.y), length = Math.max(1, Math.hypot(dx,dy));
+  // 指示放在靠近紫霧的那側邊緣，箭頭朝內。
+  const ux = -dx / length, uy = -dy / length;
+  const distance = Math.min((state.width/2-58)/Math.max(.001,Math.abs(ux)), (state.height/2-58)/Math.max(.001,Math.abs(uy)));
+  return { x: state.width/2 + ux * distance, y: state.height/2 + uy * distance, angle: Math.atan2(dy,dx) };
+}
+function drawBossZoneGuide() {
+  if (!["playing", "paused", "levelup"].includes(state.mode) || !state.bossZone || !state.boss) return;
+  const z = state.bossZone, guide = bossZoneGuide();
+  ctx.save();
+  if (guide) {
+    ctx.translate(guide.x,guide.y); ctx.fillStyle = "#fff6d6"; ctx.strokeStyle = "#77419c"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.rotate(guide.angle); ctx.fillStyle = "#77419c";
+    ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-8,-11); ctx.lineTo(-3,0); ctx.lineTo(-8,11); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  const text = z.warning > 0 ? `安全圈 ${Math.ceil(z.warning)} 秒後縮小！` : outsideBossZone() ? "回安全圈！紫霧會慢慢扣血" : z.shrinking ? "安全圈縮小中" : "";
+  if (text) {
+    ctx.save(); ctx.font = "bold 18px system-ui"; ctx.textAlign = "center";
+    ctx.lineWidth = 5; ctx.strokeStyle = "#fff6e8"; ctx.strokeText(text,state.width/2,110);
+    ctx.fillStyle = "#77419c"; ctx.fillText(text,state.width/2,110); ctx.restore();
+  }
+}

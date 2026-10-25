@@ -83,7 +83,7 @@ function resetGame() {
   state.enemyShots = [];
   state.bookShotTimer = 0; state.bookNoticeTimer = 0; state.bookShootingStarted = false;
   enemyNotice.hidden = true;
-  state.boss = null; state.bossIntro = 0;
+  state.boss = null; state.bossIntro = 0; state.bossZone = null;
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0;
   state.projectiles = [];
   state.gems = [];
@@ -123,7 +123,7 @@ function finishRun(won) {
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
-  clearBossMoves(); state.bossShake = 0;
+  clearBossMoves(); state.bossZone = null; state.bossShake = 0;
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
   playSound(won ? "win" : "over");
@@ -171,7 +171,7 @@ function tick(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(dt, state.dashTimer);
-  const speed = PLAYER_SPEED * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel);
+  const speed = PLAYER_SPEED * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1);
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -273,6 +273,7 @@ function tick(dt) {
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   updateBookShooting(dt);
   updateBoss(dt);
+  updateBossZone(dt);
   if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);

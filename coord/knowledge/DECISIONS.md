@@ -58,3 +58,7 @@
 - 家長要求兩個森林降低飽和與對比、縮減裝飾並保留無縫拼接，技能展示共用安靜地面、角色加可關閉的一像素深色外框。`survivor-bg-calm` 已製作三色大地磚與資料化裝飾密度初版，版本 20261026a；視覺喜好待 Erin 試玩，Chrome --layout 啟動 SIGABRT 待補驗證。來源：`coord/inbox/done/20261025T155924Z-parent-bg-calm.md`；驗證：`docs/survivor-bg-calm-validation.md`。
 
 - 2026-10-26：依家長要求將配樂延長為三首 60–90 秒的 Web Audio chiptune，分別對應糖果森林、餅乾森林與老師戰，加入完整曲式、分層編曲和一秒交叉淡入淡出；保留音效、開關、展示靜音與 BeepBox 替換路徑。暫停／升級後續播曲中位置，曲調與音量喜好待 Erin 試聽。（來源：`coord/inbox/done/20261025T160825Z-parent-music-polish.md`）
+
+## 老師戰安全圈（2026-10-26，待試玩）
+
+家長原話與規格見 `coord/inbox/done/20261025T162916Z-parent-boss-zone.md`：「我想到boss戰可以像荒野亂鬥大逃殺一樣 慢慢把能移動的範圍縮小」「衝刺改進和老師縮圈都做」。本卡依此實作三階段縮圈、紫霧、溫和扣血與減速、回安全區指示及 Maker 設定；工程初值及驗證限制記於 `docs/survivor-boss-zone-validation.md`，等待 Grok 審查與 Erin 試玩，尚未核准上線。

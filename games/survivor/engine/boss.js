@@ -4,6 +4,7 @@ function summonTeacher() {
   playSound("warning");
   state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
+  startBossZone();
   updateHud();
 }
 
@@ -178,6 +179,11 @@ function updateBoss(dt) {
 globalThis.Survivor.engine = globalThis.Survivor.engine || {};
 globalThis.Survivor.engine.boss = globalThis.Survivor.engine.boss || {};
 Object.defineProperties(globalThis.Survivor.engine.boss, {
+  startBossZone: { enumerable: true, get: () => startBossZone },
+  bossZoneDistance: { enumerable: true, get: () => bossZoneDistance },
+  outsideBossZone: { enumerable: true, get: () => outsideBossZone },
+  updateBossZone: { enumerable: true, get: () => updateBossZone },
+  bossZoneSpawn: { enumerable: true, get: () => bossZoneSpawn },
   summonTeacher: { enumerable: true, get: () => summonTeacher },
   clearBossMoves: { enumerable: true, get: () => clearBossMoves },
   bossHurtPlayer: { enumerable: true, get: () => bossHurtPlayer },
@@ -188,3 +194,53 @@ Object.defineProperties(globalThis.Survivor.engine.boss, {
   ringPoints: { enumerable: true, get: () => ringPoints },
   updateBoss: { enumerable: true, get: () => updateBoss }
 });
+
+// ✏️ Erin 設定在 data/defaults.js 的 bossZone，Maker「魔王」也能改。
+// 老師出場時的戰場（鏡頭）中心固定下來，不追著主角跑；接縫共用 wrapped 距離。
+function startBossZone() {
+  const config = GAME_DATA.bossZone;
+  state.bossZone = !PREVIEW_MODE && config.enabled ? {
+    x: state.player.x, y: state.player.y, span: Math.max(state.width, state.height),
+    radius: Math.max(state.width, state.height) * 1.5, target: Math.max(state.width, state.height) * 1.5,
+    completed: 0, warning: 0, shrinking: false
+  } : null;
+}
+function bossZoneDistance(body) {
+  const z = state.bossZone;
+  return z ? Math.hypot(deltaX(body.x, z.x), deltaY(body.y, z.y)) : 0;
+}
+function outsideBossZone() {
+  return !!(state.boss && state.bossZone && bossZoneDistance(state.player) > state.bossZone.radius);
+}
+function updateBossZone(dt) {
+  const z = state.bossZone, config = GAME_DATA.bossZone;
+  if (!state.boss || !config.enabled || PREVIEW_MODE) { state.bossZone = null; return; }
+  if (!z || state.mode !== "playing" || state.bossIntro > 0) return;
+  // 轉向、放大視窗也保留至少 1.5 個螢幕寬的直徑，不趁旋轉偷偷縮圈。
+  const span = Math.max(z.span, state.width, state.height);
+  if (span > z.span) { z.radius *= span / z.span; z.target *= span / z.span; z.span = span; }
+  const due = Math.min(config.steps, state.bossPhase);
+  if (!z.shrinking && z.warning <= 0 && z.radius <= z.target && z.completed < due) {
+    z.target = z.span * (1.5 - .75 * (z.completed + 1) / config.steps);
+    z.warning = 4; playSound("warning");
+  }
+  // 完成每次預告才開始收圈；大傷害跨階段也按順序預告。
+  if (z.warning > 0) z.warning = countdown(z.warning, dt);
+  else if (z.radius > z.target) {
+    z.shrinking = true;
+    z.radius = Math.max(z.target, z.radius - config.speed * dt);
+    if (z.radius <= z.target) { z.completed++; z.shrinking = false; }
+  }
+  // 紫霧是持續小傷害，不觸發反擊、連續音效或受傷無敵；衝刺仍可保護。
+  if (outsideBossZone() && !state.player.damageDisabled && state.player.invincible <= 0 && config.damage > 0) {
+    state.player.health = Math.max(0, state.player.health - config.damage * Math.min(dt, MAX_DT));
+    updateHud();
+    if (state.player.health <= 0) finishRun(false);
+  }
+}
+function bossZoneSpawn(r) {
+  const z = state.bossZone;
+  if (!state.boss || !z) return offscreenSpawn(r);
+  const angle = Math.random() * Math.PI * 2, radius = Math.sqrt(Math.random()) * Math.max(0, z.radius - r - 16);
+  return { x: wrapCoordinate(z.x + Math.cos(angle) * radius, state.worldWidth), y: wrapCoordinate(z.y + Math.sin(angle) * radius, state.worldHeight) };
+}
