@@ -1,9 +1,18 @@
 function canOffer(card) {
-  if (upgradeLevel(card.id) >= Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel)) return false;
-  if ((card.requires || []).some(id => !upgradeLevel(id))) return false;
-  if (card.tier === "entry" && UPGRADES.some(other => other.tier === "entry" && other.slot === card.slot && other.school !== card.school && upgradeLevel(other.id))) return false;
-  return card.tier !== "ultimate" || !UPGRADES.some(other => other.tier === "ultimate" && other.id !== card.id && upgradeLevel(other.id));
+  return SurvivorSchools.eligible(card, UPGRADES, state.upgrades, state.schoolRun, GAME_DATA.schoolRules, UPGRADE_TUNING.maxUpgradeLevel);
 }
+function buildAppearance() { return SurvivorSchools.appearance(UPGRADES, state.upgrades, state.schoolRun, GAME_DATA.schoolRules); }
+function transformed(school) { return buildAppearance().forms.includes(school); }
+function maxDashCharges() { return UPGRADE_TUNING.dashCharges + (transformed('wind') ? GAME_DATA.schoolRules.windFormCharges : 0); }
+function showSpiritChoices() {
+  state.pickingSpirit = true;
+  state.pendingChoices = state.schoolRun.schools.map(id => {
+    const school = GAME_DATA.schools.find(s => s.id === id), card = UPGRADES.find(c => c.id === school.attackCard);
+    return { ...card, name: school.spirit, description: '從「' + card.name + '」起步，這場更容易遇到' + BUILD_TUNING[id].name + '流派。' };
+  });
+  showUpgradeChoices();
+}
+
 function cardRequirements(card) {
   return (card.requires || []).map(id => UPGRADES.find(other => other.id === id).name + " Lv1").join(" ＋ ");
 }
@@ -23,25 +32,18 @@ function showOverlay(mode) {
 
 
 function chooseUpgradeCards(excludedIds = []) {
-  const eligible = UPGRADES.filter(card => canOffer(card) && !(state.rewardPicking && state.rewardPicked.includes(card.id)));
+  const eligible = UPGRADES.filter(card => (card.rarity !== "legendary" || card.tier === "ultimate" || Math.random() < GAME_DATA.schoolRules.legendaryChance) && canOffer(card) && !(state.rewardPicking && state.rewardPicked.includes(card.id)));
   const fresh = eligible.filter(card => !excludedIds.includes(card.id));
   // 卡池足夠時，整排換成沒看過的卡；卡池不足仍維持合法且不重複的選項。
   const available = fresh.length >= Math.min(3, eligible.length) ? fresh : eligible;
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "heal", name: "回血", description: "恢復 1 顆心" }]; }
   else {
-    const shuffled = available.slice();
-    for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
-    // 先各抽一張流派卡；某流派已滿時，用其他可選卡補齊。
-    state.pendingChoices = ["water", "wind", "thunder"].map((school) => shuffled.find((card) => card.school === school)).filter(Boolean);
-    const support = shuffled.find((card) => !card.school);
-    if (support && state.pendingChoices.length === 3 && Math.random() < BUILD_TUNING.supportChance) state.pendingChoices[Math.floor(Math.random() * 3)] = support;
-    for (const card of shuffled) if (state.pendingChoices.length < 3 && !state.pendingChoices.includes(card)) state.pendingChoices.push(card);
-    for (let i = state.pendingChoices.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [state.pendingChoices[i], state.pendingChoices[j]] = [state.pendingChoices[j], state.pendingChoices[i]]; }
+    state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, GAME_DATA.schoolRules, [Math.random(), Math.random(), Math.random()]);
   }
   showUpgradeChoices();
 }
 function renderSkillTree(tree) {
-  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${SurvivorIcons.html(school)}${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+  tree.innerHTML = (state.schoolRun ? state.schoolRun.schools : GAME_DATA.schools.map(s => s.id)).map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${SurvivorIcons.html(school)}${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
 }
 function showUpgradeChoices() {
   const choices = state.pendingChoices;
@@ -54,7 +56,8 @@ function showUpgradeChoices() {
   confirm.disabled = true;
   confirm.onclick = () => applyUpgrade(selectedIndex, choices);
   const reroll = document.getElementById("rerollUpgrade");
-  reroll.disabled = state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
+  reroll.hidden = !!state.pickingSpirit;
+  reroll.disabled = state.pickingSpirit || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
   document.getElementById("rerollCount").textContent = String(state.rerollsRemaining);
   reroll.setAttribute("aria-label", `重抽升級卡，剩下 ${state.rerollsRemaining} 次`);
   reroll.title = `重抽升級卡，剩下 ${state.rerollsRemaining} 次`;
@@ -64,11 +67,11 @@ function showUpgradeChoices() {
   state.pendingChoices.forEach((card, index) => {
     const current = upgradeLevel(card.id), level = `Lv${current} → Lv${current + 1}`;
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
-    button.dataset.rarity = card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common";
+    button.dataset.rarity = card.rarity || (card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common");
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
     button.setAttribute("aria-label", card.name + (card.id === "heal" ? "" : "，" + level));
     button.title = card.name;
-    button.innerHTML = `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
+    button.innerHTML = state.pickingSpirit ? `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span>` : `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
     button.setAttribute("aria-pressed", "false");
     choiceButtons.push(button); upgradeCards.appendChild(button);
     const preview = () => {
@@ -79,7 +82,7 @@ function showUpgradeChoices() {
       document.getElementById("upgradeName").textContent = card.name;
       document.getElementById("upgradeDescription").textContent = card.description;
       document.getElementById("upgradeLevel").textContent = card.id === "heal" ? "立即回血" : level + " · " + (card.school ? BUILD_TUNING[card.school].name + " · " : "") + (BUILD_SLOTS[card.slot] || "支援");
-      document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 本局只能選一種終極" : card.tier === "fusion" ? "合體卡" : "") + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
+      document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 同流派 5 張解鎖" : card.tier === "fusion" ? "雙流派各 2 張解鎖" : ({common:"普通",rare:"稀有",legendary:"傳說"}[card.rarity] || "")) + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
       if (globalThis.SurvivorPreview) SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:current+1});
     };
     button.addEventListener('click', () => {
@@ -90,22 +93,26 @@ function showUpgradeChoices() {
     button.addEventListener('dblclick', () => applyUpgrade(index, choices)); button.addEventListener('focus', preview);
     if (!index) preview();
   });
-  const rewardText = state.rewardPicking ? `大熊獎勵 · 選第 ${3-state.rewardChoices} 張／共 2 張` : '升級了！選一張卡';
+  const rewardText = state.pickingSpirit ? "選一個起始精靈" : state.rewardPicking ? `大熊獎勵 · 選第 ${3-state.rewardChoices} 張／共 2 張` : '升級了！選一張卡';
   document.getElementById('upgradeHeading').textContent = rewardText;
   statusEl.textContent = state.rewardPicking ? rewardText : "選一張升級卡";
 }
 function rerollUpgradeCards() {
   // 只剩回血備案時，保留重抽次數。
-  if (state.mode !== "levelup" || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer)) return;
+  if (state.pickingSpirit || state.mode !== "levelup" || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer)) return;
   state.rerollsRemaining--;
   chooseUpgradeCards(state.pendingChoices.map(card => card.id));
 }
 function applyUpgrade(index, choices = state.pendingChoices) {
   if (choices !== state.pendingChoices) return;
-  const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
+  const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (!state.pickingSpirit && card.id !== "heal" && !canOffer(card))) return;
   if (globalThis.SurvivorPreview) SurvivorPreview.stop();
+  const before = { ...state.upgrades };
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
+  if (state.pickingSpirit) { state.schoolRun.starter = card.school; state.pickingSpirit = false; spawnEnemy(); }
+  if (card.id === 'water-ultimate') { state.ultimateTimers = state.ultimateTimers || {}; state.ultimateTimers.water = BUILD_TUNING.ultimateSeconds; }
+  handleSchoolEvents(SurvivorSchools.growth(UPGRADES, before, state.upgrades, GAME_DATA.schoolRules));
   skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
   playSound("select");
   if (state.rewardPicking) {

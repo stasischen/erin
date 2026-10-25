@@ -66,11 +66,13 @@ function resetGame() {
   state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
+  state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
+  state.pickingSpirit = false; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
   state.vfx = [];
   for (const field of state.fields) state.fieldPool.push(field);
-  state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateVisual = null; state.moveRate = 0;
+  state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateTimers = {}; state.ultimateVisuals = {}; state.ultimateVisual = null; state.moveRate = 0;
   state.dashCharges = UPGRADE_TUNING.dashCharges; state.dashAttack = 0; state.slowMotion = 0; state.dashGhosts = [];
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
   state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
@@ -110,7 +112,7 @@ function startGame() {
   SurvivorIcons.set(pauseButton, "settings");
   state.lastTime = performance.now();
   scheduleFrame();
-  spawnEnemy();
+  if (PREVIEW_MODE) spawnEnemy(); else showSpiritChoices();
   updateActionControls();
   playSound("click");
 }
@@ -118,9 +120,9 @@ function startGame() {
 function finishRun(won) {
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, health: state.player.health };
+    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, health: state.player.health };
     resetGame();
-    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, stageTransition: 2, mode: "transition" });
+    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
@@ -173,7 +175,7 @@ function tick(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(dt, state.dashTimer);
-  const speed = PLAYER_SPEED * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
+  const speed = PLAYER_SPEED * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightSpeed) * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -181,11 +183,12 @@ function tick(dt) {
   // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
   if (state.dashTimer > 0 && !state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, dt);
   state.dashTimer = countdown(state.dashTimer, dt);
-  if (state.dashCharges < UPGRADE_TUNING.dashCharges) {
+  if (dashTime > 0 && state.dashTimer === 0) schoolDashEnded();
+  if (state.dashCharges < maxDashCharges()) {
     state.dashCooldown = countdown(state.dashCooldown, dt);
     if (state.dashCooldown <= 0) {
       state.dashCharges++;
-      if (state.dashCharges < UPGRADE_TUNING.dashCharges) state.dashCooldown = gameSettings.dashCooldown;
+      if (state.dashCharges < maxDashCharges()) state.dashCooldown = gameSettings.dashCooldown;
     }
   }
   if (dashTime > 0) state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
@@ -194,8 +197,11 @@ function tick(dt) {
   if (dashTime > 0) state.dashGhosts.push({x:oldX,y:oldY,life:.22});
   state.skillCooldown = countdown(state.skillCooldown, dt);
   updateActionControls();
+  if (dashTime > 0) schoolDashCrossed(oldX,oldY,state.player.x,state.player.y);
   if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)), oldX, oldY);
   state.moveRate = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)) / Math.max(.001, dt) / PLAYER_SPEED;
+  updateSchoolCombat(dt);
+  if (state.mode !== "playing") return;
   updateUltimate(dt);
   if (state.mode !== "playing") return;
   updateFields(dt);
@@ -247,6 +253,7 @@ function tick(dt) {
     for (const enemy of state.enemies) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
+        schoolShotHit(shot, enemy);
         damageEnemy(enemy, shot.damage);
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
         if (state.mode !== "playing") return;
@@ -263,7 +270,8 @@ function tick(dt) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
       playSound("hit");
-      boss.hp -= shot.damage; boss.flash = HIT_FLASH_SECONDS; updateHud();
+      schoolShotHit(shot, boss);
+      boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; updateHud();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;
@@ -283,8 +291,9 @@ function tick(dt) {
     if (shot.source === "teacher" && (!state.boss || !targetVisible(state.boss) || !targetVisible(shot) || (shot.life -= dt) <= 0)) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
+    if (schoolWindWall() && Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < GAME_DATA.schoolRules.eyeRadius + shot.r) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
-      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
+      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
@@ -293,7 +302,7 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = deltaX(state.player.x, gem.x), dy = deltaY(state.player.y, gem.y), distance = Math.hypot(dx, dy);
-    const pullRadius = GEM_PULL_RADIUS * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    const pullRadius = GEM_PULL_RADIUS * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightMagnet) * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
     if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     clampToMap(gem);
     if (distance < state.player.r + gem.r + 3) { gem.alive = false; grantExperience(gem.value); if (state.mode === "levelup") break; }
@@ -312,7 +321,7 @@ function tick(dt) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
     const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
-      state.player.health = Math.max(0, state.player.health - (touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
+      state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
       counterDischarge(); if (state.mode !== "playing") return;
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;

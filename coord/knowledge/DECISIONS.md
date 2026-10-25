@@ -64,3 +64,5 @@
 家長原話與規格見 `coord/inbox/done/20261025T162916Z-parent-boss-zone.md`：「我想到boss戰可以像荒野亂鬥大逃殺一樣 慢慢把能移動的範圍縮小」「衝刺改進和老師縮圈都做」。本卡依此實作三階段縮圈、紫霧、溫和扣血與減速、回安全區指示及 Maker 設定；工程初值及驗證限制記於 `docs/survivor-boss-zone-validation.md`，等待 Grok 審查與 Erin 試玩，尚未核准上線。
 
 - 2026-10-26：家長確認深度路線圖，以「以撒約 30% 的層次感」為目標，製作順序為起始選擇 → 標籤和連攜 → 前 20 張改變機制的卡 → 第二把武器 → 解鎖和收藏圖鑑；十項長期目標記於計畫 §12。本卡只寫文件，具體設計仍由 Erin 與家長決定。來源：`coord/inbox/done/20261025T181815Z-parent-depth-roadmap.md`。
+
+- 2026-10-26：家長指定實作水／風／雷流派重新設計、起始三精靈、每局每流派五張普通／稀有卡池、傳說額外機率、同流派三張變身／五張終極、雙流派各兩張合體，以及水球依主流派變色；新增數值可在 Maker 調整。工程初版與限制見 `docs/survivor-school-redesign-validation.md`，尚待 Grok 審查及 Erin 試玩確認配色、變身與平衡。來源：`coord/inbox/done/20261025T183119Z-parent-school-redesign.md`。

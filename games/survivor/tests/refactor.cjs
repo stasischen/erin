@@ -3,7 +3,7 @@ const {files, source} = require('./load-game.cjs');
 const root = path.resolve(__dirname, '..'), run = require('./maker-support.cjs')();
 assert.equal(run('window.Survivor === globalThis.Survivor'), true);
 for (const file of files) {
-  const api = 'Survivor.' + file.replace(/\.js$/, '').replaceAll('/', '.');
+  const api = 'Survivor' + file.replace(/\.js$/, '').split('/').map(part=>'['+JSON.stringify(part)+']').join('');
   assert.ok(run(`Object.keys(${api}).length > 0`), file);
 }
 assert.equal(run('Survivor.engine.state.state === state'), true);

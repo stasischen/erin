@@ -196,3 +196,6 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .upgrade-details h3 { font-size: 16px; line-height: 20px; margin-bottom: 2px; }
 .upgrade-panel .upgrade-details p { font-size: 12px; line-height: 1.25; margin: 1px 0; }
 }
+
+/* 傳說卡在選卡時持續金色光暈；圓形圖示沿用升級畫面。 */
+.upgrade-card[data-rarity="legendary"] { border-color:#ffdc83; box-shadow:0 0 15px 4px #ffc94d88,0 4px 0 #efc971; }

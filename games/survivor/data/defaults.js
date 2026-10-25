@@ -1,21 +1,49 @@
-// 純資料；Maker 預設作品。修改玩法請從 Maker 開始。
+// 純資料；✏️ Erin 可以在 Maker 調整數值、卡片、外框與怪物。
+// schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
-  // ✏️ Erin 可以改：false 關掉角色外面的一像素深色線。
-  "visuals": { "spriteOutline": true },
-  // ✏️ Erin 可以改：精英抽選間隔／機率；大熊在每關老師出場時間的一半來訪。
+  "visuals": {
+    "spriteOutline": true
+  },
   "elites": {
-    "enabled": true, "interval": 18, "chance": 0.35, "limit": 3,
-    "sizeScale": 1.25, "healthScale": 5, "rewardXp": 5,
-    "shieldHits": 3, "auraRadius": 150, "auraSpeed": 1.35,
-    "syrupInterval": 0.7, "syrupSeconds": 4, "syrupRadius": 28, "syrupSlow": 0.65,
-    "teleportInterval": 7, "teleportWarning": 1.2, "teleportDistance": 150,
-    "abilities": ["shield", "split", "haste", "syrup", "teleport"]
+    "enabled": true,
+    "interval": 18,
+    "chance": 0.35,
+    "limit": 3,
+    "sizeScale": 1.25,
+    "healthScale": 5,
+    "rewardXp": 5,
+    "shieldHits": 3,
+    "auraRadius": 150,
+    "auraSpeed": 1.35,
+    "syrupInterval": 0.7,
+    "syrupSeconds": 4,
+    "syrupRadius": 28,
+    "syrupSlow": 0.65,
+    "teleportInterval": 7,
+    "teleportWarning": 1.2,
+    "teleportDistance": 150,
+    "abilities": [
+      "shield",
+      "split",
+      "haste",
+      "syrup",
+      "teleport"
+    ]
   },
   "chocobear": {
-    "enabled": true, "name": "巧克力大熊", "stageFraction": 0.5,
-    "hp": 450, "armor": 180, "radius": 34, "speed": 48, "damage": 12,
-    "slamInterval": 4, "slamWarning": 1.2, "slamRadius": 82, "slamDamage": 18
+    "enabled": true,
+    "name": "巧克力大熊",
+    "stageFraction": 0.5,
+    "hp": 450,
+    "armor": 180,
+    "radius": 34,
+    "speed": 48,
+    "damage": 12,
+    "slamInterval": 4,
+    "slamWarning": 1.2,
+    "slamRadius": 82,
+    "slamDamage": 18
   },
   "tuning": {
     "maxUpgradeLevel": 5,
@@ -85,15 +113,15 @@ globalThis.SURVIVOR_DEFAULTS = {
   "build": {
     "water": {
       "name": "水",
-      "color": "#237bc2"
+      "color": "#35b9ff"
     },
     "wind": {
       "name": "風",
-      "color": "#23815e"
+      "color": "#70e7ba"
     },
     "thunder": {
       "name": "雷",
-      "color": "#9755bb"
+      "color": "#bf83ff"
     },
     "splashDamageBase": 0.2,
     "splashDamageGrowth": 0.1,
@@ -132,8 +160,12 @@ globalThis.SURVIVOR_DEFAULTS = {
     "skillRadiusMultiplier": 1.25,
     "skillDamageMultiplier": 0.5
   },
-  // ✏️ Erin 可以改：老師戰紫霧。傷害是每秒扣血；速度是每秒縮幾格。
-  "bossZone": { "enabled": true, "steps": 3, "speed": 40, "damage": 2 },
+  "bossZone": {
+    "enabled": true,
+    "steps": 3,
+    "speed": 40,
+    "damage": 2
+  },
   "bossTuning": {
     "warningSeconds": 0.9,
     "rests": [
@@ -170,7 +202,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "big-water",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "rapid-water",
@@ -186,7 +219,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "rapid-water",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "multi-water",
@@ -202,7 +236,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "multi-water",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "onion-dash",
@@ -218,7 +253,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "onion-dash",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "bubble-shield",
@@ -234,7 +270,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "bubble-shield",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "gem-magnet",
@@ -250,7 +287,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "gem-magnet",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "piercing-water",
@@ -266,7 +304,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "piercing-water",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "splash-water",
@@ -282,7 +321,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "splash-water",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "auto-heal",
@@ -298,7 +338,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "auto-heal",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "water-attack",
@@ -306,7 +347,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "slot": "attack",
       "tier": "entry",
       "icon": "water-attack",
-      "name": "濺水入門",
+      "name": "濺水花",
       "description": "水球命中濺水花，升級擴大水花",
       "maxLevel": 5,
       "requires": [],
@@ -316,17 +357,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-attack",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "water-skill",
       "school": "water",
       "slot": "skill",
-      "requires": [
-        "water-attack"
-      ],
+      "requires": [],
       "icon": "water-skill",
-      "name": "水窪 A",
+      "name": "水窪",
       "description": "水球落點與泡泡留下緩速水窪",
       "maxLevel": 5,
       "effects": [
@@ -335,17 +375,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-skill",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "water-dash",
       "school": "water",
       "slot": "dash",
-      "requires": [
-        "water-attack"
-      ],
+      "requires": [],
       "icon": "water-dash",
-      "name": "水痕 B",
+      "name": "水痕",
       "description": "衝刺沿路留下緩速水痕",
       "maxLevel": 5,
       "effects": [
@@ -354,17 +393,15 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-dash",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "water-ultimate",
       "school": "water",
       "slot": "passive",
       "tier": "ultimate",
-      "requires": [
-        "water-skill",
-        "water-dash"
-      ],
+      "requires": [],
       "icon": "water-ultimate",
       "name": "大海嘯",
       "description": "每 10 秒一道巨浪掃過全場",
@@ -375,15 +412,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-ultimate",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "legendary"
     },
     {
       "id": "wind-attack",
       "school": "wind",
-      "slot": "dash",
+      "slot": "attack",
       "tier": "entry",
       "icon": "wind-attack",
-      "name": "疾風入門",
+      "name": "疾風",
       "description": "水球飛得更快、更遠",
       "maxLevel": 5,
       "requires": [],
@@ -393,18 +431,17 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-attack",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "wind-dash",
       "school": "wind",
-      "slot": "dash",
-      "requires": [
-        "wind-attack"
-      ],
+      "slot": "skill",
+      "requires": [],
       "icon": "wind-dash",
-      "name": "旋風 A",
-      "description": "衝刺旋風傷敵並推開敵人",
+      "name": "旋風",
+      "description": "技能產生旋風，衝刺也會留下旋風",
       "maxLevel": 5,
       "effects": [
         {
@@ -412,18 +449,17 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-dash",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "wind-speed",
       "school": "wind",
-      "slot": "passive",
-      "requires": [
-        "wind-attack"
-      ],
+      "slot": "dash",
+      "requires": [],
       "icon": "wind-speed",
-      "name": "疾行 B",
-      "description": "移動越快，水球發射越快",
+      "name": "疾行",
+      "description": "衝刺與移動時加快水球發射",
       "maxLevel": 5,
       "effects": [
         {
@@ -431,17 +467,15 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-speed",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "wind-ultimate",
       "school": "wind",
       "slot": "passive",
       "tier": "ultimate",
-      "requires": [
-        "wind-dash",
-        "wind-speed"
-      ],
+      "requires": [],
       "icon": "wind-ultimate",
       "name": "環繞龍捲風",
       "description": "龍捲風繞主角旋轉，碰到就傷害",
@@ -452,15 +486,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-ultimate",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "legendary"
     },
     {
       "id": "thunder-attack",
       "school": "thunder",
-      "slot": "skill",
+      "slot": "attack",
       "tier": "entry",
       "icon": "thunder-attack",
-      "name": "跳電入門",
+      "name": "跳電",
       "description": "水球跳電到附近另一隻，升級更痛",
       "maxLevel": 5,
       "requires": [],
@@ -470,17 +505,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-attack",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "thunder-skill",
       "school": "thunder",
       "slot": "skill",
-      "requires": [
-        "thunder-attack"
-      ],
+      "requires": [],
       "icon": "thunder-skill",
-      "name": "電泡泡 A",
+      "name": "電泡泡",
       "description": "泡泡帶電，炸中讓敵人暈眩",
       "maxLevel": 5,
       "effects": [
@@ -489,17 +523,16 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-skill",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "thunder-counter",
       "school": "thunder",
       "slot": "passive",
-      "requires": [
-        "thunder-attack"
-      ],
+      "requires": [],
       "icon": "thunder-counter",
-      "name": "放電反擊 B",
+      "name": "放電反擊",
       "description": "每次受傷放電反擊附近敵人",
       "maxLevel": 5,
       "effects": [
@@ -508,17 +541,15 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-counter",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "common"
     },
     {
       "id": "thunder-ultimate",
       "school": "thunder",
       "slot": "passive",
       "tier": "ultimate",
-      "requires": [
-        "thunder-skill",
-        "thunder-counter"
-      ],
+      "requires": [],
       "icon": "thunder-ultimate",
       "name": "雷雲",
       "description": "雷雲定期隨機劈中一隻敵人",
@@ -529,17 +560,15 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-ultimate",
           "power": 1
         }
-      ]
+      ],
+      "rarity": "legendary"
     },
     {
       "id": "fusion-puddle",
       "school": "water",
       "slot": "skill",
       "tier": "fusion",
-      "requires": [
-        "water-skill",
-        "thunder-attack"
-      ],
+      "requires": [],
       "icon": "fusion-puddle",
       "name": "導電水窪",
       "description": "水窪額外放電，升級增加電傷害",
@@ -550,6 +579,11 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "fusion-puddle",
           "power": 1
         }
+      ],
+      "rarity": "rare",
+      "schools": [
+        "water",
+        "thunder"
       ]
     },
     {
@@ -557,10 +591,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "school": "wind",
       "slot": "dash",
       "tier": "fusion",
-      "requires": [
-        "wind-dash",
-        "water-attack"
-      ],
+      "requires": [],
       "icon": "fusion-storm",
       "name": "暴風雨",
       "description": "旋風衝刺同時灑下傷敵水窪",
@@ -571,6 +602,11 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "fusion-storm",
           "power": 1
         }
+      ],
+      "rarity": "rare",
+      "schools": [
+        "water",
+        "wind"
       ]
     },
     {
@@ -578,10 +614,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "school": "thunder",
       "slot": "dash",
       "tier": "fusion",
-      "requires": [
-        "wind-speed",
-        "thunder-attack"
-      ],
+      "requires": [],
       "icon": "fusion-dash",
       "name": "閃電衝刺",
       "description": "衝刺留下會跳電的電痕",
@@ -590,6 +623,281 @@ globalThis.SURVIVOR_DEFAULTS = {
         {
           "type": "dash-trail",
           "feature": "fusion-dash",
+          "power": 1
+        }
+      ],
+      "rarity": "rare",
+      "schools": [
+        "wind",
+        "thunder"
+      ]
+    },
+    {
+      "id": "water-drop",
+      "school": "water",
+      "slot": "attack",
+      "rarity": "rare",
+      "icon": "water-drop",
+      "name": "大水滴",
+      "description": "每第 5 發射出大水滴，附擊退",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "water-drop",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "water-fountain",
+      "school": "water",
+      "slot": "skill",
+      "rarity": "rare",
+      "icon": "water-fountain",
+      "name": "噴泉",
+      "description": "每 6 秒噴泉把附近怪物彈飛",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "knockback",
+          "feature": "water-fountain",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "water-bubble",
+      "school": "water",
+      "slot": "dash",
+      "rarity": "rare",
+      "icon": "water-bubble",
+      "name": "泡泡盾",
+      "description": "衝刺結束產生泡泡，擋下一次攻擊",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "stat",
+          "feature": "water-bubble",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "water-wet",
+      "school": "water",
+      "slot": "passive",
+      "rarity": "common",
+      "icon": "water-wet",
+      "name": "濕答答",
+      "description": "被弄濕的怪物多受 15% 傷害",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "stat",
+          "feature": "water-wet",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "water-rain",
+      "school": "water",
+      "slot": "passive",
+      "rarity": "legendary",
+      "icon": "water-rain",
+      "name": "下雨天",
+      "description": "定期下雨，讓所有怪物變慢",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "slow",
+          "feature": "water-rain",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "wind-blade",
+      "school": "wind",
+      "slot": "attack",
+      "rarity": "rare",
+      "icon": "wind-blade",
+      "name": "風刃",
+      "description": "水球多穿一隻，穿透後產生小風刃",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "wind-blade",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "wind-gust",
+      "school": "wind",
+      "slot": "skill",
+      "rarity": "common",
+      "icon": "wind-gust",
+      "name": "吹飛",
+      "description": "每 8 秒把附近所有怪物推開",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "knockback",
+          "feature": "wind-gust",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "wind-refund",
+      "school": "wind",
+      "slot": "dash",
+      "rarity": "rare",
+      "icon": "wind-refund",
+      "name": "順風",
+      "description": "衝刺後退回半格衝刺次數",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "stat",
+          "feature": "wind-refund",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "wind-light",
+      "school": "wind",
+      "slot": "passive",
+      "rarity": "common",
+      "icon": "wind-light",
+      "name": "輕飄飄",
+      "description": "移速 +10%，撿經驗範圍變大",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "stat",
+          "feature": "wind-light",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "wind-eye",
+      "school": "wind",
+      "slot": "passive",
+      "rarity": "legendary",
+      "icon": "wind-eye",
+      "name": "風之眼",
+      "description": "站著不動時產生保護風牆",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "knockback",
+          "feature": "wind-eye",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder-charge",
+      "school": "thunder",
+      "slot": "attack",
+      "rarity": "rare",
+      "icon": "thunder-charge",
+      "name": "蓄電",
+      "description": "每打倒 10 隻，下一發變大閃電",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "thunder-charge",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder-rod",
+      "school": "thunder",
+      "slot": "skill",
+      "rarity": "rare",
+      "icon": "thunder-rod",
+      "name": "避雷針",
+      "description": "插在地上的避雷針會電附近怪物",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "chain",
+          "feature": "thunder-rod",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder-step",
+      "school": "thunder",
+      "slot": "dash",
+      "rarity": "common",
+      "icon": "thunder-step",
+      "name": "雷步",
+      "description": "衝刺穿過的怪物短暫暈眩",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "stun",
+          "feature": "thunder-step",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder-static",
+      "school": "thunder",
+      "slot": "passive",
+      "rarity": "common",
+      "icon": "thunder-static",
+      "name": "靜電",
+      "description": "碰到主角的怪物會被電",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "chain",
+          "feature": "thunder-static",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder-super",
+      "school": "thunder",
+      "slot": "passive",
+      "rarity": "legendary",
+      "icon": "thunder-super",
+      "name": "超導體",
+      "description": "每次連鎖多跳一隻，而且傷害不衰減",
+      "maxLevel": 1,
+      "requires": [],
+      "effects": [
+        {
+          "type": "chain",
+          "feature": "thunder-super",
           "power": 1
         }
       ]
@@ -783,7 +1091,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "gap": 1.8,
         "distance": 300
       },
-{
+      {
         "id": "chalk-wall",
         "name": "粉筆牆",
         "kind": "wall",
@@ -799,8 +1107,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "pulse": 0.24,
         "gap": 1.8,
         "distance": 300
-},
-{
+      },
+      {
         "id": "shrinking-ring",
         "name": "衝刺縮圈",
         "kind": "cage",
@@ -816,7 +1124,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "pulse": 0.24,
         "gap": 1.8,
         "distance": 300
-}
+      }
     ]
   },
   "waves": [
@@ -862,7 +1170,6 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "classroom",
       "name": "糖果森林",
       "background": "candy-forest",
-      // ✏️ 裝飾密度：0 沒有、1 最多；只影響地面。
       "decorationDensity": 0.25,
       "enemyHealthScale": 1,
       "enemySpeedScale": 1,
@@ -953,5 +1260,72 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ]
     }
-  ]
+  ],
+  "schools": [
+    {
+      "id": "water",
+      "spirit": "水滴果凍精靈",
+      "form": "果凍水精靈",
+      "attackCard": "water-attack"
+    },
+    {
+      "id": "wind",
+      "spirit": "薄荷風精靈",
+      "form": "薄荷風精靈",
+      "attackCard": "wind-attack"
+    },
+    {
+      "id": "thunder",
+      "spirit": "跳跳糖雷精靈",
+      "form": "跳跳糖雷精靈",
+      "attackCard": "thunder-attack"
+    }
+  ],
+  "schoolRules": {
+    "schoolsPerRun": 3,
+    "cardsPerSchool": 5,
+    "transformCards": 3,
+    "ultimateCards": 5,
+    "fusionCards": 2,
+    "legendaryChance": 0.025,
+    "rareWeight": 0.55,
+    "ownedWeight": 0.65,
+    "starterWeight": 1.5,
+    "bigDropEvery": 5,
+    "bigDropSize": 1.7,
+    "bigDropDamage": 1.6,
+    "bigDropPush": 45,
+    "fountainSeconds": 6,
+    "fountainRadius": 145,
+    "fountainPush": 65,
+    "wetSeconds": 3,
+    "wetDamage": 0.15,
+    "rainSeconds": 10,
+    "rainDuration": 3,
+    "windBladeDamage": 0.4,
+    "windBladeRange": 140,
+    "gustSeconds": 8,
+    "gustRadius": 150,
+    "gustPush": 65,
+    "refundCharge": 0.5,
+    "lightSpeed": 0.1,
+    "lightMagnet": 0.25,
+    "eyeWait": 1,
+    "eyeRadius": 65,
+    "eyePush": 35,
+    "chargeKills": 10,
+    "chargeDamage": 2.5,
+    "rodSeconds": 6,
+    "rodDuration": 4,
+    "rodRadius": 120,
+    "rodDamage": 25,
+    "rodTick": 1,
+    "thunderStepStun": 0.5,
+    "staticSeconds": 1,
+    "staticDamage": 20,
+    "superconductorJumps": 1,
+    "waterFormSize": 0.25,
+    "windFormCharges": 1,
+    "thunderFormRange": 0.4
+  }
 };

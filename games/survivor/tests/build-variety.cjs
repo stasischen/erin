@@ -17,26 +17,19 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
-function fresh() { run(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); settingsPanel.hidden = true; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
+function fresh() { run(`resetGame(); state.schoolRun=null; state.player.x = 400; state.player.y = 300; updateCamera(); settingsPanel.hidden = true; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
   globalThis.book = (x,y=300,hp=1000,speed=0) => ({x,y,r:17,speed,damage:15,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});`); }
 function step(seconds) { run(`for (let t = 0; t < ${seconds} - 1e-8; t += .05) tick(.05);`); }
 function select(id) { run(`state.mode = 'levelup'; state.pendingChoices = [UPGRADES.find(card => card.id === ${JSON.stringify(id)})]; applyUpgrade(0);`); }
 function close(a,b) { assert.ok(Math.abs(a-b)<1e-6, `${a} != ${b}`); }
-// 前置鎖、每張 Lv5、重複升級、每場只能一個終極；合體可跨流派。
+// 舊效果隔離場景不建一局；新抽卡門檻由 school-redesign.cjs 測試。
 fresh();
 assert.equal(run('new Set(UPGRADES.map(c=>c.icon)).size === UPGRADES.length'),true);
-assert.equal(run('UPGRADES.filter(canOffer).length'),12); // 9 通用 + 3 入門
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="water-skill"))'),false);
-select('water-skill'); assert.equal(run('upgradeLevel("water-skill")'),0);
-select('water-attack'); select('water-skill'); select('water-dash');
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="water-ultimate"))'),true);
-select('water-ultimate');
+assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="water-skill"))'),true);
+select('water-skill'); assert.equal(run('upgradeLevel("water-skill")'),1);
+select('water-attack'); select('water-dash'); select('water-ultimate');
 select('wind-attack'); select('wind-dash'); select('wind-speed');
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="wind-ultimate"))'),false);
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="fusion-storm"))'),true);
-select('thunder-attack');
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="fusion-puddle"))'),true);
-assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="fusion-dash"))'),true);
+assert.equal(run('canOffer(UPGRADES.find(c=>c.id==="wind-ultimate"))'),true);
 for(let i=0;i<8;i++) select('water-attack');
 assert.equal(run('upgradeLevel("water-attack")'),5);
 // 所有可用組合抽卡均無重複、無鎖定或滿級卡；全滿只出回血。
@@ -89,9 +82,9 @@ for(const school of ['water','wind','thunder']) {
  assert.equal(run('JSON.stringify([state.fields,state.ultimateTimer,state.ultimateVisual])===frozen'),true);
  run('togglePause(); state.stageIndex=STAGES.length-1; summonTeacher(); state.bossIntro=0; state.enemies=[]; state.boss.x=480; state.boss.y=300; state.boss.hp=1; state.elapsed=0; state.ultimateTimer=0; updateUltimate(.05);');
  assert.equal(run('state.mode'),'won');
- run('render(); resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();'); assert.equal(run('state.ultimateVisual'),null); assert.equal(run('state.ultimateTimer'),0);
+ run('render(); resetGame(); state.schoolRun=null; state.player.x = 400; state.player.y = 300; updateCamera();'); assert.equal(run('state.ultimateVisual'),null); assert.equal(run('state.ultimateTimer'),0);
 }
 fresh(); select('auto-heal'); run('state.player.health=50;'); step(10); assert.equal(run('state.player.health'),51);
 fresh(); select('bubble-shield'); assert.equal(run('state.player.health'),108);
 fresh(); select('gem-magnet'); run('state.gems=[{x:540,y:300,r:8,value:1,alive:true,wobble:0}]; tick(.05);'); assert.ok(run('state.gems[0].x')<540);
-console.log('PASS: unique icons, prerequisites, Lv5, one ultimate, legal offers/fallback, water/wind/thunder branches, fusions, ultimate damage/boss wins, pause/restart/pools, support cards');
+console.log('PASS: unique icons, unordered cards, Lv5, multiple ultimates, legal offers/fallback, water/wind/thunder branches, fusions, ultimate damage/boss wins, pause/restart/pools, support cards');

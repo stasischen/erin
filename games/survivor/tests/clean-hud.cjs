@@ -39,7 +39,7 @@ run(`state.width=800;state.height=600;resetGame();state.mode='playing';settingsP
 assert.equal(run('state.mode'),'paused');assert.equal(run('settingsPanel.hidden'),false);
 assert.match(run('elements.buildSlots.innerHTML'),/Lv2/);
 assert.match(run('elements.buildSlots.innerHTML'),/導電水窪/);
-assert.match(run('elements.settingsSkillTree.innerHTML'),/導電水窪.*水窪 A Lv1/);
+assert.match(run('elements.settingsSkillTree.innerHTML'),/導電水窪/);
 assert.match(run('elements.settingsSkillTree.innerHTML'),/雷雲/);
 run('closeSettings();togglePause();state.skillCooldown=gameSettings.bombCooldown/2;updateActionControls();');
 assert.match(run('skillButton.style.background'),/180deg/);

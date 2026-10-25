@@ -17,6 +17,14 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
+  const SCHOOL_BOUNDS = {
+    schoolsPerRun:[1,3,1], cardsPerSchool:[3,8,1], transformCards:[2,5,1], ultimateCards:[3,8,1], fusionCards:[1,4,1],
+    legendaryChance:[0,.1,.005],rareWeight:[.1,1,.05],ownedWeight:[0,2,.05],starterWeight:[0,4,.1],
+    bigDropEvery:[2,12,1],bigDropSize:[1,3,.1],bigDropDamage:[1,3,.1],bigDropPush:[0,100,1],
+    fountainSeconds:[2,20,.5],fountainRadius:[40,240,1],fountainPush:[0,100,1],wetSeconds:[.5,6,.1],wetDamage:[0,.5,.01],rainSeconds:[4,30,.5],rainDuration:[1,5,.1],
+    windBladeDamage:[.1,1,.05],windBladeRange:[50,300,1],gustSeconds:[3,20,.5],gustRadius:[40,240,1],gustPush:[0,100,1],refundCharge:[0,.75,.05],lightSpeed:[0,.3,.01],lightMagnet:[0,1,.05],eyeWait:[.2,3,.1],eyeRadius:[30,100,1],eyePush:[0,60,1],
+    chargeKills:[3,30,1],chargeDamage:[1,4,.1],rodSeconds:[3,20,.5],rodDuration:[1,6,.1],rodRadius:[40,200,1],rodDamage:[5,80,1],rodTick:[.4,3,.1],thunderStepStun:[.1,1.5,.1],staticSeconds:[.4,4,.1],staticDamage:[5,60,1],superconductorJumps:[1,3,1],waterFormSize:[0,.5,.05],windFormCharges:[0,2,1],thunderFormRange:[0,1,.1]
+  };
   const ENCOUNTER_BOUNDS = {
     elites: {interval:[5,60,1],chance:[0,1,.05],limit:[1,3,1],sizeScale:[1.1,1.5,.05],healthScale:[2,8,.5],rewardXp:[1,15,1],shieldHits:[1,6,1],auraRadius:[50,240,5],auraSpeed:[1,1.8,.05],syrupInterval:[.4,3,.1],syrupSeconds:[1,6,.5],syrupRadius:[12,50,1],syrupSlow:[.4,1,.05],teleportInterval:[4,15,.5],teleportWarning:[.8,3,.1],teleportDistance:[100,240,5]},
     chocobear: {stageFraction:[.25,.75,.05],hp:[100,1500,10],armor:[20,600,10],radius:[26,44,1],speed:[20,80,1],damage:[0,25,1],slamInterval:[2,10,.5],slamWarning:[.8,3,.1],slamRadius:[45,120,1],slamDamage:[0,30,1]}
@@ -77,22 +85,33 @@
           }
         }
       }
+      // 新數值缺省補齊；舊作品保留既有卡片／積木，新增卡以 id 補入。
+      if (input.schoolRules !== undefined) {
+        for (const [field, base] of Object.entries(data.schoolRules)) {
+          const bounds = SCHOOL_BOUNDS[field];
+          data.schoolRules[field] = num(input.schoolRules[field], bounds[0], bounds[1], field, bounds[2] === 1);
+        }
+      }
+      if (input.schools !== undefined && JSON.stringify(input.schools) !== JSON.stringify(data.schools)) fail('流派登錄表請由資料檔擴充');
       // 物件數量上限固定，避免作品讓裝置卡住；整數欄位不得帶小數。
       for (const field of ['maxUpgradeLevel','enemyLimit','enemyShotLimit','teacherShotCount','teacherShotLimit','projectileLimit','gemLimit','xpToLevel','xpGrowthPerLevel','enemyShootLevel']) data.tuning[field] = num(input.tuning[field], 1, root.SURVIVOR_DEFAULTS.tuning[field], field, true);
       data.build.fieldLimit = num(input.build.fieldLimit, 1, 18, '痕跡上限', true);
       data.bossTuning.hazardLimit = num(input.bossTuning.hazardLimit, 1, 8, '預警上限', true);
       data.build.slowMultiplier = num(input.build.slowMultiplier, .2, 1, '緩速倍率');
       data.build.supportChance = num(input.build.supportChance, 0, 1, '支援卡機率');
-      if (!Array.isArray(input.cards) || input.cards.length !== data.cards.length) fail('卡片數量不正確');
+      if (!Array.isArray(input.cards) || input.cards.length > data.cards.length || new Set(input.cards.map(c => c.id)).size !== input.cards.length || input.cards.some(c => !data.cards.some(base => base.id === c.id)) || data.cards.slice(0,24).some(c => !input.cards.some(old => old.id === c.id))) fail('卡片數量不正確');
+      const savedCards = input.cards;
+      input = { ...input, cards: data.cards.map(base => savedCards.find(c => c.id === base.id) || base) };
       const features = new Map(data.cards.map(card => [card.id, card.effects[0].type]));
       data.cards = data.cards.map((base, i) => {
         const c = input.cards[i];
         if (!c || c.id !== base.id) fail('卡片識別碼不正確');
         const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: root.SurvivorIcons.normalize(c.icon, base.icon), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
-        result.school = c.school ? choice(c.school, ['water','wind','thunder'], '流派') : undefined;
+        result.school = c.school ? choice(c.school, data.schools.map(s => s.id), '流派') : undefined;
+        result.rarity = c.rarity === undefined ? base.rarity : choice(c.rarity, ['common','rare','legendary'], '品質');
         result.tier = c.tier ? choice(c.tier, ['entry','advanced-a','advanced-b','fusion','ultimate'], '階段') : undefined;
         if (!Array.isArray(c.requires) || c.requires.length > 6 || new Set(c.requires).size !== c.requires.length) fail('前置條件不正確');
-        result.requires = c.requires.map(id => { if (id === c.id || !features.has(id)) fail('前置卡不存在或指向自己'); return id; });
+        result.requires = (c.school && c.rarity === undefined ? [] : c.requires).map(id => { if (id === c.id || !features.has(id)) fail('前置卡不存在或指向自己'); return id; });
         if (!Array.isArray(c.effects) || c.effects.length < 1 || c.effects.length > 3) fail('每卡需要 1～3 個積木');
         result.effects = c.effects.map(effect => {
           if (effect.feature) {
@@ -171,5 +190,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-school-redesign",
+  "title": "小怪獸：水風雷流派、起始精靈與變身",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-school-redesign",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T183119Z-parent-school-redesign.md",
+  "next": "請 Grok 審查目前分支的三流派新卡、固定卡池／權重、起始選擇、變身／合體／多終極、Maker 遷移與水球配色。版本 20261026g；完整 --layout 已執行，版本及 27 個非版面腳本通過，Chrome SIGABRT 尚待補版面／iPad 驗證。交接見 docs/survivor-school-redesign-validation.md；Godot §11：純資料與規則、序列化成長事件及輸入→輸出測試已對照；尚未全面 JSON 化、純函式化或匯出 PNG／音訊。審查後請 Erin 試玩確認配色、變身與平衡；commit、push、PR 交 erin-watch，不核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T18:46:07.985289Z",
+  "updatedBy": "codex"
+}

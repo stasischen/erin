@@ -18,7 +18,7 @@ function clearBossMoves() {
 }
 function bossHurtPlayer(damage) {
   if (!state.boss || !targetVisible(state.boss) || state.player.damageDisabled || state.player.invincible > 0) return;
-  state.player.health = Math.max(0, state.player.health - damage);
+  state.player.health = Math.max(0, state.player.health - absorbSchoolHit(damage));
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
   playSound("hurt"); updateHud(); counterDischarge();
   if (state.mode === "playing" && state.player.health <= 0) finishRun(false);
