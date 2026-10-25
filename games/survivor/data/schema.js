@@ -26,8 +26,8 @@
       if (typeof v !== 'number' || !Number.isFinite(v) || v < min || v > max || (integer && !Number.isInteger(v))) fail(label + ' 超出安全範圍');
       return v;
     };
-    // 名稱會顯示在既有技能樹 HTML；拒絕標籤及引號，保留中文字與 emoji。
-    const name = (v, label, max = 60) => { if (typeof v !== 'string' || !v.trim() || v.length > max || /[<>&"'`]/.test(v)) fail(label + ' 請使用簡短文字，不可包含 HTML 符號'); return v.trim(); };
+    // 名稱會顯示在既有技能樹 HTML；拒絕標籤及引號，保留中文字；舊作品的圖示文字自動轉換。
+    const name = (v, label, max = 60) => { v = root.SurvivorIcons.clean(v); if (typeof v !== 'string' || !v.trim() || v.length > max || /[<>&"'`]/.test(v)) fail(label + ' 請使用簡短文字，不可包含 HTML 符號'); return v.trim(); };
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
@@ -58,7 +58,7 @@
       data.cards = data.cards.map((base, i) => {
         const c = input.cards[i];
         if (!c || c.id !== base.id) fail('卡片識別碼不正確');
-        const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: name(c.icon, '圖示', 12), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
+        const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: root.SurvivorIcons.normalize(c.icon, base.icon), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
         result.school = c.school ? choice(c.school, ['water','wind','thunder'], '流派') : undefined;
         result.tier = c.tier ? choice(c.tier, ['entry','advanced-a','advanced-b','fusion','ultimate'], '階段') : undefined;
         if (!Array.isArray(c.requires) || c.requires.length > 6 || new Set(c.requires).size !== c.requires.length) fail('前置條件不正確');

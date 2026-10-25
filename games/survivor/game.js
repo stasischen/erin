@@ -239,8 +239,8 @@ function playTone(frequency, duration = 0.07, type = "sine") {
 }
 
 function updateSettingsButtons() {
-  soundToggle.textContent = gameSettings.sound ? "🔊 音效：開" : "🔇 音效：關";
-  vibrationToggle.textContent = gameSettings.vibration ? "📳 震動：開" : "📳 震動：關";
+  soundToggle.innerHTML = SurvivorIcons.html(gameSettings.sound ? "sound" : "mute") + (gameSettings.sound ? " 音效：開" : " 音效：關");
+  vibrationToggle.innerHTML = SurvivorIcons.html("vibration") + (gameSettings.vibration ? " 震動：開" : " 震動：關");
 }
 
 function updateSettingValue(key, value) {
@@ -373,7 +373,7 @@ function startGame() {
   resetGame();
   state.mode = "playing";
   overlay.classList.add("hidden");
-  pauseButton.textContent = "⚙️";
+  SurvivorIcons.set(pauseButton, "settings");
   state.lastTime = performance.now();
   scheduleFrame();
   spawnEnemy();
@@ -386,7 +386,7 @@ function finishRun(won) {
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
   playTone(won ? 880 : 220, 0.28, "triangle");
-  if (MAKER_MODE && window.openSurvivorMaker) window.openSurvivorMaker(won ? "🎉 過關了！繼續設計或再試玩。" : "💫 試玩結束！繼續設計或再試玩。");
+  if (MAKER_MODE && window.openSurvivorMaker) window.openSurvivorMaker(won ? "過關了！繼續設計或再試玩。" : "試玩結束！繼續設計或再試玩。");
   else showOverlay(won ? "won" : "over");
 }
 
@@ -395,10 +395,10 @@ function showOverlay(mode) {
   state.keys.clear(); state.pointerId = null; state.joy = null;
   updateActionControls();
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
-  if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "⚙️"; }
-  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "⚙️"; }
-  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗" + GAME_DATA.boss.name + "了！"; textEl.textContent = `${GAME_DATA.boss.name}的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "⚙️"; }
-  else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，💨 衝刺躲字、🌀 放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
+  if (mode === "paused") { SurvivorIcons.set(iconEl, "pause"); titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; SurvivorIcons.set(pauseButton, "settings"); }
+  else if (mode === "over") { SurvivorIcons.set(iconEl, "over"); titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; SurvivorIcons.set(pauseButton, "settings"); }
+  else if (mode === "won") { SurvivorIcons.set(iconEl, "win"); titleEl.textContent = "打敗" + GAME_DATA.boss.name + "了！"; textEl.textContent = `${GAME_DATA.boss.name}的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; SurvivorIcons.set(pauseButton, "settings"); }
+  else { SurvivorIcons.set(iconEl, "onion-dash"); titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，衝刺躲字、放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
 let lastSlotMarkup = "";
@@ -413,8 +413,8 @@ function updateHud() {
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
-    const detail = cards.map(card => `${card.icon}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
-    return `<span title="${detail}"><b>${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
+    const detail = cards.map(card => `${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
+    return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
   }).join("");
   if (slotMarkup !== lastSlotMarkup) { slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup; }
   bossHud.hidden = !state.boss;
@@ -799,7 +799,7 @@ function addHealEffect() {
 }
 function chooseUpgradeCards() {
   const available = UPGRADES.filter(canOffer);
-  if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "🥤", name: "回血", description: "恢復 1 顆心" }]; }
+  if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "heal", name: "回血", description: "恢復 1 顆心" }]; }
   else {
     const shuffled = available.slice();
     for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
@@ -813,7 +813,7 @@ function chooseUpgradeCards() {
   showUpgradeChoices();
 }
 function renderSkillTree(tree) {
-  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${card.icon}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${SurvivorIcons.html(school)}${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
 }
 function showUpgradeChoices() {
   render();
@@ -824,8 +824,8 @@ function showUpgradeChoices() {
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
     button.dataset.rarity = card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common";
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
-    const tag = card.school ? `${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
-    button.innerHTML = `<small>${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
+    const tag = card.school ? `${SurvivorIcons.html(card.school)}${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
+    button.innerHTML = `<small>${SurvivorIcons.html(button.dataset.rarity === "legendary" ? "legendary" : button.dataset.rarity === "epic" ? "epic" : button.dataset.rarity === "rare" ? "rare" : "common")}${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
     button.addEventListener("click", () => applyUpgrade(index)); upgradeCards.appendChild(button);
   });
   statusEl.textContent = "選一張升級卡";
@@ -834,8 +834,8 @@ function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
-  skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "❤️", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
-  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "⚙️"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
+  skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
+  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
@@ -1408,7 +1408,7 @@ function drawSkillVisuals() {
       for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); ctx.stroke(); }
     } else if (v.kind === "card") {
       strokeRing(v.x, v.y + 38, 22 + progress * 25, v.color);
-      ctx.font = "bold 24px system-ui"; ctx.textAlign = "center"; ctx.fillText(v.text, v.x, v.y - progress * 20);
+      SurvivorIcons.draw(ctx, v.text, v.x - 12, v.y - 24 - progress * 20, 24);
     } else if (v.kind === "sparkle") {
       ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 5;
       for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); ctx.stroke(); }
@@ -1565,10 +1565,7 @@ function drawBossGuide() {
     ctx.save(); ctx.translate(guide.x, guide.y);
     ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#713809"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    // 小老師臉與眼鏡，不依賴裝置的 emoji 字型。
-    ctx.fillStyle = "#3e2e35"; ctx.fillRect(-10, -12, 20, 6);
-    ctx.fillStyle = "#ffd7ad"; ctx.fillRect(-10, -6, 20, 17);
-    ctx.strokeRect(-8, -4, 6, 5); ctx.strokeRect(2, -4, 6, 5);
+    SurvivorIcons.draw(ctx, "boss", -16, -16, 32);
     ctx.rotate(guide.angle); ctx.fillStyle = "#713809";
     ctx.beginPath(); ctx.moveTo(29, 0); ctx.lineTo(20, -7); ctx.lineTo(20, 7); ctx.closePath(); ctx.fill();
     ctx.restore();
@@ -1585,7 +1582,7 @@ function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 let frameRequest = null;
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
 function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
-function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "⚙️"; updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
+function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
@@ -1645,7 +1642,7 @@ if (window.visualViewport) {
 resize(); showOverlay("ready"); renderLoop();
 if (MAKER_MODE) {
   const makerLink = document.getElementById("makerLink");
-  makerLink.textContent = "🧩 回 Maker";
+  makerLink.innerHTML = SurvivorIcons.html("maker") + " 回設計室";
   if (MAKER_LOAD.valid && new URLSearchParams(location.search).get("play") === "1") startGame();
   else textEl.textContent = MAKER_LOAD.errors.join("；") + "。本次使用預設作品。";
 }

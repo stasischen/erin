@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-pixel-icons",
+  "title": "小怪獸：共用像素圖示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-pixel-icons",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T110552Z-parent-pixel-icons.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 獨立審查共用點陣圖示、Maker 選圖、舊作品轉換與無 emoji 介面。14 組測試通過，詳見 docs/survivor-pixel-icons-validation.md。沙盒禁止啟動 HTTP server，真瀏覽器／iPad 圖示辨識、觸控與 PWA 更新離線待驗證；Erin 試玩後決定圖案是否好認。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T11:10:24.880713Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-maker-ingame"
+  ]
+}

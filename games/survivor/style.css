@@ -195,3 +195,12 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 .settings-panel .build-slots > span { display: block; white-space: normal; overflow: visible; padding: 8px; line-height: 1.6; }
 .settings-panel .build-slots b, .settings-panel .build-slots > span > span { display: block; }
 .settings-panel .skill-tree { grid-template-columns: 1fr; }
+
+/* 共用點陣圖示：放大維持整齊格點，觸控由外層按鈕接收。 */
+.pixel-icon { width: 1.5em; height: 1.5em; vertical-align: middle; image-rendering: pixelated; pointer-events: none; display: inline-block; flex-shrink: 0; }
+.message-icon .pixel-icon { width: 64px; height: 64px; }
+.action-button .pixel-icon { width: 40px; height: 40px; }
+.upgrade-icon .pixel-icon { width: 48px; height: 48px; }
+.icon-picker { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); }
+.icon-picker button { min-height: 48px; min-width: 48px; }
+.icon-picker button[aria-pressed="true"] { outline: 3px solid #ffdc83; }

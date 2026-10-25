@@ -44,6 +44,16 @@
     button(controls, '−', () => adjust(-1)).setAttribute('aria-label', (label || labels[key] || key) + ' 減少');
     button(controls, '＋', () => adjust(1)).setAttribute('aria-label', (label || labels[key] || key) + ' 增加');
   }
+  function iconPicker(parent, card) {
+    const picker = el('details', undefined, parent);
+    const summary = el('summary', '挑選圖示', picker);
+    summary.innerHTML = SurvivorIcons.html(card.icon) + summary.innerHTML;
+    const choices = grid(picker); choices.className += ' icon-picker';
+    SurvivorIcons.ids.forEach(id => {
+      const option = button(choices, '', () => { card.icon = id; changed(); render(); }, card.icon === id);
+      option.innerHTML = SurvivorIcons.html(id); option.setAttribute('aria-label', SurvivorIcons.labels[id]); option.title = SurvivorIcons.labels[id];
+    });
+  }
   function drawSchools() {
     const p = panel('替流派取名字');
     for (const school of ['water','wind','thunder']) text(p, api.defaults().build[school].name, draft.build[school], 'name');
@@ -54,18 +64,19 @@
     const tiers = ['', 'entry', 'advanced-a', 'advanced-b', 'fusion', 'ultimate'];
     for (const school of ['water', 'wind', 'thunder', '']) {
       const branch = el('section', undefined, tree); branch.className = 'maker-branch';
-      el('h3', school ? draft.build[school].name : '支援', branch);
+      const heading = el('h3', school ? draft.build[school].name : '支援', branch); heading.innerHTML = SurvivorIcons.html(school || 'passive') + heading.innerHTML;
       tiers.forEach(tier => draft.cards.forEach((card, index) => {
         if ((card.school || '') !== school || (card.tier || '') !== tier) return;
-        const tile = button(branch, card.icon + ' ' + card.name, () => { cardIndex = index; render(); document.getElementById('makerCardEdit').scrollIntoView({block:'start'}); }, index === cardIndex);
+        const tile = button(branch, card.name, () => { cardIndex = index; render(); document.getElementById('makerCardEdit').scrollIntoView({block:'start'}); }, index === cardIndex);
+        tile.innerHTML = SurvivorIcons.html(card.icon) + tile.innerHTML;
         tile.className = 'upgrade-card'; tile.style.setProperty('--school-color', school ? draft.build[school].color : '#7196ad');
         el('small', card.requires.length ? '↳ ' + card.requires.map(id => draft.cards.find(c => c.id === id).name).join(' ＋ ') : '起點', tile);
       }));
     }
     const edit = el('section', undefined, p); edit.id = 'makerCardEdit'; edit.className = 'maker-card-edit';
-    el('h3', '✏️ 編輯選中的卡片', edit);
+    el('h3', '編輯選中的卡片', edit);
     const c = draft.cards[cardIndex], fields = grid(edit);
-    text(fields, '圖示', c, 'icon', 12); text(fields, '卡片名稱', c, 'name'); text(fields, '卡片說明', c, 'description', 120); range(fields, c, 'maxLevel');
+    iconPicker(fields, c); text(fields, '卡片名稱', c, 'name'); text(fields, '卡片說明', c, 'description', 120); range(fields, c, 'maxLevel');
     select(fields, '流派', c, 'school', { '': '支援', water: draft.build.water.name, wind: draft.build.wind.name, thunder: draft.build.thunder.name });
     select(fields, '欄位', c, 'slot', {attack:'普攻',skill:'技能',dash:'衝刺',passive:'被動'});
     select(fields, '技能樹階段', c, 'tier', {'':'支援',entry:'入門','advanced-a':'進階 A','advanced-b':'進階 B',fusion:'合體',ultimate:'終極（每場一種）'});
@@ -73,15 +84,16 @@
     el('p', '每張前置卡達到 Lv1 即可。不要選自己，或讓前置卡互相繞成圈。', prerequisites);
     const checks = grid(prerequisites);
     draft.cards.filter(other => other.id !== c.id).forEach(other => {
-      button(checks, (c.requires.includes(other.id) ? '✓ ' : '＋ ') + other.icon + other.name, () => {
+      const prerequisite = button(checks, (c.requires.includes(other.id) ? '✓ ' : '＋ ') + other.name, () => {
         c.requires = c.requires.includes(other.id) ? c.requires.filter(id => id !== other.id) : c.requires.concat(other.id); changed(); render();
       }, c.requires.includes(other.id));
+      prerequisite.innerHTML = SurvivorIcons.html(other.icon) + prerequisite.innerHTML;
     });
     c.effects.forEach((effect, index) => drawEffect(edit, c, effect, index));
     if (c.effects.length < 3) { const add = el('button', '＋ 加一個積木', edit); add.type = 'button'; add.addEventListener('click', () => { c.effects.push({type:'aoe',trigger:'skill',...api.PARAMS}); changed(); render(); }); }
   }
   function drawEffect(parent, card, effect, index) {
-    const box = el('fieldset', undefined, parent); el('legend', '積木 ' + (index + 1), box);
+    const box = el('fieldset', undefined, parent); const legend = el('legend', '積木 ' + (index + 1), box); legend.innerHTML = SurvivorIcons.html(effect.type) + legend.innerHTML;
     const holder = { recipe: effect.feature ? 'recipe:' + effect.feature : effect.type };
     const recipes = Object.fromEntries(api.defaults().cards.map(c => ['recipe:' + c.id, '原本組合：' + c.name]));
     select(box, '選擇效果', holder, 'recipe', { ...api.TYPES, ...recipes }, () => {
@@ -113,8 +125,8 @@
     const p = panel('魔王與三個階段'), fields = grid(p); text(fields,'魔王名稱',draft.boss,'name'); range(fields,draft.boss,'hp',[500,5000,100]); range(fields,draft.boss,'speed',[0,100,5]); range(fields,draft.boss,'radius',[20,50,1],'身體大小');
     draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
     const moves = el('div', undefined, p); moves.className = 'maker-moves';
-    draft.boss.moves.forEach((m, i) => { const tile = button(moves, '🪄 ' + m.name, () => { moveIndex = i; render(); }, i === moveIndex); tile.className = 'upgrade-card'; });
-    [draft.boss.moves[moveIndex]].forEach(m => { const box=panel('🪄 ' + m.name), f=grid(box); box.className += ' maker-move'; text(f,'招式名稱',m,'name'); select(f,'招式積木',m,'kind',api.KINDS); range(f,m,'minPhase',[1,3,1],'第幾階段開始使用'); ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance'].forEach(key=>range(f,m,key)); range(f,m,'phaseCount',[0,1,1],'每個階段是否多一個目標'); el('p','招式只使用相關參數：扇形用速度／數量／角度；範圍用大小／數量；衝撞用速度／距離；圈用大小／缺口／持續時間。老師在畫面外不出招。',box); });
+    draft.boss.moves.forEach((m, i) => { const tile = button(moves, m.name, () => { moveIndex = i; render(); }, i === moveIndex); tile.innerHTML = SurvivorIcons.html(m.kind) + tile.innerHTML; tile.className = 'upgrade-card'; });
+    [draft.boss.moves[moveIndex]].forEach(m => { const box=panel(m.name), f=grid(box); box.className += ' maker-move'; text(f,'招式名稱',m,'name'); select(f,'招式積木',m,'kind',api.KINDS); range(f,m,'minPhase',[1,3,1],'第幾階段開始使用'); ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance'].forEach(key=>range(f,m,key)); range(f,m,'phaseCount',[0,1,1],'每個階段是否多一個目標'); el('p','招式只使用相關參數：扇形用速度／數量／角度；範圍用大小／數量；衝撞用速度／距離；圈用大小／缺口／持續時間。老師在畫面外不出招。',box); });
   }
   function drawNumbers() {
     const defaults=api.defaults();

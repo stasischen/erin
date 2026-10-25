@@ -57,15 +57,15 @@ globalThis.SURVIVOR_DEFAULTS = {
   },
   "build": {
     "water": {
-      "name": "🌊 水",
+      "name": "水",
       "color": "#237bc2"
     },
     "wind": {
-      "name": "🌪️ 風",
+      "name": "風",
       "color": "#23815e"
     },
     "thunder": {
-      "name": "⚡ 雷",
+      "name": "雷",
       "color": "#9755bb"
     },
     "splashDamageBase": 0.2,
@@ -130,7 +130,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "big-water",
       "slot": "attack",
-      "icon": "💧",
+      "icon": "big-water",
       "name": "水球加大",
       "description": "水球更大、傷害更高",
       "maxLevel": 5,
@@ -146,7 +146,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "rapid-water",
       "slot": "attack",
-      "icon": "⏩",
+      "icon": "rapid-water",
       "name": "連發水球",
       "description": "發射速度提升",
       "maxLevel": 5,
@@ -162,7 +162,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "multi-water",
       "slot": "attack",
-      "icon": "🎯",
+      "icon": "multi-water",
       "name": "多重水球",
       "description": "每次多發一顆",
       "maxLevel": 5,
@@ -178,7 +178,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "onion-dash",
       "slot": "passive",
-      "icon": "🧅",
+      "icon": "onion-dash",
       "name": "洋蔥衝刺",
       "description": "移動速度提升",
       "maxLevel": 5,
@@ -194,7 +194,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "bubble-shield",
       "slot": "passive",
-      "icon": "❤️",
+      "icon": "bubble-shield",
       "name": "泡泡護盾",
       "description": "血條變長一點，並回一點血",
       "maxLevel": 5,
@@ -210,7 +210,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "gem-magnet",
       "slot": "passive",
-      "icon": "🧲",
+      "icon": "gem-magnet",
       "name": "寶石磁鐵",
       "description": "撿取範圍提升",
       "maxLevel": 5,
@@ -226,7 +226,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "piercing-water",
       "slot": "attack",
-      "icon": "🫧",
+      "icon": "piercing-water",
       "name": "穿透水球",
       "description": "水球多穿透一隻敵人",
       "maxLevel": 5,
@@ -242,7 +242,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "splash-water",
       "slot": "attack",
-      "icon": "💦",
+      "icon": "splash-water",
       "name": "水花四濺",
       "description": "命中時造成小範圍傷害",
       "maxLevel": 5,
@@ -258,7 +258,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "auto-heal",
       "slot": "passive",
-      "icon": "🩹",
+      "icon": "auto-heal",
       "name": "自動補血",
       "description": "慢慢恢復血條",
       "maxLevel": 5,
@@ -276,7 +276,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "school": "water",
       "slot": "attack",
       "tier": "entry",
-      "icon": "🔹",
+      "icon": "water-attack",
       "name": "濺水入門",
       "description": "水球命中濺水花，升級擴大水花",
       "maxLevel": 5,
@@ -296,7 +296,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "water-attack"
       ],
-      "icon": "🏞️",
+      "icon": "water-skill",
       "name": "水窪 A",
       "description": "水球落點與泡泡留下緩速水窪",
       "maxLevel": 5,
@@ -315,7 +315,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "water-attack"
       ],
-      "icon": "🛤️",
+      "icon": "water-dash",
       "name": "水痕 B",
       "description": "衝刺沿路留下緩速水痕",
       "maxLevel": 5,
@@ -336,7 +336,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "water-skill",
         "water-dash"
       ],
-      "icon": "🌊",
+      "icon": "water-ultimate",
       "name": "大海嘯",
       "description": "每 10 秒一道巨浪掃過全場",
       "maxLevel": 5,
@@ -353,7 +353,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "school": "wind",
       "slot": "dash",
       "tier": "entry",
-      "icon": "🌬️",
+      "icon": "wind-attack",
       "name": "疾風入門",
       "description": "水球飛得更快、更遠",
       "maxLevel": 5,
@@ -373,7 +373,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "wind-attack"
       ],
-      "icon": "🍃",
+      "icon": "wind-dash",
       "name": "旋風 A",
       "description": "衝刺旋風傷敵並推開敵人",
       "maxLevel": 5,
@@ -392,7 +392,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "wind-attack"
       ],
-      "icon": "👟",
+      "icon": "wind-speed",
       "name": "疾行 B",
       "description": "移動越快，水球發射越快",
       "maxLevel": 5,
@@ -413,7 +413,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "wind-dash",
         "wind-speed"
       ],
-      "icon": "🌪️",
+      "icon": "wind-ultimate",
       "name": "環繞龍捲風",
       "description": "龍捲風繞主角旋轉，碰到就傷害",
       "maxLevel": 5,
@@ -430,7 +430,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "school": "thunder",
       "slot": "skill",
       "tier": "entry",
-      "icon": "⚡",
+      "icon": "thunder-attack",
       "name": "跳電入門",
       "description": "水球跳電到附近另一隻，升級更痛",
       "maxLevel": 5,
@@ -450,7 +450,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "thunder-attack"
       ],
-      "icon": "🔋",
+      "icon": "thunder-skill",
       "name": "電泡泡 A",
       "description": "泡泡帶電，炸中讓敵人暈眩",
       "maxLevel": 5,
@@ -469,7 +469,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [
         "thunder-attack"
       ],
-      "icon": "🛡️",
+      "icon": "thunder-counter",
       "name": "放電反擊 B",
       "description": "每次受傷放電反擊附近敵人",
       "maxLevel": 5,
@@ -490,7 +490,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "thunder-skill",
         "thunder-counter"
       ],
-      "icon": "⛈️",
+      "icon": "thunder-ultimate",
       "name": "雷雲",
       "description": "雷雲定期隨機劈中一隻敵人",
       "maxLevel": 5,
@@ -511,7 +511,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "water-skill",
         "thunder-attack"
       ],
-      "icon": "🔌",
+      "icon": "fusion-puddle",
       "name": "導電水窪",
       "description": "水窪額外放電，升級增加電傷害",
       "maxLevel": 5,
@@ -532,7 +532,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "wind-dash",
         "water-attack"
       ],
-      "icon": "🌧️",
+      "icon": "fusion-storm",
       "name": "暴風雨",
       "description": "旋風衝刺同時灑下傷敵水窪",
       "maxLevel": 5,
@@ -553,7 +553,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "wind-speed",
         "thunder-attack"
       ],
-      "icon": "☄️",
+      "icon": "fusion-dash",
       "name": "閃電衝刺",
       "description": "衝刺留下會跳電的電痕",
       "maxLevel": 5,

@@ -9,6 +9,7 @@ function setup(saved = {}) {
   function element() { return { style: { setProperty() {} }, dataset: {}, classList: { add() {}, remove() {} }, addEventListener() {}, append() {}, appendChild() {}, setAttribute() {}, getContext: () => context2d, getBoundingClientRect: () => ({ width: 800, height: 600 }) }; }
   const storage = { ...saved };
   const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { addEventListener() {} }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
+  vm.runInContext(fs.readFileSync(`${__dirname}/../icons.js`, "utf8"), context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/defaults.js`, "utf8"), context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/schema.js`, "utf8"), context);
   vm.runInContext(source, context);
