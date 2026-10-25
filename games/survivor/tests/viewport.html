@@ -32,18 +32,27 @@
       w.resize(); w.startGame(); w.togglePause(); w.togglePause(); w.summonTeacher();
       for (const size of [72,88,104]) {
         w.updateSettingValue('actionButtonSize',size); w.updateActionControls();
-        const bounds = [d.querySelector('#skillButton'),d.querySelector('#dashButton'),d.querySelector('.back'),d.querySelector('#pauseButton'),d.querySelector('.hud'),d.querySelector('#buildSlots'),d.querySelector('#bossHud')];
+        const bounds = [d.querySelector('#skillButton'),d.querySelector('#dashButton'),d.querySelector('.back'),d.querySelector('#pauseButton'),d.querySelector('.hud'),d.querySelector('#bossHud')];
         const rects = bounds.map(e=>e.getBoundingClientRect());
         bounds.forEach((e,i) => {
           const r=rects[i];
           check(r.width>0 && r.height>0 && r.left>=left+screenSafe.left-.5 && r.top>=top+screenSafe.top-.5 && r.right<=left+vw-screenSafe.right+.5 && r.bottom<=top+vh-screenSafe.bottom+.5, `${iw}×${ih} visible ${vw}×${vh}, ${size}px: ${e.id||e.className}`);
         });
+        for (const e of bounds.slice(0,4)) {
+          const style=w.getComputedStyle(e), r=e.getBoundingClientRect();
+          check(Math.abs(r.width-r.height)<.5 && style.borderRadius==='50%', `圓形圖示 ${e.id||e.className}`);
+          check(!!e.getAttribute('aria-label') && !/技能|衝刺|回遊戲樂園/.test(e.textContent), `只有圖示且有無障礙標籤 ${e.id||e.className}`);
+        }
         const overlaps=(a,b)=>a.left<b.right && a.right>b.left && a.top<b.bottom && a.bottom>b.top;
         for(let i=0;i<2;i++) for(let j=2;j<rects.length;j++) check(!overlaps(rects[i],rects[j]),`按鈕 ${i} 不重疊 HUD／返回 ${j}`);
         check(!overlaps(rects[0],rects[1]),'技能與衝刺不重疊');
         check(!overlaps(rects[4],rects[2]) && !overlaps(rects[4],rects[3]),'HUD 不重疊返回／暫停');
       }
-      w.showOverlay('paused');
+      d.querySelector('#pauseButton').click();
+      check(!d.querySelector('#settingsPanel').hidden && d.querySelector('#actionControls').hidden,'設定時暫停並隱藏動作');
+      check(d.querySelector('#settingsPanel').contains(d.querySelector('#buildSlots')),'四欄已移入設定');
+      check(d.querySelector('#settingsSkillTree').textContent.includes('導電水窪'),'設定含合體卡前置條件');
+      w.closeSettings(); w.showOverlay('paused');
     } catch(error) { check(false,`${iw}×${ih}: ${error.stack}`); }
     iframe.remove();
   }

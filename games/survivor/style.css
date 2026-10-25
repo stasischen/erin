@@ -183,3 +183,15 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 .build-slots > span { font-size: 11px; padding: 2px 4px; }
 .boss-hud { top: calc(max(10px, var(--safe-top)) + 64px); height: 24px; }
 .enemy-notice { bottom: calc(max(12px, var(--safe-bottom)) + 100px); font-size: 14px; }
+
+/* 戰鬥時只保留必要數值；完整流派資料在設定中閱讀。 */
+.topbar .back, .pause-button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 22px; text-decoration: none; }
+.topbar .back::before { content: none; }
+.hud { right: calc(max(10px, var(--safe-right)) + 106px); }
+.boss-hud { top: calc(max(10px, var(--safe-top)) + 38px); }
+.action-button { padding: 6px; border-radius: 50%; box-shadow: 0 3px 8px #122a40; }
+.action-button > span { border-radius: 50%; font-size: 32px; }
+.settings-panel .build-slots { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); height: auto; max-width: none; margin: 10px 0; pointer-events: auto; }
+.settings-panel .build-slots > span { display: block; white-space: normal; overflow: visible; padding: 8px; line-height: 1.6; }
+.settings-panel .build-slots b, .settings-panel .build-slots > span > span { display: block; }
+.settings-panel .skill-tree { grid-template-columns: 1fr; }
