@@ -50,3 +50,5 @@
 - 家長回饋「這樣很怪 可以跟遊戲介面整合嗎？」；依指定範圍將 Maker 搬進遊戲橫向容器，使用深色像素面板、卡片樹、怪物預覽、老師招式卡及觸控數值控制，保留作品格式和驗證，試玩勝敗回設計室。資源版本 20261025p、sw v20；11 組工程測試通過，瀏覽器／實機版面因沙盒限制尚待驗證，介面手感仍由 Erin 試玩確認。來源：`coord/inbox/done/20261025T105623Z-parent-maker-ingame.md`；驗證：`docs/survivor-maker-ingame-validation.md`。
 
 - 2026-10-25 家長要求遊戲與 Maker 的 emoji 改為共用程式點陣圖示、每張預設卡不同，Maker 用圖示集挑選並自動對應舊作品。來源：`coord/inbox/done/20261025T110552Z-parent-pixel-icons.md`。
+
+- 家長指定怪物採甜點與森林混合風：本卡僅換現有怪物外觀、不新增行為，保留老師及教室／操場；Maker 以 sprite id 挑造型，舊作品需能載入。已製作 13 種可選像素造型，甲本／乙本依既有遠程攻擊換為小熊軟糖／蒲公英，其他對應行為只記備忘。主題混搭感與造型手感待 Grok 審查、Erin 試玩；Chrome 版面驗證因啟動 SIGABRT 待補跑。來源：`coord/inbox/done/20261025T144455Z-parent-cute-monsters.md`；驗證：`docs/survivor-cute-monsters-validation.md`。

@@ -115,9 +115,25 @@
     }
     if (card.effects.length > 1) { const remove = el('button', '移除這個積木', box); remove.type = 'button'; remove.addEventListener('click', () => { card.effects.splice(index,1); changed(); render(); }); }
   }
+  function monsterPicker(parent, enemy) {
+    const picker = el('details', undefined, parent); picker.className = 'maker-choice';
+    el('summary', '怪物造型：' + SurvivorMonsters.labels[enemy.spriteId], picker);
+    el('p', '只換造型，招式另外設定。', picker);
+    const choices = grid(picker);
+    SurvivorMonsters.ids.forEach(id => {
+      const option = button(choices, '', () => { enemy.spriteId = id; changed(); render(); }, enemy.spriteId === id);
+      option.setAttribute('aria-label', SurvivorMonsters.labels[id]);
+      const image = el('canvas', undefined, option); image.width = image.height = 48;
+      image.setAttribute('aria-hidden', 'true');
+      const g = image.getContext('2d'); g.imageSmoothingEnabled = false;
+      g.drawImage(SurvivorMonsters.picture(id), 0, 0, 48, 48);
+      el('span', SurvivorMonsters.labels[id], option);
+    });
+  }
   function drawEnemies() {
     draft.enemies.forEach(e => {
-      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
+      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
+      monsterPicker(fields, e);
       select(fields, '移動方式', e, 'behavior', {chase:'追著主角',still:'站在原地',retreat:'靠近時後退'});
       const attack = el('fieldset', undefined, p); el('legend','怪物的攻擊',attack);
       select(attack, '攻擊積木', e.attack, 'type', {none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
