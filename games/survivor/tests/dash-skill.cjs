@@ -130,3 +130,11 @@ assert.equal(run('typeof maybeShowPortraitHint'), 'undefined');
 assert.equal(run('storage["erin-survivor-portrait-hint-v1"]'), undefined);
 console.log('PASS: landscape/rotated/scaled joystick, multipointer actions, canvas size, resize input reset/progress/pause, removed portrait hint');
 console.log('PASS: dash duration/direction/clamp/invincibility, bomb delay/range/knockback/kills/boss, cooldown/pause/restart, multipointer/keyboard, settings');
+
+// 順時針旋轉後，容器上／右／下／左分別接觸螢幕右／下／左／上。
+const css = fs.readFileSync(`${__dirname}/../style.css`, 'utf8');
+const portraitShell = css.match(/@media \(orientation: portrait\)\s*\{\s*\.game-shell\s*\{([^}]+)\}/)[1];
+for (const [local, screen] of [['top', 'right'], ['right', 'bottom'], ['bottom', 'left'], ['left', 'top']]) {
+  assert.ok(portraitShell.includes(`--safe-${local}: env(safe-area-inset-${screen}, 0px)`));
+}
+console.log('PASS: clockwise portrait safe-area mapping');
