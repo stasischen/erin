@@ -1,0 +1,90 @@
+// 展示共用入口：同時只保留一個沙盒；文字從目前作品的積木與數值產生。
+(function () {
+  'use strict';
+  let active = null, refreshTimer = null;
+  function effectDescription(e, data, level) {
+    const t = data.tuning, b = data.build, n = Math.min(5, level * (e.power || 1));
+    if (e.feature) {
+      const recipes = {
+        'big-water': () => `水球變大 ${Math.round(t.waterSizePerLevel*n*100)}%，打得更痛。`,
+        'rapid-water': () => `水球連發更快，約每 ${Math.max(.12,t.shotInterval*(1-t.fireRateReduction*n)).toFixed(2)} 秒一發。`,
+        'multi-water': () => `一次發射 ${1+n} 顆水球。`,
+        'onion-dash': () => `走路快 ${Math.round(t.moveSpeedPerLevel*n*100)}%。`,
+        'bubble-shield': () => `血條變長，每級多 ${Math.ceil(t.playerHealth/b.shieldHealthDivisor)} 滴血。`,
+        'gem-magnet': () => `在 ${Math.round(t.gemPullRadius*(1+t.magnetPerLevel*n))} 格內把寶石吸過來。`,
+        'piercing-water': () => `水球可以再穿過 ${n} 隻怪。`,
+        'splash-water': () => `打中會濺水花，打到旁邊 ${t.splashBaseRadius+t.splashPerLevel*n} 格內的怪。`,
+        'auto-heal': () => `約每 ${(t.autoHealSeconds*Math.pow(b.healIntervalMultiplier,n-1)).toFixed(1)} 秒補 1 滴血。`,
+        'water-attack': () => `打中濺出 ${t.splashBaseRadius+t.splashPerLevel*n} 格大的水花。`,
+        'water-skill': () => `水球和泡泡留下水窪，怪物變慢 ${b.slowSeconds} 秒。`,
+        'water-dash': () => `衝刺留下水痕，怪物只剩 ${Math.round(b.slowMultiplier*100)}% 速度。`,
+        'water-ultimate': () => `每 ${b.ultimateSeconds} 秒一道巨浪掃過怪物。`,
+        'wind-attack': () => `水球飛得更快、更遠，每級加快 ${Math.round(b.windSpeed*100)}%。`,
+        'wind-dash': () => `衝刺留下旋風，把怪推開 ${b.pushDistance} 格。`,
+        'wind-speed': () => `跑得越快，水球發射越快，每級加成 ${Math.round(b.movingRate*100)}%。`,
+        'wind-ultimate': () => `龍捲風繞著你，每 ${b.tornadoTick} 秒打到碰到的怪。`,
+        'thunder-attack': () => `打中會跳電到 ${b.chainRadius} 格內的另一隻怪。`,
+        'thunder-skill': () => `泡泡炸開會放電，怪物暈 ${b.stunSeconds} 秒。`,
+        'thunder-counter': () => `受傷時放電，反擊 ${b.counterRadius} 格內的怪。`,
+        'thunder-ultimate': () => `每 ${b.cloudSeconds} 秒雷雲劈一隻怪。`,
+        'fusion-puddle': () => `水窪讓怪變慢，也會跳電打旁邊的怪。`,
+        'fusion-storm': () => `衝刺同時留下旋風和水窪，推開怪也讓牠變慢。`,
+        'fusion-dash': () => `衝刺留下電痕，在 ${b.chainRadius} 格內跳電。`
+      };
+      return recipes[e.feature] ? recipes[e.feature]() : '使用原本的卡片組合。';
+    }
+    const trigger = {hit:'打中時',skill:'按技能時',dash:'衝刺時',interval:`每 ${e.interval} 秒`}[e.trigger];
+    const words = {
+      projectile:`發射 ${e.count} 顆水球，每顆打 ${Math.min(600,e.damage*level)} 滴血`,
+      aoe:`打到 ${e.radius} 格內的怪，扣 ${Math.min(600,e.damage*level)} 滴血`,
+      chain:`跳電到附近 ${e.count} 隻怪，每跳最遠 ${e.radius} 格`,
+      'dash-trail':`留下 ${e.duration} 秒痕跡，打到 ${e.radius} 格內的怪`,
+      slow:`讓 ${e.radius} 格內的怪只剩 ${Math.round(e.multiplier*100)}% 速度，持續 ${e.duration} 秒`,
+      stun:`讓 ${e.radius} 格內的怪暈 ${e.duration} 秒`,
+      knockback:`把 ${e.radius} 格內的怪推開 ${e.distance} 格`,
+      summon:`叫小幫手留 ${e.duration} 秒，每次射 ${e.count} 顆水球`,
+      'ring-with-gap':`放出 ${e.radius} 格大的圈，留 ${Math.round(e.gap*180/Math.PI)} 度缺口`
+    };
+    return trigger + '，' + words[e.type] + '。';
+  }
+  function describe(data, spec) {
+    if (spec.kind === 'move') {
+      const m = data.boss.moves.find(m => m.id === spec.id);
+      const count=Math.min(10,m.count+m.phaseCount*3);
+      const words = {words:`扇形射出 ${count} 個國字`,chalk:`每 ${m.pulse} 秒連發 ${count} 根粉筆`,dash:`沿預告線衝 ${m.distance} 格`,rain:`落下 ${count} 個 ${m.radius} 格大的考卷圈`,call:`在 ${count} 個位置點名，圈有 ${m.radius} 格大`,summon:`叫出 ${count} 隻小怪`,ring:`放出 ${m.radius} 格大的圈，留 ${Math.round(m.gap*180/Math.PI)} 度出口`};
+      return `老師第 3 階段：先亮提示 ${m.warning} 秒，再${words[m.kind]}。`;
+    }
+    if (spec.id === 'heal') return `補回 ${Math.ceil(data.tuning.playerHealth/data.build.shieldHealthDivisor)} 滴血。`;
+    const card = data.cards.find(c => c.id === spec.id), effects = spec.kind === 'effect' ? [card.effects[spec.index]] : card.effects;
+    return effects.map(e => effectDescription(e, data, spec.level || 1)).join(' ');
+  }
+  function stop() {
+    clearTimeout(refreshTimer);
+    if (!active) return;
+    if (active.observer) active.observer.disconnect();
+    active.host.textContent = ''; active = null;
+  }
+  function mount(host, data, spec, force = false) {
+    if (!host) return;
+    if (!force && active && active.host===host && active.data===data && JSON.stringify(active.spec)===JSON.stringify(spec)) return;
+    stop();
+    const title = document.createElement('strong'); title.textContent = '效果展示・' + (spec.kind === 'move' ? data.boss.moves.find(m=>m.id===spec.id).name : spec.id==='heal' ? '回血' : data.cards.find(c=>c.id===spec.id).name);
+    const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
+    const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
+    frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
+    frame.src = new URL('preview.html?v=20261025r', SurvivorPreview.base).href;
+    host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
+    active = {host,data,spec,frame};
+    if (typeof IntersectionObserver !== 'undefined') {
+      const observer = new IntersectionObserver(entries => { const visible = entries[0].isIntersecting; if(frame.contentWindow && frame.contentWindow.setPreviewVisible) frame.contentWindow.setPreviewVisible(visible); frame._previewVisible = visible; });
+      active.observer = observer; observer.observe(frame);
+    }
+  }
+  function refresh() {
+    if (!active) return;
+    const {host,data,spec} = active;
+    clearTimeout(refreshTimer); refreshTimer = setTimeout(() => mount(host,data,spec,true),120);
+  }
+  const base = new URL('.', document.currentScript.src).href;
+  globalThis.SurvivorPreview = {mount,stop,refresh,describe,effectDescription,base};
+})();

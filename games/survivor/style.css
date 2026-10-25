@@ -204,3 +204,14 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 .icon-picker { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); }
 .icon-picker button { min-height: 48px; min-width: 48px; }
 .icon-picker button[aria-pressed="true"] { outline: 3px solid #ffdc83; }
+
+/* 共用效果展示：像素畫布，可在卡片、設定與設計室用手指切換。 */
+.skill-preview-host:empty { display: none; }
+.skill-preview-host { margin: 8px 0; padding: 8px; border: 2px solid #7196ad; background: #142331; color: #eefaff; text-align: left; }
+.skill-preview-host iframe { display: block; width: 100%; max-width: 480px; aspect-ratio: 16 / 9; height: auto; min-height: 130px; border: 0; margin: 6px auto; pointer-events: none; }
+.skill-preview-host p { margin: 4px 0; font-size: 16px; }
+.upgrade-card[aria-pressed="true"] { outline: 3px solid #ffdf75; }
+.build-slots button { min-height: 44px; font: inherit; }
+
+.upgrade-panel, .settings-panel { touch-action: pan-y; overscroll-behavior: contain; }
+.upgrade-panel *, .settings-panel .skill-preview-host { touch-action: pan-y; }

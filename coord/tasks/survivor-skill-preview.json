@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-skill-preview",
+  "title": "小怪獸：技能即時效果展示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-skill-preview",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T112846Z-parent-skill-preview.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 獨立審查。三處真引擎展示、依資料產生說明與快取更新完成；14 組測試通過（含 66 個展示場景），詳見 docs/survivor-skill-preview-validation.md。沙盒禁止 HTTP server，電腦／iPad／手機畫面、觸控捲動與 PWA 更新離線待實機驗證。Erin 試玩後確認展示是否看得懂、選卡是否順手，無需先決定新玩法。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T11:34:20.714090Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-pixel-icons"
+  ]
+}
