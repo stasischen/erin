@@ -101,14 +101,72 @@ const WAVES = [
   { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.55 },
   { start: 105, jaben: 0.35, otsubon: 0.65, every: 0.45 } // 老師出場前最熱鬧
 ];
-const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入檔名才載入；null 會用程式畫色塊
+const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入 assets 裡的 PNG 檔名；null 使用內建圖案
 for (const name of Object.keys(SPRITES)) {
   const filename = SPRITES[name];
   if (!filename) continue;
+  SPRITES[name] = null; // 載入完成前（或載入失敗）繼續使用內建圖案
   const picture = new Image();
   picture.onload = () => { SPRITES[name] = picture; };
   picture.src = `assets/${filename}`;
 }
+// ✏️ Erin 可以改水星人的顏色；每個字是一個像素，句點是透明。
+const HERO_COLORS = { o: "#183b70", d: "#2464bb", b: "#388de6", l: "#78cfff", h: "#d6f6ff", w: "#ffffff", p: "#142e57", c: "#98dffa" };
+const HERO_PIXELS = [
+  "..........o.........",
+  ".........olo........",
+  ".....o...olbo.......",
+  ".....olo.olbo..o....",
+  "......oloolbo.olo...",
+  "......ollllboolbo...",
+  ".......olllbbldo....",
+  ".......olllbbdo.....",
+  "......ollllbbbdo....",
+  ".....olhlllbbbbdo...",
+  "....olhhlllbbbbddo..",
+  "...olhhllllbbbbdddo.",
+  "..olhllllllbbbbdddo.",
+  "..ollllllllbbbbdddo.",
+  ".ollllllllbbbbbddddo",
+  ".olllllllbbbbbbddddo",
+  ".olllllllbbbbbbddddo",
+  ".olllllllbbbbbbddddo",
+  "..olllllbbbbbbddddo.",
+  "..olllllbbbbbbddddo.",
+  "...ollllbbbbbddddo..",
+  "....odbbbbbbddddo...",
+  ".....ooddddddoo.....",
+  ".......oooooo......."
+];
+// 只在開啟遊戲時畫兩張小圖；每幀直接貼圖，避免反覆建立像素。
+function makeHeroPicture(hurt) {
+  const picture = document.createElement("canvas");
+  picture.width = 20; picture.height = 24;
+  const pen = picture.getContext("2d");
+  HERO_PIXELS.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === ".") continue;
+      pen.fillStyle = HERO_COLORS[row[x]]; pen.fillRect(x, y, 1, 1);
+    }
+  });
+  function pixels(color, x, y, w, h) { pen.fillStyle = HERO_COLORS[color]; pen.fillRect(x, y, w, h); }
+  if (hurt) {
+    // 痛痛時閉眼，嘴巴變成小小的 O。
+    for (const x of [5, 12]) {
+      pixels("p", x, 13, 1, 1); pixels("p", x + 1, 14, 2, 1); pixels("p", x, 15, 1, 1);
+    }
+    pixels("p", 9, 17, 3, 3); pixels("h", 10, 18, 1, 1);
+  } else {
+    for (const x of [4, 11]) {
+      pixels("o", x, 12, 5, 5); pixels("w", x, 12, 4, 4);
+      pixels("p", x + 2, 13, 2, 3); pixels("w", x + 2, 13, 1, 1);
+    }
+    pixels("p", 8, 18, 1, 1); pixels("p", 9, 19, 3, 1); pixels("p", 12, 18, 1, 1);
+  }
+  pixels("c", 3, 17, 3, 1); pixels("c", 14, 17, 3, 1);
+  return picture;
+}
+const HERO_PICTURES = { happy: makeHeroPicture(false), hurt: makeHeroPicture(true) };
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
 let SHOT_INTERVAL = gameSettings.shotInterval; // 請改上面的 shotInterval
 const PROJECTILE_DAMAGE = UPGRADE_TUNING.projectileDamage; // 請改上面的 projectileDamage
@@ -172,7 +230,7 @@ const resetSettingsButton = document.getElementById("resetSettingsButton");
 const soundToggle = document.getElementById("soundToggle");
 const vibrationToggle = document.getElementById("vibrationToggle");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -263,7 +321,7 @@ function resetGame() {
   for (const item of state.projectiles) state.projectilePool.push(item);
   for (const item of state.gems) state.gemPool.push(item);
   for (const item of state.effects) state.effectPool.push(item);
-  state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0 };
+  state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 };
   state.enemies = [];
   state.enemyShots = [];
   state.boss = null; state.bossShotTimer = 0; state.bossSummonTimer = 0; state.bossIntro = 0;
@@ -462,8 +520,15 @@ function tick(dt) {
   if (state.joy) { dx += state.joy.x; dy += state.joy.y; }
   const length = Math.hypot(dx, dy);
   if (length > 1) { dx /= length; dy /= length; }
+  const oldX = state.player.x, oldY = state.player.y;
   state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x + dx * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
   state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y + dy * PLAYER_SPEED * (1 + upgradeLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * dt));
+
+  const moved = Math.hypot(state.player.x - oldX, state.player.y - oldY);
+  state.player.moving = moved > 0.001;
+  if (state.player.moving) state.player.walkPhase += moved / 12;
+  else state.player.walkPhase = 0;
+  if (state.player.x !== oldX) state.player.facing = state.player.x > oldX ? 1 : -1;
 
   state.spawnTimer -= dt;
   if (!state.boss && state.elapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
@@ -593,19 +658,40 @@ function drawClassroom() {
   ctx.fillStyle = "#f4c76e"; ctx.fillRect(14, 42, 72, 18); ctx.fillStyle = "#9bc7e8"; ctx.fillRect(92, 42, 55, 18);
 }
 
-function drawBlob(x, y, r, color, isPlayer, bounce, flash, enemyId = "jaben") {
+function drawHero() {
+  const p = state.player;
+  // 遊戲時間暫停時，彈跳與受傷閃爍也一起停下來。
+  const hurt = p.invincible > 0;
+  const hop = p.moving ? Math.abs(Math.sin(p.walkPhase)) * 2 : 0;
+  const sway = p.moving ? Math.sin(p.walkPhase) * 0.055 : 0;
+  ctx.save(); ctx.translate(Math.round(p.x), Math.round(p.y));
+  ctx.fillStyle = "rgba(36,57,67,.22)";
+  ctx.beginPath(); ctx.ellipse(0, p.r * .85, p.r * .9 - hop, p.r * .25, 0, 0, Math.PI * 2); ctx.fill();
+  if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
+  ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
+  const sprite = SPRITES.player;
+  if (sprite) ctx.drawImage(sprite, -p.r, -p.r, p.r * 2, p.r * 2);
+  else {
+    // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy, -20, -30, 40, 48);
+  }
+  ctx.restore();
+}
+
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben") {
   ctx.save(); ctx.translate(x, y + Math.sin(bounce) * 2);
-  const sprite = SPRITES[isPlayer ? "player" : enemyId];
+  const sprite = SPRITES[enemyId];
   if (sprite) {
     if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
     ctx.drawImage(sprite, -r, -r, r * 2, r * 2); ctx.restore(); return;
   }
   ctx.fillStyle = "rgba(36,57,67,.22)"; ctx.beginPath(); ctx.ellipse(1, r * .82, r * .9, r * .27, 0, 0, Math.PI * 2); ctx.fill();
   if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-  ctx.fillStyle = flash ? "#fff" : color; ctx.strokeStyle = isPlayer ? "#2458a4" : "#87522f"; ctx.lineWidth = 3;
+  ctx.fillStyle = flash ? "#fff" : color; ctx.strokeStyle = "#87522f"; ctx.lineWidth = 3;
   ctx.beginPath();
-  if (isPlayer) { ctx.ellipse(0, 0, r * .88, r, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(-r * .32, -r * .8, r * .42, r * .4, -.4, 0, Math.PI * 2); ctx.ellipse(r * .32, -r * .8, r * .42, r * .4, .4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-  else { ctx.rect(-r * .82, -r * .8, r * 1.64, r * 1.6); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#f0bb80"; ctx.fillRect(-r * .5, -r * .55, r, r * .28); }
+  ctx.rect(-r * .82, -r * .8, r * 1.64, r * 1.6); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#f0bb80"; ctx.fillRect(-r * .5, -r * .55, r, r * .28);
   ctx.globalAlpha = 1;
   ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-r * .3, -r * .12, r * .23, 0, Math.PI * 2); ctx.arc(r * .3, -r * .12, r * .23, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = "#243746"; ctx.beginPath(); ctx.arc(-r * .27, -r * .1, r * .1, 0, Math.PI * 2); ctx.arc(r * .33, -r * .1, r * .1, 0, Math.PI * 2); ctx.fill();
@@ -643,7 +729,7 @@ function render() {
     ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText("老師", x, y + 52);
   }
   for (const enemy of state.enemies) {
-    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, false, enemy.wobble, enemy.flash > 0, enemy.typeId);
+    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
   for (const effect of state.effects) {
@@ -658,8 +744,7 @@ function render() {
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
     ctx.globalAlpha = 1;
   }
-  const blinking = state.player.invincible > 0 && Math.floor(performance.now() / 90) % 2 === 0;
-  if (!blinking || state.player.hitFlash > 0) drawBlob(state.player.x, state.player.y, state.player.r, "#4a9dff", true, state.elapsed * 9, state.player.hitFlash > 0);
+  drawHero();
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }

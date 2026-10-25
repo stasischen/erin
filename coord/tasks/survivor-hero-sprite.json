@@ -3,18 +3,18 @@
   "id": "survivor-hero-sprite",
   "title": "割草遊戲：水星人外觀升級",
   "owner": "codex",
-  "state": "todo",
+  "state": "peer_review",
   "repo": "erin",
-  "branch": null,
+  "branch": "codex/survivor-hero-sprite",
   "pr": null,
   "brief": "coord/inbox/done/20261025T064946Z-parent-hero-sprite.md",
-  "next": "等 erin-watch 切到 codex/survivor-hero-sprite 後，依收件匣規格重畫藍色洋蔥水星人與動作，保留 SPRITES 換圖機制。",
+  "next": "請 erin-watch 提交並 push 本分支、開 PR，交 Grok 審查最新實質提交；通過後請 Erin 在電腦與 iPad 試玩造型與動作。驗證及工具限制見 docs/survivor-hero-sprite-validation.md。",
   "reviewers": [
     "grok"
   ],
   "risk": "low",
   "waitingFor": null,
-  "updated": "2026-10-25T06:50:32Z",
+  "updated": "2026-10-25T07:08:26Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-5b-balance"
