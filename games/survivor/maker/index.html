@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#142331">
+  <title>小怪獸 Maker</title>
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="stylesheet" href="style.css?v=20261025o">
+</head>
+<body>
+  <header><a href="../">← 回小怪獸</a><h1>🧩 小怪獸 Maker</h1><p>改名字、選積木，做出自己的玩法！作品只記在這台裝置，不需要帳號。</p></header>
+  <div class="actions"><button id="save" type="button">💾 儲存作品</button><button id="play" type="button">▶ 試玩</button><button id="reset" type="button">恢復預設</button></div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <nav aria-label="設計項目"><button data-tab="schools" type="button">流派</button><button data-tab="cards" type="button">技能樹</button><button data-tab="enemies" type="button">怪物</button><button data-tab="boss" type="button">老師招式</button><button data-tab="numbers" type="button">共用數值</button></nav>
+  <main id="editor"></main>
+  <aside><p>小提示：前置卡要先拿到，後面的卡才會出現。一般遊戲仍使用原本設定；用這裡的「試玩」才會套用作品。試玩會從 Lv1 開始，先選到卡片才會發動。</p><p>關卡和出怪波次這次先不編輯。沒有新增美術。</p></aside>
+  <script src="../data/defaults.js?v=20261025o"></script>
+  <script src="../data/schema.js?v=20261025o"></script>
+  <script src="maker.js?v=20261025o"></script>
+  <script src="../../../register-sw.js" defer></script>
+</body>
+</html>

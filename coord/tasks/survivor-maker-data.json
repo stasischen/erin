@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-maker-data",
+  "title": "小怪獸：資料驅動與本機 Maker",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-maker-data",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T103151Z-parent-maker-data.md",
+  "next": "請 Grok 依 erin-watch 提交後的完整 SHA 審查資料載入、schema／上限與前置驗證、原配方轉接／九種通用積木及一般／Maker 儲存隔離。既有九組測試、Maker 資料與 UI 事件測試通過；普通與 Maker 預設均符合重構前 153 組快照。詳見 docs/survivor-maker-data-validation.md。沙盒無法開本機伺服器，真瀏覽器／iPad／PWA 離線仍待家長與 Erin 試玩；目前沒有必須先決定的設計問題。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T10:46:41.827735Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-moves"
+  ]
+}
