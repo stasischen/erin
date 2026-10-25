@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-music-polish",
+  "title": "小怪獸：完整 chiptune 配樂與轉場",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-music-polish",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T160825Z-parent-music-polish.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 獨立審查：三首 75／70.6／66.7 秒資料化配樂、分層編曲／ADSR／限幅、一秒交叉淡入淡出、暫停續播與 PWA 版號。完整 --layout 已執行：版本及全部邏輯／音訊測試通過；真實 Chrome 啟動 SIGABRT，版面未完成（命令退出碼 1）。另新增 96 秒節點上限及升級續播測試通過，詳見 docs/survivor-audio.md。審查後請家長與 Erin 在 Chrome／iPad 試聽曲調、音量、轉場、音效清晰度及暫停／切 App／離線；喜好由 Erin 決定。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T16:14:52.869575Z",
+  "updatedBy": "codex"
+}
