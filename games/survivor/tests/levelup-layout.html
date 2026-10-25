@@ -26,6 +26,10 @@
       w.eval("resetGame();state.pendingChoices=UPGRADES.filter(c=>c.requires && c.requires.length).slice(-3);showUpgradeChoices()");
       const panel=d.querySelector('#upgradePanel'), cards=[...d.querySelectorAll('#upgradeCards button')], confirm=d.querySelector('#confirmUpgrade');
       check(cards.length===3,'三張卡');
+      const preview=d.querySelector('#upgradePreview'),area=n=>n.offsetWidth*n.offsetHeight;
+      if(Math.min(iw,ih)>=360) check(area(preview)/area(panel)>=.4,'展示至少40%');
+      const used=[...cards,preview,d.querySelector('.upgrade-actions'),panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);
+      check(1-used/area(panel)<=.18,'面板空白不超過18%');
       for (const card of cards) { within(card,'完整卡片'); check(card.scrollHeight<=card.clientHeight+1,'卡片文字沒有裁切'); }
       within(confirm,'確認按鈕');
       check(confirm.offsetWidth>=64 && confirm.offsetHeight>=64 && !!confirm.querySelector('.pixel-icon'),'64px像素確認鈕');

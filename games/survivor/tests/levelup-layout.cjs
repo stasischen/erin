@@ -21,7 +21,14 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   for(const selector of selectors){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(getComputedStyle(n).display==='none'||r.width<=0||r.height<=0||r.left<-.5||r.top<-.5||r.right>innerWidth+.5||r.bottom>innerHeight+.5)throw Error(selector+' 不完整 '+JSON.stringify(r));}
   const b=document.querySelector('#confirmUpgrade'),r=b.getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(Math.min(r.width,r.height)<64||!b.contains(hit))throw Error('確認鈕不夠大或被遮住');
   for(const n of document.querySelectorAll('#upgradeCards button')){if(n.scrollHeight>n.clientHeight+1)throw Error('卡片文字裁切');const r=n.getBoundingClientRect(),workspace=document.querySelector('.upgrade-workspace').getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(r.left<workspace.left-1||r.right>workspace.right+1||r.top<workspace.top-1||r.bottom>workspace.bottom+1||!n.contains(hit))throw Error('卡片超出工作區或被遮住');}
-  const f=document.querySelector('#upgradePreview iframe');if(Math.abs(f.offsetWidth/f.offsetHeight-16/9)>.04)throw Error('展示不是16:9');
+  const panel=document.querySelector('#upgradePanel'),preview=document.querySelector('#upgradePreview'),f=preview.querySelector('iframe');
+  const area=n=>n.offsetWidth*n.offsetHeight;
+  if(area(preview)/area(panel)<.4 && Math.min(innerWidth,innerHeight)>=360)throw Error('展示未達面板40%');
+  const cards=[...document.querySelectorAll('#upgradeCards button')];
+  if(cards.some(c=>Math.abs(c.offsetTop-cards[0].offsetTop)>1 || Math.abs(c.offsetHeight-cards[0].offsetHeight)>1))throw Error('三卡未平均並排');
+  const used=[...cards,preview,document.querySelector('.upgrade-actions'),panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);
+  if(1-used/area(panel)>.18)throw Error('面板空白超過18%');
+  if(f.offsetWidth<preview.clientWidth-16 || f.offsetHeight<preview.clientHeight-52)throw Error('展示未填滿框');
   if(devicePixelRatio!==3||!matchMedia('(pointer: coarse)').matches)throw Error('缺少DPR3或觸控模擬');
   return true;
  })()`;
@@ -46,7 +53,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await evaluate("showOverlay('paused');openSurvivorMaker();true");await touch('[data-tab="cards"]');
   assert.equal(await evaluate(`(()=>{for(const selector of ['.maker-tree','#makerCardEdit','.maker-footer','#play']){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(r.width<40||r.height<40||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('Maker '+selector+' 不完整');}const list=document.querySelector('.maker-tree'),edit=document.querySelector('#makerCardEdit');if(list.getBoundingClientRect().left===edit.getBoundingClientRect().left)throw Error('Maker 未分兩欄');return true;})()`),true);
   await touch('.maker-tree button');assert.equal(await evaluate("document.querySelector('.maker-tree button').getAttribute('aria-pressed')==='true' && !!document.querySelector('#makerCardEdit input')"),true);
-  console.log(`PASS: ${width}×${height} DPR3 觸控／展示／三卡／64px確認／雙點／鍵盤／Maker清單與編輯`);
+  console.log(`PASS: ${width}×${height} DPR3 觸控／展示面積與空白／三卡／64px確認／雙點／鍵盤／Maker清單與編輯`);
  }
  await send('Browser.close');
 })().catch(error=>{console.error('FAIL:',error.message);process.exitCode=1;}).finally(()=>{clearTimeout(timeout);child.kill();fs.rmSync(profile,{recursive:true,force:true});});

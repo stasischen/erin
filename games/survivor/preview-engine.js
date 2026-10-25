@@ -5,14 +5,35 @@ let previewVisible = frameElement._previewVisible !== false;
 const previewCard = UPGRADES.find(c=>c.id===previewSpec.id);
 if(previewCard && previewSpec.kind==='effect') previewCard.effects=[previewCard.effects[previewSpec.index]];
 gameSettings.sound = false; gameSettings.vibration = false;
-state.width = 640; state.height = 360;
-canvas.width = 640; canvas.height = 360; ctx.imageSmoothingEnabled = false;
+// 普攻鏡頭約放大 2.5 倍；範圍招式保留足夠場地。依 iframe 比例繪製，不拉伸。
+const previewFeatures = previewCard ? previewCard.effects.map(e=>e.feature).filter(Boolean) : [];
+const previewWide = previewSpec.kind === 'move' || previewFeatures.some(id=>/ultimate|dash|fusion-storm/.test(id)) || (previewCard && previewCard.effects.some(e=>!e.feature && (e.radius>100 || e.trigger==='dash')));
+const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':gameSettings.bombRadius,'thunder-counter':BUILD_TUNING.counterRadius,'fusion-puddle':gameSettings.bombRadius};
+const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []));
+let previewOrigin = {x:0,y:0};
+function sizePreview() {
+  const width = document.documentElement ? document.documentElement.clientWidth : 640;
+  const height = document.documentElement ? document.documentElement.clientHeight : 360;
+  const ratio = Math.max(.5, width / Math.max(1,height));
+  state.height = Math.max(previewWide ? 360 : height / 2.5, previewRadius ? (previewRadius+24)*2 : 0);
+  state.width = state.height * ratio;
+  canvas.width = Math.round(state.width * 3); canvas.height = Math.round(state.height * 3);
+  ctx.setTransform(3,0,0,3,0,0); ctx.imageSmoothingEnabled = false;
+}
+// 展示用固定鏡頭：假怪從第一格就在命中位置，無須先走到定位。
+updateCamera = function () {
+  state.cameraX = previewOrigin.x - state.width/2;
+  state.cameraY = previewOrigin.y - state.height/2;
+};
+sizePreview();
+window.addEventListener('resize',()=>{sizePreview();resetPreview();paintPreview();});
 function resetPreview() {
   resetGame(); state.mode = 'playing'; settingsPanel.hidden = true;
   state.spawnTimer = 999; state.shotTimer = 999; state.player.invincible = 999;
   previewTime = 0; previewFired = false;
   const p = state.player;
-  state.enemies = [45,85,125,165].map((d,i) => ({typeId:'jaben',behavior:'chase',x:p.x+d,y:p.y+(i%2)*20,r:17,speed:12,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
+  previewOrigin = {x:p.x + (previewWide ? 0 : 45), y:p.y}; updateCamera();
+  state.enemies = [50,85,120].map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
   if (previewSpec.kind === 'move') {
     state.enemies = [];
     state.boss = {x:p.x-160,y:p.y,r:32,hp:2000,maxHp:2000,speed:0,wobble:0,flash:0};
@@ -52,20 +73,22 @@ function stepPreview(dt) {
   // 不生成無關小怪、不抽卡、不結算；只推進這個沙盒的真實引擎。
   state.spawnTimer = 999; state.shotTimer = previewSpec.kind === 'move' ? 999 : state.shotTimer;
   state.bossRest = 999; state.player.invincible = 999;
-  if (previewSpec.kind !== 'move') state.keys = new Set(previewTime < .8 ? ['s'] : []);
+  if (previewSpec.kind !== 'move') state.keys = new Set();
   const move = previewSpec.kind === 'move' && BOSS_MOVES.find(m=>m.id===previewSpec.id);
   const simulationSeconds = dt * (move ? Math.max(1,(move.warning+.7)/2.5) : 1);
   // 長預警加速展示，仍逐步跑真實引擎，單步不超過 .05 秒。
   for(let left=simulationSeconds;left>0;left-=.05) tick(Math.min(.05,left));
   // 老師召喚在正式遊戲從鏡頭外進場，展示縮短走入鏡頭的等待。
   if(previewSpec.kind==='move') state.enemies.forEach(e=>{ if(!targetVisible(e)){e.x=state.player.x+100;e.y=state.player.y+40;} });
+  if (previewSpec.kind !== 'move') state.enemies.forEach(e=>{e.x=e.homeX;e.y=e.homeY;e.knockback=0;});
   paintPreview();
 }
 function paintPreview() {
   render();
-  ctx.fillStyle='#142331';ctx.fillRect(12,12,180,32);
-  ctx.fillStyle='#5be08b';ctx.fillRect(16,16,Math.min(172,172*state.player.health/maxPlayerHealth()),24);
-  ctx.fillStyle='#fff';ctx.font='16px system-ui';ctx.textAlign='left';ctx.fillText('血量 '+Math.ceil(state.player.health)+' / '+maxPlayerHealth(),20,34);
+  if (previewSpec.id === 'heal' || previewFeatures.some(id=>['bubble-shield','auto-heal'].includes(id))) {
+    ctx.fillStyle='#142331';ctx.fillRect(4,4,90,16);
+    ctx.fillStyle='#5be08b';ctx.fillRect(6,6,86*state.player.health/maxPlayerHealth(),12);
+  }
 }
 function previewFrame(now) {
   previewRequest = null;

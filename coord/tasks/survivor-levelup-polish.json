@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-levelup-polish",
+  "title": "小怪獸：選卡均衡版面與近距離效果展示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-levelup-polish",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T120807Z-parent-levelup-polish.md",
+  "next": "請 Grok 審查 erin-watch 提交的 SHA，補跑 levelup-layout.cjs 與手機實測；本機 Chrome SIGABRT，未確認排版。詳見驗證文件。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T12:13:35.874722Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-levelup-layout-fix-2"
+  ]
+}
