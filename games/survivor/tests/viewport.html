@@ -53,6 +53,21 @@
       check(d.querySelector('#settingsPanel').contains(d.querySelector('#buildSlots')),'四欄已移入設定');
       check(d.querySelector('#settingsSkillTree').textContent.includes('導電水窪'),'設定含合體卡前置條件');
       w.closeSettings(); w.showOverlay('paused');
+      d.querySelector('#makerLink').click();
+      check(!d.querySelector('#makerPanel').hidden, '開始選單打開設計室');
+      for (const tab of d.querySelectorAll('[data-tab]')) {
+        tab.click();
+        const editor = d.querySelector('#editor');
+        check(editor.clientHeight > 35 && editor.scrollWidth <= editor.clientWidth + 2, `${tab.dataset.tab} 內容可捲動且沒有橫向裁切`);
+        for (const element of [d.querySelector('.maker-toolbar'),d.querySelector('.maker-tabs'),editor,d.querySelector('.maker-footer')]) {
+          const r = element.getBoundingClientRect();
+          check(r.left>=left+screenSafe.left-.5 && r.top>=top+screenSafe.top-.5 && r.right<=left+vw-screenSafe.right+.5 && r.bottom<=top+vh-screenSafe.bottom+.5, `${iw}×${ih} Maker 安全區 ${element.className}`);
+        }
+        editor.scrollTop = editor.scrollHeight;
+        check(editor.scrollTop + editor.clientHeight >= editor.scrollHeight - 2, `${tab.dataset.tab} 最後一項可到達`);
+      }
+      d.querySelector('#makerClose').click();
+      check(d.querySelector('#makerPanel').hidden, '設計室返回選單');
     } catch(error) { check(false,`${iw}×${ih}: ${error.stack}`); }
     iframe.remove();
   }

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-maker-ingame",
+  "title": "小怪獸：遊戲內像素設計室",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-maker-ingame",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T105623Z-parent-maker-ingame.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 審查遊戲內設計室、作品儲存與試玩勝敗返回。11 組 Node 測試通過，詳見 docs/survivor-maker-ingame-validation.md；沙盒禁止 HTTP server、瀏覽器禁止 file 協定，真瀏覽器／iPad／手機安全區及 PWA 離線待驗證。Erin 試用後決定介面手感，目前沒有必須先決定的新設計。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T11:01:53.543292Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-maker-data"
+  ]
+}

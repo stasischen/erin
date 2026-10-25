@@ -386,7 +386,8 @@ function finishRun(won) {
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
   playTone(won ? 880 : 220, 0.28, "triangle");
-  showOverlay(won ? "won" : "over");
+  if (MAKER_MODE && window.openSurvivorMaker) window.openSurvivorMaker(won ? "🎉 過關了！繼續設計或再試玩。" : "💫 試玩結束！繼續設計或再試玩。");
+  else showOverlay(won ? "won" : "over");
 }
 
 function showOverlay(mode) {
@@ -1305,24 +1306,24 @@ function drawHero() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben") {
-  ctx.save(); ctx.translate(x, y + Math.sin(bounce) * 2);
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx) {
+  drawingContext.save(); drawingContext.translate(x, y + Math.sin(bounce) * 2);
   const sprite = SPRITES[enemyId];
   if (sprite) {
-    if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-    ctx.drawImage(sprite, -r, -r, r * 2, r * 2); ctx.restore(); return;
+    if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
+    drawingContext.drawImage(sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
   }
-  ctx.fillStyle = "rgba(36,57,67,.22)"; ctx.beginPath(); ctx.ellipse(1, r * .82, r * .9, r * .27, 0, 0, Math.PI * 2); ctx.fill();
-  if (flash) ctx.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-  ctx.fillStyle = flash ? "#fff" : color; ctx.strokeStyle = "#87522f"; ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.rect(-r * .82, -r * .8, r * 1.64, r * 1.6); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#f0bb80"; ctx.fillRect(-r * .5, -r * .55, r, r * .28);
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-r * .3, -r * .12, r * .23, 0, Math.PI * 2); ctx.arc(r * .3, -r * .12, r * .23, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#243746"; ctx.beginPath(); ctx.arc(-r * .27, -r * .1, r * .1, 0, Math.PI * 2); ctx.arc(r * .33, -r * .1, r * .1, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = "#243746"; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.arc(0, r * .17, r * .16, .15, Math.PI - .15); ctx.stroke();
-  ctx.restore();
+  drawingContext.fillStyle = "rgba(36,57,67,.22)"; drawingContext.beginPath(); drawingContext.ellipse(1, r * .82, r * .9, r * .27, 0, 0, Math.PI * 2); drawingContext.fill();
+  if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
+  drawingContext.fillStyle = flash ? "#fff" : color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
+  drawingContext.beginPath();
+  drawingContext.rect(-r * .82, -r * .8, r * 1.64, r * 1.6); drawingContext.fill(); drawingContext.stroke();
+  drawingContext.fillStyle = "#f0bb80"; drawingContext.fillRect(-r * .5, -r * .55, r, r * .28);
+  drawingContext.globalAlpha = 1;
+  drawingContext.fillStyle = "#fff"; drawingContext.beginPath(); drawingContext.arc(-r * .3, -r * .12, r * .23, 0, Math.PI * 2); drawingContext.arc(r * .3, -r * .12, r * .23, 0, Math.PI * 2); drawingContext.fill();
+  drawingContext.fillStyle = "#243746"; drawingContext.beginPath(); drawingContext.arc(-r * .27, -r * .1, r * .1, 0, Math.PI * 2); drawingContext.arc(r * .33, -r * .1, r * .1, 0, Math.PI * 2); drawingContext.fill();
+  drawingContext.strokeStyle = "#243746"; drawingContext.lineWidth = 1.7; drawingContext.beginPath(); drawingContext.arc(0, r * .17, r * .16, .15, Math.PI - .15); drawingContext.stroke();
+  drawingContext.restore();
 }
 
 // 只用舊版 iPad 也支援的 Canvas API；線寬至少 3px，避免手機上看不見。
@@ -1602,7 +1603,7 @@ startButton.addEventListener("click", () => { startAudio(); state.mode === "paus
 pauseButton.addEventListener("click", () => { if (state.mode !== "levelup") openSettings(); });
 window.addEventListener("keydown", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-  if (settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;
+  if (state.mode === "maker" || settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "e"].includes(key)) event.preventDefault();
   state.keys.add(key);
   if (event.repeat) return;
@@ -1645,6 +1646,6 @@ resize(); showOverlay("ready"); renderLoop();
 if (MAKER_MODE) {
   const makerLink = document.getElementById("makerLink");
   makerLink.textContent = "🧩 回 Maker";
-  if (MAKER_LOAD.valid) startGame();
+  if (MAKER_LOAD.valid && new URLSearchParams(location.search).get("play") === "1") startGame();
   else textEl.textContent = MAKER_LOAD.errors.join("；") + "。本次使用預設作品。";
 }
