@@ -54,7 +54,7 @@ const UPGRADE_TUNING = {
   bombDamage: 100, // 泡泡爆開扣多少敵人的血
   bombRadius: 110, // 泡泡能打到多遠
   bombKnockback: 55, // 泡泡把敵人推多遠
-  actionButtonSize: 88, // 衝刺按鈕有多大；技能按鈕小一點
+  actionButtonSize: 88, // 右下角兩個動作按鈕有多大
   autoHealSeconds: 10 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
 // ✏️ Erin 可以改：這些是流派的試玩初值；水／風／雷也可以改名。
@@ -110,7 +110,7 @@ const SETTING_CONTROLS = [
   { key: "bombDamage", label: "泡泡爆開扣多少敵人的血", min: 20, max: 300, step: 10, unit: "" },
   { key: "bombRadius", label: "泡泡能打到多遠", min: 50, max: 180, step: 10, unit: "" },
   { key: "bombKnockback", label: "泡泡把敵人推多遠", min: 10, max: 100, step: 5, unit: "" },
-  { key: "actionButtonSize", label: "衝刺按鈕有多大；技能按鈕小一點", min: 72, max: 104, step: 4, unit: " px" },
+  { key: "actionButtonSize", label: "動作按鈕有多大", min: 72, max: 104, step: 4, unit: " px" },
 
   { key: "playerSpeed", label: "水星人速度", min: 100, max: 320, step: 10, unit: "" },
   { key: "playerHealth", label: "水星人血量", min: 40, max: 200, step: 10, unit: "" },
@@ -402,7 +402,34 @@ function takeFromPool(pool, values) {
   return item;
 }
 
+// 地圖在每局開始時固定為 3×3 個畫面；旋轉與工具列伸縮不改動世界。
+const MAP_SCREENS = 3;
+const gameShell = document.querySelector(".game-shell");
+function clampToMap(body) {
+  body.x = Math.max(body.r, Math.min(state.worldWidth - body.r, body.x));
+  body.y = Math.max(body.r, Math.min(state.worldHeight - body.r, body.y));
+}
+function updateCamera() {
+  state.cameraX = Math.max(0, Math.min(Math.max(0, state.worldWidth - state.width), state.player.x - state.width / 2));
+  state.cameraY = Math.max(0, Math.min(Math.max(0, state.worldHeight - state.height), state.player.y - state.height / 2));
+}
+function resetMap() {
+  state.worldWidth = state.width * MAP_SCREENS;
+  state.worldHeight = state.height * MAP_SCREENS;
+}
+function fitVisibleViewport() {
+  const viewport = window.visualViewport;
+  const width = viewport ? viewport.width : window.innerWidth;
+  const height = viewport ? viewport.height : window.innerHeight;
+  const rotated = window.innerHeight > window.innerWidth;
+  gameShell.style.width = `${rotated ? height : width}px`;
+  gameShell.style.height = `${rotated ? width : height}px`;
+  gameShell.style.left = `${viewport ? viewport.offsetLeft : 0}px`;
+  gameShell.style.top = `${viewport ? viewport.offsetTop : 0}px`;
+  gameShell.style.transform = rotated ? "rotate(90deg) translateY(-100%)" : "none";
+}
 function resize() {
+  fitVisibleViewport();
   // 旋轉或工具列改變高度時，放開舊搖桿，避免沿舊座標繼續走。
   state.pointerId = null; state.joy = null; state.keys.clear();
   // client 尺寸不含外框，也不受整個容器旋轉影響。
@@ -414,12 +441,14 @@ function resize() {
   canvas.height = Math.round(state.height * ratio);
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  if (state.mode === "ready") { state.player.x = state.width / 2; state.player.y = state.height / 2; }
-  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x));
-  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y));
+  if (!state.worldWidth) {
+    resetMap(); state.player.x = state.worldWidth / 2; state.player.y = state.worldHeight / 2;
+  }
+  clampToMap(state.player); updateCamera();
 }
 
 function resetGame() {
+  resetMap();
   for (const field of state.fields) state.fieldPool.push(field);
   state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateVisual = null; state.moveRate = 0;
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
@@ -428,7 +457,7 @@ function resetGame() {
   for (const item of state.projectiles) state.projectilePool.push(item);
   for (const item of state.gems) state.gemPool.push(item);
   for (const item of state.effects) state.effectPool.push(item);
-  state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 };
+  state.player = { x: state.worldWidth / 2, y: state.worldHeight / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 };
   state.enemies = [];
   for (const item of state.enemyShots) state.enemyShotPool.push(item);
   state.enemyShots = [];
@@ -448,7 +477,7 @@ function resetGame() {
   state.keys.clear();
   state.joy = null;
   state.player.health = PLAYER_HEALTH;
-  updateHud();
+  updateCamera(); updateHud();
 }
 
 function startGame() {
@@ -509,11 +538,20 @@ function spawnEnemy() {
     { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
   ];
   const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
-  const side = Math.floor(Math.random() * 4);
-  const pad = type.radius + 3;
-  let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
-  let y = side === 2 ? -pad : side === 3 ? state.height + pad : Math.random() * state.height;
-  if (Math.hypot(x - state.player.x, y - state.player.y) < Math.min(state.width, state.height) * 0.32) { x = side < 2 ? x : (x + state.width / 2) % state.width; y = side >= 2 ? y : (y + state.height / 2) % state.height; }
+  // 在主角周圍的環形區生成；靠牆時先朝地圖內側取樣，避免貼臉。
+  const radius = Math.min(state.width, state.height) * .65;
+  let x, y;
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    x = state.player.x + Math.cos(angle) * radius;
+    y = state.player.y + Math.sin(angle) * radius;
+    if (x >= type.radius && x <= state.worldWidth - type.radius && y >= type.radius && y <= state.worldHeight - type.radius) break;
+    // 最後一次使用朝中心的方向，連續相同的亂數也不會卡住。
+    const inward = Math.atan2(state.worldHeight / 2 - state.player.y, state.worldWidth / 2 - state.player.x);
+    x = state.player.x + Math.cos(inward) * radius;
+    y = state.player.y + Math.sin(inward) * radius;
+  }
+  const position = { x, y, r: type.radius }; clampToMap(position); x = position.x; y = position.y;
   state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
 }
 
@@ -533,7 +571,7 @@ function updateBookShooting(dt) {
   for (const enemy of state.enemies) enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && enemy.x >= enemy.r && enemy.x <= state.width - enemy.r && enemy.y >= enemy.r && enemy.y <= state.height - enemy.r);
+  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && enemy.x >= state.cameraX + enemy.r && enemy.x <= state.cameraX + state.width - enemy.r && enemy.y >= state.cameraY + enemy.r && enemy.y <= state.cameraY + state.height - enemy.r);
   if (!ready.length) return;
   const enemy = ready[Math.floor(Math.random() * ready.length)];
   const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
@@ -546,7 +584,10 @@ function updateBookShooting(dt) {
 }
 
 function summonTeacher() {
-  state.boss = { x: state.width / 2, y: -64, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
+  const gap = Math.min(180, state.height * .35);
+  const y = state.player.y - gap >= 32 ? state.player.y - gap : state.player.y + gap;
+  state.boss = { x: state.player.x, y, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
+  clampToMap(state.boss);
   state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval; state.bossSummonTimer = UPGRADE_TUNING.teacherSummonSeconds; state.bossIntro = 2.2;
   updateHud();
 }
@@ -678,7 +719,7 @@ function hitBuildTarget(target, damage) {
 }
 function shiftTarget(target, x, y, distance) {
   const dx = target.x - x, dy = target.y - y, length = Math.max(1, Math.hypot(dx, dy));
-  target.x += dx / length * distance; target.y += dy / length * distance;
+  target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
 }
 function schoolEffect(school, target, x, y, damage, excluded = []) {
   if (school === "water") {
@@ -793,7 +834,7 @@ function updateBomb(dt) {
   function pushAway(target) {
     const dx = target.x - bomb.x, dy = target.y - bomb.y, length = Math.hypot(dx, dy);
     target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
-    target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback;
+    target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback; clampToMap(target);
   }
   for (const enemy of state.enemies) {
     if (!enemy.alive || Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y) > bomb.radius + enemy.r) continue;
@@ -855,8 +896,7 @@ function tick(dt) {
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
-  state.player.x = Math.max(state.player.r, Math.min(state.width - state.player.r, state.player.x));
-  state.player.y = Math.max(state.player.r, Math.min(state.height - state.player.r, state.player.y));
+  clampToMap(state.player); updateCamera();
   // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
   if (state.dashTimer > 0) state.player.invincible = Math.max(state.player.invincible, dt);
   state.dashTimer = countdown(state.dashTimer, dt);
@@ -896,8 +936,8 @@ function tick(dt) {
   }
   if (state.bossIntro > 0) {
     state.bossIntro -= dt;
-    for (const enemy of state.enemies) { enemy.x += (state.width / 2 - enemy.x) * Math.min(1, dt * 3); enemy.y += (state.height / 2 - enemy.y) * Math.min(1, dt * 3); }
-    if (state.bossIntro <= 0) { burst(state.width / 2, state.height / 2, "#fff36b", 32); state.boss.y = Math.min(100, state.height * 0.25); updateHud(); }
+    for (const enemy of state.enemies) { enemy.x += (state.boss.x - enemy.x) * Math.min(1, dt * 3); enemy.y += (state.boss.y - enemy.y) * Math.min(1, dt * 3); }
+    if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= dt;
   if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += effectiveShotInterval(); }
@@ -908,6 +948,7 @@ function tick(dt) {
     enemy.x += vx / distance * enemy.speed * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     enemy.y += vy / distance * enemy.speed * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
+    clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
     enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
     enemy.wobble += dt * 6;
@@ -918,7 +959,7 @@ function tick(dt) {
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
     if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
-    if (shot.x < -12 || shot.y < -12 || shot.x > state.width + 12 || shot.y > state.height + 12) { shot.alive = false; continue; }
+    if (shot.x < -12 || shot.y < -12 || shot.x > state.worldWidth + 12 || shot.y > state.worldHeight + 12) { shot.alive = false; continue; }
     for (const enemy of state.enemies) {
       if (enemy.alive && !shot.hitList.includes(enemy) && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
@@ -952,6 +993,7 @@ function tick(dt) {
     state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
     const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
     state.boss.x += bx / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt; state.boss.y += by / distance * state.boss.speed * (state.boss.stunTimer > 0 ? 0 : 1) * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt;
+    clampToMap(state.boss);
     state.boss.slowTimer = Math.max(0, (state.boss.slowTimer || 0) - dt);
     state.boss.stunTimer = countdown(state.boss.stunTimer || 0, dt);
     state.bossShotTimer -= state.boss.stunTimer > 0 ? 0 : dt;
@@ -969,7 +1011,7 @@ function tick(dt) {
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
       if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
-    } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
+    } else if (shot.x < -40 || shot.y < -40 || shot.x > state.worldWidth + 40 || shot.y > state.worldHeight + 40) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
   if (state.player.health <= 0) { finishRun(false); return; }
   for (const gem of state.gems) {
@@ -1010,13 +1052,18 @@ function tick(dt) {
 }
 
 function drawClassroom() {
-  ctx.fillStyle = "#eaf4d5"; ctx.fillRect(0, 0, state.width, state.height);
-  // 淡色方格地磚
+  ctx.fillStyle = "#eaf4d5"; ctx.fillRect(0, 0, state.worldWidth, state.worldHeight);
+  // 僅畫鏡頭內的淡色地磚，花紋固定在世界座標，走動時可看見捲動。
   const size = 42;
-  ctx.strokeStyle = "rgba(91,137,91,.12)"; ctx.lineWidth = 1;
-  for (let x = 0; x < state.width; x += size) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, state.height); ctx.stroke(); }
-  for (let y = 0; y < state.height; y += size) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(state.width, y); ctx.stroke(); }
-  // 教室牆邊的小彩色櫃子
+  ctx.strokeStyle = "rgba(91,137,91,.16)"; ctx.lineWidth = 1;
+  for (let x = Math.floor(state.cameraX / size) * size; x < Math.min(state.worldWidth, state.cameraX + state.width); x += size) {
+    ctx.beginPath(); ctx.moveTo(x, state.cameraY); ctx.lineTo(x, state.cameraY + state.height); ctx.stroke();
+  }
+  for (let y = Math.floor(state.cameraY / size) * size; y < Math.min(state.worldHeight, state.cameraY + state.height); y += size) {
+    ctx.beginPath(); ctx.moveTo(state.cameraX, y); ctx.lineTo(state.cameraX + state.width, y); ctx.stroke();
+  }
+  ctx.strokeStyle = "#526b59"; ctx.lineWidth = 16;
+  ctx.strokeRect(0, 0, state.worldWidth, state.worldHeight);
   ctx.fillStyle = "#f4c76e"; ctx.fillRect(14, 42, 72, 18); ctx.fillStyle = "#9bc7e8"; ctx.fillRect(92, 42, 55, 18);
 }
 
@@ -1062,6 +1109,9 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben") {
 }
 
 function render() {
+  updateCamera();
+  ctx.clearRect(0, 0, state.width, state.height);
+  ctx.save(); ctx.translate(-state.cameraX, -state.cameraY);
   drawClassroom();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
@@ -1139,12 +1189,13 @@ function render() {
   if (state.ultimateVisual) {
     const v = state.ultimateVisual;
     ctx.save(); ctx.strokeStyle = BUILD_TUNING[v.school].color; ctx.lineWidth = 12;
-    if (v.school === "water") { ctx.globalAlpha = .45; ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(state.width * (1 - v.life / .5) - 60, 0, 120, state.height); }
-    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, 0); ctx.lineTo(v.x + 10, v.y * .5); ctx.lineTo(v.x - 12, v.y * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
+    if (v.school === "water") { ctx.globalAlpha = .45; ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(state.cameraX + state.width * (1 - v.life / .5) - 60, state.cameraY, 120, state.height); }
+    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, state.cameraY); ctx.lineTo(v.x + 10, v.y * .5); ctx.lineTo(v.x - 12, v.y * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
     else { ctx.beginPath(); ctx.arc(v.x, v.y, BUILD_TUNING.fieldRadius, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
   drawHero();
+  ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }
@@ -1199,13 +1250,17 @@ function canvasPoint(event) {
 canvas.addEventListener("pointerdown", (event) => {
   if (state.mode !== "playing" || event.target.closest("button")) return;
   if (state.pointerId !== null) return;
-  event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
   const { x: baseX, y: baseY } = canvasPoint(event);
+  if (baseX > state.width / 2) return;
+  event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
   state.joy = { baseX, baseY, x: 0, y: 0 };
 });
 canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const point = canvasPoint(event); const dx = point.x - state.joy.baseX, dy = point.y - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);
 window.addEventListener("resize", resize);
-if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("scroll", resize);
+}
 resize(); showOverlay("ready"); renderLoop();

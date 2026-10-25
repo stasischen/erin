@@ -14,7 +14,7 @@ function setup(saved = {}) {
 }
 const run = setup();
 function fresh() {
-  run(`resetGame(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
+  run(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
     spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, typeId: 'jaben', shotCooldown: 0 });`);
 }
 fresh();
@@ -91,7 +91,7 @@ for (const change of ['state.enemies[0].alive = false', 'state.enemies[0].x = -2
   assert.equal(run('state.enemyShots.length'), 0);
 }
 fresh();
-run('state.level = 8; tick(0); resetGame();');
+run('state.level = 8; tick(0); resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();');
 assert.equal(run('state.enemyShots.length'), 0);
 assert.equal(run('state.bookShotTimer'), 0);
 assert.equal(run('state.bookShootingStarted'), false);
@@ -105,7 +105,7 @@ assert.equal(saved('gameSettings.enemyShotSpeed'), 80);
 saved('updateSettingValue("enemyShootLevel", 3); updateSettingValue("enemyShotDamage", 4); gameSettings = loadSavedSettings();');
 assert.equal(saved('gameSettings.enemyShootLevel'), 3);
 assert.equal(saved('gameSettings.enemyShotDamage'), 4);
-saved(`resetGame(); state.level = 3; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
+saved(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.level = 3; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
   spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, shotCooldown: 0 }); tick(0);`);
 assert.equal(saved('state.enemyShots[0].damage'), 4);
 assert.ok(Math.abs(saved('Math.hypot(state.enemyShots[0].vx, state.enemyShots[0].vy)') - 80) < 1e-8);
