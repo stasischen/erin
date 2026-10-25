@@ -23,7 +23,7 @@ for (const [width,height] of [[320,568],[568,280],[800,600],[1366,768],[2400,300
   for (const fx of [0,.1,.5,.9,1]) for (const fy of [0,.1,.5,.9,1]) {
     run(`state.player.x=state.worldWidth*${fx};state.player.y=state.worldHeight*${fy};updateCamera();`);
     for (const random of [0,.24,.49,.74,.999999]) {
-      run(`Math.random=()=>${random};state.enemies=[];state.elapsed=100;spawnEnemy();summonTeacher();`);
+      run(`Math.random=()=>${random};state.enemies=[];state.elapsed = state.stageElapsed =100;spawnEnemy();summonTeacher();`);
       assert.equal(run(`state.enemies.length===1 && [state.enemies[0],state.boss].every(e =>
         e.x>=e.r && e.y>=e.r && e.x<=state.worldWidth-e.r && e.y<=state.worldHeight-e.r &&
         (e.x+(e===state.boss?60:e.r)<state.cameraX || e.x-(e===state.boss?60:e.r)>state.cameraX+state.width || e.y+(e===state.boss?60:e.r)<state.cameraY || e.y-(e===state.boss?60:e.r)>state.cameraY+state.height))`),true);

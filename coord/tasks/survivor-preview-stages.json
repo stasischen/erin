@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-preview-stages",
+  "title": "小怪獸：統一展示與教室／操場關卡",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-preview-stages",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T124024Z-parent-preview-stages.md",
+  "next": "請 Grok 審查 erin-watch 提交的 SHA；邏輯測試通過，Chrome SIGABRT、沙盒禁啟動伺服器，需補跑指定尺寸展示28～38%與目視構圖、兩關試玩。詳見 docs/survivor-preview-stages-validation.md。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T13:30:09.211530Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-levelup-polish"
+  ]
+}

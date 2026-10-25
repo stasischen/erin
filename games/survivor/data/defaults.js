@@ -789,5 +789,99 @@ globalThis.SURVIVOR_DEFAULTS = {
       "otsubon": 0.65,
       "every": 0.5175
     }
+  ],
+  "stages": [
+    {
+      "id": "classroom",
+      "name": "教室",
+      "background": "classroom",
+      "enemyHealthScale": 1,
+      "enemySpeedScale": 1,
+      "bossHealthScale": 1,
+      "waves": [
+        {
+          "start": 0,
+          "jaben": 1,
+          "otsubon": 0,
+          "every": 1.84
+        },
+        {
+          "start": 20,
+          "jaben": 0.8,
+          "otsubon": 0.2,
+          "every": 1.495
+        },
+        {
+          "start": 35,
+          "jaben": 0.58,
+          "otsubon": 0.42,
+          "every": 1.15
+        },
+        {
+          "start": 60,
+          "jaben": 0.45,
+          "otsubon": 0.55,
+          "every": 0.8625
+        },
+        {
+          "start": 90,
+          "jaben": 0.35,
+          "otsubon": 0.65,
+          "every": 0.6325
+        },
+        {
+          "start": 105,
+          "jaben": 0.35,
+          "otsubon": 0.65,
+          "every": 0.5175
+        }
+      ]
+    },
+    {
+      "id": "playground",
+      "name": "操場",
+      "background": "playground",
+      "enemyHealthScale": 1.12,
+      "enemySpeedScale": 1.06,
+      "bossHealthScale": 1.12,
+      "waves": [
+        {
+          "start": 0,
+          "jaben": 1,
+          "otsubon": 0,
+          "every": 1.6928
+        },
+        {
+          "start": 20,
+          "jaben": 0.8,
+          "otsubon": 0.2,
+          "every": 1.3754
+        },
+        {
+          "start": 35,
+          "jaben": 0.58,
+          "otsubon": 0.42,
+          "every": 1.058
+        },
+        {
+          "start": 60,
+          "jaben": 0.45,
+          "otsubon": 0.55,
+          "every": 0.7935
+        },
+        {
+          "start": 90,
+          "jaben": 0.35,
+          "otsubon": 0.65,
+          "every": 0.5819
+        },
+        {
+          "start": 105,
+          "jaben": 0.35,
+          "otsubon": 0.65,
+          "every": 0.4761
+        }
+      ]
+    }
   ]
 };

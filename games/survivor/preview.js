@@ -41,7 +41,7 @@
       'dash-trail':`留下 ${e.duration} 秒痕跡，打到 ${e.radius} 格內的怪`,
       slow:`讓 ${e.radius} 格內的怪只剩 ${Math.round(e.multiplier*100)}% 速度，持續 ${e.duration} 秒`,
       stun:`讓 ${e.radius} 格內的怪暈 ${e.duration} 秒`,
-      knockback:`把 ${e.radius} 格內的怪推開 ${e.distance} 格`,
+      knockback:`把 ${e.radius} 格內的怪${e.distance < 0 ? '拉近' : '推開'} ${Math.abs(e.distance)} 格`,
       summon:`叫小幫手留 ${e.duration} 秒，每次射 ${e.count} 顆水球`,
       'ring-with-gap':`放出 ${e.radius} 格大的圈，留 ${Math.round(e.gap*180/Math.PI)} 度缺口`
     };
@@ -72,7 +72,7 @@
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261025v', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261025w', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

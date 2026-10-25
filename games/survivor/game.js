@@ -90,6 +90,9 @@ const ENEMY_TYPES = GAME_DATA.enemies;
 // ✏️ Erin 可以改每一波：開始秒數、甲本比例、乙本比例、幾秒出一隻。
 // 比例加起來請等於 1；秒數越小，怪物越常出現。
 const WAVES = GAME_DATA.waves;
+const STAGES = GAME_DATA.stages;
+function currentStage() { return STAGES[state.stageIndex || 0]; }
+function currentWaves() { return currentStage().waves; }
 const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入 assets 裡的 PNG 檔名；null 使用內建圖案
 for (const name of Object.keys(SPRITES)) {
   const filename = SPRITES[name];
@@ -215,7 +218,7 @@ const skillButton = document.getElementById("skillButton");
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { enemyHazards: [], makerFields: [], makerTimers: {}, bossMoves: [], bossMovePool: [], bossPhase: 1, bossPhasePause: 0, bossRest: 0, lastBossMoves: [], bossShout: 0, bossShake: 0, vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { stageIndex: 0, stageElapsed: 0, stageTransition: 0, enemyHazards: [], makerFields: [], makerTimers: {}, bossMoves: [], bossMovePool: [], bossPhase: 1, bossPhasePause: 0, bossRest: 0, lastBossMoves: [], bossShout: 0, bossShake: 0, vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -272,6 +275,7 @@ function makeSettingsControls() {
 
 let settingsReturnMode = "ready";
 function openSettings() {
+  if (state.mode === "transition") return;
   if (state.mode === "playing") togglePause();
   settingsReturnMode = state.mode;
   makeSettingsControls(); updateHud(); renderSkillTree(document.getElementById("settingsSkillTree")); messageCard.hidden = true; upgradePanel.hidden = true;
@@ -335,6 +339,7 @@ function resize() {
 }
 
 function resetGame() {
+  state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -385,6 +390,14 @@ function startGame() {
 }
 
 function finishRun(won) {
+  if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
+    // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
+    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, health: state.player.health };
+    resetGame();
+    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, stageTransition: 2, mode: "transition" });
+    state.player.health = progress.health;
+    updateHud(); updateActionControls(); return;
+  }
   clearBossMoves(); state.bossShake = 0;
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
@@ -412,7 +425,7 @@ function updateHud() {
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
-  levelLabel.textContent = `Lv.${state.level}`;
+  levelLabel.textContent = `${state.stageIndex + 1}關 · Lv.${state.level}`;
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
@@ -433,8 +446,8 @@ function updateHud() {
 
 function spawnEnemy() {
   if (state.enemies.length >= ENEMY_LIMIT) return;
-  let wave = WAVES[0];
-  for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
+  let wave = currentWaves()[0];
+  for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
   const configuredTypes = [
     { ...ENEMY_TYPES[0], speed: gameSettings.enemySpeed, hp: gameSettings.enemyHealth },
     { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
@@ -443,7 +456,7 @@ function spawnEnemy() {
   const position = offscreenSpawn(type.radius);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
-  state.enemies.push({ typeId: type.id, behavior: type.behavior, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
+  state.enemies.push({ typeId: type.id, behavior: type.behavior, x, y, r: type.radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale, maxHp: type.hp * currentStage().enemyHealthScale, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
 }
 
 function bookShotInterval(typeId) {
@@ -510,7 +523,7 @@ function offscreenSpawn(r) {
 function summonTeacher() {
   const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
   if (!position) return;
-  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
+  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
   updateHud();
 }
@@ -1135,11 +1148,16 @@ for (const [button, activate] of [[dashButton, activateDash], [skillButton, acti
 }
 
 function tick(dt) {
+  if (state.mode === "transition") {
+    state.stageTransition = countdown(state.stageTransition, dt);
+    if (state.stageTransition <= 0) { state.mode = "playing"; state.keys.clear(); updateActionControls(); }
+    return;
+  }
   if (state.mode !== "playing") return;
   updateSkillVisuals(dt);
   updateMakerEffects(dt);
   if (state.mode !== "playing") return;
-  state.elapsed += dt;
+  state.elapsed += dt; state.stageElapsed += dt;
   startBookShooting();
   state.bookNoticeTimer = Math.max(0, state.bookNoticeTimer - dt);
   enemyNotice.hidden = state.bookNoticeTimer <= 0;
@@ -1189,10 +1207,10 @@ function tick(dt) {
   if (state.player.x !== oldX) state.player.facing = state.player.x > oldX ? 1 : -1;
 
   state.spawnTimer -= dt;
-  if (!state.boss && state.elapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
   if (!state.boss) {
-    let wave = WAVES[0];
-    for (const row of WAVES) if (state.elapsed >= row.start) wave = row;
+    let wave = currentWaves()[0];
+    for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
     const spawnEvery = wave.every / gameSettings.spawnScale;
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
@@ -1207,8 +1225,8 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
-    enemy.y += vy / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.x += vx / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.y += vy / distance * enemy.speed * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
@@ -1302,20 +1320,51 @@ function tick(dt) {
   statusEl.textContent = `${Math.floor(state.elapsed)} 秒`;
 }
 
+// 小型背景圖塊預先繪製並快取；逐幀只貼鏡頭內圖塊，不配置世界大小的圖片。
+const BACKGROUND_TILES = {};
+function backgroundTile(kind) {
+  if (BACKGROUND_TILES[kind]) return BACKGROUND_TILES[kind];
+  const tile = document.createElement("canvas"); tile.width = 336; tile.height = 252;
+  const g = tile.getContext("2d"); g.imageSmoothingEnabled = false;
+  if (kind === "classroom") {
+    g.fillStyle = "#d8cba8"; g.fillRect(0,0,336,252);
+    for (let y=0;y<252;y+=42) for(let x=0;x<336;x+=42) {
+      g.fillStyle = (x+y)%84 ? "#ddcfaf" : "#d3c49f"; g.fillRect(x+1,y+1,40,40);
+    }
+    // 課桌與椅子是地板裝飾，不影響碰撞或走路。
+    for (const x of [72,240]) {
+      g.fillStyle="#88734e";g.fillRect(x-25,82,54,34);
+      g.fillStyle="#b58852";g.fillRect(x-28,76,56,30);
+      g.fillStyle="#edc787";g.fillRect(x-24,80,48,8);
+      g.fillStyle="#8f714f";g.fillRect(x-16,124,32,14);
+    }
+  } else {
+    g.fillStyle="#8bb978";g.fillRect(0,0,336,252);
+    g.fillStyle="#7eaa6d";
+    for(let y=12;y<252;y+=28) for(let x=8;x<336;x+=42) g.fillRect(x,y,8,4);
+    g.fillStyle="#bf7961";g.fillRect(0,140,336,100);
+    g.fillStyle="#f7dfb6";for(let y=150;y<240;y+=28)g.fillRect(0,y,336,3);
+    g.fillStyle="#ad925f";g.fillRect(100,30,120,70);
+    g.fillStyle="#e6ce91";g.fillRect(104,34,112,62);
+    g.fillStyle="#c6ad77";for(let x=112;x<204;x+=20)g.fillRect(x,46,8,3);
+  }
+  BACKGROUND_TILES[kind] = tile; return tile;
+}
 function drawClassroom() {
-  ctx.fillStyle = "#eaf4d5"; ctx.fillRect(0, 0, state.worldWidth, state.worldHeight);
-  // 僅畫鏡頭內的淡色地磚，花紋固定在世界座標，走動時可看見捲動。
-  const size = 42;
-  ctx.strokeStyle = "rgba(91,137,91,.16)"; ctx.lineWidth = 1;
-  for (let x = Math.floor(state.cameraX / size) * size; x < Math.min(state.worldWidth, state.cameraX + state.width); x += size) {
-    ctx.beginPath(); ctx.moveTo(x, state.cameraY); ctx.lineTo(x, state.cameraY + state.height); ctx.stroke();
+  const kind = currentStage().background, tile = backgroundTile(kind);
+  const left = Math.max(0, Math.floor(state.cameraX/336)*336);
+  const top = Math.max(0, Math.floor(state.cameraY/252)*252);
+  ctx.save(); ctx.beginPath(); ctx.rect(0,0,state.worldWidth,state.worldHeight); ctx.clip();
+  for(let y=top;y<Math.min(state.worldHeight,state.cameraY+state.height);y+=252)
+    for(let x=left;x<Math.min(state.worldWidth,state.cameraX+state.width);x+=336) ctx.drawImage(tile,x,y);
+  ctx.restore();
+  ctx.strokeStyle = kind === "classroom" ? "#82795e" : "#52734e"; ctx.lineWidth = 16;
+  ctx.strokeRect(0,0,state.worldWidth,state.worldHeight);
+  if(kind === "classroom") {
+    ctx.fillStyle="#b59c72";ctx.fillRect(40,12,state.worldWidth-80,18);
+    ctx.fillStyle="#385e53";ctx.fillRect(state.worldWidth/2-100,12,200,48);
+    ctx.fillStyle="#dae6c8";ctx.fillRect(state.worldWidth/2-80,28,54,4);ctx.fillRect(state.worldWidth/2-80,40,110,4);
   }
-  for (let y = Math.floor(state.cameraY / size) * size; y < Math.min(state.worldHeight, state.cameraY + state.height); y += size) {
-    ctx.beginPath(); ctx.moveTo(state.cameraX, y); ctx.lineTo(state.cameraX + state.width, y); ctx.stroke();
-  }
-  ctx.strokeStyle = "#526b59"; ctx.lineWidth = 16;
-  ctx.strokeRect(0, 0, state.worldWidth, state.worldHeight);
-  ctx.fillStyle = "#f4c76e"; ctx.fillRect(14, 42, 72, 18); ctx.fillStyle = "#9bc7e8"; ctx.fillRect(92, 42, 55, 18);
 }
 
 function drawHero() {
@@ -1577,6 +1626,11 @@ function render() {
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
   drawBossGuide();
+  if (state.mode === "transition") {
+    ctx.fillStyle = "rgba(20,35,49,.78)"; ctx.fillRect(0, 0, state.width, state.height);
+    ctx.fillStyle = "#fff3cc"; ctx.font = "bold 28px system-ui"; ctx.textAlign = "center";
+    ctx.fillText(`第${state.stageIndex + 1}關：${currentStage().name}`, state.width/2, state.height/2);
+  }
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }
@@ -1614,7 +1668,7 @@ function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 
 let frameRequest = null;
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
-function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
+function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }
 function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 settingsButton.addEventListener("click", openSettings);
