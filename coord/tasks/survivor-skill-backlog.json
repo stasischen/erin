@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-skill-backlog",
+  "title": "小怪獸：未來技能備忘（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-skill-backlog",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T141520Z-parent-skill-backlog.md",
+  "next": "請 Grok 審查技能備忘、推薦標記、現有機制去重及計畫連結；只改文件，之後做哪些由 Erin 與家長決定。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T14:17:02.545731Z",
+  "updatedBy": "codex"
+}
