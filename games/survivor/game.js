@@ -309,6 +309,7 @@ function fitVisibleViewport() {
   const width = viewport ? viewport.width : window.innerWidth;
   const height = viewport ? viewport.height : window.innerHeight;
   const rotated = window.innerHeight > window.innerWidth;
+  gameShell.dataset.short = String((rotated ? width : height) < 440);
   gameShell.style.width = `${rotated ? height : width}px`;
   gameShell.style.height = `${rotated ? width : height}px`;
   gameShell.style.left = `${viewport ? viewport.offsetLeft : 0}px`;
@@ -843,11 +844,19 @@ function showUpgradeChoices() {
     if (!globalThis.SurvivorPreview) button.addEventListener("click", () => applyUpgrade(index));
     if (globalThis.SurvivorPreview) {
       const preview = () => {
-        selectedIndex = index; confirm.textContent = "選這張：" + card.name;
+        selectedIndex = index;
+        confirm.setAttribute("aria-label", "選這張：" + card.name);
+        confirm.title = "選這張：" + card.name;
         upgradeCards.querySelectorAll('button').forEach(node => node.setAttribute('aria-pressed', String(node === button)));
         SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:upgradeLevel(card.id)+1});
       };
-      button.addEventListener('click', preview); button.addEventListener('focus', preview); button.addEventListener('pointerenter', preview);
+      let lastTap = -Infinity;
+      button.addEventListener('click', () => {
+        const now = performance.now();
+        if (now - lastTap < 350) { applyUpgrade(index); return; }
+        lastTap = now; preview();
+      });
+      button.addEventListener('dblclick', () => applyUpgrade(index)); button.addEventListener('focus', preview); button.addEventListener('pointerenter', preview);
       if (!index) preview();
     }
   });

@@ -215,3 +215,36 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 
 .upgrade-panel, .settings-panel { touch-action: pan-y; overscroll-behavior: contain; }
 .upgrade-panel *, .settings-panel .skill-preview-host { touch-action: pan-y; }
+
+/* 升級區依實際可見高度縮排；確認鍵不參與內容捲動。 */
+body { touch-action: auto; }
+#gameCanvas { touch-action: none; }
+.overlay { min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.upgrade-panel { height: min(620px, 100%); min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; gap: 6px; padding: 10px; overflow: hidden; }
+.upgrade-panel h2 { font-size: 22px; margin: 0; }
+.upgrade-panel > p { font-size: 12px; margin: 0; }
+.upgrade-workspace { min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(180px, 1fr); gap: 10px; overflow: auto; touch-action: pan-x pan-y; padding: 4px; }
+.upgrade-panel .upgrade-cards { min-height: 0; gap: 8px; align-items: stretch; }
+.upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 6px; gap: 4px; overflow-wrap: anywhere; }
+.upgrade-panel .upgrade-card strong { font-size: 17px; }
+.upgrade-panel .upgrade-card span:not(.upgrade-icon), .upgrade-panel .upgrade-card small { font-size: 12px; }
+.upgrade-panel .upgrade-icon .pixel-icon { width: 30px; height: 30px; }
+#upgradePreview { min-width: 0; margin: 0; padding: 6px; overflow: auto; }
+#upgradePreview iframe { min-height: 0; height: auto; width: 100%; margin: 4px 0; }
+#upgradePreview strong, #upgradePreview p { font-size: 12px; }
+#confirmUpgrade { justify-self: center; width: 52px; height: 52px; min-height: 52px; padding: 0; border-radius: 50%; font-size: 32px; line-height: 1; margin: 0; }
+.upgrade-panel > .tree-details { margin: 0; max-height: 70px; overflow: auto; }
+.upgrade-panel .tree-details summary { padding: 4px; }
+.game-shell[data-short="true"] .upgrade-panel { gap: 3px; padding: 6px; }
+.game-shell[data-short="true"] .upgrade-workspace { grid-template-columns: minmax(0, 1fr); }
+.game-shell[data-short="true"] #upgradePreview, .game-shell[data-short="true"] .upgrade-panel > .tree-details { display: none; }
+.game-shell[data-short="true"] .upgrade-panel .upgrade-icon { display: none; }
+.game-shell[data-short="true"] .upgrade-panel .upgrade-card { gap: 2px; }
+.game-shell[data-short="true"] .upgrade-panel .upgrade-card strong { font-size: 15px; }
+/* 祖先也必須允許平移，手機才真的能捲到暫停與設計室的最後一項。 */
+.upgrade-panel, .settings-panel, .message-card, .maker-editor { min-height: 0; touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.upgrade-panel *, .settings-panel .skill-preview-host, .maker-editor * { touch-action: pan-x pan-y; }
+.settings-panel, .message-card { max-width: 100%; overflow: auto; }
+
+.game-shell[data-short="true"] .upgrade-panel .upgrade-card { padding: 4px; line-height: 1.2; }
+.game-shell[data-short="true"] .upgrade-panel .upgrade-card small { font-size: 11px; }

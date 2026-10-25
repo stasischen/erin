@@ -1,0 +1,63 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8">
+<title>升級選卡版面測試</title><pre id="results">RUNNING</pre>
+<script>
+(async () => {
+  const lines = []; let failures = 0;
+  function check(ok, label) { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failures++; }
+  // 實際 DOM 排版：手機、iPad、直拿旋轉、工具列佔用高度與安全區。
+  const cases = [[640,300,640,300,0,0], [667,375,640,300,12,18], [740,360,700,310,10,20], [844,390,780,330,20,20], [1024,768,1024,700,0,10], [300,640,300,640,0,0], [900,600,800,390,20,30]];
+  for (const [iw,ih,vw,vh,left,top] of cases) {
+    const frame = document.createElement('iframe'); frame.style.cssText = `width:${iw}px;height:${ih}px;border:0`;
+    const loaded = new Promise(resolve => frame.onload = resolve); frame.src = '../index.html'; document.body.append(frame); await loaded;
+    const w = frame.contentWindow, d = w.document, rotated = ih > iw;
+    const safe = {top:12,right:20,bottom:12,left:20};
+    const local = rotated ? {top:safe.right,right:safe.bottom,bottom:safe.left,left:safe.top} : safe;
+    const shell = d.querySelector('.game-shell');
+    for (const [key,value] of Object.entries(local)) shell.style.setProperty(`--safe-${key}`,`${value}px`);
+    Object.defineProperty(w,'visualViewport',{configurable:true,value:{width:vw,height:vh,offsetLeft:left,offsetTop:top}});
+    const within = (node,label) => {
+      const r = node.getBoundingClientRect(), visible = w.visualViewport;
+      check(r.width>0 && r.height>0 && r.left>=left+safe.left-.5 && r.right<=left+visible.width-safe.right+.5 && r.top>=top+safe.top-.5 && r.bottom<=top+visible.height-safe.bottom+.5, `${iw}×${ih}/${vw}×${vh} ${label}`);
+      const p = d.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+      check(p && (p===node || node.contains(p)), `${label} 可以點到`);
+    };
+    try {
+      w.resize();
+      w.eval("resetGame();state.pendingChoices=UPGRADES.filter(c=>c.requires && c.requires.length).slice(-3);showUpgradeChoices()");
+      const panel=d.querySelector('#upgradePanel'), cards=[...d.querySelectorAll('#upgradeCards button')], confirm=d.querySelector('#confirmUpgrade');
+      check(cards.length===3,'三張卡');
+      for (const card of cards) { within(card,'完整卡片'); check(card.scrollHeight<=card.clientHeight+1,'卡片文字沒有裁切'); }
+      within(confirm,'確認按鈕');
+      check(w.getComputedStyle(confirm).borderRadius==='50%' && confirm.offsetWidth>=48 && !!confirm.getAttribute('aria-label'),'大圓形圖示與標籤');
+      check(panel.scrollHeight<=panel.clientHeight+1,'選卡面板不必捲動');
+      if ((rotated?vw:vh)<440) check(w.getComputedStyle(d.querySelector('#upgradePreview')).display==='none','小畫面隱藏展示');
+      else { within(d.querySelector('#upgradePreview'),'效果展示'); within(d.querySelector('#upgradePreview iframe'),'完整展示圖'); }
+      // 使用能選的卡測試單點、確認、雙點與鍵盤。
+      function choices() { w.eval("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices()"); }
+      choices(); d.querySelectorAll('#upgradeCards button')[1].click();
+      check(w.eval("state.mode==='levelup' && upgradeLevel('rapid-water')===0"),'單點只預覽');
+      confirm.click(); check(w.eval("state.mode==='playing' && upgradeLevel('rapid-water')===1"),'圓鈕正確選取');
+      choices(); const card=d.querySelector('#upgradeCards button'); card.click(); card.click();
+      check(w.eval("state.mode==='playing' && upgradeLevel('big-water')===1"),'連點兩下直接選卡且只加一級');
+      choices(); d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'3',bubbles:true}));
+      check(w.eval("state.mode==='playing'"),'鍵盤選卡');
+      w.openSettings(); within(d.querySelector('#settingsPanel'),'暫停設定面板');
+      const settings=d.querySelector('#settingsPanel'); settings.scrollTop=settings.scrollHeight;
+      within(d.querySelector('#closeSettingsButton'),'設定完成按鈕捲動可達');
+      check(w.getComputedStyle(d.body).touchAction!=='none','祖先允許觸控捲動');
+      w.closeSettings(); w.showOverlay('paused'); d.querySelector('#makerLink').click();
+      for (const tab of d.querySelectorAll('[data-tab]')) {
+        tab.click();
+        for (const selector of ['.maker-toolbar','.maker-tabs','.maker-editor','.maker-footer']) within(d.querySelector(selector),`Maker ${tab.dataset.tab} ${selector}`);
+        const editor=d.querySelector('#editor'); editor.scrollTop=editor.scrollHeight;
+        check(editor.clientHeight>35 && editor.scrollWidth<=editor.clientWidth+2 && editor.scrollTop+editor.clientHeight>=editor.scrollHeight-2,`Maker ${tab.dataset.tab} 末端可達`);
+      }
+      d.querySelector('#makerClose').click();
+      // 模擬選卡時工具列伸縮：由寬敞展示切換到小畫面備案。
+      choices(); w.visualViewport.height=280; w.resize(); within(confirm,'縮小視窗後仍能確認');
+    } catch(error) { check(false,error.stack); }
+    frame.remove();
+  }
+  document.querySelector('#results').textContent=`${failures ? 'FAIL' : 'PASS'}: ${failures} failures\n${lines.join('\n')}`;
+})().catch(error=>document.querySelector('#results').textContent='FAIL '+error.stack);
+</script></html>

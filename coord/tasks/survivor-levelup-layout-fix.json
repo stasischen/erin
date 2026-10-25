@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-levelup-layout-fix",
+  "title": "小怪獸：修正橫向升級選卡超出畫面",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-levelup-layout-fix",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T113935Z-parent-levelup-layout-fix.md",
+  "next": "請 Grok 審查 erin-watch 提交的 SHA；執行無頭版面測試並在手機／iPad 試玩。Chrome 在此沙盒 SIGABRT，版面尚待驗證；詳見驗證文件。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T11:42:55.715212Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-skill-preview"
+  ]
+}
