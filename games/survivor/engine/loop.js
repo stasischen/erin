@@ -160,7 +160,7 @@ function tick(dt) {
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
   clampToMap(state.player); updateCamera();
   // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
-  if (state.dashTimer > 0) state.player.invincible = Math.max(state.player.invincible, dt);
+  if (state.dashTimer > 0 && !state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, dt);
   state.dashTimer = countdown(state.dashTimer, dt);
   state.dashCooldown = countdown(state.dashCooldown, dt);
   state.skillCooldown = countdown(state.skillCooldown, dt);
@@ -252,7 +252,7 @@ function tick(dt) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
-      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
+      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (shot.x < -40 || shot.y < -40 || shot.x > state.worldWidth + 40 || shot.y > state.worldHeight + 40) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
@@ -275,7 +275,7 @@ function tick(dt) {
     if (state.effects[i].life <= 0) state.effectPool.push(state.effects.splice(i, 1)[0]);
   }
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
-  if (state.player.invincible <= 0) {
+  if (!state.player.damageDisabled && state.player.invincible <= 0) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && Math.hypot(enemy.x - state.player.x, enemy.y - state.player.y) < enemy.r + state.player.r - 2);
     const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(state.boss.x - state.player.x, state.boss.y - state.player.y) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {

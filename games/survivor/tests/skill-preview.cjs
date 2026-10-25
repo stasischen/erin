@@ -10,11 +10,27 @@ function scene(spec,custom=data){
  host('globalThis.randomCalls=0; Math.random=()=>{randomCalls++;return .5;}');
  const run=createRun({preview:{data:JSON.parse(JSON.stringify(custom)),spec}});
  const effects=new Set();
+ const counter=run('previewFeatures.includes("thunder-counter")');
+ let wasHurt=false, hits=0, recoveries=0;
+ assert.ok(run('PREVIEW_COMPOSITION.scale>=1.3 && PREVIEW_COMPOSITION.scale<=1.4'));
+ assert.equal(run('state.player.invincible>0 || state.player.hitFlash>0'),false);
+
  for(let i=0;i<130;i++) {
   run('stepPreview(.05)');
   JSON.parse(run('JSON.stringify(state.vfx.map(v=>v.kind).concat(state.fields.map(f=>f.school),state.bossMoves.map(m=>m.kind)))')).forEach(x=>effects.add(x));
   assert.equal(run('state.mode'),'playing');
+  const hurt=run('state.player.invincible>0 || state.player.hitFlash>0');
+  if(!counter) assert.equal(hurt,false,`${spec.id}: 一般展示不受傷或閃爍`);
+  if(hurt && !wasHurt) hits++;
+  if(wasHurt && !hurt) recoveries++;
+  wasHurt=hurt;
+  if(spec.kind!=='move') assert.ok(run('state.enemies.every(e=>Math.hypot(e.x-state.player.x,e.y-state.player.y)>=PREVIEW_COMPOSITION.minDistance-.00001)'),`${spec.id}: 假怪保持三個主角寬`);
+
   assert.ok(run('state.enemies.length<=26 && state.projectiles.length<=24 && state.vfx.length<=48 && state.effects.length<=90 && state.bossMoves.length<=12'));
+ }
+ if(counter) {
+  assert.equal(hits,3,'兩次重播共三輪，每輪只受傷一次');
+  assert.equal(recoveries,2,'前兩輪受傷示範後均恢復');
  }
  assert.ok(run('drawCalls.length>0'));
  assert.equal(run('drawCalls.every(c=>c.slice(1).every(v=>typeof v!=="number"||Number.isFinite(v)))'),true);
@@ -84,7 +100,7 @@ console.log('PASS: focus does not apply, per-card double-tap timing, slow taps o
 const close=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'big-water',level:1}}});
 const homes=close('JSON.stringify(state.enemies.map(e=>[e.x,e.y]))');
 const camera=close('JSON.stringify([state.cameraX,state.cameraY])');
-assert.ok(Math.abs(close('state.height')-360/1.65)<.01,'普攻使用共用1.65倍取景');
+assert.ok(Math.abs(close('state.height')-360/1.35)<.01,'普攻使用共用1.35倍取景');
 let hit=false;
 for(let i=0;i<180;i++) {
  close('stepPreview(.05)');
@@ -92,7 +108,22 @@ for(let i=0;i<180;i++) {
  assert.equal(close('JSON.stringify([state.cameraX,state.cameraY])'),camera,'鏡頭不因角色走路而把假怪推到上方');
  hit=hit||close('state.enemies.some(e=>e.hp<e.maxHp)');
 }
-assert.ok(hit,'近距離真實水球命中');
+assert.ok(hit,'保持距離的真實水球命中');
 const wide=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'water-ultimate',level:1}}});
 assert.equal(wide('state.height'),close('state.height'),'全場巨浪同用基準取景');
-console.log('PASS: t=0 target placement, real hit and repeated loops, fixed close camera, 1.65x shared framing, smooth target return');
+console.log('PASS: t=0 target placement, real hit and repeated loops, fixed close camera, 1.35x shared framing, smooth target return');
+
+// 直接強迫四種傷害命中：展示免傷不依賴假怪距離，也不留下受傷表情。
+const safe=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'big-water',level:1}}});
+safe(`globalThis.initialHealth=state.player.health;
+Object.assign(state.enemies[0],{x:state.player.x,y:state.player.y,damage:30});
+state.enemyShots.push({x:state.player.x,y:state.player.y,vx:0,vy:0,r:9,damage:30,source:'book'});
+state.enemyHazards.push({x:state.player.x,y:state.player.y,r:50,warning:0,damage:30});
+state.boss={x:state.player.x,y:state.player.y,r:32,hp:2000,maxHp:2000,speed:0,wobble:0,flash:0};
+bossHurtPlayer(30);tick(.05);`);
+assert.equal(safe('state.player.health'),safe('initialHealth'));
+assert.equal(safe('state.player.invincible>0 || state.player.hitFlash>0'),false);
+assert.equal(safe('state.enemyShots.length+state.enemyHazards.length'),0,'碰撞和警告確實已被處理');
+safe('resetGame();');
+assert.equal(safe('!!state.player.damageDisabled'),false,'正式遊戲重設後不沿用展示免傷');
+console.log('PASS: preview immunity for contact, projectiles, custom hazards and boss moves; no hurt/flash; reset clears immunity');
