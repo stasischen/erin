@@ -142,6 +142,13 @@
   }
   function drawBoss() {
     const p = panel('魔王與三個階段'), fields = grid(p); text(fields,'魔王名稱',draft.boss,'name'); range(fields,draft.boss,'hp',[500,5000,100]); range(fields,draft.boss,'speed',[0,100,5]); range(fields,draft.boss,'radius',[20,50,1],'身體大小');
+    const zone = panel('老師戰安全圈'), zf = grid(zone), z = draft.bossZone;
+    const toggle = button(zf, '紫霧縮圈：' + (z.enabled ? '開' : '關'), () => { z.enabled = !z.enabled; changed(); render(); });
+    toggle.setAttribute('role', 'switch'); toggle.setAttribute('aria-checked', String(z.enabled));
+    range(zf,z,'steps',[0,3,1],'縮圈次數（每階段一次）');
+    range(zf,z,'speed',[10,160,5],'縮圈速度（每秒距離）');
+    range(zf,z,'damage',[0,4,.5],'紫霧每秒扣血');
+    el('p','每次提前 4 秒顯示下一圈。圈外速度剩 80%；最小圈直徑是 1.5 個螢幕寬。完整效果請按試玩，單招展示不縮圈。',zone);
     draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
     const moves = el('div', undefined, p); moves.className = 'maker-moves';
     draft.boss.moves.forEach((m, i) => { const tile = button(moves, m.name, () => { moveIndex = i; render(); }, i === moveIndex); tile.innerHTML = SurvivorIcons.html(m.kind) + tile.innerHTML; tile.className = 'upgrade-card'; });

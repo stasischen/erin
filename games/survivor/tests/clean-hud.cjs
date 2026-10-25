@@ -17,13 +17,14 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
-// 任意鏡頭位置、極端長寬比、連續相同亂數，身體都必須完全在畫面外且在地圖內。
+// 非老師戰：任意鏡頭位置、極端長寬比、連續相同亂數，身體都必須完全在畫面外且在地圖內。
+// 每次清掉上一輪老師；老師戰的小怪改在安全圈內生成，另見 boss-zone.cjs。
 for (const [width,height] of [[320,568],[568,280],[800,600],[1366,768],[2400,300],[300,2400]]) {
   run(`state.width=${width};state.height=${height};resetMap();`);
   for (const fx of [0,.1,.5,.9,1]) for (const fy of [0,.1,.5,.9,1]) {
     run(`state.player.x=state.worldWidth*${fx};state.player.y=state.worldHeight*${fy};updateCamera();`);
     for (const random of [0,.24,.49,.74,.999999]) {
-      run(`Math.random=()=>${random};state.enemies=[];state.elapsed = state.stageElapsed =100;spawnEnemy();summonTeacher();`);
+      run(`Math.random=()=>${random};state.boss=null;state.bossZone=null;state.enemies=[];state.elapsed = state.stageElapsed =100;spawnEnemy();summonTeacher();`);
       assert.equal(run(`state.enemies.length===1 && [state.enemies[0],state.boss].every(e =>
         e.x>=0 && e.y>=0 && e.x<state.worldWidth && e.y<state.worldHeight &&
         (Math.abs(deltaX(e.x,state.player.x))-(e===state.boss?60:e.r)>state.width/2 || Math.abs(deltaY(e.y,state.player.y))-(e===state.boss?60:e.r)>state.height/2))`),true);

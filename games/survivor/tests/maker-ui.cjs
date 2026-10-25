@@ -48,3 +48,14 @@ const skinData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
 assert.equal(skinData.enemies[0].spriteId,'mushroom-hopper');
 assert.equal(skinData.enemies[0].hp,120);assert.equal(skinData.enemies[0].attack.type,'projectile');
 console.log('PASS: Maker skin thumbnails, selection and persistence preserve behavior');
+
+// 魔王安全圈：操作真正的 Maker 控制項後儲存、重載。
+ui=setup();ui.tab('boss');ui.click('紫霧縮圈：開');
+for (const [label,value] of [['縮圈次數（每階段一次）',2],['縮圈速度（每秒距離）',75],['紫霧每秒扣血',1.5]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input' && n.attrs['aria-label']===label);
+ assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+ui.ids.save.fire('click');
+assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).bossZone,{enabled:false,steps:2,speed:75,damage:1.5});
+ui=setup({saved:ui.storage});ui.tab('boss');assert.ok(ui.nodes().some(n=>n._text==='紫霧縮圈：關'));
+console.log('PASS: Maker zone toggle/count/speed/damage controls persist and reload');

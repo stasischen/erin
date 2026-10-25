@@ -35,6 +35,12 @@
         if (!input.visuals || typeof input.visuals.spriteOutline !== 'boolean') fail('角色外框需要開或關');
         data.visuals.spriteOutline = input.visuals.spriteOutline;
       }
+      // 舊作品沒有縮圈設定時補預設；只接受有限、溫和的數值。
+      if (input.bossZone !== undefined) {
+        const z = input.bossZone;
+        if (!z || typeof z.enabled !== 'boolean') fail('縮圈需要開或關');
+        data.bossZone = { enabled: z.enabled, steps: num(z.steps, 0, 3, '縮圈次數', true), speed: num(z.speed, 10, 160, '縮圈速度'), damage: num(z.damage, 0, 4, '紫霧每秒傷害') };
+      }
       for (const key of ['tuning', 'build', 'bossTuning']) {
         if (!input[key] || typeof input[key] !== 'object') fail('缺少 ' + key);
         for (const field of Object.keys(data[key])) {
