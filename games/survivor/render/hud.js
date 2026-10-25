@@ -1,0 +1,58 @@
+let lastSlotMarkup = "";
+function updateHud() {
+  document.getElementById("bossName").textContent = GAME_DATA.boss.name;
+  const maxHealth = maxPlayerHealth();
+  const ratio = Math.max(0, state.player.health / maxHealth);
+  healthFill.style.width = `${ratio * 100}%`;
+  healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
+  experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
+  levelLabel.textContent = `${state.stageIndex + 1}關 · Lv.${state.level}`;
+  const slots = document.getElementById("buildSlots");
+  const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
+    const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
+    const detail = cards.map(card => `${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
+    return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
+  }).join("");
+  if (slotMarkup !== lastSlotMarkup) {
+    slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;
+    if (!PREVIEW_MODE && globalThis.SurvivorPreview) UPGRADES.filter(card => upgradeLevel(card.id)).forEach(card => {
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = card.name + '・看效果';
+      button.addEventListener('click', () => SurvivorPreview.mount(document.getElementById('ownedPreview'), GAME_DATA, {kind:'card',id:card.id,level:upgradeLevel(card.id)}));
+      slots.appendChild(button);
+    });
+  }
+  bossHud.hidden = !state.boss;
+  if (state.boss) bossHealthFill.style.width = `${Math.max(0, state.boss.hp / state.boss.maxHp) * 100}%`;
+}
+
+
+function updateActionControls() {
+  actionControls.hidden = state.mode !== "playing";
+  actionControls.style.cssText = `--action-size: ${gameSettings.actionButtonSize}px`;
+  for (const [button, remaining, total, label] of [
+    [dashButton, state.dashCooldown, gameSettings.dashCooldown, "衝刺"],
+    [skillButton, state.skillCooldown, gameSettings.bombCooldown, "泡泡炸彈"]
+  ]) {
+    const ready = remaining <= 0;
+    button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
+    button.setAttribute("aria-disabled", String(!ready || state.mode !== "playing"));
+    button.setAttribute("aria-label", ready ? label + "準備好了" : label + "冷卻中");
+    button.title = ready ? label + "準備好了" : `${label}冷卻 ${Math.ceil(remaining)} 秒`;
+  }
+}
+for (const [button, activate] of [[dashButton, activateDash], [skillButton, activateSkill]]) {
+  button.addEventListener("pointerdown", (event) => { event.preventDefault(); event.stopPropagation(); activate(); });
+  // 鍵盤與輔助操作仍可使用原生按鈕 click；指標按下已觸發，不重複施放。
+  button.addEventListener("click", (event) => { if (event.detail === 0) activate(); });
+}
+
+
+
+// Live accessors preserve shared state and the legacy globals used by preview/VM callers.
+globalThis.Survivor.render = globalThis.Survivor.render || {};
+globalThis.Survivor.render.hud = globalThis.Survivor.render.hud || {};
+Object.defineProperties(globalThis.Survivor.render.hud, {
+  lastSlotMarkup: { enumerable: true, get: () => lastSlotMarkup },
+  updateHud: { enumerable: true, get: () => updateHud },
+  updateActionControls: { enumerable: true, get: () => updateActionControls }
+});

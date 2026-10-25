@@ -43,6 +43,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await loaded;
   // 等新頁確實載入遊戲，而非沿用上一頁 execution context。
   for(let i=0;i<100;i++){try{if(await evaluate("typeof showUpgradeChoices==='function' && document.readyState==='complete'"))break;}catch{}await new Promise(resolve=>setTimeout(resolve,20));}
+  assert.equal(await evaluate("window.Survivor.engine.loop.resetGame === resetGame && window.Survivor.ui.levelup.showUpgradeChoices === showUpgradeChoices"),true,'共用清單與命名空間確實載入');
   await evaluate("resetGame();state.pendingChoices=UPGRADES.filter(c=>c.requires&&c.requires.length).slice(-3);showUpgradeChoices();true");
   const layout=await evaluate(geometry);
   await evaluate("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();true");

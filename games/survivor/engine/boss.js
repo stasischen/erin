@@ -1,0 +1,177 @@
+function summonTeacher() {
+  const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
+  if (!position) return;
+  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };
+  clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
+  updateHud();
+}
+
+// 老師招式的預告、位置和命中都用世界座標；鏡頭外取消，重新看見時重新預告。
+function clearBossMoves() {
+  for (const move of state.bossMoves) state.bossMovePool.push(move);
+  state.bossMoves = [];
+  for (let i = state.enemyShots.length - 1; i >= 0; i--) {
+    if (state.enemyShots[i].source === "teacher") state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
+  }
+}
+function bossHurtPlayer(damage) {
+  if (!state.boss || !targetVisible(state.boss) || state.player.invincible > 0) return;
+  state.player.health = Math.max(0, state.player.health - damage);
+  state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
+  playTone(180, 0.12, "sawtooth"); updateHud(); counterDischarge();
+  if (state.mode === "playing" && state.player.health <= 0) finishRun(false);
+}
+function bossDefinition(move) { return BOSS_MOVES.find(row => row.id === move.id); }
+function bossKind(move) { return move.kind || (bossDefinition(move) || {}).kind; }
+function beginBossMove(id) {
+  const definition = BOSS_MOVES.find(row => row.id === id);
+  if (!definition || definition.minPhase > state.bossPhase) return;
+  const kind = definition.kind;
+  const b = state.boss, p = state.player;
+  if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
+  if (kind === "ring" && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
+  const angle = Math.atan2(p.y - b.y, p.x - b.x);
+  const move = takeFromPool(state.bossMovePool, {
+    id, kind, x: b.x, y: b.y, angle, warning: definition.warning,
+    active: false, pulse: 0, life: 0, points: [], radius: 0, endX: b.x, endY: b.y,
+    count: Math.min(10, definition.count + definition.phaseCount * state.bossPhase)
+  });
+  if (kind === "dash") {
+    const length = Math.min(definition.distance, Math.hypot(p.x - b.x, p.y - b.y) + 70);
+    move.endX = Math.max(state.cameraX + b.r, Math.min(state.cameraX + state.width - b.r, b.x + Math.cos(angle) * length));
+    move.endY = Math.max(state.cameraY + b.r, Math.min(state.cameraY + state.height - b.r, b.y + Math.sin(angle) * length));
+  }
+  if (kind === "rain" || kind === "call") {
+    move.radius = definition.radius;
+    const count = Math.min(10, definition.count + definition.phaseCount * state.bossPhase);
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, distance = i ? 85 + Math.random() * 65 : 0;
+      const point = { x: p.x + Math.cos(a) * distance, y: p.y + Math.sin(a) * distance, r: move.radius };
+      clampToMap(point);
+      if (targetVisible(point)) move.points.push(point);
+    }
+  }
+  if (kind === "ring") {
+    move.radius = Math.min(definition.radius, state.width / 2 - 38, state.height / 2 - 38);
+    move.x = Math.max(state.cameraX + move.radius + 12, Math.min(state.cameraX + state.width - move.radius - 12, p.x));
+    move.y = Math.max(state.cameraY + move.radius + 12, Math.min(state.cameraY + state.height - move.radius - 12, p.y));
+    // 缺口朝向空間較多的一側，靠牆時也有出口；整段綠色弧線不會長出國字。
+    move.angle = Math.atan2(state.worldHeight / 2 - move.y, state.worldWidth / 2 - move.x);
+  }
+  state.bossMoves.push(move);
+}
+function fireBossFan(move) {
+  const spread = bossDefinition(move).spread;
+  const speed = bossDefinition(move).speed;
+  for (let i = 0; i < move.count; i++) {
+    if (state.enemyShots.filter(shot => shot.source === "teacher").length >= UPGRADE_TUNING.teacherShotLimit) break;
+    const a = move.angle + (i - (move.count - 1) / 2) * spread;
+    state.enemyShots.push(takeFromPool(state.enemyShotPool, {
+      source: "teacher", x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+      r: bossKind(move) === "chalk" ? 10 : 17, text: bossKind(move) === "chalk" ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
+      damage: bossDefinition(move).damage, life: 4
+    }));
+  }
+}
+function ringPoints(move) {
+  const definition = bossDefinition(move);
+  const points = [], gap = definition.gap;
+  const endRadius = Math.max(50, move.radius * 0.52); // 收到最後也留得下主角通過的缺口。
+  const radius = endRadius + (move.radius - endRadius) * Math.max(0, move.life / definition.duration);
+  for (let i = 0; i <= 16; i++) {
+    const a = move.angle + gap / 2 + (Math.PI * 2 - gap) * i / 16;
+    points.push({ x: move.x + Math.cos(a) * radius, y: move.y + Math.sin(a) * radius, r: 10 });
+  }
+  return points;
+}
+function updateBoss(dt) {
+  state.bossShake = countdown(state.bossShake, dt); state.bossShout = countdown(state.bossShout, dt);
+  const b = state.boss;
+  if (!b || state.bossIntro > 0) { clearBossMoves(); return; }
+  b.wobble += dt * 3; b.flash = Math.max(0, b.flash - dt);
+  b.slowTimer = countdown(b.slowTimer || 0, dt); b.stunTimer = countdown(b.stunTimer || 0, dt);
+  // 逐一跨過 66%、33%；一次大傷害跨兩條線也會依序演出兩次轉場。
+  const nextPhase = GAME_DATA.boss.phases.reduce((phase, row, i) => b.hp / b.maxHp <= row.threshold ? i + 1 : phase, 1);
+  if (nextPhase > state.bossPhase && state.bossPhasePause <= 0) {
+    state.bossPhase++; state.bossPhasePause = BOSS_TUNING.phasePause;
+    state.bossShout = BOSS_TUNING.phasePause; b.flash = 0.25;
+    clearBossMoves(); state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;
+    state.bossShake = BOSS_TUNING.shakeSeconds;
+  }
+  if (state.bossPhasePause > 0) { state.bossPhasePause = countdown(state.bossPhasePause, dt); updateHud(); return; }
+  if (!targetVisible(b)) {
+    clearBossMoves(); state.bossRest = Math.max(state.bossRest, 0.5);
+  }
+  // 預警時老師站定；衝撞只沿預告線走，不追蹤玩家。
+  if (!state.bossMoves.length && !(b.stunTimer > 0)) {
+    const dx = state.player.x - b.x, dy = state.player.y - b.y, length = Math.max(1, Math.hypot(dx, dy));
+    const speed = b.speed * (b.slowTimer > 0 ? (b.makerSlow || BUILD_TUNING.slowMultiplier) : 1);
+    b.x += dx / length * speed * dt; b.y += dy / length * speed * dt; clampToMap(b);
+  }
+  if (!targetVisible(b) || b.stunTimer > 0) return;
+  if (!state.bossMoves.length) {
+    state.bossRest = countdown(state.bossRest, dt);
+    if (state.bossRest > 0) return;
+    if (state.bossRest <= 0) {
+      const previousMoves = state.lastBossMoves;
+      const unlocked = BOSS_MOVES.filter(move => move.minPhase <= state.bossPhase && (bossKind(move) !== "ring" || Math.min(state.width, state.height) >= 196));
+      const freshChoices = unlocked.filter(move => !state.lastBossMoves.includes(move.id));
+      const choices = freshChoices.length ? freshChoices : unlocked;
+      if (!choices.length) { state.bossRest = .5; return; }
+      const id = choices[Math.floor(Math.random() * choices.length)].id;
+      beginBossMove(id); state.lastBossMoves = [id];
+      // 只搭配容易看懂的兩招，避開衝撞與收縮圈同時封路。
+      if (state.bossPhase >= 2 && (["rain", "call"].includes(BOSS_MOVES.find(m => m.id === id).kind))) {
+        const combo = GAME_DATA.boss.phases[state.bossPhase - 1].combo;
+        if (combo && combo !== id && !previousMoves.includes(combo)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
+      }
+      return; // 開始預告的這幀不扣時間，保證完整預警。
+    }
+  }
+  for (let i = state.bossMoves.length - 1; i >= 0; i--) {
+    const move = state.bossMoves[i];
+    if (!move.active) {
+      move.warning = countdown(move.warning, dt);
+      if (move.warning > 0) continue;
+      move.active = true; move.life = bossKind(move) === "dash" ? Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed : bossDefinition(move).duration;
+      if (bossKind(move) === "words" || bossKind(move) === "chalk") { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
+      if (bossKind(move) === "summon") for (let n = 0; n < Math.min(10, bossDefinition(move).count + bossDefinition(move).phaseCount * state.bossPhase); n++) spawnEnemy();
+      if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") state.bossShake = BOSS_TUNING.shakeSeconds;
+      continue; // 出手畫面至少呈現一幀，再開始範圍命中判斷。
+    }
+    if (bossKind(move) === "chalk") {
+      move.pulse = countdown(move.pulse, dt);
+      if (move.pulse <= 0) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
+    } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
+      for (const point of move.points) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+    } else if (bossKind(move) === "ring") {
+      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+    } else if (bossKind(move) === "dash") {
+      const dx = move.endX - b.x, dy = move.endY - b.y, length = Math.hypot(dx, dy);
+      const step = Math.min(length, bossDefinition(move).speed * dt);
+      if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; }
+      if (Math.hypot(b.x - state.player.x, b.y - state.player.y) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+    }
+    if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
+    move.life = countdown(move.life, dt);
+    if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
+  }
+  if (!state.bossMoves.length) state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;
+  updateHud();
+}
+
+
+// Live accessors preserve shared state and the legacy globals used by preview/VM callers.
+globalThis.Survivor.engine = globalThis.Survivor.engine || {};
+globalThis.Survivor.engine.boss = globalThis.Survivor.engine.boss || {};
+Object.defineProperties(globalThis.Survivor.engine.boss, {
+  summonTeacher: { enumerable: true, get: () => summonTeacher },
+  clearBossMoves: { enumerable: true, get: () => clearBossMoves },
+  bossHurtPlayer: { enumerable: true, get: () => bossHurtPlayer },
+  bossDefinition: { enumerable: true, get: () => bossDefinition },
+  bossKind: { enumerable: true, get: () => bossKind },
+  beginBossMove: { enumerable: true, get: () => beginBossMove },
+  fireBossFan: { enumerable: true, get: () => fireBossFan },
+  ringPoints: { enumerable: true, get: () => ringPoints },
+  updateBoss: { enumerable: true, get: () => updateBoss }
+});

@@ -1,73 +1,73 @@
-/* 設計室使用遊戲的橫向容器與旋轉後安全區。只有內容區捲動。 */
-.maker-room { position: absolute; z-index: 6; inset: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; padding: max(8px, var(--safe-top)) max(10px, var(--safe-right)) max(8px, var(--safe-bottom)) max(10px, var(--safe-left)); gap: 8px; background: #102538; color: #eef8ff; }
-.maker-room[hidden] { display: none; }
-.maker-room button, .maker-room summary, .maker-room input { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding: 8px 12px; min-height: 44px; touch-action: manipulation; }
-.maker-room button { cursor: pointer; box-shadow: 0 3px 0 #071522; }
-.maker-room button[aria-pressed="true"] { border-color: #ffe4a1; background: #385d70; }
-.maker-room button:active { transform: translateY(2px); }
-.maker-toolbar, .maker-footer, .maker-tabs { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.maker-toolbar strong { margin-right: auto; font-size: 20px; }
-.maker-toolbar button:first-of-type, #makerClose { width: 44px; flex-shrink: 0; padding: 0; border-radius: 50%; font-size: 22px; }
-.maker-tabs button { flex: 1; min-width: 0; border-radius: 22px; font-weight: 800; }
-.maker-editor { min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 3px 5px 12px 0; }
-.maker-editor * { touch-action: pan-y; }
-.maker-editor .panel { padding: 14px; margin-bottom: 12px; border: 2px solid #8cbad0; box-shadow: 4px 4px 0 #071522; background: #142b40; }
-.maker-editor h2 { margin: 0 0 12px; font-size: 21px; }
-.maker-editor h3 { margin: 8px 0; font-size: 17px; }
-.maker-editor p { color: #bdd5e7; font-size: 14px; line-height: 1.6; }
-.maker-editor .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(235px, 100%), 1fr)); gap: 12px; }
-.maker-editor label { display: flex; flex-direction: column; gap: 6px; padding: 6px 0; }
-.maker-editor input { width: 100%; min-width: 0; border-radius: 0; background: #091a2b; user-select: text; -webkit-user-select: text; }
-.maker-editor fieldset { min-width: 0; margin: 12px 0; border: 2px solid #547c96; padding: 10px; }
-.maker-editor legend { padding: 6px 10px; background: #244963; border: 2px solid #75adc8; }
-.maker-choice { margin: 8px 0; }
-.maker-choice summary { cursor: pointer; overflow-wrap: anywhere; }
-.maker-choice .grid { padding: 10px; background: #091a2b; }
-.maker-choice button { border-radius: 14px; }
-.maker-number { padding: 8px; background: #213d54; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
-.maker-number > div { display: flex; gap: 8px; align-items: center; }
-.maker-number output { margin-right: auto; font-weight: 900; font-size: 21px; color: #9adfff; }
-.maker-number button { border-radius: 50%; width: 44px; padding: 0; font-size: 24px; }
-.maker-tree { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
-.maker-branch { min-width: 0; border-top: 2px solid #75adc8; }
-.maker-branch .upgrade-card { width: 100%; min-height: 96px; margin: 0 0 20px; font-size: 16px; padding: 10px 6px; overflow-wrap: anywhere; }
-.maker-branch { background: linear-gradient(90deg, transparent calc(50% - 1px), #547c96 50%, transparent calc(50% + 1px)); }
-.maker-branch h3 { background: #142b40; }
-.maker-card-edit { border-top: 2px solid #ffe4a1; padding-top: 12px; scroll-margin-top: 4px; }
-.maker-portrait { font-size: 64px; background: #213d54; text-align: center; padding: 12px; }
-.maker-footer { border-top: 2px solid #547c96; padding-top: 8px; }
-#makerStatus { flex: 1; min-width: 0; margin: 0; max-height: 48px; overflow: auto; touch-action: pan-y; font-size: 14px; color: #bdd5e7; }
+/* 各畫面集中定義；視窗尺寸旗標只由 fitVisibleViewport 寫入 data-short。 */
+
+/* 共用容器與開始畫面 */
+#makerClose { width: 44px; flex-shrink: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-radius: 50%; font-size: 22px; }
+#makerStatus { flex: 1; min-width: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; max-height: 48px; overflow: auto; touch-action: pan-y; font-size: 14px; color: #bdd5e7; }
 #makerStatus.error { color: #ffb8b8; }
 #play { flex-shrink: 0; min-width: 140px; font-size: 22px; background: #2176a0; }
-@media (orientation: landscape) and (max-height: 520px), (orientation: portrait) and (max-width: 520px) {
-  .maker-room { gap: 4px; }
-  .maker-toolbar strong { font-size: 17px; }
-  .maker-tabs { gap: 4px; }
-  .maker-tabs button { padding: 6px 4px; font-size: 13px; }
-  .maker-editor .panel { padding: 10px; }
-  .maker-footer { padding-top: 4px; }
-  #play { min-height: 46px; padding: 6px 20px; }
-  .maker-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 
-.maker-moves { display: flex; gap: 10px; overflow-x: auto; touch-action: pan-x; padding: 4px 4px 10px; }
+/* Maker */
+.maker-room { position: absolute; z-index: 6; top: 0; right: 0; bottom: 0; left: 0; display: grid; padding-top: max(8px, var(--safe-top)); padding-right: max(10px, var(--safe-right)); padding-bottom: max(8px, var(--safe-bottom)); padding-left: max(10px, var(--safe-left)); gap: 8px; background: #102538; color: #eef8ff; grid-template-rows: 44px 44px minmax(0, 1fr) 56px; }
+.maker-room[hidden] { display: none; }
+.maker-room button { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; cursor: pointer; box-shadow: 0 3px 0 #071522; }
+.maker-room summary { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; }
+.maker-room input { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; }
+.maker-room button[aria-pressed="true"] { border-color: #ffe4a1; background: #385d70; }
+.maker-room button:active { transform: translateY(2px); }
+.maker-toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.maker-footer { display: flex; align-items: center; gap: 8px; min-width: 0; border-top: 2px solid #547c96; padding-top: 8px; min-height: 0; }
+.maker-tabs { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.maker-toolbar strong { margin-right: auto; font-size: 20px; }
+.maker-toolbar button:first-of-type { width: 44px; flex-shrink: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-radius: 50%; font-size: 22px; }
+.maker-tabs button { flex: 1; min-width: 0; border-radius: 22px; font-weight: 800; }
+.maker-editor { min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; padding-top: 3px; padding-right: 5px; padding-bottom: 12px; padding-left: 0; }
+.maker-editor * { touch-action: pan-y; }
+.maker-editor .panel { padding-top: 14px; padding-right: 14px; padding-bottom: 14px; padding-left: 14px; margin-bottom: 12px; border: 2px solid #8cbad0; box-shadow: 4px 4px 0 #071522; background: #142b40; }
+.maker-editor h2 { margin-top: 0; margin-right: 0; margin-bottom: 12px; margin-left: 0; font-size: 21px; }
+.maker-editor h3 { margin-top: 8px; margin-right: 0; margin-bottom: 8px; margin-left: 0; font-size: 17px; }
+.maker-editor p { color: #bdd5e7; font-size: 14px; line-height: 1.6; }
+.maker-editor .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(235px, 100%), 1fr)); gap: 12px; }
+.maker-editor label { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 0; }
+.maker-editor input { width: 100%; min-width: 0; border-radius: 0; background: #091a2b; user-select: text; -webkit-user-select: text; }
+.maker-editor fieldset { min-width: 0; margin-top: 12px; margin-right: 0; margin-bottom: 12px; margin-left: 0; border: 2px solid #547c96; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; }
+.maker-editor legend { padding-top: 6px; padding-right: 10px; padding-bottom: 6px; padding-left: 10px; background: #244963; border: 2px solid #75adc8; }
+.maker-choice { margin-top: 8px; margin-right: 0; margin-bottom: 8px; margin-left: 0; }
+.maker-choice summary { cursor: pointer; overflow-wrap: anywhere; }
+.maker-choice .grid { padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; background: #091a2b; }
+.maker-choice button { border-radius: 14px; }
+.maker-number { padding-top: 8px; padding-right: 8px; padding-bottom: 8px; padding-left: 8px; background: #213d54; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.maker-number > div { display: flex; gap: 8px; align-items: center; }
+.maker-number output { margin-right: auto; font-weight: 900; font-size: 21px; color: #9adfff; }
+.maker-number button { border-radius: 50%; width: 44px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; font-size: 24px; }
+.maker-tree { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.maker-branch { min-width: 0; border-top: 2px solid #75adc8; background: linear-gradient(90deg, transparent calc(50% - 1px), #547c96 50%, transparent calc(50% + 1px)); }
+.maker-branch .upgrade-card { width: 100%; min-height: 96px; margin-top: 0; margin-right: 0; margin-bottom: 20px; margin-left: 0; font-size: 16px; padding-top: 10px; padding-right: 6px; padding-bottom: 10px; padding-left: 6px; overflow-wrap: anywhere; }
+.maker-branch h3 { background: #142b40; }
+.maker-card-edit { border-top: 2px solid #ffe4a1; padding-top: 12px; scroll-margin-top: 4px; }
+.maker-portrait { font-size: 64px; background: #213d54; text-align: center; width: 128px; height: 100px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-bottom: 12px; }
+.maker-moves { display: flex; gap: 10px; overflow-x: auto; touch-action: pan-x; padding-top: 4px; padding-right: 4px; padding-bottom: 10px; padding-left: 4px; }
 .maker-moves .upgrade-card { flex: 0 0 150px; min-height: 90px; }
-.maker-portrait { width: 128px; height: 100px; padding: 0; margin-bottom: 12px; }
-.maker-editor input.maker-slider { appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; margin: 0; padding: 0; border: 0; background: transparent; touch-action: none; cursor: pointer; }
+.maker-editor input.maker-slider { appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border: 0; background: transparent; touch-action: none; cursor: pointer; }
 .maker-slider::-webkit-slider-runnable-track { height: 12px; background: #091a2b; border: 2px solid #75adc8; }
 .maker-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 26px; height: 32px; margin-top: -12px; border: 3px solid #d1efff; border-radius: 0; background: #2176a0; box-shadow: 3px 3px 0 #071522; }
 .maker-slider::-moz-range-track { height: 8px; background: #091a2b; border: 2px solid #75adc8; }
 .maker-slider::-moz-range-thumb { width: 20px; height: 26px; border: 3px solid #d1efff; border-radius: 0; background: #2176a0; }
 .maker-room [role="switch"][aria-checked="true"] { background: #23604f; border-color: #a3f0ca; }
+.maker-editor:has(.maker-card-workspace) { overflow: hidden; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; }
+.maker-editor .maker-card-workspace { height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); grid-template-rows: auto minmax(0, 1fr); gap: 6px; }
+.maker-card-workspace > h2 { grid-column: 1 / -1; font-size: 16px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; }
+.maker-card-workspace > .maker-tree { min-height: 0; overflow: auto; touch-action: pan-y; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.maker-card-workspace > .maker-card-edit { min-height: 0; overflow: auto; touch-action: pan-y; }
+.maker-card-workspace .maker-branch .upgrade-card { min-height: 64px; margin-bottom: 8px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; font-size: 13px; }
+.maker-card-workspace .maker-card-edit { padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border: 2px solid #ffe4a1; }
+.maker-card-workspace .maker-card-edit > h3 { margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; }
 
-/* 清單與編輯區各自捲動，頁尾不參與內容的高度競爭。 */
-.maker-room { grid-template-rows: 44px 44px minmax(0, 1fr) 56px; }
-.maker-editor:has(.maker-card-workspace) { overflow: hidden; padding: 0; }
-.maker-editor .maker-card-workspace { height: 100%; margin: 0; padding: 4px; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); grid-template-rows: auto minmax(0, 1fr); gap: 6px; }
-.maker-card-workspace > h2 { grid-column: 1 / -1; font-size: 16px; margin: 0; }
-.maker-card-workspace > .maker-tree, .maker-card-workspace > .maker-card-edit { min-height: 0; overflow: auto; touch-action: pan-y; }
-.maker-card-workspace > .maker-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.maker-card-workspace .maker-branch .upgrade-card { min-height: 64px; margin-bottom: 8px; padding: 4px; font-size: 13px; }
-.maker-card-workspace .maker-card-edit { padding: 4px; border: 2px solid #ffe4a1; }
-.maker-card-workspace .maker-card-edit > h3 { margin: 0; }
-.maker-footer { min-height: 0; }
+/* 共用尺寸旗標：compact */
+:where(.game-shell[data-short~="compact"]) .maker-room { gap: 4px; }
+:where(.game-shell[data-short~="compact"]) .maker-footer { padding-top: 4px; }
+:where(.game-shell[data-short~="compact"]) .maker-tabs { gap: 4px; }
+:where(.game-shell[data-short~="compact"]) .maker-toolbar strong { font-size: 17px; }
+:where(.game-shell[data-short~="compact"]) .maker-tabs button { padding-top: 6px; padding-right: 4px; padding-bottom: 6px; padding-left: 4px; font-size: 13px; }
+:where(.game-shell[data-short~="compact"]) .maker-editor .panel { padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; }
+:where(.game-shell[data-short~="compact"]) .maker-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+:where(.game-shell[data-short~="compact"]) #play { min-height: 46px; padding-top: 6px; padding-right: 20px; padding-bottom: 6px; padding-left: 20px; }
