@@ -1,12 +1,37 @@
+// 高度只影響繪圖，地面座標仍供碰撞、鏡頭和預警使用。
+// Erin 可以改：影子寬度是身體半徑的倍率；越高，影子越小、越淡。
+function drawGroundShadow(x, y, r, height = 0, size = .9, drawingContext = ctx) {
+  const air = Math.max(0, Math.min(1, height / 70));
+  drawingContext.save();
+  drawingContext.fillStyle = "rgba(25,34,43," + (.24 - air * .14) + ")";
+  drawingContext.beginPath();
+  drawingContext.ellipse(x, y + r * .85, r * size * (1 - air * .45), r * .27 * (1 - air * .45), 0, 0, Math.PI * 2);
+  drawingContext.fill(); drawingContext.restore();
+}
+// progress 從 0 到 1：落地前逐漸擴大。紅色預警另外畫，仍表示真正傷害範圍。
+function drawLandingShadow(x, y, r, progress, drawingContext = ctx) {
+  const remainingHeight = 70 * (1 - Math.max(0, Math.min(1, progress)));
+  drawGroundShadow(x, y - r * .85, r, remainingHeight, .9, drawingContext);
+}
+function bossAirHeight() {
+  const move = state.bossMoves.find(m => bossKind(m) === "dash" && m.active);
+  if (!move) return 0;
+  const duration = Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed;
+  return Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - move.life / Math.max(.001, duration)))) * 28;
+}
+
 function drawBossMoves() {
   for (const move of state.bossMoves) {
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
     if (bossKind(move) === "dash") {
+      const duration = Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed;
+      drawLandingShadow(move.endX, move.endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
       ctx.lineWidth = state.boss.r * 2; ctx.strokeStyle = "rgba(220,65,83,.18)";
       ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
       ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
     } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
       for (const point of move.points) {
+        if (bossKind(move) === "rain") drawLandingShadow(point.x, point.y, 16, move.active ? 1 : 1 - move.warning / bossDefinition(move).warning);
         ctx.beginPath(); ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         if (bossKind(move) === "rain") {
           const height = move.active ? 0 : move.warning / bossDefinition(move).warning * 70;
@@ -88,11 +113,10 @@ function drawHero() {
   const p = state.player;
   // 遊戲時間暫停時，彈跳與受傷閃爍也一起停下來。
   const hurt = p.invincible > 0;
-  const hop = p.moving ? Math.abs(Math.sin(p.walkPhase)) * 2 : 0;
+  const hop = (p.moving ? Math.abs(Math.sin(p.walkPhase)) * 2 : 0) + (p.airHeight || 0);
   const sway = p.moving ? Math.sin(p.walkPhase) * 0.055 : 0;
+  drawGroundShadow(p.x, p.y, p.r, hop);
   ctx.save(); ctx.translate(Math.round(p.x), Math.round(p.y));
-  ctx.fillStyle = "rgba(36,57,67,.22)";
-  ctx.beginPath(); ctx.ellipse(0, p.r * .85, p.r * .9 - hop, p.r * .25, 0, 0, Math.PI * 2); ctx.fill();
   if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
   ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
   const sprite = SPRITES.player;
@@ -105,14 +129,16 @@ function drawHero() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx) {
-  drawingContext.save(); drawingContext.translate(x, y + Math.sin(bounce) * 2);
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0) {
+  const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
+  const hop = Math.abs(Math.sin(bounce)) * 2 + height;
+  drawGroundShadow(x, y, r, hop, size, drawingContext);
+  drawingContext.save(); drawingContext.translate(x, y - hop);
   const sprite = SPRITES[enemyId];
   if (sprite) {
     if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
     drawingContext.drawImage(sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
   }
-  drawingContext.fillStyle = "rgba(36,57,67,.22)"; drawingContext.beginPath(); drawingContext.ellipse(1, r * .82, r * .9, r * .27, 0, 0, Math.PI * 2); drawingContext.fill();
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   drawingContext.fillStyle = flash ? "#fff" : color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
   drawingContext.beginPath();
@@ -296,12 +322,16 @@ function render() {
     ctx.restore();
   }
   if (state.boss) {
-    const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
+    const b = state.boss, x = b.x, y = b.y;
+    const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
+    drawGroundShadow(x, y, b.r, hop);
+    ctx.save(); ctx.translate(x, y - hop); ctx.scale(b.r / 32, b.r / 32); ctx.translate(-x, -y);
     ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
     ctx.fillStyle = (b.flash || state.bossShout > 0) ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
     ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
     ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
     ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
+    ctx.restore();
     ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
   }
   for (const hazard of state.enemyHazards) {
@@ -310,7 +340,7 @@ function render() {
   }
   for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
   for (const enemy of state.enemies) {
-    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId);
+    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
   for (const target of combatTargets()) drawTargetStatus(target);
@@ -386,6 +416,9 @@ function drawBossGuide() {
 globalThis.Survivor.render = globalThis.Survivor.render || {};
 globalThis.Survivor.render.world = globalThis.Survivor.render.world || {};
 Object.defineProperties(globalThis.Survivor.render.world, {
+  drawGroundShadow: { enumerable: true, get: () => drawGroundShadow },
+  drawLandingShadow: { enumerable: true, get: () => drawLandingShadow },
+  bossAirHeight: { enumerable: true, get: () => bossAirHeight },
   drawBossMoves: { enumerable: true, get: () => drawBossMoves },
   BACKGROUND_TILES: { enumerable: true, get: () => BACKGROUND_TILES },
   backgroundTile: { enumerable: true, get: () => backgroundTile },
