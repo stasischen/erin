@@ -3,18 +3,18 @@
   "id": "survivor-build-variety",
   "title": "小怪獸：流派與四欄位，讓每場玩法不同",
   "owner": "codex",
-  "state": "todo",
+  "state": "peer_review",
   "repo": "erin",
-  "branch": null,
+  "branch": "codex/survivor-build-variety",
   "pr": null,
   "brief": "coord/inbox/done/20261025T084309Z-parent-variety.md",
-  "next": "等待 survivor-landscape 合併後，由 erin-watch 建立 codex/survivor-build-variety 分支。依企劃 §9 步驟 1 製作普攻／技能／衝刺／被動四欄位與水／風／雷三流派（暫名，Erin 可改名），各 4～5 張卡、顏色邊框，三選一盡量跨流派，首張流派卡改變對應欄位行為。維持全自動攻擊，不做手動瞄準或換彈；數值放 Erin 設定區並附簡單註解，更新資源版本與 sw 快取，驗證後送 Grok 審查。步驟 2～5 僅記錄路線，不納入本卡；需 Erin 決定的設計先記錄詢問。",
+  "next": "請 Grok 審查目前分支相對 main 的差異；工程驗證全通過，詳見 docs/survivor-build-variety-validation.md。erin-watch 代辦 commit、push 與 PR。通過後請 Erin 在電腦及 iPad 試玩三流派首張卡、混搭、四欄／老師血條版面與手感，再確認暫名及初值。沙盒禁止啟動伺服器且瀏覽器拒絕本機檔案網址，本輪未完成實機／視覺驗證。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T08:44:22Z",
+  "updated": "2026-10-25T08:52:27Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-landscape"
