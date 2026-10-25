@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-ice-fire-sugar-plan",
+  "title": "小怪獸：冰／火／糖三系規劃（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-ice-fire-sugar-plan",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T185750Z-parent-ice-fire-sugar-plan.md",
+  "next": "請 Grok 審查三系卡片、15 種配對與火→冰→糖順序。Godot §11：純文件，無資料／規則／素材改動。未定細節留待實作前確認；commit、push、PR 交 erin-watch。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T18:59:16.997580Z",
+  "updatedBy": "codex"
+}
