@@ -309,7 +309,6 @@ function fitVisibleViewport() {
   const width = viewport ? viewport.width : window.innerWidth;
   const height = viewport ? viewport.height : window.innerHeight;
   const rotated = window.innerHeight > window.innerWidth;
-  gameShell.dataset.short = String((rotated ? width : height) < 440);
   gameShell.style.width = `${rotated ? height : width}px`;
   gameShell.style.height = `${rotated ? width : height}px`;
   gameShell.style.left = `${viewport ? viewport.offsetLeft : 0}px`;
@@ -830,8 +829,9 @@ function showUpgradeChoices() {
   render();
   state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
   renderSkillTree(document.getElementById("skillTree"));
-  let selectedIndex = 0;
+  let selectedIndex = -1;
   const confirm = document.getElementById("confirmUpgrade");
+  confirm.disabled = true;
   confirm.onclick = () => applyUpgrade(selectedIndex);
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
@@ -839,12 +839,12 @@ function showUpgradeChoices() {
     button.dataset.rarity = card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common";
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
     const tag = card.school ? `${SurvivorIcons.html(card.school)}${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
-    button.innerHTML = `<small>${SurvivorIcons.html(button.dataset.rarity === "legendary" ? "legendary" : button.dataset.rarity === "epic" ? "epic" : button.dataset.rarity === "rare" ? "rare" : "common")}${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
+    button.innerHTML = `<small>${SurvivorIcons.html(button.dataset.rarity === "legendary" ? "legendary" : button.dataset.rarity === "epic" ? "epic" : button.dataset.rarity === "rare" ? "rare" : "common")}${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><strong>${card.name}</strong><span class="upgrade-description">${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
     upgradeCards.appendChild(button);
     if (!globalThis.SurvivorPreview) button.addEventListener("click", () => applyUpgrade(index));
     if (globalThis.SurvivorPreview) {
       const preview = () => {
-        selectedIndex = index;
+        selectedIndex = index; confirm.disabled = false;
         confirm.setAttribute("aria-label", "選這張：" + card.name);
         confirm.title = "選這張：" + card.name;
         upgradeCards.querySelectorAll('button').forEach(node => node.setAttribute('aria-pressed', String(node === button)));
