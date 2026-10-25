@@ -52,3 +52,5 @@
 - 2026-10-25 家長要求遊戲與 Maker 的 emoji 改為共用程式點陣圖示、每張預設卡不同，Maker 用圖示集挑選並自動對應舊作品。來源：`coord/inbox/done/20261025T110552Z-parent-pixel-icons.md`。
 
 - 家長指定怪物採甜點與森林混合風：本卡僅換現有怪物外觀、不新增行為，保留老師及教室／操場；Maker 以 sprite id 挑造型，舊作品需能載入。已製作 13 種可選像素造型，甲本／乙本依既有遠程攻擊換為小熊軟糖／蒲公英，其他對應行為只記備忘。主題混搭感與造型手感待 Grok 審查、Erin 試玩；Chrome 版面驗證因啟動 SIGABRT 待補跑。來源：`coord/inbox/done/20261025T144455Z-parent-cute-monsters.md`；驗證：`docs/survivor-cute-monsters-validation.md`。
+
+- 2026-10-25：家長指定音效與暫時背景音樂一起實作：使用本地 MIT ZzFX 合成音效、Web Audio 合成關卡／老師戰兩段暫時循環、音樂與音效分開的圓形像素開關，展示與測試靜音。日後再換 Erin 的 BeepBox 作品；旋律與音量喜好留待試玩。（來源：`coord/inbox/done/20261025T151216Z-parent-audio.md`）

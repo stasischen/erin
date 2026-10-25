@@ -1,6 +1,7 @@
 function summonTeacher() {
   const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
   if (!position) return;
+  playSound("warning");
   state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
   updateHud();
@@ -18,7 +19,7 @@ function bossHurtPlayer(damage) {
   if (!state.boss || !targetVisible(state.boss) || state.player.damageDisabled || state.player.invincible > 0) return;
   state.player.health = Math.max(0, state.player.health - damage);
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
-  playTone(180, 0.12, "sawtooth"); updateHud(); counterDischarge();
+  playSound("hurt"); updateHud(); counterDischarge();
   if (state.mode === "playing" && state.player.health <= 0) finishRun(false);
 }
 function bossDefinition(move) { return BOSS_MOVES.find(row => row.id === move.id); }
@@ -31,6 +32,7 @@ function beginBossMove(id) {
   const b = state.boss && { ...state.boss, x: state.cameraX + state.width / 2 + deltaX(state.boss.x, state.cameraX + state.width / 2), y: state.cameraY + state.height / 2 + deltaY(state.boss.y, state.cameraY + state.height / 2) };
   if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
   if (kind === "ring" && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
+  playSound("warning");
   const angle = Math.atan2(deltaY(p.y, b.y), deltaX(p.x, b.x));
   const move = takeFromPool(state.bossMovePool, {
     id, kind, x: b.x, y: b.y, angle, warning: definition.warning,

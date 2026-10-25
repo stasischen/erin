@@ -35,7 +35,7 @@ const SETTING_DEFAULTS = {
   bombRadius: UPGRADE_TUNING.bombRadius,
   bombKnockback: UPGRADE_TUNING.bombKnockback,
   actionButtonSize: UPGRADE_TUNING.actionButtonSize,
-  sound: true, vibration: true
+  sound: true, music: true, vibration: true
 };
 const SETTING_CONTROLS = [
   { key: "dashCooldown", label: "衝刺後休息幾秒", min: 1, max: 8, step: 0.5, unit: " 秒" },
@@ -73,6 +73,7 @@ function loadSavedSettings() {
       if (Number.isFinite(value)) result[item.key] = Math.max(item.min, Math.min(item.max, value));
     }
     if (typeof saved.sound === "boolean") result.sound = saved.sound;
+    if (typeof saved.music === "boolean") result.music = saved.music;
     if (typeof saved.vibration === "boolean") result.vibration = saved.vibration;
     return result;
   } catch (_) { return { ...SETTING_DEFAULTS }; }

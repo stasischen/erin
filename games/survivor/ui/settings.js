@@ -1,26 +1,15 @@
-function startAudio() {
-  try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-    if (!sharedAudio) sharedAudio = new AudioContextClass();
-    if (sharedAudio.state === "suspended") sharedAudio.resume();
-  } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
-}
-function playTone(frequency, duration = 0.07, type = "sine") {
-  if (!gameSettings.sound) return;
-  try {
-    if (!sharedAudio || sharedAudio.state !== "running") return;
-    const oscillator = sharedAudio.createOscillator(), gain = sharedAudio.createGain();
-    oscillator.type = type; oscillator.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.055, sharedAudio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, sharedAudio.currentTime + duration);
-    oscillator.connect(gain); gain.connect(sharedAudio.destination);
-    oscillator.start(); oscillator.stop(sharedAudio.currentTime + duration);
-  } catch (_) { /* 裝置不支援音效時，遊戲仍可正常遊玩 */ }
-}
+function startAudio() { Survivor.audio.unlock(); }
+function playSound(id) { return Survivor.audio.play(id); }
 
 function updateSettingsButtons() {
-  soundToggle.innerHTML = SurvivorIcons.html(gameSettings.sound ? "sound" : "mute") + (gameSettings.sound ? " 音效：開" : " 音效：關");
+  for (const [id, key, icon, label] of [["soundToggle", "sound", "sound", "音效"], ["musicToggle", "music", "music", "音樂"]]) {
+    const button = document.getElementById(id);
+    button.innerHTML = SurvivorIcons.html(gameSettings[key] ? icon : key === "music" ? "music-off" : "mute");
+    button.setAttribute("aria-label", label + (gameSettings[key] ? "：開" : "：關"));
+    button.setAttribute("title", label + (gameSettings[key] ? "：開" : "：關"));
+    button.setAttribute("aria-pressed", String(gameSettings[key]));
+  }
+  Survivor.audio.sync();
   vibrationToggle.innerHTML = SurvivorIcons.html("vibration") + (gameSettings.vibration ? " 震動：開" : " 震動：關");
 }
 
@@ -71,7 +60,7 @@ globalThis.Survivor.ui = globalThis.Survivor.ui || {};
 globalThis.Survivor.ui.settings = globalThis.Survivor.ui.settings || {};
 Object.defineProperties(globalThis.Survivor.ui.settings, {
   startAudio: { enumerable: true, get: () => startAudio },
-  playTone: { enumerable: true, get: () => playTone },
+  playSound: { enumerable: true, get: () => playSound },
   updateSettingsButtons: { enumerable: true, get: () => updateSettingsButtons },
   updateSettingValue: { enumerable: true, get: () => updateSettingValue },
   makeSettingsControls: { enumerable: true, get: () => makeSettingsControls },

@@ -181,3 +181,8 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 @container upgrade-panel (height < 400px) {
 .upgrade-card .upgrade-description, .upgrade-card .requirements { display: none; }
 }
+
+/* 音樂與音效：圓形像素圖示；名稱提供給螢幕閱讀器。 */
+.settings-toggles .audio-toggle { width: 56px; height: 56px; min-width: 56px; padding: 12px; border-radius: 50%; display: inline-grid; place-items: center; }
+.audio-toggle[aria-pressed="false"] { opacity: .6; }
+.audio-toggle .pixel-icon { width: 28px; height: 28px; }

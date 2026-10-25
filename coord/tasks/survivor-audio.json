@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-audio",
+  "title": "小怪獸：音效與暫時背景音樂",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-audio",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T151216Z-parent-audio.md",
+  "next": "請 Grok 對 erin-watch 提交後的完整 SHA 獨立審查 ZzFX MIT 本地改編、15 種音效與節流上限、關卡／老師暫時音樂、圓形獨立開關、展示靜音和 PWA 版號。完整測試已執行：邏輯／音訊模擬／版本快取通過，真實 Chrome --layout 啟動即 SIGABRT，版面尚未驗證，詳見 docs/survivor-audio.md。審查後待家長與 Erin 在 Chrome／iPad 試聽、確認音量旋律與暫停／切 App／離線；BeepBox 匯出路徑已記錄。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T15:18:25.952198Z",
+  "updatedBy": "codex"
+}

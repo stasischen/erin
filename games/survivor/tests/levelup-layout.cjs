@@ -38,6 +38,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:3,mobile:true});
   await call('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});
   await call('Page.enable');
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:'globalThis.SURVIVOR_AUDIO_MUTED=true;'});
   const loaded=new Promise(resolve=>{loadedPage=resolve;});
   await call('Page.navigate',{url:`file://${path.resolve(__dirname,'../index.html')}`});
   await loaded;

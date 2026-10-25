@@ -26,6 +26,7 @@ function fireAtNearest() {
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
   const angle = Math.atan2(deltaY(target.y, state.player.y), deltaX(target.x, state.player.x));
+  playSound("shoot");
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
@@ -35,6 +36,7 @@ function fireAtNearest() {
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
 function resolveWaterHit(shot) {
+  playSound("water");
   if (!shot.maker) triggerMakerEffects("hit", shot.x, shot.y);
   const continues = shot.pierce > 0;
   if (continues) shot.pierce--; else shot.alive = false;
@@ -51,6 +53,7 @@ function skillVisual(kind, x, y, options = {}) {
     color: "#237bc2", text: "", life, maxLife: life, ...options }));
 }
 function lightning(x, y, x2, y2) {
+  playSound("lightning");
   skillVisual("lightning", x, y, { x2, y2, color: "#7737b0", life: VFX_TUNING.lightningSeconds });
   skillVisual("sparkle", x2, y2, { color: "#ffdd38", radius: 16, life: VFX_TUNING.lightningSeconds });
 }
@@ -76,9 +79,10 @@ function damageNumber(target, damage) {
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
+  playSound("hit");
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
-  if (enemy.hp <= 0) playTone(620, 0.09, "triangle");
+  if (enemy.hp <= 0) playSound("death");
   damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
     enemy.alive = false;
@@ -102,6 +106,7 @@ function addHealEffect() {
 
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
+  playSound("xp");
   state.xp += value;
   if (state.xp >= experienceNeeded()) { state.xp -= experienceNeeded(); state.level++; startBookShooting(); updateHud(); chooseUpgradeCards(); } else updateHud();
 }
@@ -112,6 +117,7 @@ function combatTargets() {
 function hitBuildTarget(target, damage) {
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
+    playSound("hit");
     damageNumber(target, damage);
     target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
@@ -141,6 +147,7 @@ function executeMakerEffect(effect, x, y, level) {
   const damage = Math.min(600, effect.damage * level);
   if (effect.type === "projectile") {
     const target = closestEnemy(); if (!target) return;
+    playSound("shoot");
     const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
@@ -289,7 +296,7 @@ function activateDash() {
   skillVisual("gust", state.player.x, state.player.y, { x2: state.player.x + state.dashX * 60, y2: state.player.y + state.dashY * 60, color: "#23815e" });
   state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
   if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
-  playTone(740, 0.08); updateActionControls();
+  playSound("dash"); updateActionControls();
 }
 function activateSkill() {
   if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
@@ -297,7 +304,7 @@ function activateSkill() {
     delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`)) };
   state.skillCooldown = gameSettings.bombCooldown;
   triggerMakerEffects("skill", state.player.x, state.player.y);
-  playTone(480, 0.12); updateActionControls();
+  playSound("water"); updateActionControls();
 }
 function updateBomb(dt) {
   if (state.bombBlast) { state.bombBlast.life -= dt; if (state.bombBlast.life <= 0) state.bombBlast = null; }
@@ -332,7 +339,7 @@ function updateBomb(dt) {
     state.boss.hp -= bomb.damage; state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
     if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
   }
-  burst(bomb.x, bomb.y, "#80eaff", 20); playTone(230, 0.18, "triangle");
+  burst(bomb.x, bomb.y, "#80eaff", 20); playSound("explosion");
 }
 
 
