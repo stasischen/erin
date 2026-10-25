@@ -41,7 +41,7 @@ fresh(); run('gameSettings.dashSeconds = .12; activateDash();'); step(.15);
 close(run('state.player.x - 400'), 68.4);
 run('gameSettings.dashSeconds = .15;');
 fresh(); run('state.player.x = state.worldWidth - 20; activateDash(); tick(.05);');
-close(run('state.player.x'), 2382);
+close(run('state.player.x'), 8.5);
 // 衝刺擋住甲本碰撞與國字，最後一幀也不受傷；結束後恢復碰撞。
 fresh();
 run(`activateDash(); for (let i = 0; i < 3; i++) {
@@ -132,7 +132,7 @@ assert.equal(run('state.mode'), 'paused'); assert.equal(run('state.width'), 800)
 assert.equal(run('typeof maybeShowPortraitHint'), 'undefined');
 assert.equal(run('storage["erin-survivor-portrait-hint-v1"]'), undefined);
 console.log('PASS: landscape/rotated/scaled joystick, multipointer actions, canvas size, resize input reset/progress/pause, removed portrait hint');
-console.log('PASS: dash duration/direction/clamp/invincibility, bomb delay/range/knockback/kills/boss, cooldown/pause/restart, multipointer/keyboard, settings');
+console.log('PASS: dash duration/direction/wrap/invincibility, bomb delay/range/knockback/kills/boss, cooldown/pause/restart, multipointer/keyboard, settings');
 
 // 順時針旋轉後，容器上／右／下／左分別接觸螢幕右／下／左／上。
 const css = fs.readFileSync(`${__dirname}/../style.css`, 'utf8');

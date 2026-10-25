@@ -106,7 +106,16 @@
         return result;
       });
       // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
-      if (input.stages !== undefined && JSON.stringify(input.stages) !== JSON.stringify(data.stages)) fail('本版尚未開放關卡編輯');
+      const savedStages = input.stages && input.stages.map(stage => {
+        const migrated = { ...stage };
+        if (stage.id === "classroom" && stage.name === "教室" && stage.background === "classroom") {
+          migrated.name = "糖果森林"; migrated.background = "candy-forest";
+        } else if (stage.id === "playground" && stage.name === "操場" && stage.background === "playground") {
+          migrated.name = "餅乾森林"; migrated.background = "cookie-forest";
+        }
+        return migrated;
+      });
+      if (input.stages !== undefined && JSON.stringify(savedStages) !== JSON.stringify(data.stages)) fail('本版尚未開放關卡編輯');
       // 波次只預留資料位置，本版不提供編輯。
       if (JSON.stringify(input.waves) !== JSON.stringify(data.waves)) fail('本版尚未開放關卡編輯');
     } catch (error) { errors.push(error.message); }

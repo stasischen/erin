@@ -10,16 +10,16 @@ assert.equal(run('state.stageElapsed'),0);assert.equal(run('state.elapsed'),150)
 assert.equal(run('state.boss===null && state.bomb===null && !state.enemies.length && !state.enemyShots.length && !state.bossMoves.length && !state.fields.length && !state.vfx.length && !state.keys.size && state.joy===null'),true);
 run('activateSkill();activateDash();tick(1);render();');
 assert.equal(run('state.stageTransition'),1);assert.equal(run('state.bomb'),null);
-assert.ok(run('drawCalls.some(c=>c[0]==="fillText" && c[1]==="第2關：操場")'));
+assert.ok(run('drawCalls.some(c=>c[0]==="fillText" && c[1]==="第2關：餅乾森林")'));
 assert.equal(run('state.elapsed'),150);
 run('tick(1);tick(.05)');assert.equal(run('state.mode'),'playing');assert.equal(run('state.boss'),null);
 assert.equal(run('state.stageElapsed'),.05);
 run('Math.random=()=>.99;spawnEnemy();');assert.equal(run('state.enemies[0].maxHp'),120*1.12);assert.equal(run('state.enemies[0].speed'),75*1.06);
 run('state.stageElapsed=gameSettings.waveSeconds;tick(0);');assert.ok(run('state.boss'));assert.equal(run('state.boss.maxHp'),2000*1.12);
 run('state.bossIntro=0;state.boss.x=state.player.x+50;state.boss.y=state.player.y;state.boss.hp=1;hitBuildTarget(state.boss,10);');assert.equal(run('state.mode'),'won');
-run('resetGame();render();');assert.equal(run('currentStage().background'),'classroom');
-assert.equal(run('Object.keys(BACKGROUND_TILES).sort().join(",")'),'classroom,playground');
-run('globalThis.tiles=BACKGROUND_TILES;globalThis.classTile=backgroundTile("classroom");render();render();');assert.equal(run('backgroundTile("classroom")===classTile'),true);
+run('resetGame();render();');assert.equal(run('currentStage().background'),'candy-forest');
+assert.equal(run('Object.keys(BACKGROUND_TILES).sort().join(",")'),'candy-forest,cookie-forest');
+run('globalThis.tiles=BACKGROUND_TILES;globalThis.classTile=backgroundTile("candy-forest");render();render();');assert.equal(run('backgroundTile("candy-forest")===classTile'),true);
 const data=JSON.parse(run('JSON.stringify(GAME_DATA)'));
 for(const distance of [50,-40]) {
  const custom=JSON.parse(JSON.stringify(data));custom.cards[0].effects=[{...run('SurvivorData.PARAMS'),type:'knockback',trigger:'skill',distance,radius:180}];

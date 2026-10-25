@@ -67,9 +67,9 @@ run('state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);');
 assert.equal(run('state.enemyShots[0] === bookShot'), true);
 run('Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 0 }); state.player.invincible = 0.01; tick(0.05);');
 assert.equal(run('state.player.health'), 84);
-// 出界回收，再由老師重用仍更新來源、傷害、半徑、文字。
+// 壽命結束回收，再由老師重用仍更新來源、傷害、半徑、文字。
 run(`state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);
-  state.enemyShots[0].x = -100; tick(0); summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0);`);
+  state.enemyShots[0].life = 0; tick(0); summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0);`);
 assert.equal(run('bookShot.source'), 'teacher');
 assert.equal(run('bookShot.damage'), 12);
 assert.equal(run('bookShot.r'), 17);

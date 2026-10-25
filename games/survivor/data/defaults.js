@@ -797,8 +797,8 @@ globalThis.SURVIVOR_DEFAULTS = {
   "stages": [
     {
       "id": "classroom",
-      "name": "教室",
-      "background": "classroom",
+      "name": "糖果森林",
+      "background": "candy-forest",
       "enemyHealthScale": 1,
       "enemySpeedScale": 1,
       "bossHealthScale": 1,
@@ -843,8 +843,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     },
     {
       "id": "playground",
-      "name": "操場",
-      "background": "playground",
+      "name": "餅乾森林",
+      "background": "cookie-forest",
       "enemyHealthScale": 1.12,
       "enemySpeedScale": 1.06,
       "bossHealthScale": 1.12,

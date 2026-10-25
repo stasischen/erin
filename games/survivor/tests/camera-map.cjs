@@ -18,20 +18,21 @@ function setup(saved = {}) {
 }
 const run = setup();
 run("resetGame(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;");
-assert.equal(run('state.worldWidth'), 2400); assert.equal(run('state.worldHeight'), 1800);
+assert.ok(run('state.worldWidth >= 4096*2.5 && state.worldHeight >= 4096*2.5'));
+const worldW=run('state.worldWidth'),worldH=run('state.worldHeight');
 assert.equal(run('state.player.x - state.cameraX'),400); assert.equal(run('state.player.y - state.cameraY'),300);
 run("state.keys.add('d'); tick(.05);");
 assert.equal(run('state.player.x - state.cameraX'),400);
-for (const [x,y,cx,cy] of [[18,18,0,0],[2382,1782,1600,1200],[18,1782,0,1200],[2382,18,1600,0]]) {
+for (const [x,y,cx,cy] of [[18,18,-382,-282],[worldW-18,worldH-18,worldW-418,worldH-318],[18,worldH-18,-382,worldH-318],[worldW-18,18,worldW-418,-282]]) {
   run(`state.player.x=${x}; state.player.y=${y}; updateCamera();`);
   assert.equal(run('state.cameraX'),cx); assert.equal(run('state.cameraY'),cy);
   run('state.enemies=[]; Math.random=()=>0; for(let i=0;i<26;i++) spawnEnemy();');
-  assert.equal(run('state.enemies.every(e=>e.x>=e.r && e.x<=state.worldWidth-e.r && e.y>=e.r && e.y<=state.worldHeight-e.r && Math.hypot(e.x-state.player.x,e.y-state.player.y)>200)'),true);
+  assert.equal(run('state.enemies.every(e=>e.x>=0 && e.x<state.worldWidth && e.y>=0 && e.y<state.worldHeight && !targetVisible(e))'),true);
 }
-run("state.player.x=2382; state.player.y=1782; state.keys.clear(); state.keys.add('d'); state.keys.add('s'); activateDash(); tick(.05);");
-assert.equal(run('state.player.x'),2382); assert.equal(run('state.player.y'),1782);
-run('summonTeacher();'); assert.equal(run('state.boss.x <= state.worldWidth-state.boss.r && state.boss.y>=state.boss.r'),true);
-run('shiftTarget(state.boss, 2000, 1500, 9999);'); assert.equal(run('state.boss.x <= state.worldWidth-state.boss.r && state.boss.y <= state.worldHeight-state.boss.r'),true);
+run("state.player.x=state.worldWidth-18; state.player.y=state.worldHeight-18; state.keys.clear(); state.keys.add('d'); state.keys.add('s'); activateDash(); tick(.05);");
+assert.ok(run('state.player.x<30 && state.player.y<30'));
+run('summonTeacher();'); assert.equal(run('state.boss.x < state.worldWidth && state.boss.y>=0'),true);
+run('shiftTarget(state.boss, 2000, 1500, 9999);'); assert.equal(run('state.boss.x < state.worldWidth && state.boss.y < state.worldHeight'),true);
 // 離開舊畫面後仍可打中世界座標的敵人，國字只在目前鏡頭內發射。
 run(`resetGame(); state.mode='playing'; state.spawnTimer=999; state.shotTimer=999; state.level=8;
   state.enemies=[{x:1300,y:900,r:17,speed:0,damage:15,hp:100,maxHp:100,alive:true,wobble:0,flash:0,shotCooldown:0,typeId:'jaben'}];
@@ -46,8 +47,8 @@ for (const [iw,ih,vw,vh,left,top,expectedW,expectedH] of [[390,844,390,664,0,45,
  assert.equal(run('gameShell.style.left'),`${left}px`); assert.equal(run('gameShell.style.top'),`${top}px`);
 }
 run('elements.gameCanvas.clientWidth=900;elements.gameCanvas.clientHeight=400;resize();');
-assert.equal(run('state.worldWidth'),2400); assert.equal(run('state.worldHeight'),1800);
+assert.equal(run('state.worldWidth'),worldW); assert.equal(run('state.worldHeight'),worldH);
 assert.equal(run('state.player.x'),1200); assert.equal(run('state.player.y'),900);
 assert.equal(run('state.player.x-state.cameraX'),450);
-run('resetGame();'); assert.equal(run('state.worldWidth'),2700); assert.equal(run('state.worldHeight'),1200);
-console.log('PASS: fixed map, centered camera, four edge clamps, dash wall, in-map spawn/knockback/boss, world shots, visible book shots, viewport offsets/rotation, resize/restart');
+run('resetGame();'); assert.equal(run('state.worldWidth'),worldW); assert.equal(run('state.worldHeight'),worldH);
+console.log('PASS: fixed map, centered camera, four centered seams, dash wrap, canonical spawn/knockback/boss, world shots, visible book shots, viewport offsets/rotation, resize/restart');

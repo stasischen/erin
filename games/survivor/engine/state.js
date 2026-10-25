@@ -217,10 +217,11 @@ let sharedAudio = null;
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
   Object.assign(item, values);
+  if (Number.isFinite(item.x) && Number.isFinite(item.y)) clampToMap(item);
   return item;
 }
 
-// 地圖在每局開始時固定為 3×3 個畫面；旋轉與工具列伸縮不改動世界。
+// 世界預留大螢幕空間，旋轉與工具列伸縮不改動世界。
 const MAP_SCREENS = 3;
 const gameShell = document.querySelector(".game-shell");
 

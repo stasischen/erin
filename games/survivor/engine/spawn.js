@@ -31,13 +31,13 @@ function updateBookShooting(dt) {
   for (const enemy of state.enemies) enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && enemy.x >= state.cameraX + enemy.r && enemy.x <= state.cameraX + state.width - enemy.r && enemy.y >= state.cameraY + enemy.r && enemy.y <= state.cameraY + state.height - enemy.r);
+  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
   const allowed = ready.filter(e => !MAKER_MODE || (ENEMY_TYPES.find(t => t.id === e.typeId).attack.type !== "none" && state.level >= ENEMY_TYPES.find(t => t.id === e.typeId).attack.level));
   if (!allowed.length) return;
   const enemy = allowed[Math.floor(Math.random() * allowed.length)];
   const attack = MAKER_MODE ? ENEMY_TYPES.find(t => t.id === enemy.typeId).attack : { type: "projectile", count: 1, spread: 0, speed: gameSettings.enemyShotSpeed, damage: gameSettings.enemyShotDamage, radius: 12 };
-  const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
+  const angle = Math.atan2(deltaY(state.player.y, enemy.y), deltaX(state.player.x, enemy.x));
   if (attack.type === "aoe") {
     // 怪物範圍攻擊先預警，落點固定，不追著玩家跑。
     if (state.enemyHazards.length < 8) state.enemyHazards.push({ x: state.player.x, y: state.player.y, r: attack.radius, damage: attack.damage, warning: .9 });
@@ -47,7 +47,7 @@ function updateBookShooting(dt) {
     if (state.enemyShots.filter(s => s.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) break;
     const a = angle + (n - (attack.count - 1) / 2) * attack.spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      source: "book", x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
+      source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
       text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: attack.radius, damage: attack.damage
     }));
   }
@@ -55,26 +55,17 @@ function updateBookShooting(dt) {
   state.bookShotTimer = UPGRADE_TUNING.enemyShotGap;
 }
 
-// 從鏡頭四邊選仍在地圖內的一側；整個身體加緩衝都在畫面外。
+// 先在鏡頭外選位置，再回到環形世界；四邊永遠都可以生成。
 function offscreenSpawn(r) {
-  const gap = r + 16;
-  const left = state.cameraX, top = state.cameraY;
-  const right = left + state.width, bottom = top + state.height;
-  const minX = Math.max(r, left), maxX = Math.min(state.worldWidth - r, right);
-  const minY = Math.max(r, top), maxY = Math.min(state.worldHeight - r, bottom);
-  const sides = [];
-  if (minY <= maxY) {
-    if (left - gap >= r) sides.push(() => ({ x: left - gap, y: minY + Math.random() * (maxY - minY) }));
-    if (right + gap <= state.worldWidth - r) sides.push(() => ({ x: right + gap, y: minY + Math.random() * (maxY - minY) }));
-  }
-  if (minX <= maxX) {
-    if (top - gap >= r) sides.push(() => ({ x: minX + Math.random() * (maxX - minX), y: top - gap }));
-    if (bottom + gap <= state.worldHeight - r) sides.push(() => ({ x: minX + Math.random() * (maxX - minX), y: bottom + gap }));
-  }
-  return sides.length ? sides[Math.floor(Math.random() * sides.length)]() : null;
+  const gap = r + 16, left = state.cameraX, top = state.cameraY;
+  const sides = [
+    () => ({ x: left - gap, y: top + Math.random() * state.height }),
+    () => ({ x: left + state.width + gap, y: top + Math.random() * state.height }),
+    () => ({ x: left + Math.random() * state.width, y: top - gap }),
+    () => ({ x: left + Math.random() * state.width, y: top + state.height + gap })
+  ];
+  const point = sides[Math.floor(Math.random() * 4)](); clampToMap(point); return point;
 }
-
-
 
 // Live accessors preserve shared state and the legacy globals used by preview/VM callers.
 globalThis.Survivor.engine = globalThis.Survivor.engine || {};

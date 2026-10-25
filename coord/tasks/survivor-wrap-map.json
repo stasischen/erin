@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-wrap-map",
+  "title": "環形地圖與甜點森林",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-wrap-map",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T150111Z-parent-wrap-map.md",
+  "next": "請 Grok 審查 erin-watch 提交後的 SHA：環形幾何、接縫複本與影子、畫面內攻擊限制、兩關甜點森林及舊 Maker 作品遷移。非瀏覽器測試全部通過（含 153 組快照）；完整 --layout 已執行，但真實 Chrome 啟動 SIGABRT，須補跑版面及實機接縫試玩。詳見 docs/survivor-wrap-map-validation.md；commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T15:09:34.649909Z",
+  "updatedBy": "codex"
+}
