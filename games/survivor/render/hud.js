@@ -34,8 +34,17 @@ function updateActionControls() {
     [dashButton, state.dashCooldown, gameSettings.dashCooldown, "衝刺"],
     [skillButton, state.skillCooldown, gameSettings.bombCooldown, "泡泡炸彈"]
   ]) {
-    const ready = remaining <= 0;
+    const ready = button === dashButton ? state.dashCharges > 0 && state.dashTimer <= 0 : remaining <= 0;
     button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
+    if (button === dashButton) {
+      const segments = [], count = UPGRADE_TUNING.dashCharges;
+      for (let i=0;i<count;i++) {
+        const start=i*360/count, end=(i+1)*360/count-6;
+        const fraction=i<state.dashCharges ? 1 : i===state.dashCharges ? Math.max(0,1-remaining/total) : 0;
+        segments.push(`#9df6ff ${start}deg ${start+(end-start)*fraction}deg`, `#375776 ${start+(end-start)*fraction}deg ${end}deg`, `#162c43 ${end}deg ${(i+1)*360/count}deg`);
+      }
+      button.style.background = `conic-gradient(${segments.join(',')})`;
+    }
     button.setAttribute("aria-disabled", String(!ready || state.mode !== "playing"));
     button.setAttribute("aria-label", ready ? label + "準備好了" : label + "冷卻中");
     button.title = ready ? label + "準備好了" : `${label}冷卻 ${Math.ceil(remaining)} 秒`;

@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'), fs=require('node:fs');
 const createRun=require('./maker-support.cjs'), traces=require('./maker-traces.cjs');
 const baseline=require('./maker-baseline.json');
-assert.deepEqual(traces(createRun()),baseline,'預設玩法必須符合重構前 153 組固定亂數快照');
+assert.deepEqual(traces(createRun()),baseline,'預設玩法必須符合 153 組固定亂數快照（衝刺升級版）');
 // Maker 的預設作品也必須重現普通模式，不能被舊設定污染。
 assert.deepEqual(traces(createRun({maker:true,saved:{'erin-survivor-settings-v3':JSON.stringify({playerHealth:200,enemySpeed:130})}})),baseline);
 const run=createRun();
@@ -65,4 +65,4 @@ for(let i=0;i<31;i++)r('updateBoss(.05);');assert.equal(r('state.player.health')
 // PWA all precached paths exist, including the complete Maker and both data scripts.
 const sw=fs.readFileSync(`${__dirname}/../../../sw.js`,'utf8');
 for(const path of ['icons.js','data/defaults.js','data/schema.js','maker/','maker/index.html','maker/style.css','maker/maker.js']) assert.ok(sw.includes(`games/survivor/${path}`));
-console.log('PASS: 153 original traces in normal and Maker modes; schema/limits/cycles/injection; storage roundtrip/failure; all nine primitives; remapped recipes; custom enemy attacks; boss kind/warning/phase/damage; records isolation; PWA entries');
+console.log('PASS: 153 regression traces in normal and Maker modes; schema/limits/cycles/injection; storage roundtrip/failure; all nine primitives; remapped recipes; custom enemy attacks; boss kind/warning/phase/damage; records isolation; PWA entries');

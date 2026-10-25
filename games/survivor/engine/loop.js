@@ -70,6 +70,7 @@ function resetGame() {
   state.vfx = [];
   for (const field of state.fields) state.fieldPool.push(field);
   state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateVisual = null; state.moveRate = 0;
+  state.dashCharges = UPGRADE_TUNING.dashCharges; state.dashAttack = 0; state.slowMotion = 0; state.dashGhosts = [];
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
   state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
   state.bomb = null; state.bombBlast = null; state.pointerId = null;
@@ -134,6 +135,10 @@ function finishRun(won) {
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
 function tick(dt) {
+  if (state.mode === "playing" && state.slowMotion > 0) {
+    state.slowMotion = countdown(state.slowMotion, dt);
+    dt *= UPGRADE_TUNING.perfectSlowScale;
+  }
   if (state.mode === "transition") {
     state.stageTransition = countdown(state.stageTransition, dt);
     if (state.stageTransition <= 0) { state.mode = "playing"; state.keys.clear(); updateActionControls(); }
@@ -174,7 +179,17 @@ function tick(dt) {
   // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
   if (state.dashTimer > 0 && !state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, dt);
   state.dashTimer = countdown(state.dashTimer, dt);
-  state.dashCooldown = countdown(state.dashCooldown, dt);
+  if (state.dashCharges < UPGRADE_TUNING.dashCharges) {
+    state.dashCooldown = countdown(state.dashCooldown, dt);
+    if (state.dashCooldown <= 0) {
+      state.dashCharges++;
+      if (state.dashCharges < UPGRADE_TUNING.dashCharges) state.dashCooldown = gameSettings.dashCooldown;
+    }
+  }
+  if (dashTime > 0) state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
+  else state.dashAttack = countdown(state.dashAttack, dt);
+  state.dashGhosts = state.dashGhosts.filter(g => (g.life -= dt) > 0);
+  if (dashTime > 0) state.dashGhosts.push({x:oldX,y:oldY,life:.22});
   state.skillCooldown = countdown(state.skillCooldown, dt);
   updateActionControls();
   if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)), oldX, oldY);

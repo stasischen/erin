@@ -25,12 +25,17 @@ function closestEnemy() {
 function fireAtNearest() {
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
+  const boosted = state.dashAttack > 0 && state.dashTimer <= 0;
+  if (boosted) {
+    state.dashAttack = 0;
+    skillVisual("splash", state.player.x, state.player.y, {radius:65,color:"#fff5a3",life:.45});
+  }
   const angle = Math.atan2(deltaY(target.y, state.player.y), deltaX(target.x, state.player.x));
   playSound("shoot");
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-attack`)), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-attack`)), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, maker: false }));
   }
 }
 
@@ -151,7 +156,7 @@ function executeMakerEffect(effect, x, y, level) {
     const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
-      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, maker: true }));
+      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, boosted: false, maker: true }));
     }
     return;
   }
@@ -284,8 +289,35 @@ function updateUltimate(dt) {
   state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : card.school === "wind" ? BUILD_TUNING.tornadoTick : BUILD_TUNING.cloudSeconds;
   for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }
+function imminentDashThreat() {
+  const p = state.player, window = UPGRADE_TUNING.perfectWindow;
+  const near = (x,y,r) => Math.hypot(deltaX(x,p.x),deltaY(y,p.y)) <= r + p.r;
+  if (p.invincible > 0 || p.damageDisabled) return false;
+  for (const enemy of state.enemies) {
+    if (enemy.alive && enemy.damage > 0 && !enemy.dodged && near(enemy.x,enemy.y,enemy.r + (enemy.speed || 0)*window)) {
+      enemy.dodged = true; return true;
+    }
+  }
+  for (const shot of state.enemyShots) {
+    const dx = deltaX(shot.x,p.x), dy = deltaY(shot.y,p.y);
+    const speed2 = shot.vx ** 2 + shot.vy ** 2;
+    const t = speed2 ? Math.max(0,Math.min(window,-(dx*shot.vx+dy*shot.vy)/speed2)) : 0;
+    if (!shot.dodged && near(p.x+dx+shot.vx*t,p.y+dy+shot.vy*t,shot.r)) { shot.dodged = true; return true; }
+  }
+  for (const h of state.enemyHazards) if (!h.dodged && h.warning <= window && near(h.x,h.y,h.r)) { h.dodged = true; return true; }
+  for (const m of state.bossMoves) {
+    if (m.dodged || m.warning > window) continue;
+    const kind = bossKind(m);
+    const danger = (kind === "call" || kind === "rain") && m.points.some(q=>near(q.x,q.y,q.r)) ||
+      ["ring","cage"].includes(kind) && ringPoints(m.active ? m : {...m,life:bossDefinition(m).duration}).some(q=>near(q.x,q.y,q.r)) ||
+      kind === "wall" && Math.abs(deltaX(wallX(m),p.x)) <= p.r + 12 + bossDefinition(m).speed * window;
+    if (danger) { m.dodged = true; return true; }
+  }
+  return false;
+}
 function activateDash() {
-  if (state.mode !== "playing" || state.dashCooldown > 0) return;
+  if (state.mode !== "playing" || state.dashTimer > 0 || state.dashCharges <= 0) return;
+  const perfect = imminentDashThreat();
   const input = movementInput(), length = Math.hypot(input.x, input.y);
   state.dashX = length > 0.01 ? input.x / length : state.faceX;
   state.dashY = length > 0.01 ? input.y / length : state.faceY;
@@ -294,8 +326,18 @@ function activateDash() {
   leaveDashTrail(state.player.x, state.player.y, 0);
   triggerMakerEffects("dash", state.player.x, state.player.y);
   skillVisual("gust", state.player.x, state.player.y, { x2: state.player.x + state.dashX * 60, y2: state.player.y + state.dashY * 60, color: "#23815e" });
-  state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
-  if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
+  state.dashCharges--;
+  if (state.dashCooldown <= 0) state.dashCooldown = gameSettings.dashCooldown;
+  state.dashTimer = gameSettings.dashSeconds;
+  state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
+  if (perfect) {
+    state.player.health = Math.min(maxPlayerHealth(), state.player.health + UPGRADE_TUNING.perfectHeal);
+    state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.perfectShield);
+    state.slowMotion = UPGRADE_TUNING.perfectSlowSeconds;
+    skillVisual("discharge", state.player.x, state.player.y, {radius:90,color:"#fff5a3",life:.45});
+    burst(state.player.x, state.player.y, "#fff5a3", 14); updateHud();
+  }
+  if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.dashInvincible);
   playSound("dash"); updateActionControls();
 }
 function activateSkill() {

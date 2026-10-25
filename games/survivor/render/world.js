@@ -23,7 +23,12 @@ function bossAirHeight() {
 function drawBossMoves() {
   for (const move of state.bossMoves) {
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
-    if (bossKind(move) === "dash") {
+    if (bossKind(move) === "wall") {
+      const x = wallX(move); ctx.lineWidth = 20;
+      ctx.strokeStyle = move.active ? "#fff5dd" : "rgba(235,83,101,.55)";
+      ctx.beginPath(); ctx.moveTo(x,move.y);ctx.lineTo(x,move.y+move.wallHeight);ctx.stroke();
+      ctx.lineWidth = 2; ctx.strokeStyle = "#d64c65";ctx.strokeRect(move.x,move.y,move.wallWidth,move.wallHeight);
+    } else if (bossKind(move) === "dash") {
       const endX = move.x + deltaX(move.endX, move.x), endY = move.y + deltaY(move.endY, move.y);
       const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
       drawLandingShadow(endX, endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
@@ -42,11 +47,15 @@ function drawBossMoves() {
           ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)";
         }
       }
-    } else if (bossKind(move) === "ring") {
+    } else if (bossKind(move) === "ring" || bossKind(move) === "cage") {
+      if (bossKind(move) === "cage") {
+        const radius=move.active ? move.radius*Math.max(0,move.life/bossDefinition(move).duration) : move.radius;
+        ctx.beginPath();ctx.arc(move.x,move.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();
+      }
       for (const point of ringPoints(move.active ? move : { ...move, life: bossDefinition(move).duration })) {
         ctx.font = "bold 20px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = move.active ? "#b42f54" : "#78626b"; ctx.fillText("字", point.x, point.y + 7);
       }
-      {
+      if (bossKind(move) === "ring") {
         const radius = move.active ? Math.hypot(deltaX(ringPoints(move)[0].x, move.x), deltaY(ringPoints(move)[0].y, move.y)) : move.radius;
         ctx.strokeStyle = "#16804b"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(move.x, move.y, radius, move.angle - bossDefinition(move).gap / 2, move.angle + bossDefinition(move).gap / 2); ctx.stroke();
       }
@@ -395,6 +404,13 @@ function render() {
     }
     drawUltimate();
     drawSkillVisuals();
+    for (const shot of state.projectiles) if (shot.boosted) {
+      ctx.strokeStyle="#fff4a0";ctx.lineWidth=4;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+5,0,Math.PI*2);ctx.stroke();
+    }
+    for (const g of state.dashGhosts) {
+      ctx.save(); ctx.globalAlpha = g.life / .22 * .25;
+      ctx.translate(g.x-state.player.x,g.y-state.player.y); drawHero();ctx.restore();
+    }
     drawHero();
     for (const effect of state.effects) {
       const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;

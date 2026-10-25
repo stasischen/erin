@@ -4,10 +4,10 @@
   const KEY = 'erin-survivor-maker-v1';
   const copy = value => JSON.parse(JSON.stringify(value));
   const TYPES = { projectile: '發射水球', aoe: '範圍傷害', chain: '連鎖閃電', 'dash-trail': '留下痕跡', slow: '緩速', stun: '暈眩', knockback: '擊退', summon: '召喚小幫手', 'ring-with-gap': '留缺口的圈' };
-  const KINDS = { words: '國字扇形', chalk: '粉筆連發', dash: '直線衝撞', rain: '多點範圍', call: '單點範圍', summon: '召喚', ring: '留缺口的圈' };
+  const KINDS = { words: '國字扇形', chalk: '粉筆連發', dash: '直線衝撞', rain: '多點範圍', call: '單點範圍', summon: '召喚', ring: '留缺口的圈', wall: '粉筆牆', cage: '衝刺縮圈' };
   const BOUNDS = { damage: [0, 300, 1], radius: [10, 180, 1], speed: [30, 450, 5], count: [1, 8, 1], spread: [0, 1, .05], duration: [.1, 5, .1], interval: [.4, 15, .1], multiplier: [.2, 1, .05], distance: [0, 300, 5], gap: [1.2, 3, .1], power: [1, 3, 1], warning: [.6, 3, .1], pulse: [.2, 2, .05], hp: [10, 500, 10], maxLevel: [1, 5, 1] };
   const TUNING_BOUNDS = {
-    levelupRerolls:[0,9,1], playerSpeed:[80,320,5], playerHealth:[40,270,10], actionButtonSize:[72,104,4], waveSeconds:[60,300,10],
+    dashCharges:[1,4,1], dashInvincible:[.05,.5,.01], perfectWindow:[.05,.4,.01], perfectHeal:[0,10,1], perfectShield:[0,2,.05], perfectSlowSeconds:[0,1,.05], perfectSlowScale:[.2,1,.05], dashAttackSeconds:[.2,2,.1], dashAttackDamage:[1,3,.1], dashAttackSize:[1,2,.1], levelupRerolls:[0,9,1], playerSpeed:[80,320,5], playerHealth:[40,270,10], actionButtonSize:[72,104,4], waveSeconds:[60,300,10],
     invincibleSeconds:[.3,3,.1], dashCooldown:[1,8,.5], dashSeconds:[.1,.4,.05], dashMultiplier:[2,5,.5],
     bombCooldown:[2,15,1], bombDelay:[.2,1.5,.1], bombDamage:[20,300,10], bombRadius:[50,180,5], bombKnockback:[10,100,5],
     shotInterval:[.25,1.5,.05], projectileSpeed:[150,600,10], projectileDamage:[10,100,5], autoHealSeconds:[2,30,1],
@@ -38,10 +38,10 @@
       for (const key of ['tuning', 'build', 'bossTuning']) {
         if (!input[key] || typeof input[key] !== 'object') fail('缺少 ' + key);
         for (const field of Object.keys(data[key])) {
-          const base = data[key][field], value = field === 'levelupRerolls' && input[key][field] === undefined ? base : input[key][field];
+          const base = data[key][field], value = ['levelupRerolls','dashCharges','dashInvincible','perfectWindow','perfectHeal','perfectShield','perfectSlowSeconds','perfectSlowScale','dashAttackSeconds','dashAttackDamage','dashAttackSize'].includes(field) && input[key][field] === undefined ? base : input[key][field];
           if (typeof base === 'number') {
             const bounds = TUNING_BOUNDS[field] || [base === 0 ? 0 : Math.min(.01, base), Math.max(5, base * 3)];
-            data[key][field] = num(value, bounds[0], bounds[1], field, field === "levelupRerolls");
+            data[key][field] = num(value, bounds[0], bounds[1], field, ["levelupRerolls","dashCharges"].includes(field));
           }
           else if (Array.isArray(base)) data[key][field] = base.map((n, i) => num(value && value[i], .4, 10, field));
           else {
@@ -97,11 +97,12 @@
         result.attack = { type: choice(a.type, ['none','projectile','aoe','summon'], '怪物攻擊'), interval: num(a.interval, 1, 15, '攻擊間隔'), speed: num(a.speed, 50, 200, '國字速度'), damage: num(a.damage, 0, 30, '攻擊傷害'), radius: num(a.radius, 10, 100, '攻擊大小'), count: num(a.count, 1, 5, '攻擊數量', true), spread: num(a.spread, 0, .6, '散射角度'), level: num(a.level, 2, 20, '開始攻擊等級', true) };
         return result;
       });
-      const b = input.boss;
+      const b = { ...input.boss };
       data.boss.name = name(b.name, '魔王名稱', 24); data.boss.hp = num(b.hp, 500, 5000, '魔王血量'); data.boss.speed = num(b.speed, 0, 100, '魔王速度'); data.boss.radius = num(b.radius, 20, 50, '魔王大小');
       if (!Array.isArray(b.phases) || b.phases.length !== 3) fail('需要三個魔王階段');
       data.boss.phases = b.phases.map((p, i) => ({ threshold: num(p.threshold, i === 0 ? 1 : .05, i === 0 ? 1 : .95, '階段血量比例'), rest: num(p.rest, .4, 8, '招式休息'), combo: p.combo === null ? null : choice(p.combo, data.boss.moves.map(m => m.id), '合招') }));
       if (data.boss.phases.some((p, i, rows) => i && p.threshold >= rows[i - 1].threshold)) fail('魔王階段血量比例必須遞減');
+      if (Array.isArray(b.moves)) b.moves = b.moves.concat(data.boss.moves.filter(m => ['chalk-wall','shrinking-ring'].includes(m.id) && !b.moves.some(old => old.id === m.id)));
       if (!Array.isArray(b.moves) || b.moves.length !== data.boss.moves.length) fail('魔王招式數量不正確');
       data.boss.moves = data.boss.moves.map((base, i) => {
         const m = b.moves[i]; if (!m || m.id !== base.id) fail('招式識別碼不正確');

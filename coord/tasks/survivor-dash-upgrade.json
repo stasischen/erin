@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-dash-upgrade",
+  "title": "衝刺強化與老師粉筆牆",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-dash-upgrade",
+  "pr": null,
+  "brief": "docs/survivor-dash-upgrade-validation.md",
+  "next": "請 Grok 審查完整 SHA；23 組邏輯測試通過，Chrome --layout 啟動 SIGABRT 待補。請 Erin 試玩衝刺與老師新招；erin-watch 代辦提交、推送及 PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T16:27:00Z",
+  "updatedBy": "codex"
+}

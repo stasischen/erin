@@ -47,7 +47,7 @@ function updateBookShooting(dt) {
     if (state.enemyShots.filter(s => s.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) break;
     const a = angle + (n - (attack.count - 1) / 2) * attack.spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
+      dodged: false, source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
       text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: attack.radius, damage: attack.damage
     }));
   }

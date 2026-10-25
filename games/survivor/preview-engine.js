@@ -10,9 +10,9 @@ gameSettings.music = false; gameSettings.sound = false; gameSettings.vibration =
 const PREVIEW_COMPOSITION = { scale: 1.35, padding: 12, targetDistances: [125,165,200], minDistance: 120, originX: 80 };
 const previewFeatures = previewCard ? previewCard.effects.map(e=>e.feature).filter(Boolean) : [];
 const previewMove = previewSpec.kind === 'move' && BOSS_MOVES.find(m=>m.id===previewSpec.id);
-const previewDash = previewFeatures.some(id=>/dash|fusion-storm/.test(id)) || (previewCard && previewCard.effects.some(e=>!e.feature && e.trigger==='dash'));
+const previewDash = previewFeatures.some(id=>/dash|fusion-storm/.test(id)) || (previewCard && (previewCard.slot === 'dash' || previewCard.effects.some(e=>!e.feature && e.trigger==='dash')));
 const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':gameSettings.bombRadius,'thunder-counter':BUILD_TUNING.counterRadius,'fusion-puddle':gameSettings.bombRadius,'wind-ultimate':BUILD_TUNING.tornadoRadius+50};
-const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []), previewMove && previewMove.kind==='ring' ? previewMove.radius : 0);
+const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []), previewMove && ['ring','cage'].includes(previewMove.kind) ? previewMove.radius : 0);
 let previewOrigin = {x:0,y:0};
 function sizePreview() {
   const width = document.documentElement ? document.documentElement.clientWidth : 640;
@@ -74,7 +74,7 @@ function stepPreview(dt) {
         state.shotTimer=0; fireAtNearest(); triggerMakerEffects('hit',p.x+45,p.y);
       }
       if(features.some(id=>['water-skill','thunder-skill','fusion-puddle'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='skill')) activateSkill();
-      if(features.some(id=>['water-dash','wind-dash','fusion-storm','fusion-dash'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='dash')) activateDash();
+      if((previewCard && previewCard.slot === 'dash') || features.some(id=>['water-dash','wind-dash','fusion-storm','fusion-dash','dash-boost'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='dash')) { activateDash(); state.shotTimer = .25; }
       if(features.includes('thunder-counter')) {
         // 只有反擊卡每輪示範一次受傷；假怪本身不造成接觸傷害。
         p.health = Math.max(1,p.health-1); p.hitFlash = .16; p.invincible = Math.min(.7,INVINCIBLE_SECONDS);
