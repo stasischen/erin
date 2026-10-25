@@ -31,6 +31,10 @@
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
+      if (input.visuals !== undefined) {
+        if (!input.visuals || typeof input.visuals.spriteOutline !== 'boolean') fail('角色外框需要開或關');
+        data.visuals.spriteOutline = input.visuals.spriteOutline;
+      }
       for (const key of ['tuning', 'build', 'bossTuning']) {
         if (!input[key] || typeof input[key] !== 'object') fail('缺少 ' + key);
         for (const field of Object.keys(data[key])) {
@@ -108,6 +112,11 @@
       // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
       const savedStages = input.stages && input.stages.map(stage => {
         const migrated = { ...stage };
+        const base = data.stages.find(row => row.id === stage.id);
+        if (base) {
+          base.decorationDensity = stage.decorationDensity === undefined ? base.decorationDensity : num(stage.decorationDensity, 0, 1, "裝飾密度");
+          migrated.decorationDensity = base.decorationDensity;
+        }
         if (stage.id === "classroom" && stage.name === "教室" && stage.background === "classroom") {
           migrated.name = "糖果森林"; migrated.background = "candy-forest";
         } else if (stage.id === "playground" && stage.name === "操場" && stage.background === "playground") {
@@ -115,7 +124,8 @@
         }
         return migrated;
       });
-      if (input.stages !== undefined && JSON.stringify(savedStages) !== JSON.stringify(data.stages)) fail('本版尚未開放關卡編輯');
+      const fixedStages = rows => rows.map(({ decorationDensity, ...stage }) => stage);
+      if (input.stages !== undefined && JSON.stringify(fixedStages(savedStages)) !== JSON.stringify(fixedStages(data.stages))) fail('本版尚未開放關卡編輯');
       // 波次只預留資料位置，本版不提供編輯。
       if (JSON.stringify(input.waves) !== JSON.stringify(data.waves)) fail('本版尚未開放關卡編輯');
     } catch (error) { errors.push(error.message); }

@@ -54,3 +54,5 @@
 - 家長指定怪物採甜點與森林混合風：本卡僅換現有怪物外觀、不新增行為，保留老師及教室／操場；Maker 以 sprite id 挑造型，舊作品需能載入。已製作 13 種可選像素造型，甲本／乙本依既有遠程攻擊換為小熊軟糖／蒲公英，其他對應行為只記備忘。主題混搭感與造型手感待 Grok 審查、Erin 試玩；Chrome 版面驗證因啟動 SIGABRT 待補跑。來源：`coord/inbox/done/20261025T144455Z-parent-cute-monsters.md`；驗證：`docs/survivor-cute-monsters-validation.md`。
 
 - 2026-10-25：家長指定音效與暫時背景音樂一起實作：使用本地 MIT ZzFX 合成音效、Web Audio 合成關卡／老師戰兩段暫時循環、音樂與音效分開的圓形像素開關，展示與測試靜音。日後再換 Erin 的 BeepBox 作品；旋律與音量喜好留待試玩。（來源：`coord/inbox/done/20261025T151216Z-parent-audio.md`）
+
+- 家長要求兩個森林降低飽和與對比、縮減裝飾並保留無縫拼接，技能展示共用安靜地面、角色加可關閉的一像素深色外框。`survivor-bg-calm` 已製作三色大地磚與資料化裝飾密度初版，版本 20261026a；視覺喜好待 Erin 試玩，Chrome --layout 啟動 SIGABRT 待補驗證。來源：`coord/inbox/done/20261025T155924Z-parent-bg-calm.md`；驗證：`docs/survivor-bg-calm-validation.md`。
