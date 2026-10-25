@@ -66,6 +66,7 @@ const BUILD_TUNING = {
   cloudSeconds: 2, // 雷雲隔幾秒劈一次
   ultimateDamage: 80, ultimateGrowth: 0.3, // 終極傷害與每級增加比例
   tornadoRadius: 80, tornadoSpeed: 2.5, tornadoTick: 0.4, // 龍捲風繞行半徑、速度與傷害間隔
+  attackRadius: 720, // 所有攻擊離主角最遠多遠；敵人還必須整隻進入畫面
   shotRange: 720, // 普通水球最遠飛多遠；風入門會依等級加長
   windSpeed: 0.18, movingRate: 0.12, // 風入門水球加速；疾風每級依移速增加攻速
   stunSeconds: 0.5, counterRadius: 130, counterDamage: 25, // 暈眩秒數、反擊距離與每級傷害
@@ -603,14 +604,23 @@ function summonTeacher() {
   updateHud();
 }
 
+// 敵人整隻進入鏡頭才可受傷；每次命中重新檢查，走遠留下的水窪也不會偷打。
+function targetVisible(target) {
+  return target.x - target.r >= state.cameraX && target.x + target.r <= state.cameraX + state.width &&
+    target.y - target.r >= state.cameraY && target.y + target.r <= state.cameraY + state.height;
+}
+function canAttackTarget(target) {
+  return targetVisible(target) && Math.hypot(target.x - state.player.x, target.y - state.player.y) <= BUILD_TUNING.attackRadius &&
+    (target !== state.boss || state.bossIntro <= 0);
+}
 function closestEnemy() {
   let target = null, best = Infinity;
   for (const enemy of state.enemies) {
-    if (!enemy.alive) continue;
+    if (!enemy.alive || !canAttackTarget(enemy)) continue;
     const distance = (enemy.x - state.player.x) ** 2 + (enemy.y - state.player.y) ** 2;
     if (distance < best) { best = distance; target = enemy; }
   }
-  if (state.boss) {
+  if (state.boss && canAttackTarget(state.boss)) {
     const distance = (state.boss.x - state.player.x) ** 2 + (state.boss.y - state.player.y) ** 2;
     if (distance < best) target = state.boss;
   }
@@ -669,6 +679,7 @@ function damageNumber(target, damage) {
   state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: target.x, y: target.y - target.r, vx: 0, vy: -28, color: "#fff", life: .7, maxLife: .7, text: `${Math.round(damage)}` }));
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
+  if (!enemy.alive || !canAttackTarget(enemy)) return;
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = enemy.x - state.player.x; enemy.knockY = enemy.y - state.player.y; enemy.knockback = KNOCKBACK_SPEED;
   if (enemy.hp <= 0) playTone(620, 0.09, "triangle");
@@ -747,9 +758,10 @@ function movementInput() {
 }
 // 流派可以混搭；四欄顯示本局已拿到的效果，不會蓋掉先前選的卡。
 function combatTargets() {
-  return state.enemies.filter((enemy) => enemy.alive).concat(state.boss && state.bossIntro <= 0 ? [state.boss] : []);
+  return state.enemies.filter((enemy) => enemy.alive).concat(state.boss ? [state.boss] : []).filter(canAttackTarget);
 }
 function hitBuildTarget(target, damage) {
+  if (!canAttackTarget(target)) return;
   if (target === state.boss) {
     damageNumber(target, damage);
     target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
@@ -888,11 +900,11 @@ function updateBomb(dt) {
     target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback; clampToMap(target);
   }
   for (const enemy of state.enemies) {
-    if (!enemy.alive || Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y) > bomb.radius + enemy.r) continue;
+    if (!enemy.alive || !canAttackTarget(enemy) || Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y) > bomb.radius + enemy.r) continue;
     damageEnemy(enemy, bomb.damage);
     if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
   }
-  if (state.boss && state.bossIntro <= 0 && Math.hypot(state.boss.x - bomb.x, state.boss.y - bomb.y) <= bomb.radius + state.boss.r) {
+  if (state.boss && canAttackTarget(state.boss) && Math.hypot(state.boss.x - bomb.x, state.boss.y - bomb.y) <= bomb.radius + state.boss.r) {
     state.boss.hp -= bomb.damage; state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
     if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
   }
@@ -1013,7 +1025,7 @@ function tick(dt) {
     if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
     if (shot.x < -12 || shot.y < -12 || shot.x > state.worldWidth + 12 || shot.y > state.worldHeight + 12) { shot.alive = false; continue; }
     for (const enemy of state.enemies) {
-      if (enemy.alive && !shot.hitList.includes(enemy) && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
+      if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
         damageEnemy(enemy, shot.damage);
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
@@ -1021,13 +1033,13 @@ function tick(dt) {
         if (upgradeLevel("splash-water") > 0) {
           const radius = UPGRADE_TUNING.splashBaseRadius + upgradeLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
           skillVisual("splash", enemy.x, enemy.y, { radius });
-          for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && !shot.hitList.includes(nearby) && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * 0.35); }
+          for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && canAttackTarget(nearby) && !shot.hitList.includes(nearby) && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * 0.35); }
         }
         resolveWaterHit(shot);
         if (!shot.alive) break;
       }
     }
-    if (shot.alive && state.boss && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
+    if (shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
       boss.hp -= shot.damage; boss.flash = HIT_FLASH_SECONDS; updateHud();
@@ -1363,8 +1375,40 @@ function render() {
     ctx.globalAlpha = 1;
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
+  drawBossGuide();
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+  }
+}
+
+// 使用螢幕座標，跟著鏡頭及橫向畫面尺寸定位；現階段只有老師，未加入新菁英。
+function bossGuide() {
+  if (!state.boss || targetVisible(state.boss)) return null;
+  const dx = state.boss.x - state.cameraX - state.width / 2;
+  const dy = state.boss.y - state.cameraY - state.height / 2;
+  const halfW = Math.max(1, state.width / 2 - 30), halfH = Math.max(1, state.height / 2 - 30);
+  const scale = 1 / Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH, 1);
+  return { x: state.width / 2 + dx * scale, y: state.height / 2 + dy * scale, angle: Math.atan2(dy, dx) };
+}
+function drawBossGuide() {
+  if (state.mode !== "playing" && state.mode !== "paused" && state.mode !== "levelup") return;
+  const guide = bossGuide();
+  if (guide) {
+    ctx.save(); ctx.translate(guide.x, guide.y);
+    ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#713809"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // 小老師臉與眼鏡，不依賴裝置的 emoji 字型。
+    ctx.fillStyle = "#3e2e35"; ctx.fillRect(-10, -12, 20, 6);
+    ctx.fillStyle = "#ffd7ad"; ctx.fillRect(-10, -6, 20, 17);
+    ctx.strokeRect(-8, -4, 6, 5); ctx.strokeRect(2, -4, 6, 5);
+    ctx.rotate(guide.angle); ctx.fillStyle = "#713809";
+    ctx.beginPath(); ctx.moveTo(29, 0); ctx.lineTo(20, -7); ctx.lineTo(20, 7); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  if (state.boss && state.bossIntro > 0) {
+    ctx.save(); ctx.font = "bold 24px system-ui"; ctx.textAlign = "center";
+    ctx.strokeStyle = "#fff3cc"; ctx.lineWidth = 6; ctx.strokeText("老師來了！", state.width / 2, state.height / 2 - 50);
+    ctx.fillStyle = "#713809"; ctx.fillText("老師來了！", state.width / 2, state.height / 2 - 50); ctx.restore();
   }
 }
 

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-range",
+  "title": "小怪獸：限制攻擊距離與老師方向標示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-range",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T095455Z-parent-boss-range.md",
+  "next": "請 Grok 審查 erin-watch 提交後 SHA 與所有傷害入口；工程測試全通過，見 docs/survivor-boss-range-validation.md。之後請 Erin 實機試玩老師箭頭與戰鬥時間；erin-watch 代辦 commit、push、PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T09:57:22.689022Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-skill-vfx"
+  ]
+}

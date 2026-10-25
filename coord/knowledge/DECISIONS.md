@@ -40,3 +40,5 @@
 - `survivor-build-variety` 依家長已核可的 §9 步驟 1 製作試玩初版：四欄顯示、三流派各四卡、跨流派選卡與混搭；以既有自動補血／寶石磁鐵／泡泡護盾分別作水／風／雷被動，另加九張首選即生效的普攻／技能／衝刺行為卡。效果與數值是可調工程初值，尚待 Grok 審查及 Erin 試玩，不視為 Erin 已確認新名稱或平衡；未加入後續步驟 2～5。資源版本 20261025h、sw 快取 v12；驗證與待試玩項目見 `docs/survivor-build-variety-validation.md`。（依據：`coord/inbox/done/20261025T084309Z-parent-variety.md`）
 
 - 家長要求跟隨鏡頭、約 3×3 畫面的固定地圖、可見邊界及地磚，以及以 visualViewport／safe-area 修正直拿旋轉後按鈕被切掉的問題；已在 `survivor-camera-map` 製作。鏡頭一般置中、邊緣停止捲動；技能與衝刺右下並排、搖桿左側、HUD 精簡上方。工程測試通過，瀏覽器及實機仍待驗證；地圖大小與手感留待 Erin 試玩確認。來源：`coord/inbox/done/20261025T092439Z-parent-camera-map.md`；驗證：`docs/survivor-camera-map-validation.md`。
+
+- 家長回饋「完全沒看到老師 老師就被打倒了」，要求普攻與所有卡片效果只攻擊主角周圍可見範圍、限制連鎖距離、加上畫面外老師／菁英的方向標示及老師出場提示。`survivor-boss-range` 已製作試玩初版，既有遊戲沒有菁英怪，未新增種類；攻擊半徑 720 為可調工程初值，老師血量與生成距離是否需調整待 Erin 試玩。來源：`coord/inbox/done/20261025T095455Z-parent-boss-range.md`；工程驗證：`docs/survivor-boss-range-validation.md`。
