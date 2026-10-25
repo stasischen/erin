@@ -161,12 +161,29 @@ function drawHero() {
   ctx.save(); ctx.translate(Math.round(p.x), Math.round(p.y));
   if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
   ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
+  const look = buildAppearance(), color = BUILD_TUNING[look.main].color;
+  if (look.forms.length || state.schoolCombat && state.schoolCombat.bubble || schoolWindWall()) {
+    ctx.strokeStyle = state.schoolCombat && state.schoolCombat.bubble ? '#b4efff' : color; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0,0,schoolWindWall() ? GAME_DATA.schoolRules.eyeRadius : p.r+9,0,Math.PI*2); ctx.stroke();
+  }
+  if (look.forms.includes('wind')) {
+    ctx.fillStyle=BUILD_TUNING.wind.color;
+    for (const side of [-1,1]) { ctx.beginPath();ctx.moveTo(side*14,-5);ctx.lineTo(side*32,-18);ctx.lineTo(side*27,5);ctx.closePath();ctx.fill(); }
+  }
+  if (look.forms.includes('thunder')) {
+    ctx.fillStyle='#f8eea8';for(let i=0;i<4;i++){const a=state.elapsed*3+i*Math.PI/2;ctx.fillRect(Math.cos(a)*29,Math.sin(a)*29,4,4);}
+  }
+  if (look.forms.includes('water')) ctx.globalAlpha *= .65;
   const sprite = SPRITES.player;
   if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2);
   else {
     // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
     ctx.imageSmoothingEnabled = false;
     drawOutlinedSprite(ctx, hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy, -20, -30, 40, 48);
+  }
+  if (look.forms.length || state.schoolRun && state.schoolRun.starter) {
+    ctx.fillStyle=color;ctx.globalAlpha *= .8;ctx.beginPath();ctx.arc(0,1,14,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.fillRect(-8,-5,6,7);ctx.fillRect(3,-5,6,7);ctx.fillStyle='#182e43';ctx.fillRect(-5,-3,3,4);ctx.fillRect(6,-3,3,4);
   }
   ctx.restore();
 }
@@ -300,7 +317,12 @@ function drawSkillVisuals() {
   }
 }
 function drawUltimate() {
-  const v = state.ultimateVisual; if (!v) return;
+  const schools = GAME_DATA.schools.filter(s => effectLevel(s.id+'-ultimate'));
+  if (schools.length > 1) { for (const s of schools) drawOneUltimate(state.ultimateVisuals[s.id]); }
+  else drawOneUltimate(state.ultimateVisual);
+}
+function drawOneUltimate(v) {
+  if (!v) return;
   ctx.save(); ctx.globalAlpha = Math.min(1, v.life * 4);
   if (v.school === "water") {
     // 浪的位置依整張世界地圖前進；移動鏡頭不會把浪黏在螢幕上。
@@ -333,18 +355,25 @@ function render() {
   ctx.save(); ctx.translate(offset.x, offset.y);
     drawBossMoves();
     drawFields();
+    if (state.schoolCombat) {
+      for (const rod of state.schoolCombat.rods) { ctx.fillStyle='#d8b7ff';ctx.fillRect(rod.x-2,rod.y-25,4,25);drawBolt(rod.x-6,rod.y-27,rod.x+6,rod.y-15); }
+      if (state.schoolCombat.rain > 0) { ctx.strokeStyle='#75d7ff';ctx.lineWidth=2;for(let i=0;i<24;i++){const x=state.cameraX+(i*73)%state.width,y=state.cameraY+(state.elapsed*180+i*51)%state.height;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+10);ctx.stroke();} }
+    }
     drawEncounterGround();
     drawSupportVisuals();
     for (const shot of state.projectiles) {
       if (!shot.alive) continue;
-      ctx.fillStyle = shot.schools && shot.schools.length ? BUILD_TUNING[shot.schools[0]].color : WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
+      const colors = shot.colors || ['water'];
+      ctx.fillStyle = BUILD_TUNING[colors[0]].color;
+      if (colors.length > 1) { const gradient=ctx.createLinearGradient(shot.x-shot.r,shot.y,shot.x+shot.r,shot.y);gradient.addColorStop(0,BUILD_TUNING[colors[0]].color);gradient.addColorStop(1,BUILD_TUNING[colors[1]].color);ctx.fillStyle=gradient; } ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       if (shot.schools && shot.schools.includes("wind")) {
         const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
         ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
         for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
       }
-      if (shot.schools && shot.schools.includes("thunder")) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
+      if ((shot.colors || shot.schools || []).includes("thunder") || shot.charged) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
+      if (shot.transformed) { ctx.strokeStyle='#e7ffef';ctx.lineWidth=2;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+7,0,Math.PI*2);ctx.stroke(); }
       if (shot.piercing) {
         ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();

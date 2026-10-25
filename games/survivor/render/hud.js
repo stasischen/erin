@@ -38,7 +38,7 @@ function updateActionControls() {
     const ready = button === dashButton ? state.dashCharges > 0 && state.dashTimer <= 0 : remaining <= 0;
     button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
     if (button === dashButton) {
-      const segments = [], count = UPGRADE_TUNING.dashCharges;
+      const segments = [], count = maxDashCharges();
       for (let i=0;i<count;i++) {
         const start=i*360/count, end=(i+1)*360/count-6;
         const fraction=i<state.dashCharges ? 1 : i===state.dashCharges ? Math.max(0,1-remaining/total) : 0;

@@ -1,5 +1,7 @@
 // Classic scripts share lexical bindings for legacy callers; public API lives in Survivor.
 globalThis.Survivor = window.Survivor = window.Survivor || {};
+Survivor.engine = Survivor.engine || {};
+Survivor.engine.schools = SurvivorSchools;
 const PREVIEW_MODE = !!globalThis.SURVIVOR_PREVIEW;
 // Maker 資料只在 ?maker=1 試玩時啟用；一般遊戲沿用預設與原設定。
 const MAKER_MODE = PREVIEW_MODE || typeof location !== "undefined" && new URLSearchParams(location.search).get("maker") === "1";

@@ -55,6 +55,13 @@ function resetPreview() {
       if (card.tier === 'fusion') acquire(card);
       state.upgrades[card.id] = previewSpec.level || 1;
     }
+    // 在三秒展示內提早觸發，數值仍交給真正的遊戲效果處理。
+    for (const id of ['water-fountain','wind-gust','water-rain','thunder-rod','thunder-static']) state.schoolCombat.timers[id] = .35;
+    state.schoolCombat.shots = GAME_DATA.schoolRules.bigDropEvery - 1;
+    if (previewFeatures.includes('thunder-super')) state.upgrades['thunder-attack']=1;
+    if (previewFeatures.includes('thunder-charge')) state.schoolCombat.kills = GAME_DATA.schoolRules.chargeKills;
+    if (previewFeatures.includes('water-wet')) { state.enemies.forEach(e => e.wetTimer=GAME_DATA.schoolRules.wetSeconds); }
+    if (previewFeatures.includes('thunder-static')) { state.enemies[0].x=p.x+p.r+12; state.enemies[0].homeX=state.enemies[0].x; }
     state.player.health = PLAYER_HEALTH / 2;
     state.healTimer = UPGRADE_TUNING.autoHealSeconds;
     state.gems = [{x:p.x-90,y:p.y+60,r:8,value:0,alive:true,wobble:0}];
@@ -70,11 +77,12 @@ function stepPreview(dt) {
       const effects = previewCard ? previewCard.effects : [];
       const features = effects.map(e=>e.feature).filter(Boolean);
       // 導電水窪也示範普攻命中，讓前置水技能在假怪腳下留下會放電的水窪。
-      if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
+      if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle','water-drop','wind-blade','thunder-charge','water-wet','thunder-super'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
         state.shotTimer=0; fireAtNearest(); triggerMakerEffects('hit',p.x+45,p.y);
       }
-      if(features.some(id=>['water-skill','thunder-skill','fusion-puddle'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='skill')) activateSkill();
+      if(features.some(id=>['water-skill','thunder-skill','fusion-puddle','wind-dash'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='skill')) activateSkill();
       if((previewCard && previewCard.slot === 'dash') || features.some(id=>['water-dash','wind-dash','fusion-storm','fusion-dash','dash-boost'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='dash')) { activateDash(); state.shotTimer = .25; }
+      if(features.includes('thunder-super')) state.upgrades['thunder-attack']=1;
       if(features.includes('thunder-counter')) {
         // 只有反擊卡每輪示範一次受傷；假怪本身不造成接觸傷害。
         p.health = Math.max(1,p.health-1); p.hitFlash = .16; p.invincible = Math.min(.7,INVINCIBLE_SECONDS);

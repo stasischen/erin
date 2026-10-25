@@ -19,7 +19,7 @@ function setup(saved = {}) {
 }
 const run = setup();
 function fresh(upgrades = {}) {
-  run(`resetGame(); state.mode='playing'; settingsPanel.hidden=true; state.spawnTimer=999; state.shotTimer=999;
+  run(`resetGame(); state.schoolRun=null; state.mode='playing'; settingsPanel.hidden=true; state.spawnTimer=999; state.shotTimer=999;
     state.upgrades=${JSON.stringify(upgrades)};
     globalThis.book=(x=state.player.x+40,y=state.player.y,hp=10000)=>({x,y,r:17,hp,maxHp:hp,alive:true,speed:0,damage:1,wobble:0,flash:0,shotCooldown:999});
     state.enemies=[book(),book(state.player.x+85)]; drawCalls.length=0;`);

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261026f" />
-  <link rel="stylesheet" href="maker/style.css?v=20261026f" />
+  <link rel="stylesheet" href="style.css?v=20261026g" />
+  <link rel="stylesheet" href="maker/style.css?v=20261026g" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -55,7 +55,7 @@
           <p>調整後會自動記住這台裝置的設定。</p>
           <h3>本局四欄位與已取得卡片</h3>
           <div id="buildSlots" class="build-slots" aria-label="本局四欄位"></div><div id="ownedPreview" class="skill-preview-host"></div>
-          <details class="tree-details"><summary>技能樹、合體卡與終極卡前置條件</summary><p>卡片依作品設定等級上限；終極流派每局只能選一種。前置卡各達 Lv1 即可解鎖。</p><div id="settingsSkillTree" class="skill-tree"></div></details>
+          <details class="tree-details"><summary>技能樹、合體卡與終極卡前置條件</summary><p>卡片依作品設定等級上限；同流派 3 張變身、5 張解鎖終極；雙流派各 2 張解鎖合體。</p><div id="settingsSkillTree" class="skill-tree"></div></details>
           <h3>遊戲設定</h3>
           <div id="settingsControls" class="settings-controls"></div>
           <div class="settings-toggles">
@@ -86,13 +86,13 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261026f"></script>
+  <script src="icons.js?v=20261026g"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261026f"></script>
-  <script src="data/schema.js?v=20261026f"></script>
-  <script src="preview.js?v=20261026f"></script>
-  <script src="manifest.js?v=20261026f"></script><script src="game.js?v=20261026f"></script>
-  <script src="maker/maker.js?v=20261026f"></script>
+  <script src="data/defaults.js?v=20261026g"></script>
+  <script src="data/schema.js?v=20261026g"></script>
+  <script src="preview.js?v=20261026g"></script>
+  <script src="manifest.js?v=20261026g"></script><script src="game.js?v=20261026g"></script>
+  <script src="maker/maker.js?v=20261026g"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

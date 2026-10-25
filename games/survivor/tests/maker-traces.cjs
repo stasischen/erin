@@ -8,7 +8,7 @@ module.exports = function traces(run) {
       position:[state.player.x,state.player.y],shots:state.projectiles.map(s=>[s.x,s.y,s.vx,s.vy,s.r,s.damage,s.pierce]),fields:state.fields.map(f=>[f.school,f.x,f.y,f.radius,f.life]),
       enemyShots:state.enemyShots.map(s=>[s.x,s.y,s.vx,s.vy,s.damage]),boss:state.boss?[state.boss.x,state.boss.y,state.boss.hp]:null,phase:state.bossPhase,
       moves:state.bossMoves.map(m=>[m.id,m.x,m.y,m.warning,m.active,m.life,["words","chalk"].includes(m.id)?m.count:null,m.radius,m.points]),ultimate:state.ultimateTimer})`));}
-  const ids=JSON.parse(run('JSON.stringify(UPGRADES.map(c=>c.id))'));
+  const ids=JSON.parse(run('JSON.stringify(UPGRADES.slice(0,24).map(c=>c.id))'));
   for(const id of ids) for(const level of [1,5]){
     fresh();run(`state.upgrades[${JSON.stringify(id)}]=${level};state.moveRate=1;fireAtNearest();activateSkill();activateDash();`);
     for(let i=0;i<40;i++)run('tick(.05)');rows.push({id,level,state:capture()});

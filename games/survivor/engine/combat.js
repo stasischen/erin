@@ -30,12 +30,17 @@ function fireAtNearest() {
     state.dashAttack = 0;
     skillVisual("splash", state.player.x, state.player.y, {radius:65,color:"#fff5a3",life:.45});
   }
+  const c = state.schoolCombat, r = GAME_DATA.schoolRules;
+  if (c) c.shots++;
+  const properties = SurvivorSchools.shot(c ? c.shots : 1,c ? c.kills : 0,c ? c.chargedUsed : 0,{drop:effectLevel('water-drop'),charge:effectLevel('thunder-charge')},r);
+  if (properties.charged) c.chargedUsed = Math.floor(c.kills / r.chargeKills);
+  const look = buildAppearance();
   const angle = Math.atan2(deltaY(target.y, state.player.y), deltaX(target.x, state.player.x));
   playSound("shoot");
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-attack`)), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, maker: false }));
   }
 }
 
@@ -86,12 +91,14 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
   if (encounterShield(enemy, damage)) { playSound("hit"); return; }
   playSound("hit");
+  damage = schoolDamage(enemy, damage);
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
   if (enemy.hp <= 0) playSound("death");
   damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
     enemy.alive = false;
+    if (state.schoolCombat) state.schoolCombat.kills++;
     encounterDefeated(enemy);
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
     burst(enemy.x, enemy.y, "#ffe2a8", 8);
@@ -126,7 +133,7 @@ function hitBuildTarget(target, damage) {
   if (target === state.boss) {
     playSound("hit");
     damageNumber(target, damage);
-    target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
+    target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
   } else if (target.alive) damageEnemy(target, damage);
 }
@@ -158,7 +165,7 @@ function executeMakerEffect(effect, x, y, level) {
     const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
-      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, boosted: false, maker: true }));
+      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, colors: buildAppearance().colors, transformed:false, push:0, charged:false, blade:false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, boosted: false, maker: true }));
     }
     return;
   }
@@ -201,7 +208,7 @@ function updateMakerEffects(dt) {
     state.enemyHazards.splice(i,1);
     if (h.owner) skillVisual('splash',h.x,h.y,{radius:h.r,color:'#b68159',life:.4});
     if(targetVisible(h) && !state.player.damageDisabled && state.dashTimer<=0 && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
-      state.player.health=Math.max(0,state.player.health-h.damage);state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
+      state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }
   }
@@ -211,13 +218,21 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
     const level = effectLevel("water-attack");
     if (level) skillVisual("splash", x, y, { radius: UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel });
     if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(deltaX(other.x, x), deltaY(other.y, y)) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (BUILD_TUNING.splashDamageBase + level * BUILD_TUNING.splashDamageGrowth));
-    if (effectLevel("water-skill")) addField("water", x, y);
+    if ((effectLevel("water-skill") || effectLevel("fusion-puddle"))) addField("water", x, y);
   }
   if (school === "wind") return; // 入門只提升水球速度；擊退由旋風處理。
   if (school === "thunder") {
-    const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(deltaX(enemy.x, x), deltaY(enemy.y, y)) <= BUILD_TUNING.chainRadius)
-      .sort((a, b) => Math.hypot(deltaX(a.x, x), deltaY(a.y, y)) - Math.hypot(deltaX(b.x, x), deltaY(b.y, y)))[0];
-    if (other) { lightning(x, y, other.x, other.y); hitBuildTarget(other, damage * BUILD_TUNING.chainDamage * (1 + (effectLevel("thunder-attack") - 1) * BUILD_TUNING.chainGrowth)); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
+    const visited = [target, ...excluded], r = GAME_DATA.schoolRules;
+    const jumps = 1 + (effectLevel('thunder-super') ? r.superconductorJumps : 0);
+    const radius = BUILD_TUNING.chainRadius * (transformed('thunder') ? 1 + r.thunderFormRange : 1);
+    for (let i=0;i<jumps;i++) {
+      const other = combatTargets().filter(e => !visited.includes(e) && Math.hypot(deltaX(e.x,x),deltaY(e.y,y)) <= radius).sort((a,b) => Math.hypot(deltaX(a.x,x),deltaY(a.y,y))-Math.hypot(deltaX(b.x,x),deltaY(b.y,y)))[0];
+      if (!other) break;
+      visited.push(other); lightning(x,y,other.x,other.y);
+      hitBuildTarget(other, damage * (effectLevel('thunder-super') ? 1 : BUILD_TUNING.chainDamage * (1 + Math.max(0,effectLevel('thunder-attack') - 1) * BUILD_TUNING.chainGrowth)));
+      x=other.x;y=other.y;
+      if(state.mode!=='playing') return;
+    }
   }
 }
 function addField(school, x, y, radius = BUILD_TUNING.fieldRadius) {
@@ -235,6 +250,7 @@ function updateFields(dt) {
       const level = field.school === "water" ? Math.max(effectLevel("water-skill"), effectLevel("water-dash"), effectLevel("fusion-storm")) : field.school === "wind" ? effectLevel("wind-dash") : effectLevel("fusion-dash");
       hitBuildTarget(target, BUILD_TUNING.fieldDamage * Math.max(1, level));
       if (field.school === "water") {
+        target.wetTimer = GAME_DATA.schoolRules.wetSeconds;
         target.slowTimer = BUILD_TUNING.slowSeconds; target.makerSlow = 0;
         if (effectLevel("fusion-puddle")) { lightning(field.x, field.y, target.x, target.y); hitBuildTarget(target, BUILD_TUNING.fieldDamage * effectLevel("fusion-puddle")); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
       }
@@ -250,7 +266,7 @@ function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
   let next = Math.max(0, spacing - state.trailDistance);
   while (next <= distance) {
     const fraction = distance > 0 ? next / distance : 0;
-    for (const school of ["water", "wind", "thunder"]) if ((school === "water" && (effectLevel("water-dash") || effectLevel("fusion-storm"))) || (school === "wind" && effectLevel("wind-dash")) || (school === "thunder" && effectLevel("fusion-dash"))) addField(school, fromX + (deltaX(x, fromX)) * fraction, fromY + (deltaY(y, fromY)) * fraction);
+    for (const school of ["water", "wind", "thunder"]) if ((school === "water" && (effectLevel("water-dash") || effectLevel("fusion-storm"))) || (school === "wind" && (effectLevel("wind-dash") || effectLevel("fusion-storm"))) || (school === "thunder" && effectLevel("fusion-dash"))) addField(school, fromX + (deltaX(x, fromX)) * fraction, fromY + (deltaY(y, fromY)) * fraction);
     for (const card of UPGRADES) if (upgradeLevel(card.id)) for (const effect of card.effects) {
       if (!effect.feature && effect.type === "dash-trail" && effect.trigger === "dash") executeMakerEffect(effect, fromX + (deltaX(x, fromX))*fraction, fromY + (deltaY(y, fromY))*fraction, upgradeLevel(card.id));
     }
@@ -270,8 +286,22 @@ function counterDischarge() {
   }
 }
 function updateUltimate(dt) {
+  const schools = GAME_DATA.schools.map(s => s.id).filter(id => effectLevel(id+'-ultimate'));
+  if (!state.ultimateTimers) state.ultimateTimers = {};
+  if (!state.ultimateVisuals) state.ultimateVisuals = {};
+  if (schools.length <= 1) { updateOneUltimate(dt, schools[0]); if (schools[0]) state.ultimateTimers[schools[0]] = state.ultimateTimer; return; }
+  for (const school of schools) {
+    state.ultimateTimer = state.ultimateTimers[school] || 0;
+    state.ultimateVisual = state.ultimateVisuals[school] || null;
+    updateOneUltimate(dt,school);
+    state.ultimateTimers[school] = state.ultimateTimer;
+    state.ultimateVisuals[school] = state.ultimateVisual;
+    if(state.mode !== 'playing') return;
+  }
+}
+function updateOneUltimate(dt, selectedSchool) {
   if (state.ultimateVisual) { state.ultimateVisual.life -= dt; if (state.ultimateVisual.life <= 0) state.ultimateVisual = null; }
-  const ultimateSchool = ["water", "wind", "thunder"].find(school => effectLevel(school + "-ultimate"));
+  const ultimateSchool = selectedSchool;
   const card = ultimateSchool ? { school: ultimateSchool, id: ultimateSchool + "-ultimate" } : null;
   if (!card) return;
   state.ultimateTimer = countdown(state.ultimateTimer || 0, dt);
@@ -346,7 +376,7 @@ function activateDash() {
 function activateSkill() {
   if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
   state.bomb = { x: state.player.x, y: state.player.y, timer: gameSettings.bombDelay,
-    delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`)) };
+    delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`) || school === "wind" && effectLevel("wind-dash")) };
   state.skillCooldown = gameSettings.bombCooldown;
   triggerMakerEffects("skill", state.player.x, state.player.y);
   playSound("water"); updateActionControls();
@@ -381,7 +411,7 @@ function updateBomb(dt) {
     if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
   }
   if (state.boss && canAttackTarget(state.boss) && Math.hypot(deltaX(state.boss.x, bomb.x), deltaY(state.boss.y, bomb.y)) <= bomb.radius + state.boss.r) {
-    state.boss.hp -= bomb.damage; state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
+    state.boss.hp -= schoolDamage(state.boss, bomb.damage); state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
     if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
   }
   burst(bomb.x, bomb.y, "#80eaff", 20); playSound("explosion");
