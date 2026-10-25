@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261025o" />
+  <link rel="stylesheet" href="style.css?v=20261025p" />
+  <link rel="stylesheet" href="maker/style.css?v=20261025p" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -59,17 +60,24 @@
           <div id="messageIcon" class="message-icon">🧅</div>
           <h2 id="messageTitle">小怪獸</h2>
           <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
-          <a id="makerLink" class="settings-action menu-settings" href="maker/">🧩 自己設計</a>
+          <button id="makerLink" class="settings-action menu-settings" type="button">🧩 自己設計</button>
           <button id="settingsButton" class="settings-action menu-settings" type="button">⚙️ 遊戲設定</button>
           <button id="startButton" class="start-button" type="button">開始遊戲</button>
         </div>
       </div>
+      <section id="makerPanel" class="maker-room" hidden aria-label="自己設計">
+        <header class="maker-toolbar"><strong>🧩 自己設計</strong><button id="save" type="button" aria-label="儲存作品">💾</button><button id="reset" type="button">恢復預設</button><button id="makerClose" type="button" aria-label="回開始選單">✕</button></header>
+        <nav class="maker-tabs" aria-label="設計項目"><button data-tab="schools" type="button">🌊 流派</button><button data-tab="cards" type="button">🌳 技能樹</button><button data-tab="enemies" type="button">👾 怪物</button><button data-tab="boss" type="button">👩‍🏫 老師招式</button><button data-tab="numbers" type="button">🔢 數值</button></nav>
+        <div id="editor" class="maker-editor"></div>
+        <footer class="maker-footer"><p id="makerStatus" role="status" aria-live="polite"></p><button id="play" class="start-button" type="button">▶ 試玩</button></footer>
+      </section>
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="data/defaults.js?v=20261025o"></script>
-  <script src="data/schema.js?v=20261025o"></script>
-  <script src="game.js?v=20261025o"></script>
+  <script src="data/defaults.js?v=20261025p"></script>
+  <script src="data/schema.js?v=20261025p"></script>
+  <script src="game.js?v=20261025p"></script>
+  <script src="maker/maker.js?v=20261025p"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

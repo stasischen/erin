@@ -46,3 +46,5 @@
 - 家長要求「老師的技能可以再多變一點 要讓玩家有壓迫感」；依 Grok 轉述規格，`survivor-boss-moves` 保留國字並新增粉筆、衝撞、考卷雨、點名、召喚與留缺口的罰站圈，招式先預警、血量 66%／33% 轉階段及隨機不連續重複出招。已完成工程初版與測試；0.9 秒預警、12 傷害及三階段節奏均為可調初值，待 Grok 審查、Erin 試玩確認壓迫感與公平性，不視為已確認平衡。資源版本 20261025n、sw 快取 v18。來源：`coord/inbox/done/20261025T100316Z-parent-boss-moves.md`；驗證與待試玩：`docs/survivor-boss-moves-validation.md`。
 
 - 家長要求 Maker 形式，這次先不做美術與關卡編輯，先讓小朋友自訂技能樹、怪物種類／技能及老師招式；資料只存本機，保留波次資料位置。`survivor-maker-data` 已製作資料檔、Maker 和安全驗證，原有配方保留相容並加入九種可組合通用積木；預設作品通過重構前 153 組玩法快照與既有測試。資源版本 20261025o、sw 快取 v19。實際操作和難度尚待 Grok 審查及 Erin／家長試玩；未代替 Erin 決定新設計。來源：`coord/inbox/done/20261025T103151Z-parent-maker-data.md`；驗證及工程限制：`docs/survivor-maker-data-validation.md`。
+
+- 家長回饋「這樣很怪 可以跟遊戲介面整合嗎？」；依指定範圍將 Maker 搬進遊戲橫向容器，使用深色像素面板、卡片樹、怪物預覽、老師招式卡及觸控數值控制，保留作品格式和驗證，試玩勝敗回設計室。資源版本 20261025p、sw v20；11 組工程測試通過，瀏覽器／實機版面因沙盒限制尚待驗證，介面手感仍由 Erin 試玩確認。來源：`coord/inbox/done/20261025T105623Z-parent-maker-ingame.md`；驗證：`docs/survivor-maker-ingame-validation.md`。
