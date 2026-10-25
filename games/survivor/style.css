@@ -88,3 +88,15 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   .health-wrap { width: 28%; }
   .status { font-size: 11px; }
 }
+
+/* 四欄只顯示已拿到的流派，保留左手搖桿和右手按鈕空間。 */
+.build-slots { position: absolute; top: 42px; left: 12px; display: flex; flex-wrap: wrap; gap: 4px; max-width: calc(100% - 24px); pointer-events: none; }
+.build-slots > span { padding: 3px 6px; background: rgba(255,255,255,.9); border-radius: 6px; font-size: 12px; }
+.build-slots i { font-style: normal; }
+.boss-hud { top: 76px; }
+@media (orientation: landscape) and (max-height: 520px), (orientation: portrait) and (max-width: 520px) {
+  .build-slots { top: 38px; gap: 3px; }
+  .build-slots > span { padding: 2px 4px; font-size: 11px; }
+  .boss-hud { top: 66px; }
+  .upgrade-panel > p { font-size: 12px; margin-bottom: 6px; }
+}

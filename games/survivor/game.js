@@ -57,6 +57,21 @@ const UPGRADE_TUNING = {
   actionButtonSize: 88, // 衝刺按鈕有多大；技能按鈕小一點
   autoHealSeconds: 10 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
+// ✏️ Erin 可以改：這些是流派的試玩初值；水／風／雷也可以改名。
+const BUILD_TUNING = {
+  water: { name: "🌊 水", color: "#237bc2" },
+  wind: { name: "🌪️ 風", color: "#23815e" },
+  thunder: { name: "⚡ 雷", color: "#9755bb" },
+  supportChance: 0.25, // 四次選卡約一次出現舊的支援卡
+  slowSeconds: 1.2, slowMultiplier: 0.55, // 水讓敵人慢幾秒、剩多少速度
+  pushDistance: 28, pullDistance: 38, // 風把敵人推多遠、技能拉近多遠
+  chainRadius: 100, chainDamage: 0.5, // 雷跳到多遠、造成原傷害的幾倍
+  fieldSeconds: 2, fieldRadius: 36, fieldInterval: 0.4, fieldDamage: 12, // 衝刺痕跡留多久、多大、隔多久傷害一次、多痛
+  fieldLimit: 18, trailSpacing: 24, // 痕跡數量上限、相隔多遠留一個
+  skillRadiusMultiplier: 1.25, skillDamageMultiplier: 0.5, // 流派技能額外範圍、額外傷害
+  // 技能閃光沿用泡泡爆炸的時間。
+};
+const BUILD_SLOTS = { attack: "普攻", skill: "技能", dash: "衝刺", passive: "被動" };
 const SETTINGS_KEY = "erin-survivor-settings-v3";
 const RECORD_KEY = "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
@@ -228,24 +243,37 @@ const GEM_COLOR = "#ff9f24"; // Erin 可以改經驗寶石顏色
 // Erin 可以在這裡調整升級卡；專屬卡等 Erin 決定名稱、圖示和效果後再加入。
 const UPGRADES = [
   // 水球加大：改 waterSizePerLevel、damagePerLevel。
-  { id: "big-water", icon: "💧", name: "水球加大", description: "水球更大、傷害更高" },
+  { id: "big-water", slot: "attack", icon: "💧", name: "水球加大", description: "水球更大、傷害更高" },
   // 連發水球：改 fireRateReduction。
-  { id: "rapid-water", icon: "⚡", name: "連發水球", description: "發射速度提升" },
+  { id: "rapid-water", slot: "attack", icon: "⚡", name: "連發水球", description: "發射速度提升" },
   // 多重水球：目前每升一級多射一顆，角度改 extraShotAngle。
-  { id: "multi-water", icon: "🌊", name: "多重水球", description: "每次多發一顆" },
+  { id: "multi-water", slot: "attack", icon: "🌊", name: "多重水球", description: "每次多發一顆" },
   // 洋蔥衝刺：改 moveSpeedPerLevel。
-  { id: "onion-dash", icon: "🧅", name: "洋蔥衝刺", description: "移動速度提升" },
+  { id: "onion-dash", slot: "passive", icon: "🧅", name: "洋蔥衝刺", description: "移動速度提升" },
   // 泡泡護盾：目前每升一級增加五分之一血條。
-  { id: "bubble-shield", icon: "❤️", name: "泡泡護盾", description: "血條變長一點，並回一點血" },
+  { id: "bubble-shield", school: "thunder", slot: "passive", icon: "❤️", name: "泡泡護盾", description: "血條變長一點，並回一點血" },
   // 寶石磁鐵：改 magnetPerLevel。
-  { id: "gem-magnet", icon: "🧲", name: "寶石磁鐵", description: "撿取範圍提升" },
+  { id: "gem-magnet", school: "wind", slot: "passive", icon: "🧲", name: "寶石磁鐵", description: "撿取範圍提升" },
   // 穿透水球：每升一級多穿透一隻，不需要改數字。
-  { id: "piercing-water", icon: "🫧", name: "穿透水球", description: "水球多穿透一隻敵人" },
+  { id: "piercing-water", slot: "attack", icon: "🫧", name: "穿透水球", description: "水球多穿透一隻敵人" },
   // 水花四濺：改 splashBaseRadius 和 splashPerLevel。
-  { id: "splash-water", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" },
+  { id: "splash-water", slot: "attack", icon: "💦", name: "水花四濺", description: "命中時造成小範圍傷害" },
   // 自動補血：改 autoHealSeconds，升級後每級回血間隔再快約 20%。
-  { id: "auto-heal", icon: "🩹", name: "自動補血", description: "慢慢恢復血條" }
+  { id: "auto-heal", school: "water", slot: "passive", icon: "🩹", name: "自動補血", description: "慢慢恢復血條" }
 ];
+
+// 每條流派四張卡；新行為拿一次就開啟。重複強化與合體留給後續卡。
+UPGRADES.push(
+  { id: "water-attack", school: "water", slot: "attack", icon: "💧", name: "緩流水球", description: "水球命中讓敵人暫時變慢", maxLevel: 1 },
+  { id: "wind-attack", school: "wind", slot: "attack", icon: "🌬️", name: "推風水球", description: "水球命中把敵人往外推", maxLevel: 1 },
+  { id: "thunder-attack", school: "thunder", slot: "attack", icon: "⚡", name: "跳電水球", description: "命中後跳電到附近另一隻敵人", maxLevel: 1 },
+  { id: "water-skill", school: "water", slot: "skill", icon: "🌊", name: "泡泡水窪", description: "泡泡爆開後留下緩速水窪", maxLevel: 1 },
+  { id: "wind-skill", school: "wind", slot: "skill", icon: "🌪️", name: "聚風泡泡", description: "泡泡爆開時先把遠處敵人拉近", maxLevel: 1 },
+  { id: "thunder-skill", school: "thunder", slot: "skill", icon: "⛈️", name: "落雷泡泡", description: "泡泡爆開時加一道較大範圍落雷", maxLevel: 1 },
+  { id: "water-dash", school: "water", slot: "dash", icon: "💦", name: "水窪衝刺", description: "衝刺沿路留下傷敵、緩速水窪", maxLevel: 1 },
+  { id: "wind-dash", school: "wind", slot: "dash", icon: "🍃", name: "旋風衝刺", description: "衝刺沿路留下傷敵、推開敵人的旋風", maxLevel: 1 },
+  { id: "thunder-dash", school: "thunder", slot: "dash", icon: "〰️", name: "電痕衝刺", description: "衝刺沿路留下會跳電的傷害電痕", maxLevel: 1 }
+);
 
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("gameCanvas");
@@ -279,7 +307,7 @@ const skillButton = document.getElementById("skillButton");
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -370,6 +398,8 @@ function resize() {
 }
 
 function resetGame() {
+  for (const field of state.fields) state.fieldPool.push(field);
+  state.fields = []; state.trailDistance = 0;
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
   state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
   state.bomb = null; state.bombBlast = null; state.pointerId = null;
@@ -429,6 +459,7 @@ function showOverlay(mode) {
   else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，💨 衝刺躲字、🌀 放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
+let lastSlotMarkup = "";
 function updateHud() {
   const maxHealth = PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5);
   const ratio = Math.max(0, state.player.health / maxHealth);
@@ -436,6 +467,12 @@ function updateHud() {
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
   levelLabel.textContent = `Lv.${state.level}`;
+  const slots = document.getElementById("buildSlots");
+  const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
+    const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
+    return `<span><b>${BUILD_SLOTS[slot]}</b> ${cards.length ? cards.map((card) => `<i title="${card.school ? BUILD_TUNING[card.school].name : "支援"}：${card.name}" style="color:${card.school ? BUILD_TUNING[card.school].color : "#426b85"}">${card.icon}</i>`).join(" ") : "—"}</span>`;
+  }).join("");
+  if (slotMarkup !== lastSlotMarkup) { slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup; }
   bossHud.hidden = !state.boss;
   if (state.boss) bossHealthFill.style.width = `${Math.max(0, state.boss.hp / state.boss.maxHp) * 100}%`;
 }
@@ -512,7 +549,7 @@ function fireAtNearest() {
   const count = 1 + upgradeLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: upgradeLevel("piercing-water") > 0, pierce: upgradeLevel("piercing-water"), hitList: [], alive: true }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED, vy: Math.sin(a) * PROJECTILE_SPEED, r: state.player.r * 2 / 3 * (1 + upgradeLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel), damage: effectiveDamage(), piercing: upgradeLevel("piercing-water") > 0, pierce: upgradeLevel("piercing-water"), schools: ["water", "wind", "thunder"].filter((school) => upgradeLevel(`${school}-attack`)), hitList: [], alive: true }));
   }
 }
 
@@ -554,12 +591,17 @@ function addHealEffect() {
   state.effects.push(takeFromPool(state.effectPool, { kind: "heal", x: state.player.x, y: state.player.y - state.player.r, vx: 0, vy: -24, color: "#21b85b", life: 0.8, maxLife: 0.8, text: "+1" }));
 }
 function chooseUpgradeCards() {
-  const available = UPGRADES.filter((card) => upgradeLevel(card.id) < UPGRADE_TUNING.maxUpgradeLevel);
+  const available = UPGRADES.filter((card) => upgradeLevel(card.id) < (card.maxLevel || UPGRADE_TUNING.maxUpgradeLevel));
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "❤️", name: "回血", description: "恢復 1 顆心" }]; }
   else {
     const shuffled = available.slice();
     for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
-    state.pendingChoices = shuffled.slice(0, Math.min(3, shuffled.length));
+    // 先各抽一張流派卡；某流派已滿時，用其他可選卡補齊。
+    state.pendingChoices = ["water", "wind", "thunder"].map((school) => shuffled.find((card) => card.school === school)).filter(Boolean);
+    const support = shuffled.find((card) => !card.school);
+    if (support && state.pendingChoices.length === 3 && Math.random() < BUILD_TUNING.supportChance) state.pendingChoices[Math.floor(Math.random() * 3)] = support;
+    for (const card of shuffled) if (state.pendingChoices.length < 3 && !state.pendingChoices.includes(card)) state.pendingChoices.push(card);
+    for (let i = state.pendingChoices.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [state.pendingChoices[i], state.pendingChoices[j]] = [state.pendingChoices[j], state.pendingChoices[i]]; }
   }
   showUpgradeChoices();
 }
@@ -567,9 +609,11 @@ function showUpgradeChoices() {
   render();
   state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
   state.pendingChoices.forEach((card, index) => {
-    const level = card.id === "heal" ? "" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`;
+    const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
-    button.innerHTML = `<span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level}</small>`;
+    if (card.school) button.style.borderColor = BUILD_TUNING[card.school].color;
+    const tag = card.school ? `${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
+    button.innerHTML = `<small>${tag}</small><span class="upgrade-icon">${card.icon}</span><strong>${card.name}</strong><span>${card.description}</span><small>${level}</small>`;
     button.addEventListener("click", () => applyUpgrade(index)); upgradeCards.appendChild(button);
   });
   statusEl.textContent = "選一張升級卡";
@@ -596,12 +640,66 @@ function movementInput() {
   const length = Math.max(1, Math.hypot(x, y));
   return { x: x / length, y: y / length };
 }
+// 流派可以混搭；四欄顯示本局已拿到的效果，不會蓋掉先前選的卡。
+function combatTargets() {
+  return state.enemies.filter((enemy) => enemy.alive).concat(state.boss && state.bossIntro <= 0 ? [state.boss] : []);
+}
+function hitBuildTarget(target, damage) {
+  if (target === state.boss) {
+    target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
+    if (target.hp <= 0) { state.boss = null; finishRun(true); }
+  } else if (target.alive) damageEnemy(target, damage);
+}
+function shiftTarget(target, x, y, distance) {
+  const dx = target.x - x, dy = target.y - y, length = Math.max(1, Math.hypot(dx, dy));
+  target.x += dx / length * distance; target.y += dy / length * distance;
+}
+function schoolEffect(school, target, x, y, damage, excluded = []) {
+  if (school === "water") target.slowTimer = BUILD_TUNING.slowSeconds;
+  if (school === "wind") shiftTarget(target, x, y, BUILD_TUNING.pushDistance);
+  if (school === "thunder") {
+    const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(enemy.x - x, enemy.y - y) <= BUILD_TUNING.chainRadius)
+      .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    if (other) { hitBuildTarget(other, damage * BUILD_TUNING.chainDamage); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
+  }
+}
+function addField(school, x, y, radius = BUILD_TUNING.fieldRadius) {
+  if (state.fields.length >= BUILD_TUNING.fieldLimit) state.fieldPool.push(state.fields.shift());
+  state.fields.push(takeFromPool(state.fieldPool, { school, x, y, radius, life: BUILD_TUNING.fieldSeconds, timer: 0 }));
+}
+function updateFields(dt) {
+  for (let i = state.fields.length - 1; i >= 0; i--) {
+    const field = state.fields[i]; field.life -= dt; field.timer -= dt;
+    if (field.life <= 0) { state.fieldPool.push(state.fields.splice(i, 1)[0]); continue; }
+    if (field.timer > 0) continue;
+    field.timer += BUILD_TUNING.fieldInterval;
+    for (const target of combatTargets()) {
+      if (Math.hypot(target.x - field.x, target.y - field.y) > field.radius + target.r) continue;
+      hitBuildTarget(target, BUILD_TUNING.fieldDamage);
+      schoolEffect(field.school, target, field.x, field.y, BUILD_TUNING.fieldDamage);
+      if (state.mode !== "playing") return;
+    }
+  }
+}
+function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
+  // 沿走過的路每隔一小段留痕跡，速度變快時也不會留下大空洞。
+  const spacing = Math.max(1, BUILD_TUNING.trailSpacing);
+  let next = Math.max(0, spacing - state.trailDistance);
+  while (next <= distance) {
+    const fraction = distance > 0 ? next / distance : 0;
+    for (const school of ["water", "wind", "thunder"]) if (upgradeLevel(`${school}-dash`)) addField(school, fromX + (x - fromX) * fraction, fromY + (y - fromY) * fraction);
+    next += spacing;
+  }
+  state.trailDistance = (state.trailDistance + distance) % spacing;
+}
 function activateDash() {
   if (state.mode !== "playing" || state.dashCooldown > 0) return;
   const input = movementInput(), length = Math.hypot(input.x, input.y);
   state.dashX = length > 0.01 ? input.x / length : state.faceX;
   state.dashY = length > 0.01 ? input.y / length : state.faceY;
   state.faceX = state.dashX; state.faceY = state.dashY;
+  state.trailDistance = BUILD_TUNING.trailSpacing;
+  leaveDashTrail(state.player.x, state.player.y, 0);
   state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
   state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
   playTone(740, 0.08); updateActionControls();
@@ -609,7 +707,7 @@ function activateDash() {
 function activateSkill() {
   if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
   state.bomb = { x: state.player.x, y: state.player.y, timer: gameSettings.bombDelay,
-    delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback };
+    delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => upgradeLevel(`${school}-skill`)) };
   state.skillCooldown = gameSettings.bombCooldown;
   playTone(480, 0.12); updateActionControls();
 }
@@ -619,7 +717,17 @@ function updateBomb(dt) {
   if (!bomb) return;
   bomb.timer -= dt;
   if (bomb.timer > 0.000001) return;
-  state.bomb = null; state.bombBlast = { x: bomb.x, y: bomb.y, radius: bomb.radius, life: 0.35 };
+  state.bomb = null; state.bombBlast = { x: bomb.x, y: bomb.y, radius: bomb.radius, life: 0.35, schools: bomb.schools };
+  if (bomb.schools.includes("wind")) for (const target of combatTargets()) {
+    if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius * BUILD_TUNING.skillRadiusMultiplier + target.r) shiftTarget(target, bomb.x, bomb.y, -BUILD_TUNING.pullDistance);
+  }
+  if (bomb.schools.includes("water")) addField("water", bomb.x, bomb.y, bomb.radius);
+  if (bomb.schools.includes("thunder")) {
+    for (const target of combatTargets()) {
+      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius * BUILD_TUNING.skillRadiusMultiplier + target.r) hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier);
+      if (state.mode !== "playing") return;
+    }
+  }
   function pushAway(target) {
     const dx = target.x - bomb.x, dy = target.y - bomb.y, length = Math.hypot(dx, dy);
     target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
@@ -693,6 +801,9 @@ function tick(dt) {
   state.dashCooldown = countdown(state.dashCooldown, dt);
   state.skillCooldown = countdown(state.skillCooldown, dt);
   updateActionControls();
+  if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(state.player.x - oldX, state.player.y - oldY), oldX, oldY);
+  updateFields(dt);
+  if (state.mode !== "playing") return;
   updateBomb(dt);
   if (state.mode !== "playing") return;
 
@@ -729,9 +840,10 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = state.player.x - enemy.x, vy = state.player.y - enemy.y;
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
-    enemy.y += vy / distance * enemy.speed * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.x += vx / distance * enemy.speed * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    enemy.y += vy / distance * enemy.speed * (enemy.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * (1 + Math.floor(state.elapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
+    enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
@@ -743,6 +855,8 @@ function tick(dt) {
       if (enemy.alive && !shot.hitList.includes(enemy) && Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
         damageEnemy(enemy, shot.damage);
+        for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
+        if (state.mode !== "playing") return;
         if (upgradeLevel("splash-water") > 0) {
           const radius = UPGRADE_TUNING.splashBaseRadius + upgradeLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
           for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && !shot.hitList.includes(nearby) && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * 0.35); }
@@ -753,7 +867,9 @@ function tick(dt) {
     }
     if (shot.alive && state.boss && !shot.hitList.includes(state.boss) && Math.hypot(state.boss.x - shot.x, state.boss.y - shot.y) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
-      state.boss.hp -= shot.damage; state.boss.flash = HIT_FLASH_SECONDS; updateHud();
+      const boss = state.boss;
+      boss.hp -= shot.damage; boss.flash = HIT_FLASH_SECONDS; updateHud();
+      for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
     }
@@ -766,7 +882,8 @@ function tick(dt) {
   if (state.boss && state.bossIntro <= 0) {
     state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
     const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
-    state.boss.x += bx / distance * state.boss.speed * dt; state.boss.y += by / distance * state.boss.speed * dt;
+    state.boss.x += bx / distance * state.boss.speed * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt; state.boss.y += by / distance * state.boss.speed * (state.boss.slowTimer > 0 ? BUILD_TUNING.slowMultiplier : 1) * dt;
+    state.boss.slowTimer = Math.max(0, (state.boss.slowTimer || 0) - dt);
     state.bossShotTimer -= dt;
     if (state.bossShotTimer <= 0) {
       const angle = Math.atan2(by, bx), count = UPGRADE_TUNING.teacherShotCount;
@@ -877,7 +994,7 @@ function render() {
   drawClassroom();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
-    ctx.fillStyle = WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
+    ctx.fillStyle = shot.schools && shot.schools.length ? BUILD_TUNING[shot.schools[0]].color : WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     if (shot.piercing) {
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
@@ -937,6 +1054,17 @@ function render() {
     if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
   }
   if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
+  for (const field of state.fields) {
+    ctx.save(); ctx.globalAlpha = 0.22 + field.life / BUILD_TUNING.fieldSeconds * 0.2;
+    ctx.fillStyle = BUILD_TUNING[field.school].color; ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(field.x, field.y, field.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.font = "bold 16px system-ui"; ctx.textAlign = "center";
+    ctx.fillText(field.school === "water" ? "≈" : field.school === "wind" ? "◎" : "ϟ", field.x, field.y + 5); ctx.restore();
+  }
+  if (state.bombBlast && state.bombBlast.schools) for (const school of state.bombBlast.schools) {
+    ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * BUILD_TUNING.skillRadiusMultiplier, 0, Math.PI * 2); ctx.stroke();
+  }
   drawHero();
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;

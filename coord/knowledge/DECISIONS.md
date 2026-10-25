@@ -36,3 +36,5 @@
 - 家長要求拿掉「橫著拿更好玩喔」提示，遊戲固定橫向：Android 安裝版在共用 manifest 指定 landscape；iOS／網頁直拿時整個遊戲容器順時針旋轉 90 度，搖桿位置轉回遊戲座標，safe-area 跟著換方向，動作按鈕維持橫向大小與遊戲右下角位置。刪除舊提示與顯示記憶邏輯（既有 localStorage 舊鍵不再讀寫）；經 Grok 指出後修正順時針旋轉的安全邊距為上←右、右←下、下←左、左←上；修正版資源版本 20261025g、sw 快取 v11。版面與操作手感待 Erin 實機試玩。（來源：`coord/inbox/done/20261025T083857Z-parent-landscape.md`；工程驗證：`docs/survivor-landscape-validation.md`）
 
 - 家長要求維持全自動攻擊，只操作走位、衝刺與技能，不做手動瞄準或換彈；重點是每場體驗變化大。已建立 `survivor-build-variety` 待辦卡，依賴 `survivor-landscape`，待合併後由 erin-watch 開新分支製作。本卡先做四欄位（普攻／技能／衝刺／被動）與三條流派（暫名 🌊水／🌪️風／⚡雷，之後由 Erin 改名），各 4～5 張卡、顏色邊框區分；三選一盡量跨流派，首張流派卡就改變對應欄位行為，讓前幾次選擇形成不同玩法。後續分步加入稀有度與重複強化、標示條件的合體卡、角色與自動武器選擇、隨機教室事件與 Boss 前精英、打倒老師後傳說卡與 ⭐ 局外解鎖；角色特色由 Erin 設計，具體路線見企劃 §9。這些功能尚未實作。（來源：`coord/inbox/done/20261025T084309Z-parent-variety.md`）
+
+- `survivor-build-variety` 依家長已核可的 §9 步驟 1 製作試玩初版：四欄顯示、三流派各四卡、跨流派選卡與混搭；以既有自動補血／寶石磁鐵／泡泡護盾分別作水／風／雷被動，另加九張首選即生效的普攻／技能／衝刺行為卡。效果與數值是可調工程初值，尚待 Grok 審查及 Erin 試玩，不視為 Erin 已確認新名稱或平衡；未加入後續步驟 2～5。資源版本 20261025h、sw 快取 v12；驗證與待試玩項目見 `docs/survivor-build-variety-validation.md`。（依據：`coord/inbox/done/20261025T084309Z-parent-variety.md`）
