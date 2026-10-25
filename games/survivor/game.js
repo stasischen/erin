@@ -3,7 +3,7 @@ const UPGRADE_TUNING = {
   maxUpgradeLevel: 5, // 每張升級卡最多升幾級；改大可以升更多級
   splashBaseRadius: 22, // 水花一開始濺多遠；改大會打到更遠的甲本
   splashPerLevel: 10, // 水花每升一級多遠；改大會濺得更遠
-  invincibleSeconds: 0.8, // 被撞後保護幾秒；改大會比較不容易連續受傷
+  invincibleSeconds: 1.0, // 被撞後保護幾秒；改大會比較不容易連續受傷
   waterSizePerLevel: 0.20, // 水球每升一級變大多少；改大看起來會長更快
   damagePerLevel: 0.25, // 水球每升一級多痛多少；改大打倒甲本更快
   fireRateReduction: 0.15, // 連發卡每級讓等待時間少多少；改大會射得更快
@@ -11,33 +11,33 @@ const UPGRADE_TUNING = {
   moveSpeedPerLevel: 0.12, // 洋蔥衝刺每級加多少速度；改大跑得更快
   magnetPerLevel: 0.40, // 磁鐵每級增加多少吸取距離；改大更遠就能撿寶石
   playerSpeed: 190, // 主角每秒走多遠；改大跑更快
-  playerHealth: 80, // 主角血條有多長；改大比較耐撞
-  enemyLimit: 32, // 畫面最多同時有幾個甲本；改大會有更多甲本
+  playerHealth: 90, // 主角血條有多長；改大比較耐撞
+  enemyLimit: 26, // 畫面最多同時有幾個甲本；改大會有更多甲本
   enemySpeed: 75, // 甲本每秒走多遠；改大追得更快
   enemyRadius: 17, // 甲本有多大；改大會變大隻
-  enemyDamage: 18, // 甲本撞一下扣多少血；改大會更危險
+  enemyDamage: 15, // 甲本撞一下扣多少血；改大會更危險
   enemyHealth: 120, // 打倒甲本要打掉多少血；改大要多打幾下
   secondEnemySpeed: 105, // 乙本每秒走多遠；比甲本快
-  secondEnemyDamage: 14, // 乙本撞一下扣多少血；改大會更危險
+  secondEnemyDamage: 12, // 乙本撞一下扣多少血；改大會更危險
   enemyShootLevel: 8, // 主角升到幾級，甲乙本才會丟字；改大會晚一點開始
   enemyShotInterval: 3, // 甲本丟完字至少休息幾秒；改大會射得比較少
   secondEnemyShotInterval: 5, // 乙本丟字的休息秒數；比甲本長就射得比較少
   enemyShotSpeed: 110, // 國字每秒飛多遠；改小會比較好躲
-  enemyShotDamage: 8, // 國字打中扣多少血；改小會比較不痛
+  enemyShotDamage: 6, // 國字打中扣多少血；改小會比較不痛
   enemyShotGap: 0.65, // 兩隻小兵丟字至少隔幾秒；改大就不會一起丟
   enemyShotLimit: 12, // 畫面最多幾個小兵國字；避免字太多
-  enemySpeedGrowth: 0.08, // 每過 30 秒多加多少原本速度；0.08 就是加 8%
+  enemySpeedGrowth: 0.05, // 每過 30 秒多加多少原本速度；0.05 就是加 5%
   secondEnemyHealth: 70, // 乙本有多少血；比甲本少
   waveSeconds: 120, // 幾秒後老師出場；120 秒就是 2 分鐘
-  teacherHealth: 2400, // 老師血條有多長；改大要打更久
-  teacherShotInterval: 0.8, // 老師隔幾秒發射一次文字
+  teacherHealth: 2000, // 老師血條有多長；改大要打更久
+  teacherShotInterval: 1.0, // 老師隔幾秒發射一次文字
   teacherShotDamage: 20, // 老師文字打中扣多少血
   teacherShotCount: 3, // 每次發射幾個字
   teacherShotSpread: 0.28, // 文字扇形的間隔角度；改大比較分散
   teacherShotLimit: 36, // 畫面最多有幾個文字；避免太多文字卡住
-  teacherSummonSeconds: 4, // 老師每隔幾秒叫小兵
+  teacherSummonSeconds: 6, // 老師每隔幾秒叫小兵
   teacherSummonMin: 1, // 每次至少叫幾隻小兵
-  teacherSummonMax: 2, // 每次最多叫幾隻小兵
+  teacherSummonMax: 1, // 每次最多叫幾隻小兵
   shotInterval: 0.72, // 平常隔幾秒射一顆水球；改小會射更快
   projectileDamage: 35, // 水球打中扣多少甲本的血；改大打得更痛
   projectileSpeed: 390, // 水球飛多快；改大會飛更快
@@ -45,10 +45,10 @@ const UPGRADE_TUNING = {
   gemLimit: 24, // 畫面最多同時有幾顆寶石；改大會留下更多寶石
   gemPullRadius: 105, // 靠多近寶石會被吸過來；改大能從更遠撿到
   xpToLevel: 5, // 第一次撿幾顆寶石會升級；改小會更快升級
-  xpGrowthPerLevel: 2, // 每升一級多需要幾顆寶石；改大升級更慢
-  autoHealSeconds: 12 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
+  xpGrowthPerLevel: 1, // 每升一級多需要幾顆寶石；改大升級更慢
+  autoHealSeconds: 10 // 自動補血 Lv1 幾秒回 1 點；改小會回得更快
 };
-const SETTINGS_KEY = "erin-survivor-settings-v2";
+const SETTINGS_KEY = "erin-survivor-settings-v3";
 const RECORD_KEY = "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
   playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
@@ -109,12 +109,12 @@ const ENEMY_TYPES = [
 // ✏️ Erin 可以改每一波：開始秒數、甲本比例、乙本比例、幾秒出一隻。
 // 比例加起來請等於 1；秒數越小，怪物越常出現。
 const WAVES = [
-  { start: 0, jaben: 1, otsubon: 0, every: 1.6 }, // 一開始只有甲本，慢慢熟悉玩法
-  { start: 20, jaben: 0.8, otsubon: 0.2, every: 1.3 }, // 20 秒後少量乙本加入
-  { start: 35, jaben: 0.58, otsubon: 0.42, every: 1.0 }, // 35 秒後乙本變多
-  { start: 60, jaben: 0.45, otsubon: 0.55, every: 0.75 }, // 60 秒後出怪更快
-  { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.55 },
-  { start: 105, jaben: 0.35, otsubon: 0.65, every: 0.45 } // 老師出場前最熱鬧
+  { start: 0, jaben: 1, otsubon: 0, every: 1.84 }, // 一開始只有甲本，慢慢熟悉玩法
+  { start: 20, jaben: 0.8, otsubon: 0.2, every: 1.495 }, // 20 秒後少量乙本加入
+  { start: 35, jaben: 0.58, otsubon: 0.42, every: 1.15 }, // 35 秒後乙本變多
+  { start: 60, jaben: 0.45, otsubon: 0.55, every: 0.8625 }, // 60 秒後出怪更快
+  { start: 90, jaben: 0.35, otsubon: 0.65, every: 0.6325 },
+  { start: 105, jaben: 0.35, otsubon: 0.65, every: 0.5175 } // 老師出場前最熱鬧
 ];
 const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入 assets 裡的 PNG 檔名；null 使用內建圖案
 for (const name of Object.keys(SPRITES)) {
