@@ -388,7 +388,7 @@ let settingsReturnMode = "ready";
 function openSettings() {
   if (state.mode === "playing") togglePause();
   settingsReturnMode = state.mode;
-  makeSettingsControls(); messageCard.hidden = true; upgradePanel.hidden = true;
+  makeSettingsControls(); updateHud(); renderSkillTree(document.getElementById("settingsSkillTree")); messageCard.hidden = true; upgradePanel.hidden = true;
   settingsPanel.hidden = false; overlay.classList.remove("hidden");
 }
 function closeSettings() {
@@ -484,7 +484,7 @@ function startGame() {
   resetGame();
   state.mode = "playing";
   overlay.classList.add("hidden");
-  pauseButton.textContent = "Ⅱ";
+  pauseButton.textContent = "⚙️";
   state.lastTime = performance.now();
   scheduleFrame();
   spawnEnemy();
@@ -504,9 +504,9 @@ function showOverlay(mode) {
   state.keys.clear(); state.pointerId = null; state.joy = null;
   updateActionControls();
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
-  if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
-  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
-  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = `老師的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "Ⅱ"; }
+  if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "⚙️"; }
+  else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "⚙️"; }
+  else if (mode === "won") { iconEl.textContent = "🎉"; titleEl.textContent = "打敗老師了！"; textEl.textContent = `老師的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; pauseButton.textContent = "⚙️"; }
   else { iconEl.textContent = "🧅"; titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，💨 衝刺躲字、🌀 放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
 }
 
@@ -521,8 +521,8 @@ function updateHud() {
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
-    const detail = cards.map(card => `${card.name} Lv${upgradeLevel(card.id)}`).join("、");
-    return `<span title="${detail}"><b>${BUILD_SLOTS[slot]}</b> <i>${cards.length ? cards[cards.length - 1].icon : "—"}</i><small>${cards.length ? `+${cards.length}` : ""}</small></span>`;
+    const detail = cards.map(card => `${card.icon}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
+    return `<span title="${detail}"><b>${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
   }).join("");
   if (slotMarkup !== lastSlotMarkup) { slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup; }
   bossHud.hidden = !state.boss;
@@ -538,20 +538,9 @@ function spawnEnemy() {
     { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
   ];
   const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
-  // 在主角周圍的環形區生成；靠牆時先朝地圖內側取樣，避免貼臉。
-  const radius = Math.min(state.width, state.height) * .65;
-  let x, y;
-  for (let attempt = 0; attempt < 24; attempt++) {
-    const angle = Math.random() * Math.PI * 2;
-    x = state.player.x + Math.cos(angle) * radius;
-    y = state.player.y + Math.sin(angle) * radius;
-    if (x >= type.radius && x <= state.worldWidth - type.radius && y >= type.radius && y <= state.worldHeight - type.radius) break;
-    // 最後一次使用朝中心的方向，連續相同的亂數也不會卡住。
-    const inward = Math.atan2(state.worldHeight / 2 - state.player.y, state.worldWidth / 2 - state.player.x);
-    x = state.player.x + Math.cos(inward) * radius;
-    y = state.player.y + Math.sin(inward) * radius;
-  }
-  const position = { x, y, r: type.radius }; clampToMap(position); x = position.x; y = position.y;
+  const position = offscreenSpawn(type.radius);
+  if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
+  const { x, y } = position;
   state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
 }
 
@@ -583,11 +572,29 @@ function updateBookShooting(dt) {
   state.bookShotTimer = UPGRADE_TUNING.enemyShotGap;
 }
 
+// 從鏡頭四邊選仍在地圖內的一側；整個身體加緩衝都在畫面外。
+function offscreenSpawn(r) {
+  const gap = r + 16;
+  const left = state.cameraX, top = state.cameraY;
+  const right = left + state.width, bottom = top + state.height;
+  const minX = Math.max(r, left), maxX = Math.min(state.worldWidth - r, right);
+  const minY = Math.max(r, top), maxY = Math.min(state.worldHeight - r, bottom);
+  const sides = [];
+  if (minY <= maxY) {
+    if (left - gap >= r) sides.push(() => ({ x: left - gap, y: minY + Math.random() * (maxY - minY) }));
+    if (right + gap <= state.worldWidth - r) sides.push(() => ({ x: right + gap, y: minY + Math.random() * (maxY - minY) }));
+  }
+  if (minX <= maxX) {
+    if (top - gap >= r) sides.push(() => ({ x: minX + Math.random() * (maxX - minX), y: top - gap }));
+    if (bottom + gap <= state.worldHeight - r) sides.push(() => ({ x: minX + Math.random() * (maxX - minX), y: bottom + gap }));
+  }
+  return sides.length ? sides[Math.floor(Math.random() * sides.length)]() : null;
+}
+
 function summonTeacher() {
-  const gap = Math.min(180, state.height * .35);
-  const y = state.player.y - gap >= 32 ? state.player.y - gap : state.player.y + gap;
-  state.boss = { x: state.player.x, y, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
-  clampToMap(state.boss);
+  const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
+  if (!position) return;
+  state.boss = { ...position, r: 32, speed: 24, hp: gameSettings.teacherHealth, maxHp: gameSettings.teacherHealth, flash: 0, wobble: 0 };
   state.bossShotTimer = UPGRADE_TUNING.teacherShotInterval; state.bossSummonTimer = UPGRADE_TUNING.teacherSummonSeconds; state.bossIntro = 2.2;
   updateHud();
 }
@@ -669,11 +676,13 @@ function chooseUpgradeCards() {
   }
   showUpgradeChoices();
 }
+function renderSkillTree(tree) {
+  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires ? "；需要：" + cardRequirements(card) : ""}">${card.icon}${card.name} Lv${upgradeLevel(card.id)}${card.requires ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+}
 function showUpgradeChoices() {
   render();
   state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
-  const tree = document.getElementById("skillTree");
-  tree.innerHTML = ["water", "wind", "thunder"].map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school && card.tier !== "fusion").map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires ? "；需要：" + cardRequirements(card) : ""}">${card.icon}${card.name} Lv${upgradeLevel(card.id)}${card.requires ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+  renderSkillTree(document.getElementById("skillTree"));
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
@@ -689,7 +698,7 @@ function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
   if (card.id === "heal") state.player.health = Math.min(PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5), state.player.health + Math.ceil(PLAYER_HEALTH / 5));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.tier === "ultimate" && upgradeLevel(card.id) === 1) state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : 0; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
-  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "Ⅱ"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
+  state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "⚙️"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
@@ -858,7 +867,7 @@ function updateActionControls() {
     button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
     button.setAttribute("aria-disabled", String(!ready || state.mode !== "playing"));
     button.setAttribute("aria-label", ready ? label + "準備好了" : label + "冷卻中");
-    button.querySelector && (button.querySelector("small").textContent = ready ? "就緒" : `${Math.ceil(remaining)} 秒`);
+    button.title = ready ? label + "準備好了" : `${label}冷卻 ${Math.ceil(remaining)} 秒`;
   }
 }
 for (const [button, activate] of [[dashButton, activateDash], [skillButton, activateSkill]]) {
@@ -1048,7 +1057,7 @@ function tick(dt) {
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { finishRun(false); return; }
-  statusEl.textContent = state.boss ? "老師出現！打完血條" : `躲避中　${Math.floor(state.elapsed)} 秒`;
+  statusEl.textContent = `${Math.floor(state.elapsed)} 秒`;
 }
 
 function drawClassroom() {
@@ -1190,7 +1199,7 @@ function render() {
     const v = state.ultimateVisual;
     ctx.save(); ctx.strokeStyle = BUILD_TUNING[v.school].color; ctx.lineWidth = 12;
     if (v.school === "water") { ctx.globalAlpha = .45; ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(state.cameraX + state.width * (1 - v.life / .5) - 60, state.cameraY, 120, state.height); }
-    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, state.cameraY); ctx.lineTo(v.x + 10, v.y * .5); ctx.lineTo(v.x - 12, v.y * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
+    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, state.cameraY); ctx.lineTo(v.x + 10, state.cameraY + (v.y - state.cameraY) * .5); ctx.lineTo(v.x - 12, state.cameraY + (v.y - state.cameraY) * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
     else { ctx.beginPath(); ctx.arc(v.x, v.y, BUILD_TUNING.fieldRadius, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
@@ -1206,7 +1215,7 @@ function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 let frameRequest = null;
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
 function frame(now) { frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing") scheduleFrame(); }
-function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "Ⅱ"; updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
+function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); pauseButton.textContent = "⚙️"; updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
@@ -1221,7 +1230,7 @@ resetSettingsButton.addEventListener("click", () => {
 soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playTone(660); });
 vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
 startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
-pauseButton.addEventListener("click", togglePause);
+pauseButton.addEventListener("click", () => { if (state.mode !== "levelup") openSettings(); });
 window.addEventListener("keydown", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
   if (settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;

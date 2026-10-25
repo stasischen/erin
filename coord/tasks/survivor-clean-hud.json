@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-clean-hud",
+  "title": "小怪獸：鏡頭外生成與精簡介面",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-clean-hud",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T093753Z-parent-clean-hud.md",
+  "next": "請 Grok 審查 erin-watch 提交後 SHA。6 組工程測試通過；沙盒禁止啟動 HTTP，待跑 viewport.html 與手機試玩圓形按鈕、設定資訊、鏡頭外出怪。詳見驗證文件。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T09:41:33.897325Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-camera-map"
+  ]
+}
