@@ -569,7 +569,8 @@ globalThis.SURVIVOR_DEFAULTS = {
   "enemies": [
     {
       "id": "jaben",
-      "name": "甲本",
+      "name": "小熊軟糖",
+      "spriteId": "gummy-bear",
       "color": "#d58b55",
       "speed": 75,
       "shadowSize": 0.9,
@@ -590,7 +591,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     },
     {
       "id": "otsubon",
-      "name": "乙本",
+      "name": "蒲公英",
+      "spriteId": "dandelion",
       "color": "#a879d8",
       "speed": 105,
       "shadowSize": 0.9,

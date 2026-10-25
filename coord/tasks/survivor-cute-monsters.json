@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-cute-monsters",
+  "title": "小怪獸：甜點與森林像素怪物造型",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-cute-monsters",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T144455Z-parent-cute-monsters.md",
+  "dependsOn": [
+    "survivor-shadows"
+  ],
+  "next": "請 Grok 審查 erin-watch 提交後的 SHA：13 種外觀、Maker 圖像選擇、舊作品相容與影子。非瀏覽器測試、153 組玩法快照及版號檢查通過；完整 --layout 已執行，但真實 Chrome 啟動 SIGABRT，版面測試須補跑。PR 請註明老師／國字／考卷與甜點森林造型有混搭感；老師及教室／操場依要求保留，待 Erin 試玩確認。見 docs/survivor-cute-monsters-validation.md。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T14:50:06.977626Z",
+  "updatedBy": "codex"
+}

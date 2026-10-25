@@ -129,7 +129,7 @@ function drawHero() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0) {
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId) {
   const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
@@ -138,6 +138,12 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
   if (sprite) {
     if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
     drawingContext.drawImage(sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
+  }
+  const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
+  if (skin) {
+    drawingContext.imageSmoothingEnabled = false;
+    if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
+    drawingContext.drawImage(skin, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
   }
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   drawingContext.fillStyle = flash ? "#fff" : color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;

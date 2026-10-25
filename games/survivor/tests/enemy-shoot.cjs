@@ -25,7 +25,7 @@ run('state.level = 7; tick(0.05);');
 assert.equal(run('state.enemyShots.length'), 0);
 run('grantExperience(experienceNeeded());');
 assert.equal(run('state.level'), 8);
-assert.equal(run('enemyNotice.textContent'), '甲本開始丟字了！');
+assert.equal(run('enemyNotice.textContent'), '小熊軟糖開始丟字了！');
 assert.equal(run('enemyNotice.hidden'), false);
 assert.equal(run('state.mode'), 'levelup');
 run('tick(1);');

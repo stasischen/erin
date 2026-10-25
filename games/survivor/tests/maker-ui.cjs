@@ -5,7 +5,7 @@ class Node {
   appendChild(n){this.children.push(n);return n;}
   set textContent(s){this._text=s;this.children=[];}get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}
   addEventListener(k,fn){this.listeners[k]=fn;}setAttribute(k,v){this.attrs[k]=v;}
-  focus(){this.focused=true;} scrollIntoView(){} getContext(){return {};}
+  focus(){this.focused=true;} scrollIntoView(){} getContext(){return {fillRect(){},drawImage(){}};}
   fire(event){if(this.listeners[event])this.listeners[event]({target:this,preventDefault(){}});}
 }
 function setup(options={}){
@@ -13,7 +13,7 @@ function setup(options={}){
   const tabs=['schools','cards','enemies','boss','numbers'].map(tab=>{const n=new Node('button');n.dataset.tab=tab;return n;});
   const location={href:'',search:options.search||''}, state={keys:new Set(),mode:'ready'},window={addEventListener(){}};
   const context=vm.createContext({console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
-  for(const file of ['icons.js','data/defaults.js','data/schema.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   function nodes(node=ids.editor){return node.children.flatMap(c=>[c,...nodes(c)]);}
   function tab(name){tabs.find(n=>n.dataset.tab===name).fire('click');}
   function click(text,exact=true){const n=nodes().find(n=>n.tag==='button'&&(exact?n._text===text:n._text.includes(text)));assert.ok(n,text);n.fire('click');}
@@ -38,3 +38,13 @@ ui=setup({maker:true});ui.window.openSurvivorMaker('試玩結束');assert.equal(
 const createRun=require('./maker-support.cjs');
 for(const won of [false,true]){const run=createRun({maker:true});run('window.openSurvivorMaker = text => { globalThis.result = text; state.mode="maker"; }; startGame(); state.stageIndex=STAGES.length-1;');run(`finishRun(${won});`);assert.equal(run('state.mode'),'maker');assert.ok(run('result').includes(won?'過關':'結束'));}
 console.log('PASS: in-game entry/exit, five custom-control tabs, names/icons/effect edits persist, play route, cycles/storage failure block play, reset, both game outcomes return to Maker');
+
+// 造型按鈕要有真實像素縮圖，換裝後存檔且不改怪物能力。
+ui=setup();ui.tab('enemies');
+const skins=ui.nodes().filter(n=>n.tag==='button'&&n.attrs['aria-label']==='蘑菇跳跳');
+assert.equal(skins.length,2);assert.ok(skins[0].children.some(n=>n.tag==='canvas'));
+skins[0].fire('click');ui.ids.save.fire('click');
+const skinData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.equal(skinData.enemies[0].spriteId,'mushroom-hopper');
+assert.equal(skinData.enemies[0].hp,120);assert.equal(skinData.enemies[0].attack.type,'projectile');
+console.log('PASS: Maker skin thumbnails, selection and persistence preserve behavior');

@@ -20,9 +20,12 @@ for(const progress of [0,.25,.5,.75,1]) {
 }
 for(const sprite of [false,true]) {
   run(`SPRITES.jaben=${sprite?'{}':'null'};shadowCalls=[];drawBlob(100,200,20,'#abcdef',0,false,'jaben',shadowContext,1.2,70)`);
-  assert.equal(run(`shadowCalls.findIndex(c=>c[0]==='ellipse') < shadowCalls.findIndex(c=>c[0]===${JSON.stringify(sprite?'drawImage':'rect')})`),true);
+  assert.equal(run(`shadowCalls.findIndex(c=>c[0]==='ellipse') < shadowCalls.findIndex(c=>c[0]===${JSON.stringify('drawImage')})`),true);
   assert.equal(run("shadowCalls.some(c=>c[0]==='translate' && c[1]===100 && c[2]===130)"),true);
 }
+// 沒有內建造型的舊種類仍走色塊後備，影子仍先畫。
+run("shadowCalls=[];drawBlob(100,200,20,'#abcdef',0,false,'unknown',shadowContext)");
+assert.equal(run("shadowCalls.findIndex(c=>c[0]==='ellipse') < shadowCalls.findIndex(c=>c[0]==='rect')"),true);
 run('resetGame();state.player.airHeight=40;drawCalls.length=0;drawHero()');
 assert.ok(run("drawCalls.findIndex(c=>c[0]==='ellipse')<drawCalls.findIndex(c=>c[0]==='drawImage')"));
 assert.ok(run("drawCalls.some(c=>c[0]==='translate' && c[2]===-40)"));
