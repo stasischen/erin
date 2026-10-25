@@ -56,3 +56,5 @@
 - 2026-10-25：家長指定音效與暫時背景音樂一起實作：使用本地 MIT ZzFX 合成音效、Web Audio 合成關卡／老師戰兩段暫時循環、音樂與音效分開的圓形像素開關，展示與測試靜音。日後再換 Erin 的 BeepBox 作品；旋律與音量喜好留待試玩。（來源：`coord/inbox/done/20261025T151216Z-parent-audio.md`）
 
 - 家長要求兩個森林降低飽和與對比、縮減裝飾並保留無縫拼接，技能展示共用安靜地面、角色加可關閉的一像素深色外框。`survivor-bg-calm` 已製作三色大地磚與資料化裝飾密度初版，版本 20261026a；視覺喜好待 Erin 試玩，Chrome --layout 啟動 SIGABRT 待補驗證。來源：`coord/inbox/done/20261025T155924Z-parent-bg-calm.md`；驗證：`docs/survivor-bg-calm-validation.md`。
+
+- 2026-10-26：依家長要求將配樂延長為三首 60–90 秒的 Web Audio chiptune，分別對應糖果森林、餅乾森林與老師戰，加入完整曲式、分層編曲和一秒交叉淡入淡出；保留音效、開關、展示靜音與 BeepBox 替換路徑。暫停／升級後續播曲中位置，曲調與音量喜好待 Erin 試聽。（來源：`coord/inbox/done/20261025T160825Z-parent-music-polish.md`）
