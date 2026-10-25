@@ -38,3 +38,5 @@
 - 家長要求維持全自動攻擊，只操作走位、衝刺與技能，不做手動瞄準或換彈；重點是每場體驗變化大。已建立 `survivor-build-variety` 待辦卡，依賴 `survivor-landscape`，待合併後由 erin-watch 開新分支製作。本卡先做四欄位（普攻／技能／衝刺／被動）與三條流派（暫名 🌊水／🌪️風／⚡雷，之後由 Erin 改名），各 4～5 張卡、顏色邊框區分；三選一盡量跨流派，首張流派卡就改變對應欄位行為，讓前幾次選擇形成不同玩法。後續分步加入稀有度與重複強化、標示條件的合體卡、角色與自動武器選擇、隨機教室事件與 Boss 前精英、打倒老師後傳說卡與 ⭐ 局外解鎖；角色特色由 Erin 設計，具體路線見企劃 §9。這些功能尚未實作。（來源：`coord/inbox/done/20261025T084309Z-parent-variety.md`）
 
 - `survivor-build-variety` 依家長已核可的 §9 步驟 1 製作試玩初版：四欄顯示、三流派各四卡、跨流派選卡與混搭；以既有自動補血／寶石磁鐵／泡泡護盾分別作水／風／雷被動，另加九張首選即生效的普攻／技能／衝刺行為卡。效果與數值是可調工程初值，尚待 Grok 審查及 Erin 試玩，不視為 Erin 已確認新名稱或平衡；未加入後續步驟 2～5。資源版本 20261025h、sw 快取 v12；驗證與待試玩項目見 `docs/survivor-build-variety-validation.md`。（依據：`coord/inbox/done/20261025T084309Z-parent-variety.md`）
+
+- 家長要求跟隨鏡頭、約 3×3 畫面的固定地圖、可見邊界及地磚，以及以 visualViewport／safe-area 修正直拿旋轉後按鈕被切掉的問題；已在 `survivor-camera-map` 製作。鏡頭一般置中、邊緣停止捲動；技能與衝刺右下並排、搖桿左側、HUD 精簡上方。工程測試通過，瀏覽器及實機仍待驗證；地圖大小與手感留待 Erin 試玩確認。來源：`coord/inbox/done/20261025T092439Z-parent-camera-map.md`；驗證：`docs/survivor-camera-map-validation.md`。

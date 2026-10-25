@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<title>小怪獸按鈕可見範圍測試</title>
+<style>body{font:14px monospace}iframe{display:block;border:0;margin:10px 0}pre{white-space:pre-wrap}</style>
+<h1>按鈕可見範圍測試</h1>
+<p>請用本機 HTTP 試玩伺服器開啟此頁。自動測試手機直拿／橫拿、平板、安全區及工具列縮小後的真實 DOM 邊界。</p>
+<pre id="results">測試中…</pre>
+<script>
+(async () => {
+  const results = document.querySelector('#results');
+  const lines = []; let failures = 0;
+  const check = (ok, label) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failures++; };
+  const cases = [
+    [390,844,390,664,0,45], [375,667,375,553,0,30], [320,568,320,468,0,25],
+    [844,390,744,340,20,12], [568,320,568,280,0,10], [1024,768,1024,700,0,0], [768,1024,768,900,0,20]
+  ];
+  for (const [iw,ih,vw,vh,left,top] of cases) {
+    const iframe = document.createElement('iframe');
+    iframe.style.width = `${iw}px`; iframe.style.height = `${ih}px`;
+    const loaded = new Promise(resolve => iframe.onload = resolve);
+    iframe.src = '../index.html'; document.body.append(iframe); await loaded;
+    const w = iframe.contentWindow, d = w.document;
+    try {
+      // 模擬 Safari 工具列／視覺視窗偏移，不修改遊戲程式或計算出的 DOM 邊界。
+      Object.defineProperty(w, 'visualViewport', { configurable:true, value:{width:vw,height:vh,offsetLeft:left,offsetTop:top} });
+      const rotated = ih > iw;
+      const screenSafe = {top:24,right:0,bottom:20,left:0};
+      const localSafe = rotated ? {top:screenSafe.right,right:screenSafe.bottom,bottom:screenSafe.left,left:screenSafe.top} : screenSafe;
+      const shell = d.querySelector('.game-shell');
+      for (const [key,value] of Object.entries(localSafe)) shell.style.setProperty(`--safe-${key}`,`${value}px`);
+      w.resize(); w.startGame(); w.togglePause(); w.togglePause(); w.summonTeacher();
+      for (const size of [72,88,104]) {
+        w.updateSettingValue('actionButtonSize',size); w.updateActionControls();
+        const bounds = [d.querySelector('#skillButton'),d.querySelector('#dashButton'),d.querySelector('.back'),d.querySelector('#pauseButton'),d.querySelector('.hud'),d.querySelector('#buildSlots'),d.querySelector('#bossHud')];
+        const rects = bounds.map(e=>e.getBoundingClientRect());
+        bounds.forEach((e,i) => {
+          const r=rects[i];
+          check(r.width>0 && r.height>0 && r.left>=left+screenSafe.left-.5 && r.top>=top+screenSafe.top-.5 && r.right<=left+vw-screenSafe.right+.5 && r.bottom<=top+vh-screenSafe.bottom+.5, `${iw}×${ih} visible ${vw}×${vh}, ${size}px: ${e.id||e.className}`);
+        });
+        const overlaps=(a,b)=>a.left<b.right && a.right>b.left && a.top<b.bottom && a.bottom>b.top;
+        for(let i=0;i<2;i++) for(let j=2;j<rects.length;j++) check(!overlaps(rects[i],rects[j]),`按鈕 ${i} 不重疊 HUD／返回 ${j}`);
+        check(!overlaps(rects[0],rects[1]),'技能與衝刺不重疊');
+        check(!overlaps(rects[4],rects[2]) && !overlaps(rects[4],rects[3]),'HUD 不重疊返回／暫停');
+      }
+      w.showOverlay('paused');
+    } catch(error) { check(false,`${iw}×${ih}: ${error.stack}`); }
+    iframe.remove();
+  }
+  results.textContent = `${failures ? 'FAIL' : 'PASS'}：${failures} 個失敗\n${lines.join('\n')}`;
+})().catch(error => document.querySelector('#results').textContent = `FAIL ${error.stack}`);
+</script>
+</html>

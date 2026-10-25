@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-camera-map",
+  "title": "小怪獸：跟隨鏡頭、固定地圖與可見按鈕",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-camera-map",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T092439Z-parent-camera-map.md",
+  "next": "請 Grok 審查提交後 SHA；工程測試通過。瀏覽器遭環境限制，需跑 viewport.html 與手機實測；Erin 確認鏡頭邊緣、地圖大小與按鈕手感。詳見驗證文件；erin-watch 代辦提交／PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T09:29:24.112317Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-skill-tree"
+  ]
+}

@@ -14,7 +14,7 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
-function fresh() { run(`resetGame(); settingsPanel.hidden = true; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999; updateActionControls();`); }
+function fresh() { run(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); settingsPanel.hidden = true; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999; updateActionControls();`); }
 function close(actual, expected) { assert.ok(Math.abs(actual - expected) < 1e-7, `${actual} != ${expected}`); }
 function step(seconds) { run(`for (let t = 0; t < ${seconds} - 1e-8; t += .05) tick(.05);`); }
 fresh();
@@ -37,8 +37,8 @@ close(run('Math.hypot(state.player.x - 400, state.player.y - 300)'), 28.5);
 fresh(); run('gameSettings.dashSeconds = .12; activateDash();'); step(.15);
 close(run('state.player.x - 400'), 68.4);
 run('gameSettings.dashSeconds = .15;');
-fresh(); run('state.player.x = state.width - 20; activateDash(); tick(.05);');
-close(run('state.player.x'), 782);
+fresh(); run('state.player.x = state.worldWidth - 20; activateDash(); tick(.05);');
+close(run('state.player.x'), 2382);
 // 衝刺擋住甲本碰撞與國字，最後一幀也不受傷；結束後恢復碰撞。
 fresh();
 run(`activateDash(); for (let i = 0; i < 3; i++) {
@@ -72,7 +72,7 @@ assert.equal(run('JSON.stringify([state.bomb,state.dashTimer,state.dashCooldown,
 assert.equal(run('actionControls.hidden'), true);
 run('togglePause();'); assert.equal(run('actionControls.hidden'), false);
 run('openSettings(); togglePause();'); assert.equal(run('state.mode'), 'paused');
-run('resetGame();'); assert.equal(run('state.bomb'), null); assert.equal(run('state.skillCooldown + state.dashTimer + state.dashCooldown'), 0);
+run('resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();'); assert.equal(run('state.bomb'), null); assert.equal(run('state.skillCooldown + state.dashTimer + state.dashCooldown'), 0);
 // 兩根手指：左手持續搖桿，右手按技能／衝刺不改左手 pointerId。
 fresh();
 run(`globalThis.pointer = (id,x,y) => ({pointerId:id,clientX:x,clientY:y,target:{closest:()=>null},preventDefault(){},stopPropagation(){}});
@@ -118,7 +118,7 @@ run(`elements.gameCanvas.clientWidth = 720; elements.gameCanvas.clientHeight = 3
   state.keys.add('w'); resize();`);
 assert.equal(run('state.width'), 720); assert.equal(run('state.height'), 320);
 assert.equal(run('canvas.width'), 720); assert.equal(run('canvas.height'), 320);
-assert.equal(run('state.player.x'), 702); assert.equal(run('state.player.y'), 302);
+assert.equal(run('state.player.x'), 790); assert.equal(run('state.player.y'), 590);
 assert.equal(run('ctx.imageSmoothingEnabled'), false);
 assert.equal(run('state.joy'), null); assert.equal(run('state.pointerId'), null);
 assert.equal(run('state.keys.size'), 0); assert.equal(run('state.elapsed'), 42);

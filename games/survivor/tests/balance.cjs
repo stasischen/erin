@@ -13,7 +13,7 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
-function fresh() { run(`resetGame(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;`); }
+function fresh() { run(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;`); }
 function targets(pierce, boss = false) {
   fresh();
   run(`state.enemies = [0, 1, 2, 3, 4, 5, 6].map(() => ({ x: 300, y: 300, r: 17, speed: 0, damage: 18, hp: 100, maxHp: 100, wobble: 0, alive: true, flash: 0 }));
@@ -109,7 +109,7 @@ assert.equal(previous('gameSettings.enemyShotDamage'), 6);
 assert.equal(previous('bestRecord'), 123.5);
 previous('updateSettingValue("playerHealth", 110); gameSettings = loadSavedSettings();');
 assert.equal(previous('gameSettings.playerHealth'), 110);
-previous('resetSettingsButton.listeners.click(); resetGame();');
+previous('resetSettingsButton.listeners.click(); resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();');
 assert.equal(previous('state.player.health'), 90);
 assert.equal(previous('bestRecord'), 123.5);
 const current = setup({ 'erin-survivor-settings-v3': JSON.stringify({ playerHealth: 110 }) });
