@@ -8,7 +8,7 @@ function handleSchoolEvents(events) {
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool,{kind:'number',x:state.player.x,y:state.player.y-50,vx:0,vy:-15,text:event.type === 'transformed' ? GAME_DATA.schools.find(s => s.id === event.schoolId).form : '終極卡解鎖',color:BUILD_TUNING[event.schoolId].color,life:1.5,maxLife:1.5}));
   }
 }
-function schoolDamage(target, damage) { return damage * (target.wetTimer > 0 && effectLevel('water-wet') ? 1 + GAME_DATA.schoolRules.wetDamage : 1); }
+function schoolDamage(target, damage) { return damage * neutralDamageMultiplier() * (target.wetTimer > 0 && effectLevel('water-wet') ? 1 + GAME_DATA.schoolRules.wetDamage : 1); }
 function absorbSchoolHit(damage) {
   if (damage > 0 && state.schoolCombat && state.schoolCombat.bubble) {
     state.schoolCombat.bubble = false;

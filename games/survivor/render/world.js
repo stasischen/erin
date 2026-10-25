@@ -361,6 +361,7 @@ function render() {
     }
     drawEncounterGround();
     drawSupportVisuals();
+    drawNeutralItems();
     for (const shot of state.projectiles) {
       if (!shot.alive) continue;
       const colors = shot.colors || ['water'];

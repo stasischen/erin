@@ -81,14 +81,14 @@
     const c = draft.cards[cardIndex], fields = grid(edit);
     if (globalThis.SurvivorPreview) { const host=el('div',undefined,edit); host.className='skill-preview-host'; SurvivorPreview.mount(host,draft,{kind:'card',id:c.id}); }
     iconPicker(fields, c); text(fields, '卡片名稱', c, 'name'); text(fields, '卡片說明', c, 'description', 120); range(fields, c, 'maxLevel');
-    select(fields, '流派', c, 'school', { '': '支援', ...Object.fromEntries(draft.schools.map(s => [s.id,draft.build[s.id].name])) });
+    if (!c.neutral) select(fields, '流派', c, 'school', { '': '支援', ...Object.fromEntries(draft.schools.map(s => [s.id,draft.build[s.id].name])) });
     select(fields, '欄位', c, 'slot', {attack:'普攻',skill:'技能',dash:'衝刺',passive:'被動'});
     select(fields, '品質', c, 'rarity', {common:'普通',rare:'稀有',legendary:'傳說'});
-    select(fields, '技能樹階段', c, 'tier', {'':'支援',entry:'入門','advanced-a':'進階 A','advanced-b':'進階 B',fusion:'合體',ultimate:'終極（同流派 5 張）'});
+    if (!c.neutral) select(fields, '技能樹階段', c, 'tier', {'':'支援',entry:'入門','advanced-a':'進階 A','advanced-b':'進階 B',fusion:'合體',ultimate:'終極（同流派 5 張）'});
     const prerequisites = el('details', undefined, edit); el('summary', '選擇前置卡片（目前 ' + c.requires.length + ' 張）', prerequisites);
     el('p', '每張前置卡達到 Lv1 即可。不要選自己，或讓前置卡互相繞成圈。', prerequisites);
     const checks = grid(prerequisites);
-    draft.cards.filter(other => other.id !== c.id).forEach(other => {
+    draft.cards.filter(other => !c.neutral && other.id !== c.id).forEach(other => {
       const prerequisite = button(checks, (c.requires.includes(other.id) ? '✓ ' : '＋ ') + other.name, () => {
         c.requires = c.requires.includes(other.id) ? c.requires.filter(id => id !== other.id) : c.requires.concat(other.id); changed(); render();
       }, c.requires.includes(other.id));
@@ -186,6 +186,9 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
+    const nf=grid(panel('中立道具數值'));
+    const names={"itemsPerRun": "每場道具卡池張數", "bombChance": "炸彈掉落機率", "bombDelay": "炸彈等待秒", "bombRadius": "炸彈半徑", "bombDamage": "炸彈傷害", "birdRadius": "小鳥繞行半徑", "birdReach": "小鳥啄擊距離", "birdSeconds": "小鳥攻擊間隔秒", "birdDamage": "小鳥傷害", "bankEvery": "金庫每幾顆球成長", "bankStep": "金庫每次傷害加成", "bankCap": "金庫傷害加成上限", "splitDamage": "分裂傷害倍率", "splitAngle": "分裂角度", "magnetMultiplier": "磁鐵拾取倍率", "crownDamage": "王冠傷害加成", "crownHealth": "王冠減少最大血量", "luckyRareMultiplier": "幸運草稀有權重倍率", "cookieKills": "餅乾回血所需擊倒數"};
+    for(const [key,bounds] of Object.entries(api.NEUTRAL_BOUNDS)) range(nf,draft.neutralRules,key,bounds,names[key]);
     const schoolPanel=panel('流派與精靈數值'), schoolFields=grid(schoolPanel);
     for (const [key,bounds] of Object.entries(api.SCHOOL_BOUNDS)) range(schoolFields,draft.schoolRules,key,bounds,SCHOOL_NAMES[key]);
     for(const [key,title] of [['tuning','基本玩法'],['build','流派共用數值'],['bossTuning','魔王共用數值']]) {

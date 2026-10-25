@@ -62,6 +62,13 @@ function resetPreview() {
     if (previewFeatures.includes('thunder-charge')) state.schoolCombat.kills = GAME_DATA.schoolRules.chargeKills;
     if (previewFeatures.includes('water-wet')) { state.enemies.forEach(e => e.wetTimer=GAME_DATA.schoolRules.wetSeconds); }
     if (previewFeatures.includes('thunder-static')) { state.enemies[0].x=p.x+p.r+12; state.enemies[0].homeX=state.enemies[0].x; }
+    if (previewCard && previewCard.neutral) {
+      neutralEvent('acquire',p.x,p.y,previewCard.id);
+      if (previewFeatures.includes('item-bank')) { state.neutral.gems=GAME_DATA.neutralRules.bankEvery-1;neutralEvent('pickup',p.x,p.y); }
+      if (previewFeatures.includes('item-cookie')) { state.neutral.kills=GAME_DATA.neutralRules.cookieKills-1; }
+      if (previewFeatures.some(id=>['item-split','item-candy'].includes(id))) { state.enemies[0].hp=1; }
+      if (previewFeatures.includes('item-candy')) state.neutral.bombs.push({x:state.enemies[1].x,y:state.enemies[1].y,timer:.5});
+    }
     state.player.health = PLAYER_HEALTH / 2;
     state.healTimer = UPGRADE_TUNING.autoHealSeconds;
     state.gems = [{x:p.x-90,y:p.y+60,r:8,value:0,alive:true,wobble:0}];
@@ -76,6 +83,13 @@ function stepPreview(dt) {
       const p = state.player;
       const effects = previewCard ? previewCard.effects : [];
       const features = effects.map(e=>e.feature).filter(Boolean);
+      if (previewCard && previewCard.neutral) {
+        fireAtNearest();
+        if(features.includes('item-cookie')) { state.enemies[0].hp=1;damageEnemy(state.enemies[0],2); }
+        if(features.includes('item-wall')) {
+          const shot=state.projectiles[0];if(shot) { shot.x=state.cameraX+state.width-shot.r;shot.vx=Math.abs(shot.vx); }
+        }
+      }
       // 導電水窪也示範普攻命中，讓前置水技能在假怪腳下留下會放電的水窪。
       if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle','water-drop','wind-blade','thunder-charge','water-wet','thunder-super'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
         state.shotTimer=0; fireAtNearest(); triggerMakerEffects('hit',p.x+45,p.y);
@@ -126,9 +140,11 @@ function spacePreviewTargets() {
 }
 function paintPreview() {
   render();
-  if (previewSpec.id === 'heal' || previewFeatures.some(id=>['bubble-shield','auto-heal'].includes(id))) {
+  if (previewFeatures.includes('item-clover')) {ctx.fillStyle='#fff1b9';ctx.font='12px sans-serif';ctx.fillText('重抽 '+state.rerollsRemaining+' 次 · 稀有 ×'+GAME_DATA.neutralRules.luckyRareMultiplier,6,18);}
+  if (previewSpec.id === 'heal' || previewFeatures.some(id=>['bubble-shield','auto-heal','item-crown','item-cookie'].includes(id))) {
     ctx.fillStyle='#142331';ctx.fillRect(4,4,90,16);
     ctx.fillStyle='#5be08b';ctx.fillRect(6,6,86*state.player.health/maxPlayerHealth(),12);
+    ctx.fillStyle='#fff';ctx.font='10px sans-serif';ctx.fillText(Math.round(state.player.health)+' / '+maxPlayerHealth(),8,16);
   }
 }
 function previewFrame(now) {

@@ -901,6 +901,186 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ]
+    },
+    {
+      "id": "item-wall",
+      "name": "彈牆水球",
+      "description": "水球碰到畫面邊緣反彈一次。",
+      "icon": "item-wall",
+      "maxLevel": 1,
+      "slot": "attack",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "item-wall",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-candy",
+      "name": "爆爆糖",
+      "description": "打倒怪物有 10% 機率掉小炸彈。",
+      "icon": "item-candy",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-candy",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-bird",
+      "name": "小鳥跟班",
+      "description": "小鳥繞著你飛，啄附近的怪物。",
+      "icon": "item-bird",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-bird",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-bank",
+      "name": "小金庫",
+      "description": "每撿 10 顆經驗球傷害 +1%，最多 +30%。",
+      "icon": "item-bank",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "common",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-bank",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-split",
+      "name": "分裂水球",
+      "description": "水球打倒怪物時分裂成兩發；碎片不再分裂。",
+      "icon": "item-split",
+      "maxLevel": 1,
+      "slot": "attack",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "item-split",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-magnet",
+      "name": "磁鐵",
+      "description": "拾取範圍變成 2.5 倍。",
+      "icon": "item-magnet",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "common",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-magnet",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-crown",
+      "name": "王冠",
+      "description": "詛咒：傷害 +30%，最大血量 -1。",
+      "icon": "item-crown",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-crown",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-clover",
+      "name": "幸運草",
+      "description": "立即多一次重抽，稀有卡更容易出現。",
+      "icon": "item-clover",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "rare",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-clover",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-rear",
+      "name": "後射",
+      "description": "每次普攻同時向後方多射一發。",
+      "icon": "item-rear",
+      "maxLevel": 1,
+      "slot": "attack",
+      "rarity": "common",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "projectile",
+          "feature": "item-rear",
+          "power": 1
+        }
+      ]
+    },
+    {
+      "id": "item-cookie",
+      "name": "回力餅乾",
+      "description": "持有時每打倒 20 隻，回 1 點血。",
+      "icon": "item-cookie",
+      "maxLevel": 1,
+      "slot": "passive",
+      "rarity": "common",
+      "requires": [],
+      "neutral": true,
+      "effects": [
+        {
+          "type": "aoe",
+          "feature": "item-cookie",
+          "power": 1
+        }
+      ]
     }
   ],
   "enemies": [
@@ -1327,5 +1507,26 @@ globalThis.SURVIVOR_DEFAULTS = {
     "waterFormSize": 0.25,
     "windFormCharges": 1,
     "thunderFormRange": 0.4
+  },
+  "neutralRules": {
+    "itemsPerRun": 5,
+    "bombChance": 0.1,
+    "bombDelay": 0.6,
+    "bombRadius": 70,
+    "bombDamage": 45,
+    "birdRadius": 65,
+    "birdReach": 90,
+    "birdSeconds": 0.8,
+    "birdDamage": 20,
+    "bankEvery": 10,
+    "bankStep": 0.01,
+    "bankCap": 0.3,
+    "splitDamage": 0.5,
+    "splitAngle": 0.5,
+    "magnetMultiplier": 2.5,
+    "crownDamage": 0.3,
+    "crownHealth": 1,
+    "luckyRareMultiplier": 1.6,
+    "cookieKills": 20
   }
 };

@@ -17,6 +17,7 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
+  const NEUTRAL_BOUNDS = {"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
   const SCHOOL_BOUNDS = {
     schoolsPerRun:[1,3,1], cardsPerSchool:[3,8,1], transformCards:[2,5,1], ultimateCards:[3,8,1], fusionCards:[1,4,1],
     legendaryChance:[0,.1,.005],rareWeight:[.1,1,.05],ownedWeight:[0,2,.05],starterWeight:[0,4,.1],
@@ -92,6 +93,9 @@
           data.schoolRules[field] = num(input.schoolRules[field], bounds[0], bounds[1], field, bounds[2] === 1);
         }
       }
+      if (input.neutralRules !== undefined) {
+        for (const [field, bounds] of Object.entries(NEUTRAL_BOUNDS)) data.neutralRules[field] = num(input.neutralRules[field], bounds[0], bounds[1], field, ['itemsPerRun','bankEvery','cookieKills','crownHealth'].includes(field));
+      }
       if (input.schools !== undefined && JSON.stringify(input.schools) !== JSON.stringify(data.schools)) fail('流派登錄表請由資料檔擴充');
       // 物件數量上限固定，避免作品讓裝置卡住；整數欄位不得帶小數。
       for (const field of ['maxUpgradeLevel','enemyLimit','enemyShotLimit','teacherShotCount','teacherShotLimit','projectileLimit','gemLimit','xpToLevel','xpGrowthPerLevel','enemyShootLevel']) data.tuning[field] = num(input.tuning[field], 1, root.SURVIVOR_DEFAULTS.tuning[field], field, true);
@@ -107,6 +111,7 @@
         const c = input.cards[i];
         if (!c || c.id !== base.id) fail('卡片識別碼不正確');
         const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: root.SurvivorIcons.normalize(c.icon, base.icon), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
+        if (base.neutral && (c.school || c.tier || c.requires.length)) fail('中立道具不能有流派或前置卡');
         result.school = c.school ? choice(c.school, data.schools.map(s => s.id), '流派') : undefined;
         result.rarity = c.rarity === undefined ? base.rarity : choice(c.rarity, ['common','rare','legendary'], '品質');
         result.tier = c.tier ? choice(c.tier, ['entry','advanced-a','advanced-b','fusion','ultimate'], '階段') : undefined;
@@ -190,5 +195,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

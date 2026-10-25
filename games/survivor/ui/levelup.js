@@ -38,12 +38,12 @@ function chooseUpgradeCards(excludedIds = []) {
   const available = fresh.length >= Math.min(3, eligible.length) ? fresh : eligible;
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "heal", name: "回血", description: "恢復 1 顆心" }]; }
   else {
-    state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, GAME_DATA.schoolRules, [Math.random(), Math.random(), Math.random()]);
+    state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, {...GAME_DATA.schoolRules, rareWeight:GAME_DATA.schoolRules.rareWeight * (effectLevel("item-clover") ? GAME_DATA.neutralRules.luckyRareMultiplier : 1)}, [Math.random(), Math.random(), Math.random()]);
   }
   showUpgradeChoices();
 }
 function renderSkillTree(tree) {
-  tree.innerHTML = (state.schoolRun ? state.schoolRun.schools : GAME_DATA.schools.map(s => s.id)).map(school => `<div><b style="color:${BUILD_TUNING[school].color}">${SurvivorIcons.html(school)}${BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+  tree.innerHTML = (state.schoolRun ? state.schoolRun.schools : GAME_DATA.schools.map(s => s.id)).concat('neutral').map(school => `<div><b style="color:${school === "neutral" ? "#e5c77d" : BUILD_TUNING[school].color}">${SurvivorIcons.html(school === "neutral" ? "passive" : school)}${school === "neutral" ? "中立道具" : BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => school === "neutral" ? card.neutral && (!state.schoolRun || state.schoolRun.neutralPool.includes(card.id)) : card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${card.description}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
 }
 function showUpgradeChoices() {
   const choices = state.pendingChoices;
@@ -110,6 +110,8 @@ function applyUpgrade(index, choices = state.pendingChoices) {
   const before = { ...state.upgrades };
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
+  neutralEvent('acquire', state.player.x, state.player.y, card.id);
+  state.player.health = Math.min(state.player.health, maxPlayerHealth());
   if (state.pickingSpirit) { state.schoolRun.starter = card.school; state.pickingSpirit = false; spawnEnemy(); }
   if (card.id === 'water-ultimate') { state.ultimateTimers = state.ultimateTimers || {}; state.ultimateTimers.water = BUILD_TUNING.ultimateSeconds; }
   handleSchoolEvents(SurvivorSchools.growth(UPGRADES, before, state.upgrades, GAME_DATA.schoolRules));

@@ -67,6 +67,7 @@ function resetGame() {
   resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
+  state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
   state.pickingSpirit = false; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -120,9 +121,9 @@ function startGame() {
 function finishRun(won) {
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, health: state.player.health };
+    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
     resetGame();
-    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, stageTransition: 2, mode: "transition" });
+    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
@@ -200,6 +201,8 @@ function tick(dt) {
   if (dashTime > 0) schoolDashCrossed(oldX,oldY,state.player.x,state.player.y);
   if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)), oldX, oldY);
   state.moveRate = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)) / Math.max(.001, dt) / PLAYER_SPEED;
+  updateNeutralItems(dt);
+  if (state.mode !== "playing") return;
   updateSchoolCombat(dt);
   if (state.mode !== "playing") return;
   updateUltimate(dt);
@@ -249,12 +252,14 @@ function tick(dt) {
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
     if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
+    bounceNeutralShot(shot);
     clampToMap(shot);
     for (const enemy of state.enemies) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
         schoolShotHit(shot, enemy);
         damageEnemy(enemy, shot.damage);
+        if (!enemy.alive) splitNeutralShot(shot);
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
         if (state.mode !== "playing") return;
         if (effectLevel("splash-water") > 0) {
@@ -302,10 +307,10 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = deltaX(state.player.x, gem.x), dy = deltaY(state.player.y, gem.y), distance = Math.hypot(dx, dy);
-    const pullRadius = GEM_PULL_RADIUS * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightMagnet) * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightMagnet) * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
     if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     clampToMap(gem);
-    if (distance < state.player.r + gem.r + 3) { gem.alive = false; grantExperience(gem.value); if (state.mode === "levelup") break; }
+    if (distance < state.player.r + gem.r + 3) { gem.alive = false; neutralEvent("pickup", gem.x, gem.y); grantExperience(gem.value); if (state.mode === "levelup") break; }
   }
   if (state.mode === "levelup") return;
   for (let i = state.gems.length - 1; i >= 0; i--) {

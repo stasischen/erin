@@ -71,7 +71,7 @@ fresh();owns(['water-ultimate','thunder-ultimate']);run('state.ultimateTimers={w
 run('globalThis.pool=JSON.stringify(state.schoolRun);finishRun(true);');assert.equal(run('JSON.stringify(state.schoolRun)===pool'),true);
 // Legacy Maker data is upgraded by id; names/stats survive; invalid ranges are rejected.
 run(`d=SurvivorData.defaults();delete d.schoolRules;delete d.schools;d.cards=d.cards.slice(0,24);d.cards.forEach(c=>delete c.rarity);d.cards[10].requires=['water-attack'];d.cards[0].name='我的水球';d.tuning.playerSpeed=205;globalThis.m=SurvivorData.validate(d);`);
-assert.equal(run('m.valid'),true);assert.equal(run('m.data.cards.length'),39);assert.equal(run('m.data.cards[0].name'),'我的水球');assert.equal(run('m.data.tuning.playerSpeed'),205);assert.equal(run('m.data.cards[10].requires.length'),0);
+assert.equal(run('m.valid'),true);assert.equal(run('m.data.cards.length'),run('SurvivorData.defaults().cards.length'));assert.equal(run('m.data.cards[0].name'),'我的水球');assert.equal(run('m.data.tuning.playerSpeed'),205);assert.equal(run('m.data.cards[10].requires.length'),0);
 for(const expression of ['d.schoolRules.legendaryChance=NaN','d.schoolRules.bigDropEvery=1.5','d.schoolRules.rodDamage=999','d.cards[0].rarity="mythic"'])assert.equal(run(`(()=>{const d=SurvivorData.defaults();${expression};return SurvivorData.validate(d).valid})()`),false,expression);
 assert.equal(run('SurvivorData.validate(SurvivorData.defaults()).valid'),true);
 // Fast dash cannot tunnel past a target; wrapped endpoints use the same shortest deltas.

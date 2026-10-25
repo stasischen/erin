@@ -66,3 +66,5 @@
 - 2026-10-26：家長確認深度路線圖，以「以撒約 30% 的層次感」為目標，製作順序為起始選擇 → 標籤和連攜 → 前 20 張改變機制的卡 → 第二把武器 → 解鎖和收藏圖鑑；十項長期目標記於計畫 §12。本卡只寫文件，具體設計仍由 Erin 與家長決定。來源：`coord/inbox/done/20261025T181815Z-parent-depth-roadmap.md`。
 
 - 2026-10-26：家長指定實作水／風／雷流派重新設計、起始三精靈、每局每流派五張普通／稀有卡池、傳說額外機率、同流派三張變身／五張終極、雙流派各兩張合體，以及水球依主流派變色；新增數值可在 Maker 調整。工程初版與限制見 `docs/survivor-school-redesign-validation.md`，尚待 Grok 審查及 Erin 試玩確認配色、變身與平衡。來源：`coord/inbox/done/20261025T183119Z-parent-school-redesign.md`。
+
+- 2026-10-26：家長指定製作十種無流派、每局隨機抽入一部分的中立道具，含彈牆、爆爆糖、小鳥、金庫、分裂、磁鐵、王冠、幸運草、後射與餅乾；具體效果依原話，品質與數值可由 Maker 調整，水球保留依流派變色。初版每局五種及其餘工程初值待 Erin 試玩，驗證與移植對照見 `docs/survivor-neutral-items-validation.md`，不視為已核准上線。來源：`coord/inbox/done/20261025T184823Z-parent-neutral-items.md`。
