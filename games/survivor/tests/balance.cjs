@@ -6,7 +6,7 @@ const source = fs.readFileSync(process.env.SURVIVOR_SOURCE || `${__dirname}/../g
 function setup(saved = {}) {
   const elements = {};
   const context2d = new Proxy({}, { get: (target, key) => target[key] || (() => {}) });
-  function element() { return { style: {}, classList: { add() {}, remove() {} }, listeners: {}, addEventListener(name, callback) { this.listeners[name] = callback; }, append() {}, appendChild() {}, setAttribute() {}, getContext: () => context2d, getBoundingClientRect: () => ({ width: 800, height: 600 }) }; }
+  function element() { return { style: { setProperty() {} }, dataset: {}, classList: { add() {}, remove() {} }, listeners: {}, addEventListener(name, callback) { this.listeners[name] = callback; }, append() {}, appendChild() {}, setAttribute() {}, getContext: () => context2d, getBoundingClientRect: () => ({ width: 800, height: 600 }) }; }
   const storage = { ...saved };
   const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { addEventListener() {} }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
   vm.runInContext(source, context);
