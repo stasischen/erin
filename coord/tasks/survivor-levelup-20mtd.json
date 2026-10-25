@@ -8,12 +8,12 @@
   "branch": "codex/survivor-levelup-20mtd",
   "pr": null,
   "brief": "coord/inbox/done/20261025T152117Z-parent-levelup-20mtd.md",
-  "next": "請 Grok 審查 erin-watch 提交的 SHA；非瀏覽器完整測試（含 levelup-reroll）及版本、diff 檢查通過。Chrome --layout 在沙盒啟動即 SIGABRT，瀏覽器工具也依安全政策拒絕本機 file URL；請在可啟動 Chrome 的環境跑 node games/survivor/tools/test.cjs --layout，驗證原五尺寸及新增 iPad 1024×768，再交 Erin 試玩。",
+  "next": "請 Grok 審查 erin-watch 新提交：已修正暫停展示測試及回血不扣重抽，非瀏覽器測試全通過。沙盒 Chrome 啟動 SIGABRT，請重跑 --layout 六尺寸後交 Erin 試玩。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T15:27:49.719820Z",
+  "updated": "2026-10-25T15:49:28.001167Z",
   "updatedBy": "codex"
 }

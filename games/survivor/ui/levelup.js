@@ -53,7 +53,7 @@ function showUpgradeChoices() {
   confirm.disabled = true;
   confirm.onclick = () => applyUpgrade(selectedIndex);
   const reroll = document.getElementById("rerollUpgrade");
-  reroll.disabled = state.rerollsRemaining <= 0;
+  reroll.disabled = state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
   document.getElementById("rerollCount").textContent = String(state.rerollsRemaining);
   reroll.setAttribute("aria-label", `重抽升級卡，剩下 ${state.rerollsRemaining} 次`);
   reroll.title = `重抽升級卡，剩下 ${state.rerollsRemaining} 次`;
@@ -92,7 +92,8 @@ function showUpgradeChoices() {
   statusEl.textContent = "選一張升級卡";
 }
 function rerollUpgradeCards() {
-  if (state.mode !== "levelup" || state.rerollsRemaining <= 0) return;
+  // 只剩回血備案時，保留重抽次數。
+  if (state.mode !== "levelup" || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer)) return;
   state.rerollsRemaining--;
   chooseUpgradeCards(state.pendingChoices.map(card => card.id));
 }

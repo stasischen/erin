@@ -28,11 +28,12 @@ assert.equal(run('state.rerollsRemaining'), 0, '下次升級不補次數');
 run(`resetGame(); state.mode='paused'; globalThis.before=JSON.stringify(state.pendingChoices);rerollUpgradeCards();`);
 assert.equal(run('state.rerollsRemaining'), 2);
 assert.equal(run('JSON.stringify(state.pendingChoices)===before'), true, '非升級中不重抽');
-// 所有卡都滿級的回血備案也能重抽、確認，不會生成無效選項。
+// 所有卡都滿級時停用重抽；直接呼叫也不扣次數，仍能確認回血。
 run(`UPGRADES.forEach(c=>state.upgrades[c.id]=5); chooseUpgradeCards(); rerollUpgradeCards();`);
 assert.equal(run('state.pendingChoices.length'), 1);
 assert.equal(run('state.pendingChoices[0].id'), 'heal');
-assert.equal(run('state.rerollsRemaining'), 1);
+assert.equal(run('state.rerollsRemaining'), 2);
+assert.equal(run.elements.rerollUpgrade.disabled, true);
 run('state.player.health=1; applyUpgrade(0);');
 assert.ok(run('state.player.health>1'));
 // 小卡池仍維持唯一、合法，允許少於三張。
