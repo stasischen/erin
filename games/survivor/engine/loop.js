@@ -93,7 +93,7 @@ function resetGame() {
   state.healTimer = 0;
   state.xp = 0;
   state.level = 1;
-  state.upgrades = {}; state.pendingChoices = [];
+  state.upgrades = {}; state.pendingChoices = []; state.rerollsRemaining = LEVELUP_REROLLS;
   state.keys.clear();
   state.joy = null;
   state.player.health = PLAYER_HEALTH;

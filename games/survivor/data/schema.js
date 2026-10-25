@@ -7,7 +7,7 @@
   const KINDS = { words: '國字扇形', chalk: '粉筆連發', dash: '直線衝撞', rain: '多點範圍', call: '單點範圍', summon: '召喚', ring: '留缺口的圈' };
   const BOUNDS = { damage: [0, 300, 1], radius: [10, 180, 1], speed: [30, 450, 5], count: [1, 8, 1], spread: [0, 1, .05], duration: [.1, 5, .1], interval: [.4, 15, .1], multiplier: [.2, 1, .05], distance: [0, 300, 5], gap: [1.2, 3, .1], power: [1, 3, 1], warning: [.6, 3, .1], pulse: [.2, 2, .05], hp: [10, 500, 10], maxLevel: [1, 5, 1] };
   const TUNING_BOUNDS = {
-    playerSpeed:[80,320,5], playerHealth:[40,270,10], actionButtonSize:[72,104,4], waveSeconds:[60,300,10],
+    levelupRerolls:[0,9,1], playerSpeed:[80,320,5], playerHealth:[40,270,10], actionButtonSize:[72,104,4], waveSeconds:[60,300,10],
     invincibleSeconds:[.3,3,.1], dashCooldown:[1,8,.5], dashSeconds:[.1,.4,.05], dashMultiplier:[2,5,.5],
     bombCooldown:[2,15,1], bombDelay:[.2,1.5,.1], bombDamage:[20,300,10], bombRadius:[50,180,5], bombKnockback:[10,100,5],
     shotInterval:[.25,1.5,.05], projectileSpeed:[150,600,10], projectileDamage:[10,100,5], autoHealSeconds:[2,30,1],
@@ -34,10 +34,10 @@
       for (const key of ['tuning', 'build', 'bossTuning']) {
         if (!input[key] || typeof input[key] !== 'object') fail('缺少 ' + key);
         for (const field of Object.keys(data[key])) {
-          const base = data[key][field], value = input[key][field];
+          const base = data[key][field], value = field === 'levelupRerolls' && input[key][field] === undefined ? base : input[key][field];
           if (typeof base === 'number') {
             const bounds = TUNING_BOUNDS[field] || [base === 0 ? 0 : Math.min(.01, base), Math.max(5, base * 3)];
-            data[key][field] = num(value, bounds[0], bounds[1], field);
+            data[key][field] = num(value, bounds[0], bounds[1], field, field === "levelupRerolls");
           }
           else if (Array.isArray(base)) data[key][field] = base.map((n, i) => num(value && value[i], .4, 10, field));
           else {

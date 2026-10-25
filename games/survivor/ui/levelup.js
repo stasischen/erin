@@ -22,8 +22,11 @@ function showOverlay(mode) {
 }
 
 
-function chooseUpgradeCards() {
-  const available = UPGRADES.filter(canOffer);
+function chooseUpgradeCards(excludedIds = []) {
+  const eligible = UPGRADES.filter(canOffer);
+  const fresh = eligible.filter(card => !excludedIds.includes(card.id));
+  // 卡池足夠時，整排換成沒看過的卡；卡池不足仍維持合法且不重複的選項。
+  const available = fresh.length >= Math.min(3, eligible.length) ? fresh : eligible;
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "heal", name: "回血", description: "恢復 1 顆心" }]; }
   else {
     const shuffled = available.slice();
@@ -49,34 +52,50 @@ function showUpgradeChoices() {
   const confirm = document.getElementById("confirmUpgrade");
   confirm.disabled = true;
   confirm.onclick = () => applyUpgrade(selectedIndex);
+  const reroll = document.getElementById("rerollUpgrade");
+  reroll.disabled = state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
+  document.getElementById("rerollCount").textContent = String(state.rerollsRemaining);
+  reroll.setAttribute("aria-label", `重抽升級卡，剩下 ${state.rerollsRemaining} 次`);
+  reroll.title = `重抽升級卡，剩下 ${state.rerollsRemaining} 次`;
+  reroll.onclick = rerollUpgradeCards;
+  const choiceButtons = [];
+  let lastTap = -Infinity, lastTapIndex = -1;
   state.pendingChoices.forEach((card, index) => {
-    const level = card.id === "heal" ? "" : (card.maxLevel === 1 ? "選了就開啟" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`);
+    const current = upgradeLevel(card.id), level = `Lv${current} → Lv${current + 1}`;
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
     button.dataset.rarity = card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common";
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
-    const tag = card.school ? `${SurvivorIcons.html(card.school)}${BUILD_TUNING[card.school].name} · ${BUILD_SLOTS[card.slot]}` : `支援 · ${BUILD_SLOTS[card.slot] || "回血"}`;
-    button.innerHTML = `<small>${SurvivorIcons.html(button.dataset.rarity === "legendary" ? "legendary" : button.dataset.rarity === "epic" ? "epic" : button.dataset.rarity === "rare" ? "rare" : "common")}${card.tier === "ultimate" ? "傳說" : card.tier === "fusion" ? "史詩" : card.requires && card.requires.length ? "稀有" : "普通"} · ${tag}</small><span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><strong>${card.name}</strong><span class="upgrade-description">${card.description}</span><small>${level} / ${card.maxLevel ? Math.min(card.maxLevel, UPGRADE_TUNING.maxUpgradeLevel) : ""}</small>${card.requires && card.requires.length ? `<small class="requirements">需要：${cardRequirements(card)}</small>` : ""}`;
-    upgradeCards.appendChild(button);
-    if (!globalThis.SurvivorPreview) button.addEventListener("click", () => applyUpgrade(index));
-    if (globalThis.SurvivorPreview) {
-      const preview = () => {
-        selectedIndex = index; confirm.disabled = false;
-        confirm.setAttribute("aria-label", "選這張：" + card.name);
-        confirm.title = "選這張：" + card.name;
-        upgradeCards.querySelectorAll('button').forEach(node => node.setAttribute('aria-pressed', String(node === button)));
-        SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:upgradeLevel(card.id)+1});
-      };
-      let lastTap = -Infinity;
-      button.addEventListener('click', () => {
-        const now = performance.now();
-        if (now - lastTap < 350) { applyUpgrade(index); return; }
-        lastTap = now; preview();
-      });
-      button.addEventListener('dblclick', () => applyUpgrade(index)); button.addEventListener('focus', preview); button.addEventListener('pointerenter', preview);
-      if (!index) preview();
-    }
+    button.setAttribute("aria-label", card.name + (card.id === "heal" ? "" : "，" + level));
+    button.title = card.name;
+    button.innerHTML = `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
+    button.setAttribute("aria-pressed", "false");
+    choiceButtons.push(button); upgradeCards.appendChild(button);
+    const preview = () => {
+      selectedIndex = index; confirm.disabled = false;
+      confirm.setAttribute("aria-label", "選這張：" + card.name);
+      confirm.title = "選這張：" + card.name;
+      choiceButtons.forEach(node => node.setAttribute('aria-pressed', String(node === button)));
+      document.getElementById("upgradeName").textContent = card.name;
+      document.getElementById("upgradeDescription").textContent = card.description;
+      document.getElementById("upgradeLevel").textContent = card.id === "heal" ? "立即回血" : level + " · " + (card.school ? BUILD_TUNING[card.school].name + " · " : "") + (BUILD_SLOTS[card.slot] || "支援");
+      document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 本局只能選一種終極" : card.tier === "fusion" ? "合體卡" : "") + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
+      if (globalThis.SurvivorPreview) SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:current+1});
+    };
+    button.addEventListener('click', () => {
+      const now = performance.now();
+      if (lastTapIndex === index && now - lastTap < 350) { applyUpgrade(index); return; }
+      lastTap = now; lastTapIndex = index; preview();
+    });
+    button.addEventListener('dblclick', () => applyUpgrade(index)); button.addEventListener('focus', preview);
+    if (!index) preview();
   });
   statusEl.textContent = "選一張升級卡";
+}
+function rerollUpgradeCards() {
+  // 只剩回血備案時，保留重抽次數。
+  if (state.mode !== "levelup" || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer)) return;
+  state.rerollsRemaining--;
+  chooseUpgradeCards(state.pendingChoices.map(card => card.id));
 }
 function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
@@ -99,5 +118,6 @@ Object.defineProperties(globalThis.Survivor.ui.levelup, {
   chooseUpgradeCards: { enumerable: true, get: () => chooseUpgradeCards },
   renderSkillTree: { enumerable: true, get: () => renderSkillTree },
   showUpgradeChoices: { enumerable: true, get: () => showUpgradeChoices },
+  rerollUpgradeCards: { enumerable: true, get: () => rerollUpgradeCards },
   applyUpgrade: { enumerable: true, get: () => applyUpgrade }
 });
