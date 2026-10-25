@@ -3,16 +3,20 @@
   "id": "survivor-stage-6-share",
   "title": "割草遊戲階段 6：發表會",
   "owner": "codex",
-  "state": "blocked",
+  "state": "peer_review",
   "repo": "erin",
   "branch": "codex/survivor-stage-6-share",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "先完成優先卡 survivor-stage-5b-balance；erin-watch 建立／切換到該卡分支後，階段 6 再整理 Erin 的製作時間軸。",
-  "reviewers": ["grok"],
+  "next": "請 Grok 核對 docs/survivor-share-timeline.md 的原話、來源與歸屬；通過後交 Erin 準備分享，發表後記錄下次想改的原話。",
+  "reviewers": [
+    "grok"
+  ],
   "risk": "low",
-  "waitingFor": "erin-watch",
-  "updated": "2026-10-22T11:17:27Z",
+  "waitingFor": null,
+  "updated": "2026-10-25T06:51:17Z",
   "updatedBy": "codex",
-  "dependsOn": ["survivor-stage-5-polish"]
+  "dependsOn": [
+    "survivor-stage-5-polish"
+  ]
 }
