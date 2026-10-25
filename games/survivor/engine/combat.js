@@ -84,6 +84,7 @@ function damageNumber(target, damage) {
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
+  if (encounterShield(enemy, damage)) { playSound("hit"); return; }
   playSound("hit");
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
@@ -91,6 +92,7 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
   damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
     enemy.alive = false;
+    encounterDefeated(enemy);
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
     burst(enemy.x, enemy.y, "#ffe2a8", 8);
     if (state.gems.length < GEM_LIMIT) state.gems.push(takeFromPool(state.gemPool, { x: enemy.x, y: enemy.y, r: 8, value: 1, alive: true, wobble: Math.random() * 6 }));
@@ -197,7 +199,8 @@ function updateMakerEffects(dt) {
     const h=state.enemyHazards[i]; h.warning=countdown(h.warning,dt);
     if(h.warning>0) continue;
     state.enemyHazards.splice(i,1);
-    if(targetVisible(h) && !state.player.damageDisabled && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
+    if (h.owner) skillVisual('splash',h.x,h.y,{radius:h.r,color:'#b68159',life:.4});
+    if(targetVisible(h) && !state.player.damageDisabled && state.dashTimer<=0 && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
       state.player.health=Math.max(0,state.player.health-h.damage);state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }

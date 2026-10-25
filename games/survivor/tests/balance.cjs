@@ -89,7 +89,7 @@ assert.ok(Math.abs(run('state.enemies[0].x') - 105.5) < 0.001);
 for (const [seconds, interval] of [[0, 1.84], [20, 1.495], [35, 1.15], [60, .8625], [90, .6325], [105, .5175]]) {
   fresh();
   run(`state.elapsed = state.stageElapsed = ${seconds}; state.spawnTimer = 0; tick(0);`);
-  assert.equal(run('state.enemies.length'), 1);
+  assert.equal(run('state.enemies.filter(e=>!e.miniboss).length'), 1);
   assert.equal(run('state.spawnTimer'), interval);
 }
 fresh();

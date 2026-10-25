@@ -25,7 +25,7 @@
     }, String(object[key] || '') === value));
     return row;
   }
-  function range(parent, object, key, limits, label) {
+  function range(parent, object, key, limits, label, iconOnly = false) {
     if (key === 'phaseCount') {
       const toggle = button(parent, (label || labels[key] || key) + (object[key] ? '：開' : '：關'), () => { object[key] = object[key] ? 0 : 1; changed(); render(); });
       toggle.setAttribute('role', 'switch'); toggle.setAttribute('aria-checked', String(!!object[key])); return;
@@ -41,8 +41,11 @@
       object[key] = Number(Math.max(bounds[0], Math.min(bounds[1], object[key] + direction * bounds[2])).toFixed(4));
       value.textContent = String(object[key]); slider.value = object[key]; changed();
     }
-    button(controls, '−', () => adjust(-1)).setAttribute('aria-label', (label || labels[key] || key) + ' 減少');
-    button(controls, '＋', () => adjust(1)).setAttribute('aria-label', (label || labels[key] || key) + ' 增加');
+    const minus = button(controls, '−', () => adjust(-1)), plus = button(controls, '＋', () => adjust(1));
+    minus.setAttribute('aria-label', (label || labels[key] || key) + ' 減少');
+    plus.setAttribute('aria-label', (label || labels[key] || key) + ' 增加');
+    if (iconOnly) for (const [b,id] of [[minus,'minus'],[plus,'plus']]) { b.textContent=''; b.innerHTML=SurvivorIcons.html(id); b.className='encounter-adjust'; }
+
   }
   function iconPicker(parent, card) {
     const picker = el('details', undefined, parent);
@@ -130,7 +133,33 @@
       el('span', SurvivorMonsters.labels[id], option);
     });
   }
+  function drawEncounters(key, title) {
+    const p = panel(title), cfg = draft[key]; p.className += ' maker-encounters';
+    const toggle = (parent, label, value, action) => {
+      const row = el('div',undefined,parent); row.className='encounter-toggle';
+      el('span',label,row);
+      const b = button(row,'',action); b.innerHTML=SurvivorIcons.html(value ? 'confirm' : 'pause');
+      b.setAttribute('aria-label',label + (value ? '：開' : '：關')); b.title=label;
+      b.setAttribute('role','switch'); b.setAttribute('aria-checked',String(value));
+    };
+    toggle(p,'啟用'+title,cfg.enabled,()=>{cfg.enabled=!cfg.enabled;changed();render();});
+    if (key==='elites') {
+      for (const [id,name] of Object.entries(api.ELITE_ABILITIES)) toggle(p,name,cfg.abilities.includes(id),()=>{
+        if (cfg.abilities.includes(id) && cfg.abilities.length===1) { message('至少保留一種能力；可用總開關停用精英。'); return; }
+        cfg.abilities=cfg.abilities.includes(id)?cfg.abilities.filter(a=>a!==id):cfg.abilities.concat(id); changed();render();
+      });
+      el('p','每隔一段時間抽一次精英。分裂的三隻小怪也從畫面外進場。擊敗精英立即得到經驗獎勵。',p);
+    } else {
+      text(p,'小頭目名稱',cfg,'name');
+      el('p','每關出現一次；時間比例乘上老師出場秒數。打破糖衣後才能傷害本體；擊敗後依序選兩張不同的升級卡。',p);
+    }
+    const names={interval:'精英抽選間隔秒數',chance:'每次抽選出現機率',limit:'同時精英上限',sizeScale:'精英身體倍率',healthScale:'精英血量倍率',rewardXp:'擊敗精英獎勵經驗',shieldHits:'糖霜擋住幾下',auraRadius:'加速光環範圍',auraSpeed:'光環速度倍率',syrupInterval:'留下糖漿間隔秒數',syrupSeconds:'糖漿持續秒數',syrupRadius:'糖漿範圍',syrupSlow:'糖漿內剩餘速度',teleportInterval:'傳送休息秒數',teleportWarning:'傳送預警秒數',teleportDistance:'傳送落點離主角距離',stageFraction:'每關出場時間比例',hp:'本體血量',armor:'糖衣盔甲血量',radius:'身體大小',speed:'移動速度',damage:'碰撞傷害',slamInterval:'重擊休息秒數',slamWarning:'重擊預警秒數',slamRadius:'重擊範圍',slamDamage:'重擊傷害'};
+    const fields=grid(p);
+    for (const [field,bounds] of Object.entries(api.ENCOUNTER_BOUNDS[key])) range(fields,cfg,field,bounds,names[field],true);
+  }
+
   function drawEnemies() {
+    drawEncounters('elites','精英怪'); drawEncounters('chocobear','巧克力大熊');
     draft.enemies.forEach(e => {
       const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
       monsterPicker(fields, e);

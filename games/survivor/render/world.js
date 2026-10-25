@@ -176,7 +176,7 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
   drawingContext.save(); drawingContext.translate(x, y - hop);
-  const sprite = SPRITES[enemyId];
+  const sprite = spriteId ? null : SPRITES[enemyId];
   if (sprite) {
     if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
     drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
@@ -333,6 +333,7 @@ function render() {
   ctx.save(); ctx.translate(offset.x, offset.y);
     drawBossMoves();
     drawFields();
+    drawEncounterGround();
     drawSupportVisuals();
     for (const shot of state.projectiles) {
       if (!shot.alive) continue;
@@ -382,12 +383,14 @@ function render() {
       ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {
+      if (hazard.owner) { ctx.fillStyle='rgba(74,46,39,.22)'; ctx.beginPath(); ctx.arc(hazard.x,hazard.y,hazard.r,0,Math.PI*2); ctx.fill(); }
       ctx.strokeStyle = "#c8354b"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(hazard.x, hazard.y, hazard.r, 0, Math.PI * 2); ctx.stroke();
       ctx.font = "18px system-ui"; ctx.fillStyle = "#c8354b"; ctx.fillText("注意！", hazard.x - 24, hazard.y);
     }
     for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
     for (const enemy of state.enemies) {
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0);
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId);
+      drawEncounterArmor(enemy);
       if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
     }
     for (const target of combatTargets()) drawTargetStatus(target);

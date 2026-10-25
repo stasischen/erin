@@ -1,4 +1,4 @@
-function spawnEnemy() {
+function spawnEnemy(options = {}) {
   if (state.enemies.length >= ENEMY_LIMIT) return;
   let wave = currentWaves()[0];
   for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
@@ -6,11 +6,17 @@ function spawnEnemy() {
     { ...ENEMY_TYPES[0], speed: gameSettings.enemySpeed, hp: gameSettings.enemyHealth },
     { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
   ];
-  const type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
-  const position = bossZoneSpawn(type.radius);
+  let type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
+  if (options.typeId) type = configuredTypes.find(t => t.id === options.typeId) || type;
+  const scale = options.elite ? GAME_DATA.elites.sizeScale : options.small ? .6 : 1;
+  const radius = type.radius * scale;
+  const position = bossZoneSpawn(radius);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
-  state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, x, y, r: type.radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale, maxHp: type.hp * currentStage().enemyHealthScale, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
+  state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
+  const enemy = state.enemies[state.enemies.length-1];
+  if (options.elite) makeElite(enemy);
+  return enemy;
 }
 
 function bookShotInterval(typeId) {
@@ -28,14 +34,21 @@ function startBookShooting() {
 function updateBookShooting(dt) {
   if (state.level < (MAKER_MODE ? Math.min(...ENEMY_TYPES.map(e => e.attack.level)) : gameSettings.enemyShootLevel) || state.bossIntro > 0) return;
   state.bookShotTimer = Math.max(0, state.bookShotTimer - dt);
-  for (const enemy of state.enemies) enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
+  for (const enemy of state.enemies) {
+    enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
+    enemy.shotWarning = Math.max(0, (enemy.shotWarning || 0) - dt);
+    if (!targetVisible(enemy)) { enemy.shotPrepared = false; enemy.shotWarning = 0; }
+  }
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
+  const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
   const allowed = ready.filter(e => !MAKER_MODE || (ENEMY_TYPES.find(t => t.id === e.typeId).attack.type !== "none" && state.level >= ENEMY_TYPES.find(t => t.id === e.typeId).attack.level));
   if (!allowed.length) return;
   const enemy = allowed[Math.floor(Math.random() * allowed.length)];
+  if (enemy.elite && !enemy.shotPrepared) { enemy.shotPrepared = true; enemy.shotWarning = .8; playSound('warning'); return; }
+  if (enemy.elite && enemy.shotWarning > 0) return;
+  enemy.shotPrepared = false;
   const attack = MAKER_MODE ? ENEMY_TYPES.find(t => t.id === enemy.typeId).attack : { type: "projectile", count: 1, spread: 0, speed: gameSettings.enemyShotSpeed, damage: gameSettings.enemyShotDamage, radius: 12 };
   const angle = Math.atan2(deltaY(state.player.y, enemy.y), deltaX(state.player.x, enemy.x));
   if (attack.type === "aoe") {

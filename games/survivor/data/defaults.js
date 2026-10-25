@@ -3,6 +3,20 @@ globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
   // ✏️ Erin 可以改：false 關掉角色外面的一像素深色線。
   "visuals": { "spriteOutline": true },
+  // ✏️ Erin 可以改：精英抽選間隔／機率；大熊在每關老師出場時間的一半來訪。
+  "elites": {
+    "enabled": true, "interval": 18, "chance": 0.35, "limit": 3,
+    "sizeScale": 1.25, "healthScale": 5, "rewardXp": 5,
+    "shieldHits": 3, "auraRadius": 150, "auraSpeed": 1.35,
+    "syrupInterval": 0.7, "syrupSeconds": 4, "syrupRadius": 28, "syrupSlow": 0.65,
+    "teleportInterval": 7, "teleportWarning": 1.2, "teleportDistance": 150,
+    "abilities": ["shield", "split", "haste", "syrup", "teleport"]
+  },
+  "chocobear": {
+    "enabled": true, "name": "巧克力大熊", "stageFraction": 0.5,
+    "hp": 450, "armor": 180, "radius": 34, "speed": 48, "damage": 12,
+    "slamInterval": 4, "slamWarning": 1.2, "slamRadius": 82, "slamDamage": 18
+  },
   "tuning": {
     "maxUpgradeLevel": 5,
     "levelupRerolls": 2,

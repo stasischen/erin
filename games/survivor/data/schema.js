@@ -17,6 +17,11 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
+  const ENCOUNTER_BOUNDS = {
+    elites: {interval:[5,60,1],chance:[0,1,.05],limit:[1,3,1],sizeScale:[1.1,1.5,.05],healthScale:[2,8,.5],rewardXp:[1,15,1],shieldHits:[1,6,1],auraRadius:[50,240,5],auraSpeed:[1,1.8,.05],syrupInterval:[.4,3,.1],syrupSeconds:[1,6,.5],syrupRadius:[12,50,1],syrupSlow:[.4,1,.05],teleportInterval:[4,15,.5],teleportWarning:[.8,3,.1],teleportDistance:[100,240,5]},
+    chocobear: {stageFraction:[.25,.75,.05],hp:[100,1500,10],armor:[20,600,10],radius:[26,44,1],speed:[20,80,1],damage:[0,25,1],slamInterval:[2,10,.5],slamWarning:[.8,3,.1],slamRadius:[45,120,1],slamDamage:[0,30,1]}
+  };
+  const ELITE_ABILITIES = {shield:'糖霜護盾',split:'分裂',haste:'加速光環',syrup:'黏黏糖漿',teleport:'傳送'};
   const PARAMS = { damage: 35, radius: 80, speed: 190, count: 1, spread: .2, duration: 1, interval: 2, multiplier: .55, distance: 40, gap: 1.8 };
   function defaults() { return copy(root.SURVIVOR_DEFAULTS); }
   function validate(input) {
@@ -40,6 +45,21 @@
         const z = input.bossZone;
         if (!z || typeof z.enabled !== 'boolean') fail('縮圈需要開或關');
         data.bossZone = { enabled: z.enabled, steps: num(z.steps, 0, 3, '縮圈次數', true), speed: num(z.speed, 10, 160, '縮圈速度'), damage: num(z.damage, 0, 4, '紫霧每秒傷害') };
+      }
+      for (const key of ['elites','chocobear']) {
+        // 舊作品沒有此區塊時補預設；輸入值仍逐項驗證。
+        if (input[key] === undefined) continue;
+        const source = input[key];
+        if (!source || typeof source.enabled !== 'boolean') fail(key + ' 需要開或關');
+        data[key].enabled = source.enabled;
+        for (const [field, bounds] of Object.entries(ENCOUNTER_BOUNDS[key])) {
+          data[key][field] = num(source[field], bounds[0], bounds[1], field, ['limit','rewardXp','shieldHits'].includes(field));
+        }
+        if (key === 'chocobear') data[key].name = name(source.name, '小頭目名稱', 24);
+        else {
+          if (!Array.isArray(source.abilities) || !source.abilities.length || source.abilities.length > 5 || new Set(source.abilities).size !== source.abilities.length) fail('精英需要 1～5 種不同能力');
+          data[key].abilities = source.abilities.map(id => choice(id, Object.keys(ELITE_ABILITIES), '精英能力'));
+        }
       }
       for (const key of ['tuning', 'build', 'bossTuning']) {
         if (!input[key] || typeof input[key] !== 'object') fail('缺少 ' + key);
@@ -151,5 +171,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

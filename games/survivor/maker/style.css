@@ -71,3 +71,6 @@
 :where(.game-shell[data-short~="compact"]) .maker-editor .panel { padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; }
 :where(.game-shell[data-short~="compact"]) .maker-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 :where(.game-shell[data-short~="compact"]) #play { min-height: 46px; padding-top: 6px; padding-right: 20px; padding-bottom: 6px; padding-left: 20px; }
+
+.maker-encounters .encounter-toggle { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+.maker-encounters .encounter-toggle button, .maker-encounters .encounter-adjust { border-radius: 50%; width: 48px; height: 48px; min-height: 48px; padding: 8px; }
