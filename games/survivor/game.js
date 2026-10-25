@@ -19,6 +19,13 @@ const UPGRADE_TUNING = {
   enemyHealth: 120, // 打倒甲本要打掉多少血；改大要多打幾下
   secondEnemySpeed: 105, // 乙本每秒走多遠；比甲本快
   secondEnemyDamage: 14, // 乙本撞一下扣多少血；改大會更危險
+  enemyShootLevel: 8, // 主角升到幾級，甲乙本才會丟字；改大會晚一點開始
+  enemyShotInterval: 3, // 甲本丟完字至少休息幾秒；改大會射得比較少
+  secondEnemyShotInterval: 5, // 乙本丟字的休息秒數；比甲本長就射得比較少
+  enemyShotSpeed: 110, // 國字每秒飛多遠；改小會比較好躲
+  enemyShotDamage: 8, // 國字打中扣多少血；改小會比較不痛
+  enemyShotGap: 0.65, // 兩隻小兵丟字至少隔幾秒；改大就不會一起丟
+  enemyShotLimit: 12, // 畫面最多幾個小兵國字；避免字太多
   enemySpeedGrowth: 0.08, // 每過 30 秒多加多少原本速度；0.08 就是加 8%
   secondEnemyHealth: 70, // 乙本有多少血；比甲本少
   waveSeconds: 120, // 幾秒後老師出場；120 秒就是 2 分鐘
@@ -49,6 +56,9 @@ const SETTING_DEFAULTS = {
   secondEnemySpeed: UPGRADE_TUNING.secondEnemySpeed, secondEnemyHealth: UPGRADE_TUNING.secondEnemyHealth,
   waveSeconds: UPGRADE_TUNING.waveSeconds, teacherHealth: UPGRADE_TUNING.teacherHealth,
   shotInterval: UPGRADE_TUNING.shotInterval, spawnScale: 1,
+  enemyShootLevel: UPGRADE_TUNING.enemyShootLevel,
+  enemyShotInterval: UPGRADE_TUNING.enemyShotInterval, secondEnemyShotInterval: UPGRADE_TUNING.secondEnemyShotInterval,
+  enemyShotSpeed: UPGRADE_TUNING.enemyShotSpeed, enemyShotDamage: UPGRADE_TUNING.enemyShotDamage,
   sound: true, vibration: true
 };
 const SETTING_CONTROLS = [
@@ -61,6 +71,11 @@ const SETTING_CONTROLS = [
   { key: "waveSeconds", label: "老師出場時間", min: 60, max: 300, step: 10, unit: " 秒" },
   { key: "teacherHealth", label: "老師血量", min: 500, max: 3000, step: 100, unit: "" },
   { key: "shotInterval", label: "水球發射間隔", min: 0.25, max: 1.5, step: 0.05, unit: " 秒" },
+  { key: "enemyShootLevel", label: "甲乙本開始丟字等級", min: 2, max: 20, step: 1, unit: " 級" },
+  { key: "enemyShotInterval", label: "甲本丟字間隔", min: 1, max: 10, step: 0.5, unit: " 秒" },
+  { key: "secondEnemyShotInterval", label: "乙本丟字間隔", min: 1, max: 12, step: 0.5, unit: " 秒" },
+  { key: "enemyShotSpeed", label: "甲乙本國字速度", min: 50, max: 200, step: 10, unit: "" },
+  { key: "enemyShotDamage", label: "甲乙本國字傷害", min: 1, max: 30, step: 1, unit: "" },
   { key: "spawnScale", label: "波次出怪速度", min: 0.5, max: 2, step: 0.1, unit: " 倍", format: (value) => value.toFixed(1) }
 ];
 function loadSavedSettings() {
@@ -230,7 +245,10 @@ const resetSettingsButton = document.getElementById("resetSettingsButton");
 const soundToggle = document.getElementById("soundToggle");
 const vibrationToggle = document.getElementById("vibrationToggle");
 
-const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const enemyNotice = document.getElementById("enemyNotice");
+const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
+
+const state = { mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -323,7 +341,10 @@ function resetGame() {
   for (const item of state.effects) state.effectPool.push(item);
   state.player = { x: state.width / 2, y: state.height / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 };
   state.enemies = [];
+  for (const item of state.enemyShots) state.enemyShotPool.push(item);
   state.enemyShots = [];
+  state.bookShotTimer = 0; state.bookNoticeTimer = 0; state.bookShootingStarted = false;
+  enemyNotice.hidden = true;
   state.boss = null; state.bossShotTimer = 0; state.bossSummonTimer = 0; state.bossIntro = 0;
   state.projectiles = [];
   state.gems = [];
@@ -393,7 +414,35 @@ function spawnEnemy() {
   let x = side === 0 ? -pad : side === 1 ? state.width + pad : Math.random() * state.width;
   let y = side === 2 ? -pad : side === 3 ? state.height + pad : Math.random() * state.height;
   if (Math.hypot(x - state.player.x, y - state.player.y) < Math.min(state.width, state.height) * 0.32) { x = side < 2 ? x : (x + state.width / 2) % state.width; y = side >= 2 ? y : (y + state.height / 2) % state.height; }
-  state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0 });
+  state.enemies.push({ typeId: type.id, x, y, r: type.radius, speed: type.speed, damage: type.damage, color: type.color, hp: type.hp, maxHp: type.hp, wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
+}
+
+function bookShotInterval(typeId) {
+  return typeId === "otsubon" ? gameSettings.secondEnemyShotInterval : gameSettings.enemyShotInterval;
+}
+
+function startBookShooting() {
+  if (state.bookShootingStarted || state.level < gameSettings.enemyShootLevel) return;
+  state.bookShootingStarted = true; state.bookNoticeTimer = 4;
+  enemyNotice.textContent = "甲本開始丟字了！"; enemyNotice.hidden = false;
+}
+
+function updateBookShooting(dt) {
+  if (state.level < gameSettings.enemyShootLevel || state.bossIntro > 0) return;
+  state.bookShotTimer = Math.max(0, state.bookShotTimer - dt);
+  for (const enemy of state.enemies) enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
+  if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
+  // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
+  const ready = state.enemies.filter((enemy) => enemy.alive && enemy.shotCooldown <= 0 && enemy.x >= enemy.r && enemy.x <= state.width - enemy.r && enemy.y >= enemy.r && enemy.y <= state.height - enemy.r);
+  if (!ready.length) return;
+  const enemy = ready[Math.floor(Math.random() * ready.length)];
+  const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
+  state.enemyShots.push(takeFromPool(state.enemyShotPool, {
+    source: "book", x: enemy.x, y: enemy.y, vx: Math.cos(angle) * gameSettings.enemyShotSpeed, vy: Math.sin(angle) * gameSettings.enemyShotSpeed,
+    text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: 12, damage: gameSettings.enemyShotDamage
+  }));
+  enemy.shotCooldown = bookShotInterval(enemy.typeId);
+  state.bookShotTimer = UPGRADE_TUNING.enemyShotGap;
 }
 
 function summonTeacher() {
@@ -494,11 +543,14 @@ function applyUpgrade(index) {
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
 function grantExperience(value) {
   state.xp += value;
-  if (state.xp >= experienceNeeded()) { state.xp -= experienceNeeded(); state.level++; updateHud(); chooseUpgradeCards(); } else updateHud();
+  if (state.xp >= experienceNeeded()) { state.xp -= experienceNeeded(); state.level++; startBookShooting(); updateHud(); chooseUpgradeCards(); } else updateHud();
 }
 function tick(dt) {
   if (state.mode !== "playing") return;
   state.elapsed += dt;
+  startBookShooting();
+  state.bookNoticeTimer = Math.max(0, state.bookNoticeTimer - dt);
+  enemyNotice.hidden = state.bookNoticeTimer <= 0;
   const healLevel = upgradeLevel("auto-heal");
   if (healLevel > 0) {
     state.healTimer += dt;
@@ -590,6 +642,7 @@ function tick(dt) {
     if (!state.projectiles[i].alive) state.projectilePool.push(state.projectiles.splice(i, 1)[0]);
   }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
+  updateBookShooting(dt);
   if (state.boss && state.bossIntro <= 0) {
     state.boss.wobble += dt * 3; state.boss.flash = Math.max(0, state.boss.flash - dt); updateHud();
     const bx = state.player.x - state.boss.x, by = state.player.y - state.boss.y, distance = Math.max(1, Math.hypot(bx, by));
@@ -597,9 +650,9 @@ function tick(dt) {
     state.bossShotTimer -= dt;
     if (state.bossShotTimer <= 0) {
       const angle = Math.atan2(by, bx), count = UPGRADE_TUNING.teacherShotCount;
-      for (let i = 0; i < count && state.enemyShots.length < UPGRADE_TUNING.teacherShotLimit; i++) {
+      for (let i = 0; i < count && state.enemyShots.filter((shot) => shot.source !== "book").length < UPGRADE_TUNING.teacherShotLimit; i++) {
         const a = angle + (i - (count - 1) / 2) * UPGRADE_TUNING.teacherShotSpread;
-        state.enemyShots.push({ x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, text: ["作業！", "認真！", "加油！"][i % 3], r: 17 });
+        state.enemyShots.push(takeFromPool(state.enemyShotPool, { source: "teacher", damage: UPGRADE_TUNING.teacherShotDamage, x: state.boss.x, y: state.boss.y + 18, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, text: ["作業！", "認真！", "加油！"][i % 3], r: 17 }));
       }
       state.bossShotTimer += UPGRADE_TUNING.teacherShotInterval;
     }
@@ -607,10 +660,11 @@ function tick(dt) {
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     if (Math.hypot(shot.x - state.player.x, shot.y - state.player.y) < state.player.r + shot.r) {
-      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - UPGRADE_TUNING.teacherShotDamage); state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
-      state.enemyShots.splice(i, 1);
-    } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShots.splice(i, 1);
+      if (state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - (shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playTone(180, 0.12, "sawtooth"); updateHud(); }
+      state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
+    } else if (shot.x < -40 || shot.y < -40 || shot.x > state.width + 40 || shot.y > state.height + 40) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
+  if (state.player.health <= 0) { finishRun(false); return; }
   for (const gem of state.gems) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
@@ -718,7 +772,18 @@ function render() {
     ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
     ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
   }
-  for (const shot of state.enemyShots) { ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y); }
+  for (const shot of state.enemyShots) {
+    ctx.save(); ctx.textAlign = "center";
+    if (shot.source === "book") {
+      // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
+      ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
+      ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
+      ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
+    } else {
+      ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
+    }
+    ctx.restore();
+  }
   if (state.boss) {
     const b = state.boss, x = b.x, y = b.y + Math.sin(b.wobble) * 2;
     ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);

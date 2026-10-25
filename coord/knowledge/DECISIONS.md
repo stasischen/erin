@@ -25,3 +25,5 @@
 - 家長要求水星人外觀升級：保留 Erin 的藍色洋蔥設定，加入尖葉、深淺藍陰影亮點、大眼睛表情、深色外框，以及走路彈跳／搖晃和受傷表情；用程式或內建像素陣列繪製，保留 SPRITES 日後換 PNG 的機制。家長隨後要求開始製作；已在 `codex/survivor-hero-sprite` 實作內建像素圖，完成後交 Grok 審查，再由 Erin 試玩確認外觀。（來源：`coord/inbox/done/20261025T064946Z-parent-hero-sprite.md`、`coord/inbox/done/20261025T070546Z-parent-go-hero.md`）
 
 - 家長要求階段 5b 優先進行：水球預設只直接命中一隻就消失並顯示小水花；穿透卡每級多穿一隻，外觀與命中提示需可辨識。依家長提供的建議數值製作較難的平衡初版（主角 80 血、敵人更多更快、老師 2400 血與三發文字、升級需求逐級 +2、自動補血 Lv1 每 12 秒），更新設定版本與離線快取。數值是否合適仍待 Erin 試玩；本次未加入可選的三檔難度。（來源：`coord/inbox/done/20261022T111615Z-parent-balance.md`、`coord/inbox/done/20261025T065956Z-parent-go-5b.md`；工程驗證與待試玩項目：`docs/survivor-stage-5b-validation.md`）
+
+- 家長／Erin 要求「到第八級讓甲乙本發射國字」；依 Grok 轉述規格，Lv8 起甲乙本朝主角丟常見單字，乙本射得較少、錯開發射並限制數量，與老師詞句區分；升級時顯示「甲本開始丟字了！」，相關數值可調。實作初版為甲本至少隔 3 秒、乙本至少隔 5 秒，全體至少隔 0.65 秒，每字速度 110、傷害 8，小兵國字上限 12；這些為可調工程初值，難度仍待 Erin 試玩確認。（來源：`coord/inbox/done/20261025T071814Z-parent-enemy-shoot.md`；驗證：`docs/survivor-enemy-shoot-validation.md`）

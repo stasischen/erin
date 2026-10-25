@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-enemy-shoot",
+  "title": "割草遊戲：Lv8 起甲本乙本發射國字",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-enemy-shoot",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T071814Z-parent-enemy-shoot.md",
+  "next": "請 Grok 審查 erin-watch 提交後的最新 SHA；工程驗證見 docs/survivor-enemy-shoot-validation.md。通過後由 Erin 試玩確認國字辨識度與難度，家長確認後再合併上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T07:43:48Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-hero-sprite"
+  ]
+}
