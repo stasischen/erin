@@ -1,20 +1,22 @@
 function targetVisible(target) {
-  return target.x - target.r >= state.cameraX && target.x + target.r <= state.cameraX + state.width &&
-    target.y - target.r >= state.cameraY && target.y + target.r <= state.cameraY + state.height;
+  const x = deltaX(target.x, state.cameraX + state.width / 2);
+  const y = deltaY(target.y, state.cameraY + state.height / 2);
+  const r = target.r || 0;
+  return Math.abs(x) + r <= state.width / 2 && Math.abs(y) + r <= state.height / 2;
 }
 function canAttackTarget(target) {
-  return targetVisible(target) && Math.hypot(target.x - state.player.x, target.y - state.player.y) <= BUILD_TUNING.attackRadius &&
+  return targetVisible(target) && Math.hypot(deltaX(target.x, state.player.x), deltaY(target.y, state.player.y)) <= BUILD_TUNING.attackRadius &&
     (target !== state.boss || state.bossIntro <= 0);
 }
 function closestEnemy() {
   let target = null, best = Infinity;
   for (const enemy of state.enemies) {
     if (!enemy.alive || !canAttackTarget(enemy)) continue;
-    const distance = (enemy.x - state.player.x) ** 2 + (enemy.y - state.player.y) ** 2;
+    const distance = (deltaX(enemy.x, state.player.x)) ** 2 + (deltaY(enemy.y, state.player.y)) ** 2;
     if (distance < best) { best = distance; target = enemy; }
   }
   if (state.boss && canAttackTarget(state.boss)) {
-    const distance = (state.boss.x - state.player.x) ** 2 + (state.boss.y - state.player.y) ** 2;
+    const distance = (deltaX(state.boss.x, state.player.x)) ** 2 + (deltaY(state.boss.y, state.player.y)) ** 2;
     if (distance < best) target = state.boss;
   }
   return target;
@@ -23,7 +25,7 @@ function closestEnemy() {
 function fireAtNearest() {
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
-  const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
+  const angle = Math.atan2(deltaY(target.y, state.player.y), deltaX(target.x, state.player.x));
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
@@ -75,7 +77,7 @@ function damageNumber(target, damage) {
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
   enemy.hp -= damage;
-  enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = enemy.x - state.player.x; enemy.knockY = enemy.y - state.player.y; enemy.knockback = KNOCKBACK_SPEED;
+  enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
   if (enemy.hp <= 0) playTone(620, 0.09, "triangle");
   damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
@@ -116,7 +118,7 @@ function hitBuildTarget(target, damage) {
   } else if (target.alive) damageEnemy(target, damage);
 }
 function shiftTarget(target, x, y, distance) {
-  const dx = target.x - x, dy = target.y - y, length = Math.max(1, Math.hypot(dx, dy));
+  const dx = deltaX(target.x, x), dy = deltaY(target.y, y), length = Math.max(1, Math.hypot(dx, dy));
   skillVisual("gust", target.x, target.y, { x2: target.x + dx / length * distance, y2: target.y + dy / length * distance, color: "#23815e" });
   target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
 }
@@ -135,11 +137,11 @@ function triggerMakerEffects(trigger, x, y) {
   }
 }
 function executeMakerEffect(effect, x, y, level) {
-  let targets = combatTargets().filter(t => Math.hypot(t.x - x, t.y - y) <= effect.radius + t.r);
+  let targets = combatTargets().filter(t => Math.hypot(deltaX(t.x, x), deltaY(t.y, y)) <= effect.radius + t.r);
   const damage = Math.min(600, effect.damage * level);
   if (effect.type === "projectile") {
     const target = closestEnemy(); if (!target) return;
-    const angle = Math.atan2(target.y - y, target.x - x);
+    const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
       state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, maker: true }));
@@ -148,12 +150,13 @@ function executeMakerEffect(effect, x, y, level) {
   }
   if (effect.type === "dash-trail" || effect.type === "summon") {
     if (state.makerFields.length >= 18) state.makerFields.shift();
+    x = wrapCoordinate(x, state.worldWidth); y = wrapCoordinate(y, state.worldHeight);
     state.makerFields.push({ x, y, life: effect.duration, timer: 0, level, effect }); return;
   }
   if (effect.type === "chain") {
     const remaining = combatTargets();
     for (let n=0; n<effect.count; n++) {
-      const next = remaining.filter(t => Math.hypot(t.x-x,t.y-y)<=effect.radius).sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0];
+      const next = remaining.filter(t => Math.hypot(deltaX(t.x, x),deltaY(t.y, y))<=effect.radius).sort((a,b)=>Math.hypot(deltaX(a.x, x),deltaY(a.y, y))-Math.hypot(deltaX(b.x, x),deltaY(b.y, y)))[0];
       if(!next) break;
       remaining.splice(remaining.indexOf(next),1);lightning(x,y,next.x,next.y);x=next.x;y=next.y;hitBuildTarget(next,damage);
       if(state.mode!=="playing") return;
@@ -165,7 +168,7 @@ function executeMakerEffect(effect, x, y, level) {
     if (effect.type === "slow") { target.slowTimer = effect.duration; target.makerSlow = effect.multiplier; }
     else if (effect.type === "stun") target.stunTimer = effect.duration;
     else if (effect.type === "knockback") shiftTarget(target, x, y, effect.distance);
-    else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(target.y-y,target.x-x)) > effect.gap/2 && Math.hypot(target.x-x,target.y-y) >= effect.radius * .65)) hitBuildTarget(target,damage);
+    else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(deltaY(target.y, y),deltaX(target.x, x))) > effect.gap/2 && Math.hypot(deltaX(target.x, x),deltaY(target.y, y)) >= effect.radius * .65)) hitBuildTarget(target,damage);
     if (state.mode !== "playing") return;
   }
 }
@@ -182,7 +185,7 @@ function updateMakerEffects(dt) {
     const h=state.enemyHazards[i]; h.warning=countdown(h.warning,dt);
     if(h.warning>0) continue;
     state.enemyHazards.splice(i,1);
-    if(targetVisible(h) && !state.player.damageDisabled && state.player.invincible<=0 && Math.hypot(h.x-state.player.x,h.y-state.player.y)<h.r+state.player.r) {
+    if(targetVisible(h) && !state.player.damageDisabled && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
       state.player.health=Math.max(0,state.player.health-h.damage);state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }
@@ -192,13 +195,13 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
   if (school === "water") {
     const level = effectLevel("water-attack");
     if (level) skillVisual("splash", x, y, { radius: UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel });
-    if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(other.x - x, other.y - y) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (BUILD_TUNING.splashDamageBase + level * BUILD_TUNING.splashDamageGrowth));
+    if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(deltaX(other.x, x), deltaY(other.y, y)) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (BUILD_TUNING.splashDamageBase + level * BUILD_TUNING.splashDamageGrowth));
     if (effectLevel("water-skill")) addField("water", x, y);
   }
   if (school === "wind") return; // 入門只提升水球速度；擊退由旋風處理。
   if (school === "thunder") {
-    const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(enemy.x - x, enemy.y - y) <= BUILD_TUNING.chainRadius)
-      .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(deltaX(enemy.x, x), deltaY(enemy.y, y)) <= BUILD_TUNING.chainRadius)
+      .sort((a, b) => Math.hypot(deltaX(a.x, x), deltaY(a.y, y)) - Math.hypot(deltaX(b.x, x), deltaY(b.y, y)))[0];
     if (other) { lightning(x, y, other.x, other.y); hitBuildTarget(other, damage * BUILD_TUNING.chainDamage * (1 + (effectLevel("thunder-attack") - 1) * BUILD_TUNING.chainGrowth)); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
   }
 }
@@ -213,7 +216,7 @@ function updateFields(dt) {
     if (field.timer > 0) continue;
     field.timer += BUILD_TUNING.fieldInterval;
     for (const target of combatTargets()) {
-      if (Math.hypot(target.x - field.x, target.y - field.y) > field.radius + target.r) continue;
+      if (Math.hypot(deltaX(target.x, field.x), deltaY(target.y, field.y)) > field.radius + target.r) continue;
       const level = field.school === "water" ? Math.max(effectLevel("water-skill"), effectLevel("water-dash"), effectLevel("fusion-storm")) : field.school === "wind" ? effectLevel("wind-dash") : effectLevel("fusion-dash");
       hitBuildTarget(target, BUILD_TUNING.fieldDamage * Math.max(1, level));
       if (field.school === "water") {
@@ -232,9 +235,9 @@ function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
   let next = Math.max(0, spacing - state.trailDistance);
   while (next <= distance) {
     const fraction = distance > 0 ? next / distance : 0;
-    for (const school of ["water", "wind", "thunder"]) if ((school === "water" && (effectLevel("water-dash") || effectLevel("fusion-storm"))) || (school === "wind" && effectLevel("wind-dash")) || (school === "thunder" && effectLevel("fusion-dash"))) addField(school, fromX + (x - fromX) * fraction, fromY + (y - fromY) * fraction);
+    for (const school of ["water", "wind", "thunder"]) if ((school === "water" && (effectLevel("water-dash") || effectLevel("fusion-storm"))) || (school === "wind" && effectLevel("wind-dash")) || (school === "thunder" && effectLevel("fusion-dash"))) addField(school, fromX + (deltaX(x, fromX)) * fraction, fromY + (deltaY(y, fromY)) * fraction);
     for (const card of UPGRADES) if (upgradeLevel(card.id)) for (const effect of card.effects) {
-      if (!effect.feature && effect.type === "dash-trail" && effect.trigger === "dash") executeMakerEffect(effect, fromX + (x-fromX)*fraction, fromY + (y-fromY)*fraction, upgradeLevel(card.id));
+      if (!effect.feature && effect.type === "dash-trail" && effect.trigger === "dash") executeMakerEffect(effect, fromX + (deltaX(x, fromX))*fraction, fromY + (deltaY(y, fromY))*fraction, upgradeLevel(card.id));
     }
     next += spacing;
   }
@@ -245,7 +248,7 @@ function counterDischarge() {
   if (!level) return;
   skillVisual("discharge", state.player.x, state.player.y, { radius: BUILD_TUNING.counterRadius, color: "#7737b0", life: .4 });
   for (const target of combatTargets()) {
-    if (Math.hypot(target.x - state.player.x, target.y - state.player.y) < BUILD_TUNING.counterRadius) {
+    if (Math.hypot(deltaX(target.x, state.player.x), deltaY(target.y, state.player.y)) < BUILD_TUNING.counterRadius) {
       hitBuildTarget(target, level * BUILD_TUNING.counterDamage); burst(target.x, target.y, BUILD_TUNING.thunder.color, 5);
       if (state.mode !== "playing") return;
     }
@@ -269,7 +272,7 @@ function updateUltimate(dt) {
   const x = state.player.x + Math.cos(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
   const y = state.player.y + Math.sin(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
   if (card.school === "thunder") targets = targets.length ? [targets[Math.floor(Math.random() * targets.length)]] : [];
-  if (card.school === "wind") targets = targets.filter(target => Math.hypot(target.x - x, target.y - y) < BUILD_TUNING.fieldRadius + target.r);
+  if (card.school === "wind") targets = targets.filter(target => Math.hypot(deltaX(target.x, x), deltaY(target.y, y)) < BUILD_TUNING.fieldRadius + target.r);
   state.ultimateVisual = { worldWidth: state.worldWidth, worldHeight: state.worldHeight, school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: card.school === "water" ? 1.2 : .5 };
   state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : card.school === "wind" ? BUILD_TUNING.tornadoTick : BUILD_TUNING.cloudSeconds;
   for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
@@ -304,28 +307,28 @@ function updateBomb(dt) {
   if (bomb.timer > 0.000001) return;
   state.bomb = null; state.bombBlast = { x: bomb.x, y: bomb.y, radius: bomb.radius, life: 0.35, schools: bomb.schools };
   if (bomb.schools.includes("wind")) for (const target of combatTargets()) {
-    if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius * BUILD_TUNING.skillRadiusMultiplier + target.r) shiftTarget(target, bomb.x, bomb.y, -BUILD_TUNING.pullDistance);
+    if (Math.hypot(deltaX(target.x, bomb.x), deltaY(target.y, bomb.y)) <= bomb.radius * BUILD_TUNING.skillRadiusMultiplier + target.r) shiftTarget(target, bomb.x, bomb.y, -BUILD_TUNING.pullDistance);
   }
   if (bomb.schools.includes("water")) addField("water", bomb.x, bomb.y, bomb.radius);
   if (bomb.schools.includes("thunder")) {
     skillVisual("discharge", bomb.x, bomb.y, { radius: bomb.radius, color: "#7737b0" });
     for (const target of combatTargets()) {
-      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius + target.r) { lightning(bomb.x, bomb.y, target.x, target.y); target.stunTimer = BUILD_TUNING.stunSeconds * effectLevel("thunder-skill"); hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier * effectLevel("thunder-skill")); }
+      if (Math.hypot(deltaX(target.x, bomb.x), deltaY(target.y, bomb.y)) <= bomb.radius + target.r) { lightning(bomb.x, bomb.y, target.x, target.y); target.stunTimer = BUILD_TUNING.stunSeconds * effectLevel("thunder-skill"); hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier * effectLevel("thunder-skill")); }
       if (state.mode !== "playing") return;
     }
   }
   function pushAway(target) {
-    const dx = target.x - bomb.x, dy = target.y - bomb.y, length = Math.hypot(dx, dy);
+    const dx = deltaX(target.x, bomb.x), dy = deltaY(target.y, bomb.y), length = Math.hypot(dx, dy);
     skillVisual("gust", target.x, target.y, { x2: target.x + (length > .01 ? dx / length : 1) * 40, y2: target.y + (length > .01 ? dy / length : 0) * 40, color: "#23815e" });
     target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
     target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback; clampToMap(target);
   }
   for (const enemy of state.enemies) {
-    if (!enemy.alive || !canAttackTarget(enemy) || Math.hypot(enemy.x - bomb.x, enemy.y - bomb.y) > bomb.radius + enemy.r) continue;
+    if (!enemy.alive || !canAttackTarget(enemy) || Math.hypot(deltaX(enemy.x, bomb.x), deltaY(enemy.y, bomb.y)) > bomb.radius + enemy.r) continue;
     damageEnemy(enemy, bomb.damage);
     if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
   }
-  if (state.boss && canAttackTarget(state.boss) && Math.hypot(state.boss.x - bomb.x, state.boss.y - bomb.y) <= bomb.radius + state.boss.r) {
+  if (state.boss && canAttackTarget(state.boss) && Math.hypot(deltaX(state.boss.x, bomb.x), deltaY(state.boss.y, bomb.y)) <= bomb.radius + state.boss.r) {
     state.boss.hp -= bomb.damage; state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
     if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
   }

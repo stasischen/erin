@@ -27,17 +27,18 @@ function beginBossMove(id) {
   const definition = BOSS_MOVES.find(row => row.id === id);
   if (!definition || definition.minPhase > state.bossPhase) return;
   const kind = definition.kind;
-  const b = state.boss, p = state.player;
+  const p = state.player;
+  const b = state.boss && { ...state.boss, x: state.cameraX + state.width / 2 + deltaX(state.boss.x, state.cameraX + state.width / 2), y: state.cameraY + state.height / 2 + deltaY(state.boss.y, state.cameraY + state.height / 2) };
   if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
   if (kind === "ring" && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
-  const angle = Math.atan2(p.y - b.y, p.x - b.x);
+  const angle = Math.atan2(deltaY(p.y, b.y), deltaX(p.x, b.x));
   const move = takeFromPool(state.bossMovePool, {
     id, kind, x: b.x, y: b.y, angle, warning: definition.warning,
     active: false, pulse: 0, life: 0, points: [], radius: 0, endX: b.x, endY: b.y,
     count: Math.min(10, definition.count + definition.phaseCount * state.bossPhase)
   });
   if (kind === "dash") {
-    const length = Math.min(definition.distance, Math.hypot(p.x - b.x, p.y - b.y) + 70);
+    const length = Math.min(definition.distance, Math.hypot(deltaX(p.x, b.x), deltaY(p.y, b.y)) + 70);
     move.endX = Math.max(state.cameraX + b.r, Math.min(state.cameraX + state.width - b.r, b.x + Math.cos(angle) * length));
     move.endY = Math.max(state.cameraY + b.r, Math.min(state.cameraY + state.height - b.r, b.y + Math.sin(angle) * length));
   }
@@ -55,9 +56,12 @@ function beginBossMove(id) {
     move.radius = Math.min(definition.radius, state.width / 2 - 38, state.height / 2 - 38);
     move.x = Math.max(state.cameraX + move.radius + 12, Math.min(state.cameraX + state.width - move.radius - 12, p.x));
     move.y = Math.max(state.cameraY + move.radius + 12, Math.min(state.cameraY + state.height - move.radius - 12, p.y));
-    // 缺口朝向空間較多的一側，靠牆時也有出口；整段綠色弧線不會長出國字。
-    move.angle = Math.atan2(state.worldHeight / 2 - move.y, state.worldWidth / 2 - move.x);
+    // 缺口朝向主角；整段綠色弧線不會長出國字。
+    move.angle = Math.atan2(deltaY(p.y, move.y), deltaX(p.x, move.x));
   }
+  const endX = move.endX, endY = move.endY;
+  clampToMap(move);
+  move.endX = wrapCoordinate(endX, state.worldWidth); move.endY = wrapCoordinate(endY, state.worldHeight);
   state.bossMoves.push(move);
 }
 function fireBossFan(move) {
@@ -104,7 +108,7 @@ function updateBoss(dt) {
   }
   // 預警時老師站定；衝撞只沿預告線走，不追蹤玩家。
   if (!state.bossMoves.length && !(b.stunTimer > 0)) {
-    const dx = state.player.x - b.x, dy = state.player.y - b.y, length = Math.max(1, Math.hypot(dx, dy));
+    const dx = deltaX(state.player.x, b.x), dy = deltaY(state.player.y, b.y), length = Math.max(1, Math.hypot(dx, dy));
     const speed = b.speed * (b.slowTimer > 0 ? (b.makerSlow || BUILD_TUNING.slowMultiplier) : 1);
     b.x += dx / length * speed * dt; b.y += dy / length * speed * dt; clampToMap(b);
   }
@@ -133,7 +137,7 @@ function updateBoss(dt) {
     if (!move.active) {
       move.warning = countdown(move.warning, dt);
       if (move.warning > 0) continue;
-      move.active = true; move.life = bossKind(move) === "dash" ? Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed : bossDefinition(move).duration;
+      move.active = true; move.life = bossKind(move) === "dash" ? Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed : bossDefinition(move).duration;
       if (bossKind(move) === "words" || bossKind(move) === "chalk") { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
       if (bossKind(move) === "summon") for (let n = 0; n < Math.min(10, bossDefinition(move).count + bossDefinition(move).phaseCount * state.bossPhase); n++) spawnEnemy();
       if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") state.bossShake = BOSS_TUNING.shakeSeconds;
@@ -143,14 +147,14 @@ function updateBoss(dt) {
       move.pulse = countdown(move.pulse, dt);
       if (move.pulse <= 0) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
     } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
-      for (const point of move.points) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      for (const point of move.points) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
     } else if (bossKind(move) === "ring") {
-      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(state.player.x - point.x, state.player.y - point.y) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
     } else if (bossKind(move) === "dash") {
-      const dx = move.endX - b.x, dy = move.endY - b.y, length = Math.hypot(dx, dy);
+      const dx = deltaX(move.endX, b.x), dy = deltaY(move.endY, b.y), length = Math.hypot(dx, dy);
       const step = Math.min(length, bossDefinition(move).speed * dt);
-      if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; }
-      if (Math.hypot(b.x - state.player.x, b.y - state.player.y) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; clampToMap(b); }
+      if (Math.hypot(deltaX(b.x, state.player.x), deltaY(b.y, state.player.y)) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
     }
     if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
     move.life = countdown(move.life, dt);

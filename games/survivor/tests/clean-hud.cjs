@@ -25,14 +25,14 @@ for (const [width,height] of [[320,568],[568,280],[800,600],[1366,768],[2400,300
     for (const random of [0,.24,.49,.74,.999999]) {
       run(`Math.random=()=>${random};state.enemies=[];state.elapsed = state.stageElapsed =100;spawnEnemy();summonTeacher();`);
       assert.equal(run(`state.enemies.length===1 && [state.enemies[0],state.boss].every(e =>
-        e.x>=e.r && e.y>=e.r && e.x<=state.worldWidth-e.r && e.y<=state.worldHeight-e.r &&
-        (e.x+(e===state.boss?60:e.r)<state.cameraX || e.x-(e===state.boss?60:e.r)>state.cameraX+state.width || e.y+(e===state.boss?60:e.r)<state.cameraY || e.y-(e===state.boss?60:e.r)>state.cameraY+state.height))`),true);
+        e.x>=0 && e.y>=0 && e.x<state.worldWidth && e.y<state.worldHeight &&
+        (Math.abs(deltaX(e.x,state.player.x))-(e===state.boss?60:e.r)>state.width/2 || Math.abs(deltaY(e.y,state.player.y))-(e===state.boss?60:e.r)>state.height/2))`),true);
     }
   }
 }
-// 同局放大到整張地圖：沒有合法位置時延後出場，不退回畫面內。
-run('state.width=state.worldWidth;state.height=state.worldHeight;updateCamera();state.enemies=[];state.boss=null;spawnEnemy();summonTeacher();');
-assert.equal(run('state.enemies.length'),0);assert.equal(run('state.boss'),null);
+// 視窗放大仍保留至少 2.5 倍世界空間。
+run('elements.gameCanvas.clientWidth=6000;elements.gameCanvas.clientHeight=3000;resize();');
+assert.ok(run('state.worldWidth>=state.width*2.5 && state.worldHeight>=state.height*2.5'));
 run(`state.width=800;state.height=600;resetGame();state.mode='playing';settingsPanel.hidden=true;
  state.upgrades={'water-attack':2,'thunder-attack':1,'fusion-puddle':1};openSettings();`);
 assert.equal(run('state.mode'),'paused');assert.equal(run('settingsPanel.hidden'),false);
@@ -49,4 +49,4 @@ run(`state.cameraX=700;state.cameraY=600;state.ultimateVisual={school:'thunder',
  globalThis.points=[];ctx.moveTo=(x,y)=>points.push([x,y]);ctx.lineTo=(x,y)=>points.push([x,y]);render();`);
 assert.equal(run('points.some(([x,y])=>x===1100 && y===820)'),true);
 assert.equal(run('points.some(([x,y])=>x===1100 && y===900)'),true);
-console.log('PASS: offscreen/in-map spawns across sizes, corners, edges, random extremes; no-space deferral; paused build/tree; cooldown ring; scrolled lightning');
+console.log('PASS: offscreen/wrapped spawns across sizes, corners, edges, random extremes; large viewport reserve; paused build/tree; cooldown ring; scrolled lightning');

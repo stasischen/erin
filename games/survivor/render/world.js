@@ -16,7 +16,7 @@ function drawLandingShadow(x, y, r, progress, drawingContext = ctx) {
 function bossAirHeight() {
   const move = state.bossMoves.find(m => bossKind(m) === "dash" && m.active);
   if (!move) return 0;
-  const duration = Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed;
+  const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
   return Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - move.life / Math.max(.001, duration)))) * 28;
 }
 
@@ -24,13 +24,15 @@ function drawBossMoves() {
   for (const move of state.bossMoves) {
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
     if (bossKind(move) === "dash") {
-      const duration = Math.hypot(move.endX - move.x, move.endY - move.y) / bossDefinition(move).speed;
-      drawLandingShadow(move.endX, move.endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
+      const endX = move.x + deltaX(move.endX, move.x), endY = move.y + deltaY(move.endY, move.y);
+      const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
+      drawLandingShadow(endX, endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
       ctx.lineWidth = state.boss.r * 2; ctx.strokeStyle = "rgba(220,65,83,.18)";
-      ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
-      ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.endX, move.endY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); ctx.stroke();
+      ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); ctx.stroke();
     } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
-      for (const point of move.points) {
+      for (const rawPoint of move.points) {
+        const point = { ...rawPoint, x: move.x + deltaX(rawPoint.x, move.x), y: move.y + deltaY(rawPoint.y, move.y) };
         if (bossKind(move) === "rain") drawLandingShadow(point.x, point.y, 16, move.active ? 1 : 1 - move.warning / bossDefinition(move).warning);
         ctx.beginPath(); ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         if (bossKind(move) === "rain") {
@@ -45,7 +47,7 @@ function drawBossMoves() {
         ctx.font = "bold 20px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = move.active ? "#b42f54" : "#78626b"; ctx.fillText("字", point.x, point.y + 7);
       }
       {
-        const radius = move.active ? Math.hypot(ringPoints(move)[0].x - move.x, ringPoints(move)[0].y - move.y) : move.radius;
+        const radius = move.active ? Math.hypot(deltaX(ringPoints(move)[0].x, move.x), deltaY(ringPoints(move)[0].y, move.y)) : move.radius;
         ctx.strokeStyle = "#16804b"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(move.x, move.y, radius, move.angle - bossDefinition(move).gap / 2, move.angle + bossDefinition(move).gap / 2); ctx.stroke();
       }
     } else if (bossKind(move) === "words" || bossKind(move) === "chalk") {
@@ -68,45 +70,57 @@ function backgroundTile(kind) {
   if (BACKGROUND_TILES[kind]) return BACKGROUND_TILES[kind];
   const tile = document.createElement("canvas"); tile.width = 336; tile.height = 252;
   const g = tile.getContext("2d"); g.imageSmoothingEnabled = false;
-  if (kind === "classroom") {
-    g.fillStyle = "#d8cba8"; g.fillRect(0,0,336,252);
-    for (let y=0;y<252;y+=42) for(let x=0;x<336;x+=42) {
-      g.fillStyle = (x+y)%84 ? "#ddcfaf" : "#d3c49f"; g.fillRect(x+1,y+1,40,40);
+  const cookie = kind === "cookie-forest" || kind === "playground";
+  g.fillStyle = cookie ? "#dec19a" : "#8fb887"; g.fillRect(0, 0, 336, 252);
+  // 42 格地磚整除兩邊；裝飾留在磚內，四條邊都保持相同地面。
+  for (let y = 0; y < 252; y += 42) for (let x = 0; x < 336; x += 42) {
+    if (cookie) {
+      g.fillStyle = "#cfaa7d"; g.fillRect(x + 2, y + 2, 38, 38);
+      g.fillStyle = "#eed3a9"; g.fillRect(x + 4, y + 4, 34, 3);
+      g.fillStyle = "#987151"; g.fillRect(x + 13, y + 17, 4, 4); g.fillRect(x + 27, y + 28, 4, 4);
+    } else {
+      g.fillStyle = "#7da779"; g.fillRect(x + 7, y + 9, 3, 6); g.fillRect(x + 10, y + 12, 4, 3);
+      g.fillStyle = "#9fc68d"; g.fillRect(x + 28, y + 30, 6, 3);
     }
-    // 課桌與椅子是地板裝飾，不影響碰撞或走路。
-    for (const x of [72,240]) {
-      g.fillStyle="#88734e";g.fillRect(x-25,82,54,34);
-      g.fillStyle="#b58852";g.fillRect(x-28,76,56,30);
-      g.fillStyle="#edc787";g.fillRect(x-24,80,48,8);
-      g.fillStyle="#8f714f";g.fillRect(x-16,124,32,14);
+  }
+  // 棒棒糖、蘑菇和小樹：原創像素裝飾，都是可走過的地面。
+  for (const [x, y, type] of [[35,46,0],[170,114,1],[280,40,2],[75,200,2],[270,207,0],[195,219,1]]) {
+    g.fillStyle = "#805d4b"; g.fillRect(x - 2, y, 5, 16);
+    if (type === 0) {
+      g.fillStyle = cookie ? "#d994bc" : "#e89bac"; g.fillRect(x - 10, y - 15, 20, 19);
+      g.fillStyle = "#fff0cf"; g.fillRect(x - 6, y - 11, 12, 4); g.fillRect(x + 2, y - 7, 4, 7);
+    } else if (type === 1) {
+      g.fillStyle = "#f7e5bd"; g.fillRect(x - 4, y, 9, 10);
+      g.fillStyle = "#c77c91"; g.fillRect(x - 12, y - 5, 24, 8); g.fillRect(x - 8, y - 11, 16, 6);
+      g.fillStyle = "#fff0d4"; g.fillRect(x - 6, y - 8, 4, 4); g.fillRect(x + 4, y - 3, 4, 4);
+    } else {
+      g.fillStyle = "#608a70"; g.fillRect(x - 13, y - 12, 26, 19); g.fillRect(x - 8, y - 19, 16, 7);
+      g.fillStyle = "#7ca17a"; g.fillRect(x - 8, y - 14, 12, 5);
     }
-  } else {
-    g.fillStyle="#8bb978";g.fillRect(0,0,336,252);
-    g.fillStyle="#7eaa6d";
-    for(let y=12;y<252;y+=28) for(let x=8;x<336;x+=42) g.fillRect(x,y,8,4);
-    g.fillStyle="#bf7961";g.fillRect(0,140,336,100);
-    g.fillStyle="#f7dfb6";for(let y=150;y<240;y+=28)g.fillRect(0,y,336,3);
-    g.fillStyle="#ad925f";g.fillRect(100,30,120,70);
-    g.fillStyle="#e6ce91";g.fillRect(104,34,112,62);
-    g.fillStyle="#c6ad77";for(let x=112;x<204;x+=20)g.fillRect(x,46,8,3);
   }
   BACKGROUND_TILES[kind] = tile; return tile;
 }
 function drawClassroom() {
-  const kind = currentStage().background, tile = backgroundTile(kind);
-  const left = Math.max(0, Math.floor(state.cameraX/336)*336);
-  const top = Math.max(0, Math.floor(state.cameraY/252)*252);
-  ctx.save(); ctx.beginPath(); ctx.rect(0,0,state.worldWidth,state.worldHeight); ctx.clip();
-  for(let y=top;y<Math.min(state.worldHeight,state.cameraY+state.height);y+=252)
-    for(let x=left;x<Math.min(state.worldWidth,state.cameraX+state.width);x+=336) ctx.drawImage(tile,x,y);
-  ctx.restore();
-  ctx.strokeStyle = kind === "classroom" ? "#82795e" : "#52734e"; ctx.lineWidth = 16;
-  ctx.strokeRect(0,0,state.worldWidth,state.worldHeight);
-  if(kind === "classroom") {
-    ctx.fillStyle="#b59c72";ctx.fillRect(40,12,state.worldWidth-80,18);
-    ctx.fillStyle="#385e53";ctx.fillRect(state.worldWidth/2-100,12,200,48);
-    ctx.fillStyle="#dae6c8";ctx.fillRect(state.worldWidth/2-80,28,54,4);ctx.fillRect(state.worldWidth/2-80,40,110,4);
-  }
+  const tile = backgroundTile(currentStage().background);
+  const left = Math.floor(state.cameraX / 336) * 336;
+  const top = Math.floor(state.cameraY / 252) * 252;
+  for (let y = top; y < state.cameraY + state.height + 16; y += 252)
+    for (let x = left; x < state.cameraX + state.width + 16; x += 336) ctx.drawImage(tile, x, y);
+}
+
+// 只繪製鏡頭可能看見的相鄰世界；包含影子、落點、粒子和招式。
+// 每邊大於可見範圍 2.5 倍，同一個身體不會同時出現在畫面兩側。
+function visibleWorldOffsets() {
+  const axis = (camera, visible, size) => {
+    const offsets = [0], margin = 1024;
+    if (camera < margin) offsets.push(-size);
+    if (camera + visible > size - margin) offsets.push(size);
+    return offsets;
+  };
+  const result = [];
+  for (const x of axis(state.cameraX, state.width, state.worldWidth))
+    for (const y of axis(state.cameraY, state.height, state.worldHeight)) result.push({ x, y });
+  return result;
 }
 
 function drawHero() {
@@ -162,7 +176,8 @@ function strokeRing(x, y, radius, color, width = 3) {
   ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); ctx.stroke();
 }
 function drawBolt(x, y, x2, y2) {
-  const dx = x2 - x, dy = y2 - y, length = Math.max(1, Math.hypot(dx, dy));
+  const dx = deltaX(x2, x), dy = deltaY(y2, y), length = Math.max(1, Math.hypot(dx, dy));
+  x2 = x + dx; y2 = y + dy;
   // 固定折線，不每幀亂跳；暫停時畫面也會完全停住。
   for (const [color, width] of [["#69309b", 7], ["#fff6a0", 3]]) {
     ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x, y);
@@ -234,7 +249,7 @@ function drawSkillVisuals() {
       ctx.strokeStyle="#16804b";ctx.beginPath();ctx.arc(v.x,v.y,v.radius,-v.gap/2,v.gap/2);ctx.stroke();
     } else if (v.kind === "lightning") drawBolt(v.x, v.y, v.x2, v.y2);
     else if (v.kind === "gust") {
-      const angle = Math.atan2(v.y2 - v.y, v.x2 - v.x);
+      const angle = Math.atan2(deltaY(v.y2, v.y), deltaX(v.x2, v.x));
       ctx.translate(v.x, v.y); ctx.rotate(angle); ctx.strokeStyle = v.color; ctx.lineWidth = 4;
       for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); ctx.stroke(); }
     } else if (v.kind === "card") {
@@ -285,97 +300,101 @@ function render() {
   const shake = gameSettings.vibration && state.bossShake > 0 ? BOSS_TUNING.shakePixels : 0;
   ctx.translate(-state.cameraX + Math.sin(state.elapsed * 91) * shake, -state.cameraY + Math.cos(state.elapsed * 83) * shake);
   drawClassroom();
-  drawBossMoves();
-  drawFields();
-  drawSupportVisuals();
-  for (const shot of state.projectiles) {
-    if (!shot.alive) continue;
-    ctx.fillStyle = shot.schools && shot.schools.length ? BUILD_TUNING[shot.schools[0]].color : WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    if (shot.schools && shot.schools.includes("wind")) {
-      const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
-      ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
-      for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
+  for (const offset of visibleWorldOffsets()) {
+  ctx.save(); ctx.translate(offset.x, offset.y);
+    drawBossMoves();
+    drawFields();
+    drawSupportVisuals();
+    for (const shot of state.projectiles) {
+      if (!shot.alive) continue;
+      ctx.fillStyle = shot.schools && shot.schools.length ? BUILD_TUNING[shot.schools[0]].color : WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (shot.schools && shot.schools.includes("wind")) {
+        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+        ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
+        for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
+      }
+      if (shot.schools && shot.schools.includes("thunder")) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
+      if (shot.piercing) {
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
+        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+        ctx.beginPath(); ctx.moveTo(shot.x - shot.vx / speed * (shot.r + 5), shot.y - shot.vy / speed * (shot.r + 5));
+        ctx.lineTo(shot.x - shot.vx / speed * (shot.r + 15), shot.y - shot.vy / speed * (shot.r + 15)); ctx.stroke();
+      }
     }
-    if (shot.schools && shot.schools.includes("thunder")) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
-    if (shot.piercing) {
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
-      const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
-      ctx.beginPath(); ctx.moveTo(shot.x - shot.vx / speed * (shot.r + 5), shot.y - shot.vy / speed * (shot.r + 5));
-      ctx.lineTo(shot.x - shot.vx / speed * (shot.r + 15), shot.y - shot.vy / speed * (shot.r + 15)); ctx.stroke();
+    for (const gem of state.gems) {
+      ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
+      ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
     }
-  }
-  for (const gem of state.gems) {
-    ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
-    ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
-  }
-  for (const shot of state.enemyShots) {
-    ctx.save(); ctx.textAlign = "center";
-    if (shot.source === "book") {
-      // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
-      ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
-      ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
-      ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
-    } else if (shot.text === "粉筆") {
-      ctx.translate(shot.x, shot.y); ctx.rotate(Math.atan2(shot.vy, shot.vx));
-      ctx.fillStyle = "#fff"; ctx.strokeStyle = "#b42f54"; ctx.lineWidth = 2;
-      ctx.fillRect(-10, -4, 20, 8); ctx.strokeRect(-10, -4, 20, 8);
-    } else {
-      ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
+    for (const shot of state.enemyShots) {
+      ctx.save(); ctx.textAlign = "center";
+      if (shot.source === "book") {
+        // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
+        ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
+        ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
+        ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
+      } else if (shot.text === "粉筆") {
+        ctx.translate(shot.x, shot.y); ctx.rotate(Math.atan2(shot.vy, shot.vx));
+        ctx.fillStyle = "#fff"; ctx.strokeStyle = "#b42f54"; ctx.lineWidth = 2;
+        ctx.fillRect(-10, -4, 20, 8); ctx.strokeRect(-10, -4, 20, 8);
+      } else {
+        ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
+      }
+      ctx.restore();
     }
-    ctx.restore();
-  }
-  if (state.boss) {
-    const b = state.boss, x = b.x, y = b.y;
-    const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
-    drawGroundShadow(x, y, b.r, hop);
-    ctx.save(); ctx.translate(x, y - hop); ctx.scale(b.r / 32, b.r / 32); ctx.translate(-x, -y);
-    ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
-    ctx.fillStyle = (b.flash || state.bossShout > 0) ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
-    ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
-    ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
-    ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
-    ctx.restore();
-    ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
-  }
-  for (const hazard of state.enemyHazards) {
-    ctx.strokeStyle = "#c8354b"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(hazard.x, hazard.y, hazard.r, 0, Math.PI * 2); ctx.stroke();
-    ctx.font = "18px system-ui"; ctx.fillStyle = "#c8354b"; ctx.fillText("注意！", hazard.x - 24, hazard.y);
-  }
-  for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
-  for (const enemy of state.enemies) {
-    drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0);
-    if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
-  }
-  for (const target of combatTargets()) drawTargetStatus(target);
-  if (state.bomb || state.bombBlast) {
-    const bubble = state.bomb || state.bombBlast;
-    const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
-    ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
-  }
-  if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
-  if (state.bombBlast && state.bombBlast.schools) for (const [index, school] of state.bombBlast.schools.entries()) {
-    ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); ctx.stroke();
-  }
-  drawUltimate();
-  drawSkillVisuals();
-  drawHero();
-  for (const effect of state.effects) {
-    const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
-    if (effect.kind === "water-hit") {
-      ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
-      ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
+    if (state.boss) {
+      const b = state.boss, x = b.x, y = b.y;
+      const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
+      drawGroundShadow(x, y, b.r, hop);
+      ctx.save(); ctx.translate(x, y - hop); ctx.scale(b.r / 32, b.r / 32); ctx.translate(-x, -y);
+      ctx.fillStyle = "#3e2e35"; ctx.fillRect(x - 20, y - 33, 40, 10); ctx.fillRect(x - 25, y - 23, 8, 19);
+      ctx.fillStyle = (b.flash || state.bossShout > 0) ? "#fff" : "#ffd7ad"; ctx.fillRect(x - 19, y - 22, 38, 29);
+      ctx.fillStyle = "#263c5b"; ctx.fillRect(x - 24, y + 7, 48, 25);
+      ctx.fillRect(x - 17, y - 12, 13, 9); ctx.fillRect(x + 4, y - 12, 13, 9); ctx.fillRect(x - 4, y - 9, 8, 3);
+      ctx.fillStyle = "#fff"; ctx.fillRect(x - 25, y + 14, 15, 11); ctx.fillRect(x + 10, y + 14, 15, 11);
+      ctx.restore();
+      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
-    else if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
-    else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
-    else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
-    else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
-    ctx.globalAlpha = 1;
+    for (const hazard of state.enemyHazards) {
+      ctx.strokeStyle = "#c8354b"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(hazard.x, hazard.y, hazard.r, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = "18px system-ui"; ctx.fillStyle = "#c8354b"; ctx.fillText("注意！", hazard.x - 24, hazard.y);
+    }
+    for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
+    for (const enemy of state.enemies) {
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0);
+      if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
+    }
+    for (const target of combatTargets()) drawTargetStatus(target);
+    if (state.bomb || state.bombBlast) {
+      const bubble = state.bomb || state.bombBlast;
+      const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
+      ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
+    if (state.bombBlast && state.bombBlast.schools) for (const [index, school] of state.bombBlast.schools.entries()) {
+      ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); ctx.stroke();
+    }
+    drawUltimate();
+    drawSkillVisuals();
+    drawHero();
+    for (const effect of state.effects) {
+      const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
+      if (effect.kind === "water-hit") {
+        ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
+        ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
+      }
+      else if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
+      else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
+      ctx.globalAlpha = 1;
+    }
+  ctx.restore();
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
   drawBossGuide();
@@ -392,8 +411,8 @@ function render() {
 // 使用螢幕座標，跟著鏡頭及橫向畫面尺寸定位；現階段只有老師，未加入新菁英。
 function bossGuide() {
   if (!state.boss || targetVisible(state.boss)) return null;
-  const dx = state.boss.x - state.cameraX - state.width / 2;
-  const dy = state.boss.y - state.cameraY - state.height / 2;
+  const dx = deltaX(state.boss.x, state.cameraX + state.width / 2);
+  const dy = deltaY(state.boss.y, state.cameraY + state.height / 2);
   const halfW = Math.max(1, state.width / 2 - 30), halfH = Math.max(1, state.height / 2 - 30);
   const scale = 1 / Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH, 1);
   return { x: state.width / 2 + dx * scale, y: state.height / 2 + dy * scale, angle: Math.atan2(dy, dx) };
@@ -439,6 +458,7 @@ Object.defineProperties(globalThis.Survivor.render.world, {
   drawSupportVisuals: { enumerable: true, get: () => drawSupportVisuals },
   drawSkillVisuals: { enumerable: true, get: () => drawSkillVisuals },
   drawUltimate: { enumerable: true, get: () => drawUltimate },
+  visibleWorldOffsets: { enumerable: true, get: () => visibleWorldOffsets },
   render: { enumerable: true, get: () => render },
   bossGuide: { enumerable: true, get: () => bossGuide },
   drawBossGuide: { enumerable: true, get: () => drawBossGuide }
