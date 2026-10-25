@@ -5,6 +5,7 @@
   "start_url": "/erin/",
   "scope": "/erin/",
   "display": "standalone",
+  "orientation": "landscape",
   "background_color": "#dff4ff",
   "theme_color": "#dff4ff",
   "icons": [

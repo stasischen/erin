@@ -276,11 +276,6 @@ const vibrationToggle = document.getElementById("vibrationToggle");
 const actionControls = document.getElementById("actionControls");
 const dashButton = document.getElementById("dashButton");
 const skillButton = document.getElementById("skillButton");
-const portraitHint = document.getElementById("portraitHint");
-const closePortraitHint = document.getElementById("closePortraitHint");
-let portraitHintSeen = false;
-try { portraitHintSeen = localStorage.getItem("erin-survivor-portrait-hint-v1") === "seen"; } catch (_) {}
-
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
@@ -358,10 +353,13 @@ function takeFromPool(pool, values) {
 }
 
 function resize() {
-  const rect = stage.getBoundingClientRect();
+  // 旋轉或工具列改變高度時，放開舊搖桿，避免沿舊座標繼續走。
+  state.pointerId = null; state.joy = null; state.keys.clear();
+  // client 尺寸不含外框，也不受整個容器旋轉影響。
+  const rect = canvas.getBoundingClientRect();
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
-  state.width = Math.max(1, rect.width);
-  state.height = Math.max(1, rect.height);
+  state.width = Math.max(1, canvas.clientWidth || rect.width);
+  state.height = Math.max(1, canvas.clientHeight || rect.height);
   canvas.width = Math.round(state.width * ratio);
   canvas.height = Math.round(state.height * ratio);
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -409,7 +407,7 @@ function startGame() {
   state.lastTime = performance.now();
   scheduleFrame();
   spawnEnemy();
-  updateActionControls(); maybeShowPortraitHint();
+  updateActionControls();
   playTone(520, 0.1, "triangle");
 }
 
@@ -423,7 +421,7 @@ function finishRun(won) {
 function showOverlay(mode) {
   state.mode = mode;
   state.keys.clear(); state.pointerId = null; state.joy = null;
-  updateActionControls(); portraitHint.hidden = true;
+  updateActionControls();
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
   if (mode === "paused") { iconEl.textContent = "⏸️"; titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; pauseButton.textContent = "▶"; }
   else if (mode === "over") { iconEl.textContent = "💫"; titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; pauseButton.textContent = "Ⅱ"; }
@@ -567,7 +565,7 @@ function chooseUpgradeCards() {
 }
 function showUpgradeChoices() {
   render();
-  state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); portraitHint.hidden = true; overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
+  state.mode = "levelup"; state.keys.clear(); state.pointerId = null; state.joy = null; updateActionControls(); overlay.classList.remove("hidden"); messageCard.hidden = true; upgradePanel.hidden = false; upgradeCards.innerHTML = "";
   state.pendingChoices.forEach((card, index) => {
     const level = card.id === "heal" ? "" : `Lv.${upgradeLevel(card.id)} → Lv.${upgradeLevel(card.id) + 1}`;
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
@@ -652,12 +650,6 @@ function updateActionControls() {
     button.querySelector && (button.querySelector("small").textContent = ready ? "就緒" : `${Math.ceil(remaining)} 秒`);
   }
 }
-function maybeShowPortraitHint() {
-  if (state.mode !== "playing" || portraitHintSeen || window.innerWidth >= window.innerHeight) return;
-  portraitHint.hidden = false; portraitHintSeen = true;
-  try { localStorage.setItem("erin-survivor-portrait-hint-v1", "seen"); } catch (_) {}
-}
-closePortraitHint.addEventListener("click", () => { portraitHint.hidden = true; });
 for (const [button, activate] of [[dashButton, activateDash], [skillButton, activateSkill]]) {
   button.addEventListener("pointerdown", (event) => { event.preventDefault(); event.stopPropagation(); activate(); });
   // 鍵盤與輔助操作仍可使用原生按鈕 click；指標按下已觸發，不重複施放。
@@ -987,15 +979,26 @@ window.addEventListener("keyup", (event) => state.keys.delete(event.key.length =
 window.addEventListener("blur", () => { state.keys.clear(); if (state.mode === "playing") showOverlay("paused"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());
+// CSS 直拿時順時針轉 90 度；把螢幕位置轉回遊戲位置（包含縮放）。
+function canvasPoint(event) {
+  const rect = canvas.getBoundingClientRect();
+  if (window.innerHeight > window.innerWidth) {
+    return { x: (event.clientY - rect.top) * state.width / rect.height,
+      y: (rect.right - event.clientX) * state.height / rect.width };
+  }
+  return { x: (event.clientX - rect.left) * state.width / rect.width,
+    y: (event.clientY - rect.top) * state.height / rect.height };
+}
 canvas.addEventListener("pointerdown", (event) => {
   if (state.mode !== "playing" || event.target.closest("button")) return;
   if (state.pointerId !== null) return;
   event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
-  const rect = canvas.getBoundingClientRect(); const baseX = event.clientX - rect.left; const baseY = event.clientY - rect.top;
+  const { x: baseX, y: baseY } = canvasPoint(event);
   state.joy = { baseX, baseY, x: 0, y: 0 };
 });
-canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const rect = canvas.getBoundingClientRect(); const dx = event.clientX - rect.left - state.joy.baseX, dy = event.clientY - rect.top - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
+canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const point = canvasPoint(event); const dx = point.x - state.joy.baseX, dy = point.y - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);
-window.addEventListener("resize", () => { resize(); maybeShowPortraitHint(); });
+window.addEventListener("resize", resize);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
 resize(); showOverlay("ready"); renderLoop();

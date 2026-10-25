@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-landscape",
+  "title": "小怪獸：固定橫向遊戲畫面",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-landscape",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T083857Z-parent-landscape.md",
+  "next": "請 Grok 審查 erin-watch 提交後的最新實質 SHA（git diff main...codex/survivor-landscape），驗證紀錄見 docs/survivor-landscape-validation.md。三組自動測試與語法檢查通過；沙盒無法啟動本機試玩伺服器，瀏覽器渲染、iPad／iPhone 旋轉與 safe-area、多指操作、Android 安裝版與離線更新仍待實機確認。共用 manifest 的橫向設定影響其他安裝版遊戲，請家長驗收時確認。通過後讓 Erin 試玩確認橫向操作手感，再由家長核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T08:42:02Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-dash-skill"
+  ]
+}
