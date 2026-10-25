@@ -78,6 +78,8 @@ const BUILD_TUNING = {
   skillRadiusMultiplier: 1.25, skillDamageMultiplier: 0.5, // 流派技能額外範圍、額外傷害
   // 技能閃光沿用泡泡爆炸的時間。
 };
+// ✏️ Erin 可以改：技能閃光最多同時幾個；閃電留幾秒（建議 0.15～0.25）。
+const VFX_TUNING = { limit: 48, lightningSeconds: 0.22 };
 const BUILD_SLOTS = { attack: "普攻", skill: "技能", dash: "衝刺", passive: "被動" };
 const SETTINGS_KEY = "erin-survivor-settings-v3";
 const RECORD_KEY = "erin-survivor-best-seconds-v1";
@@ -329,7 +331,7 @@ const skillButton = document.getElementById("skillButton");
 const enemyNotice = document.getElementById("enemyNotice");
 const BOOK_CHARACTERS = ["甲", "乙", "字", "考", "寫", "讀"];
 
-const state = { dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
+const state = { vfx: [], vfxPool: [], dashTimer: 0, dashCooldown: 0, skillCooldown: 0, dashX: 1, dashY: 0, faceX: 1, faceY: 0, bomb: null, bombBlast: null, fields: [], fieldPool: [], trailDistance: 0, mode: "ready", player: { x: 0, y: 0, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 }, enemies: [], projectiles: [], enemyShots: [], enemyShotPool: [], bookShotTimer: 0, bookNoticeTimer: 0, bookShootingStarted: false, gems: [], effects: [], projectilePool: [], gemPool: [], effectPool: [], keys: new Set(), pointerId: null, joy: null, elapsed: 0, spawnTimer: 0, shotTimer: 0, healTimer: 0, boss: null, bossShotTimer: 0, bossSummonTimer: 0, bossIntro: 0, xp: 0, level: 1, upgrades: {}, pendingChoices: [], lastTime: 0, width: 0, height: 0 };
 
 let sharedAudio = null;
 function startAudio() {
@@ -449,6 +451,8 @@ function resize() {
 
 function resetGame() {
   resetMap();
+  for (const visual of state.vfx) state.vfxPool.push(visual);
+  state.vfx = [];
   for (const field of state.fields) state.fieldPool.push(field);
   state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateVisual = null; state.moveRate = 0;
   state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
@@ -633,6 +637,23 @@ function resolveWaterHit(shot) {
   burst(shot.x, shot.y, "#75d7ff", 5);
 }
 
+// 獨立於小粒子的預算：粒子滿了也看得見技能。所有位置都存世界座標。
+function skillVisual(kind, x, y, options = {}) {
+  if (state.vfx.length >= VFX_TUNING.limit) state.vfxPool.push(state.vfx.shift());
+  const life = options.life || 0.35;
+  state.vfx.push(takeFromPool(state.vfxPool, { kind, x, y, x2: x, y2: y, radius: 30,
+    color: "#237bc2", text: "", life, maxLife: life, ...options }));
+}
+function lightning(x, y, x2, y2) {
+  skillVisual("lightning", x, y, { x2, y2, color: "#7737b0", life: VFX_TUNING.lightningSeconds });
+  skillVisual("sparkle", x2, y2, { color: "#ffdd38", radius: 16, life: VFX_TUNING.lightningSeconds });
+}
+function updateSkillVisuals(dt) {
+  for (let i = state.vfx.length - 1; i >= 0; i--) {
+    state.vfx[i].life -= dt;
+    if (state.vfx[i].life <= 0) state.vfxPool.push(state.vfx.splice(i, 1)[0]);
+  }
+}
 function burst(x, y, color, count = 8) {
   for (let i = 0; i < count && state.effects.length < 90; i++) {
     const angle = Math.random() * Math.PI * 2, speed = 45 + Math.random() * 110;
@@ -640,11 +661,18 @@ function burst(x, y, color, count = 8) {
   }
 }
 
+function damageNumber(target, damage) {
+  if (state.effects.length >= 90) {
+    const spark = state.effects.findIndex(effect => effect.kind === "spark");
+    state.effectPool.push(state.effects.splice(spark >= 0 ? spark : 0, 1)[0]);
+  }
+  state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: target.x, y: target.y - target.r, vx: 0, vy: -28, color: "#fff", life: .7, maxLife: .7, text: `${Math.round(damage)}` }));
+}
 function damageEnemy(enemy, damage = effectiveDamage()) {
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = enemy.x - state.player.x; enemy.knockY = enemy.y - state.player.y; enemy.knockback = KNOCKBACK_SPEED;
   if (enemy.hp <= 0) playTone(620, 0.09, "triangle");
-  if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: enemy.x, y: enemy.y - enemy.r, vx: 0, vy: -28, color: "#fff", life: 0.7, maxLife: 0.7, text: `${Math.round(damage)}` }));
+  damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
     enemy.alive = false;
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool, { kind: "evaporate", x: enemy.x, y: enemy.y, vx: 0, vy: 0, color: "#ffe2a8", life: 0.42, maxLife: 0.42, text: "" }));
@@ -698,6 +726,7 @@ function applyUpgrade(index) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (card.id !== "heal" && !canOffer(card))) return;
   if (card.id === "heal") state.player.health = Math.min(PLAYER_HEALTH + upgradeLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / 5), state.player.health + Math.ceil(PLAYER_HEALTH / 5));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (card.tier === "ultimate" && upgradeLevel(card.id) === 1) state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : 0; if (card.id === "bubble-shield") { state.player.health += Math.ceil(PLAYER_HEALTH / 5); } }
+  skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "❤️", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
   state.pendingChoices = []; overlay.classList.add("hidden"); state.mode = "playing"; pauseButton.textContent = "⚙️"; updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame();
 }
 function experienceNeeded() { return XP_TO_LEVEL + (state.level - 1) * UPGRADE_TUNING.xpGrowthPerLevel; }
@@ -722,17 +751,20 @@ function combatTargets() {
 }
 function hitBuildTarget(target, damage) {
   if (target === state.boss) {
+    damageNumber(target, damage);
     target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
   } else if (target.alive) damageEnemy(target, damage);
 }
 function shiftTarget(target, x, y, distance) {
   const dx = target.x - x, dy = target.y - y, length = Math.max(1, Math.hypot(dx, dy));
+  skillVisual("gust", target.x, target.y, { x2: target.x + dx / length * distance, y2: target.y + dy / length * distance, color: "#23815e" });
   target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
 }
 function schoolEffect(school, target, x, y, damage, excluded = []) {
   if (school === "water") {
     const level = upgradeLevel("water-attack");
+    if (level) skillVisual("splash", x, y, { radius: UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel });
     if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(other.x - x, other.y - y) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (0.2 + level * 0.1));
     if (upgradeLevel("water-skill")) addField("water", x, y);
   }
@@ -740,7 +772,7 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
   if (school === "thunder") {
     const other = combatTargets().filter((enemy) => enemy !== target && !excluded.includes(enemy) && Math.hypot(enemy.x - x, enemy.y - y) <= BUILD_TUNING.chainRadius)
       .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
-    if (other) { hitBuildTarget(other, damage * BUILD_TUNING.chainDamage * (1 + (upgradeLevel("thunder-attack") - 1) * .25)); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
+    if (other) { lightning(x, y, other.x, other.y); hitBuildTarget(other, damage * BUILD_TUNING.chainDamage * (1 + (upgradeLevel("thunder-attack") - 1) * .25)); burst(other.x, other.y, BUILD_TUNING.thunder.color, 5); }
   }
 }
 function addField(school, x, y, radius = BUILD_TUNING.fieldRadius) {
@@ -759,7 +791,7 @@ function updateFields(dt) {
       hitBuildTarget(target, BUILD_TUNING.fieldDamage * Math.max(1, level));
       if (field.school === "water") {
         target.slowTimer = BUILD_TUNING.slowSeconds;
-        if (upgradeLevel("fusion-puddle")) { hitBuildTarget(target, BUILD_TUNING.fieldDamage * upgradeLevel("fusion-puddle")); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
+        if (upgradeLevel("fusion-puddle")) { lightning(field.x, field.y, target.x, target.y); hitBuildTarget(target, BUILD_TUNING.fieldDamage * upgradeLevel("fusion-puddle")); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
       }
       if (field.school === "wind") shiftTarget(target, field.x, field.y, BUILD_TUNING.pushDistance * Math.max(1, level));
       if (field.school === "thunder") schoolEffect("thunder", target, target.x, target.y, BUILD_TUNING.fieldDamage * Math.max(1, level));
@@ -781,6 +813,7 @@ function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
 function counterDischarge() {
   const level = upgradeLevel("thunder-counter");
   if (!level) return;
+  skillVisual("discharge", state.player.x, state.player.y, { radius: BUILD_TUNING.counterRadius, color: "#7737b0", life: .4 });
   for (const target of combatTargets()) {
     if (Math.hypot(target.x - state.player.x, target.y - state.player.y) < BUILD_TUNING.counterRadius) {
       hitBuildTarget(target, level * BUILD_TUNING.counterDamage); burst(target.x, target.y, BUILD_TUNING.thunder.color, 5);
@@ -793,16 +826,22 @@ function updateUltimate(dt) {
   const card = UPGRADES.find(card => card.tier === "ultimate" && upgradeLevel(card.id));
   if (!card) return;
   state.ultimateTimer = countdown(state.ultimateTimer || 0, dt);
-  if (state.ultimateTimer > 0) return;
+  if (state.ultimateTimer > 0) {
+    if (card.school === "wind" && state.ultimateVisual) {
+      state.ultimateVisual.x = state.player.x + Math.cos(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
+      state.ultimateVisual.y = state.player.y + Math.sin(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
+    }
+    return;
+  }
   const level = upgradeLevel(card.id), damage = BUILD_TUNING.ultimateDamage * (1 + (level - 1) * BUILD_TUNING.ultimateGrowth);
   let targets = combatTargets();
   const x = state.player.x + Math.cos(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
   const y = state.player.y + Math.sin(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
   if (card.school === "thunder") targets = targets.length ? [targets[Math.floor(Math.random() * targets.length)]] : [];
   if (card.school === "wind") targets = targets.filter(target => Math.hypot(target.x - x, target.y - y) < BUILD_TUNING.fieldRadius + target.r);
-  state.ultimateVisual = { school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: .5 };
+  state.ultimateVisual = { worldWidth: state.worldWidth, worldHeight: state.worldHeight, school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: card.school === "water" ? 1.2 : .5 };
   state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : card.school === "wind" ? BUILD_TUNING.tornadoTick : BUILD_TUNING.cloudSeconds;
-  for (const target of targets) { hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
+  for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }
 function activateDash() {
   if (state.mode !== "playing" || state.dashCooldown > 0) return;
@@ -812,6 +851,7 @@ function activateDash() {
   state.faceX = state.dashX; state.faceY = state.dashY;
   state.trailDistance = BUILD_TUNING.trailSpacing;
   leaveDashTrail(state.player.x, state.player.y, 0);
+  skillVisual("gust", state.player.x, state.player.y, { x2: state.player.x + state.dashX * 60, y2: state.player.y + state.dashY * 60, color: "#23815e" });
   state.dashTimer = gameSettings.dashSeconds; state.dashCooldown = gameSettings.dashCooldown;
   state.player.invincible = Math.max(state.player.invincible, state.dashTimer);
   playTone(740, 0.08); updateActionControls();
@@ -835,13 +875,15 @@ function updateBomb(dt) {
   }
   if (bomb.schools.includes("water")) addField("water", bomb.x, bomb.y, bomb.radius);
   if (bomb.schools.includes("thunder")) {
+    skillVisual("discharge", bomb.x, bomb.y, { radius: bomb.radius, color: "#7737b0" });
     for (const target of combatTargets()) {
-      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius + target.r) { target.stunTimer = BUILD_TUNING.stunSeconds * upgradeLevel("thunder-skill"); hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier * upgradeLevel("thunder-skill")); }
+      if (Math.hypot(target.x - bomb.x, target.y - bomb.y) <= bomb.radius + target.r) { lightning(bomb.x, bomb.y, target.x, target.y); target.stunTimer = BUILD_TUNING.stunSeconds * upgradeLevel("thunder-skill"); hitBuildTarget(target, bomb.damage * BUILD_TUNING.skillDamageMultiplier * upgradeLevel("thunder-skill")); }
       if (state.mode !== "playing") return;
     }
   }
   function pushAway(target) {
     const dx = target.x - bomb.x, dy = target.y - bomb.y, length = Math.hypot(dx, dy);
+    skillVisual("gust", target.x, target.y, { x2: target.x + (length > .01 ? dx / length : 1) * 40, y2: target.y + (length > .01 ? dy / length : 0) * 40, color: "#23815e" });
     target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
     target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback; clampToMap(target);
   }
@@ -878,6 +920,7 @@ for (const [button, activate] of [[dashButton, activateDash], [skillButton, acti
 
 function tick(dt) {
   if (state.mode !== "playing") return;
+  updateSkillVisuals(dt);
   state.elapsed += dt;
   startBookShooting();
   state.bookNoticeTimer = Math.max(0, state.bookNoticeTimer - dt);
@@ -977,6 +1020,7 @@ function tick(dt) {
         if (state.mode !== "playing") return;
         if (upgradeLevel("splash-water") > 0) {
           const radius = UPGRADE_TUNING.splashBaseRadius + upgradeLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
+          skillVisual("splash", enemy.x, enemy.y, { radius });
           for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && !shot.hitList.includes(nearby) && Math.hypot(nearby.x - enemy.x, nearby.y - enemy.y) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * 0.35); }
         }
         resolveWaterHit(shot);
@@ -1117,15 +1161,141 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben") {
   ctx.restore();
 }
 
+// 只用舊版 iPad 也支援的 Canvas API；線寬至少 3px，避免手機上看不見。
+function strokeRing(x, y, radius, color, width = 3) {
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); ctx.stroke();
+}
+function drawBolt(x, y, x2, y2) {
+  const dx = x2 - x, dy = y2 - y, length = Math.max(1, Math.hypot(dx, dy));
+  // 固定折線，不每幀亂跳；暫停時畫面也會完全停住。
+  for (const [color, width] of [["#69309b", 7], ["#fff6a0", 3]]) {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x, y);
+    for (let i = 1; i < 6; i++) { const offset = (i % 2 ? 1 : -1) * Math.min(12, length * .18); ctx.lineTo(x + dx * i / 6 - dy / length * offset, y + dy * i / 6 + dx / length * offset); }
+    ctx.lineTo(x2, y2); ctx.stroke();
+  }
+}
+function drawSwirl(x, y, radius, phase) {
+  ctx.strokeStyle = "#23815e"; ctx.lineWidth = 4;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath(); ctx.arc(x, y, radius * (1 - i * .23), phase + i, phase + i + Math.PI * 1.5); ctx.stroke();
+  }
+}
+function drawFields() {
+  for (const field of state.fields) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(.3, field.life * .6); ctx.fillStyle = BUILD_TUNING[field.school].color;
+    ctx.beginPath(); ctx.arc(field.x, field.y, field.radius, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = Math.min(1, field.life * 3);
+    if (field.school === "water") {
+      strokeRing(field.x, field.y, field.radius, "#237bc2");
+      for (let i = -1; i <= 1; i++) { ctx.strokeStyle = "#e5faff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(field.x, field.y + i * field.radius * .35, field.radius * .65, 4, 0, 0, Math.PI); ctx.stroke(); }
+      if (upgradeLevel("fusion-puddle")) drawBolt(field.x - field.radius * .5, field.y, field.x + field.radius * .5, field.y);
+    } else if (field.school === "wind") drawSwirl(field.x, field.y, field.radius, state.elapsed * 5);
+    else {
+      strokeRing(field.x, field.y, field.radius, "#23815e"); // 閃電衝刺：風＋雷。
+      drawBolt(field.x - field.radius * .6, field.y + 8, field.x + field.radius * .6, field.y - 8);
+    }
+    ctx.restore();
+  }
+}
+function drawTargetStatus(target) {
+  ctx.save();
+  if (target.slowTimer > 0) {
+    ctx.fillStyle = "rgba(45,166,255,.32)"; ctx.beginPath(); ctx.arc(target.x, target.y, target.r + 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#126fc0";
+    for (let i = -1; i <= 1; i++) {
+      const y = target.y + target.r + 4 + ((state.elapsed * 18 + i * 4) % 9);
+      ctx.beginPath(); ctx.moveTo(target.x + i * 10, y - 5); ctx.lineTo(target.x + i * 10 - 3, y); ctx.arc(target.x + i * 10, y, 3, 0, Math.PI); ctx.fill();
+    }
+  }
+  if (target.stunTimer > 0) {
+    ctx.font = "bold 19px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#765013"; ctx.lineWidth = 3; ctx.fillStyle = "#ffe84a";
+    for (let i = 0; i < 3; i++) { const a = state.elapsed * 4 + i * Math.PI * 2 / 3, x = target.x + Math.cos(a) * 19, y = target.y - target.r - 17 + Math.sin(a) * 5; ctx.strokeText("★", x, y); ctx.fillText("★", x, y); }
+  }
+  ctx.restore();
+}
+function drawSupportVisuals() {
+  const p = state.player;
+  ctx.save();
+  if (upgradeLevel("bubble-shield")) { ctx.globalAlpha = .65; strokeRing(p.x, p.y, p.r + 9, "#267dbe"); ctx.globalAlpha = 1; }
+  if (upgradeLevel("gem-magnet")) {
+    // 三段吸力弧標示真正的吸取半徑，不用整片光圈遮住敵人。
+    const radius = GEM_PULL_RADIUS * (1 + upgradeLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    ctx.strokeStyle = "rgba(130,69,163,.5)"; ctx.lineWidth = 3;
+    for (let i = 0; i < 3; i++) { const a = state.elapsed + i * Math.PI * 2 / 3; ctx.beginPath(); ctx.arc(p.x, p.y, radius, a, a + .35); ctx.stroke(); }
+  }
+  if (p.moving && (upgradeLevel("onion-dash") || upgradeLevel("wind-speed"))) {
+    ctx.strokeStyle = upgradeLevel("wind-speed") ? "#23815e" : "#8754ad"; ctx.lineWidth = 3;
+    for (const offset of [-10, 0, 10]) { ctx.beginPath(); ctx.moveTo(p.x - state.faceX * 20 - state.faceY * offset, p.y - state.faceY * 20 + state.faceX * offset); ctx.lineTo(p.x - state.faceX * 42 - state.faceY * offset, p.y - state.faceY * 42 + state.faceX * offset); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+function drawSkillVisuals() {
+  for (const v of state.vfx) {
+    ctx.save(); ctx.globalAlpha = Math.min(1, v.life / v.maxLife * 2);
+    const progress = 1 - v.life / v.maxLife;
+    if (v.kind === "lightning") drawBolt(v.x, v.y, v.x2, v.y2);
+    else if (v.kind === "gust") {
+      const angle = Math.atan2(v.y2 - v.y, v.x2 - v.x);
+      ctx.translate(v.x, v.y); ctx.rotate(angle); ctx.strokeStyle = v.color; ctx.lineWidth = 4;
+      for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); ctx.stroke(); }
+    } else if (v.kind === "card") {
+      strokeRing(v.x, v.y + 38, 22 + progress * 25, v.color);
+      ctx.font = "bold 24px system-ui"; ctx.textAlign = "center"; ctx.fillText(v.text, v.x, v.y - progress * 20);
+    } else if (v.kind === "sparkle") {
+      ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 5;
+      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); ctx.stroke(); }
+      strokeRing(v.x, v.y, 5, v.color, 4);
+    } else {
+      strokeRing(v.x, v.y, v.radius * (.25 + progress * .75), v.color, 4);
+      if (v.kind === "discharge") {
+        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; drawBolt(v.x + Math.cos(a) * v.radius * .5, v.y + Math.sin(a) * v.radius * .5, v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); }
+      } else {
+        ctx.fillStyle = "#168cff";
+        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = v.radius * progress; ctx.beginPath(); ctx.arc(v.x + Math.cos(a) * r, v.y + Math.sin(a) * r, 4, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
+    ctx.restore();
+  }
+}
+function drawUltimate() {
+  const v = state.ultimateVisual; if (!v) return;
+  ctx.save(); ctx.globalAlpha = Math.min(1, v.life * 4);
+  if (v.school === "water") {
+    // 浪的位置依整張世界地圖前進；移動鏡頭不會把浪黏在螢幕上。
+    const x = v.worldWidth * (1 - v.life / 1.2);
+    ctx.fillStyle = "rgba(35,123,194,.38)"; ctx.fillRect(x - 130, 0, 150, v.worldHeight);
+    ctx.strokeStyle = "#ecfdff"; ctx.lineWidth = 8; ctx.beginPath();
+    for (let y = 0; y <= v.worldHeight; y += 14) { const edge = x + Math.sin(y / 24) * 17; if (!y) ctx.moveTo(edge, y); else ctx.lineTo(edge, y); } ctx.stroke();
+  } else if (v.school === "wind") {
+    // 倒錐形、四層旋轉風圈，和地上小旋風容易區分。
+    ctx.fillStyle = "rgba(92,205,158,.35)"; ctx.beginPath(); ctx.moveTo(v.x, v.y + 18); ctx.lineTo(v.x - 45, v.y - 75); ctx.lineTo(v.x + 45, v.y - 75); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 4; i++) drawSwirl(v.x, v.y - i * 22, 14 + i * 10, state.elapsed * 7 + i);
+  } else {
+    ctx.fillStyle = "#64557e"; ctx.strokeStyle = "#e8dcff"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(v.x, v.y - 94, 46, 23, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(v.x + i * 23, v.y - 102, 18, 0, Math.PI * 2); ctx.fill(); }
+    drawBolt(v.x, v.y - 80, v.x, v.y); strokeRing(v.x, v.y, 22, "#9755bb", 4);
+  }
+  ctx.restore();
+}
+
 function render() {
   updateCamera();
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save(); ctx.translate(-state.cameraX, -state.cameraY);
   drawClassroom();
+  drawFields();
+  drawSupportVisuals();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
     ctx.fillStyle = shot.schools && shot.schools.length ? BUILD_TUNING[shot.schools[0]].color : WATER_COLOR; ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (shot.schools && shot.schools.includes("wind")) {
+      const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+      ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
+      for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
+    }
+    if (shot.schools && shot.schools.includes("thunder")) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
     if (shot.piercing) {
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
@@ -1164,6 +1334,22 @@ function render() {
     drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId);
     if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
   }
+  for (const target of combatTargets()) drawTargetStatus(target);
+  if (state.bomb || state.bombBlast) {
+    const bubble = state.bomb || state.bombBlast;
+    const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
+    ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
+  }
+  if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
+  if (state.bombBlast && state.bombBlast.schools) for (const [index, school] of state.bombBlast.schools.entries()) {
+    ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); ctx.stroke();
+  }
+  drawUltimate();
+  drawSkillVisuals();
+  drawHero();
   for (const effect of state.effects) {
     const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
     if (effect.kind === "water-hit") {
@@ -1176,34 +1362,6 @@ function render() {
     else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
     ctx.globalAlpha = 1;
   }
-  if (state.bomb || state.bombBlast) {
-    const bubble = state.bomb || state.bombBlast;
-    const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
-    ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
-  }
-  if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
-  for (const field of state.fields) {
-    ctx.save(); ctx.globalAlpha = 0.22 + field.life / BUILD_TUNING.fieldSeconds * 0.2;
-    ctx.fillStyle = BUILD_TUNING[field.school].color; ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(field.x, field.y, field.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.globalAlpha = 1; ctx.font = "bold 16px system-ui"; ctx.textAlign = "center";
-    ctx.fillText(field.school === "water" ? "≈" : field.school === "wind" ? "◎" : "ϟ", field.x, field.y + 5); ctx.restore();
-  }
-  if (state.bombBlast && state.bombBlast.schools) for (const school of state.bombBlast.schools) {
-    ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * BUILD_TUNING.skillRadiusMultiplier, 0, Math.PI * 2); ctx.stroke();
-  }
-  if (state.ultimateVisual) {
-    const v = state.ultimateVisual;
-    ctx.save(); ctx.strokeStyle = BUILD_TUNING[v.school].color; ctx.lineWidth = 12;
-    if (v.school === "water") { ctx.globalAlpha = .45; ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(state.cameraX + state.width * (1 - v.life / .5) - 60, state.cameraY, 120, state.height); }
-    else if (v.school === "thunder") { ctx.beginPath(); ctx.moveTo(v.x - 20, state.cameraY); ctx.lineTo(v.x + 10, state.cameraY + (v.y - state.cameraY) * .5); ctx.lineTo(v.x - 12, state.cameraY + (v.y - state.cameraY) * .6); ctx.lineTo(v.x, v.y); ctx.stroke(); }
-    else { ctx.beginPath(); ctx.arc(v.x, v.y, BUILD_TUNING.fieldRadius, 0, Math.PI * 2); ctx.stroke(); }
-    ctx.restore();
-  }
-  drawHero();
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
   if (state.joy) {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, 46, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * 27, state.joy.baseY + state.joy.y * 27, 19, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;

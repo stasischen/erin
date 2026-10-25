@@ -41,10 +41,9 @@ run('closeSettings();togglePause();state.skillCooldown=gameSettings.bombCooldown
 assert.match(run('skillButton.style.background'),/180deg/);
 assert.equal(run('skillButton["aria-disabled"]'),'true');
 assert.equal(run('state.mode'),'playing');
-// 擷取實際 Canvas 繪圖命令，確認雷折線相對非零鏡頭頂端插值。
+// 擷取實際 Canvas 命令：雷雲與落雷固定在目標的世界座標，不依鏡頭頂端重算。
 run(`state.cameraX=700;state.cameraY=600;state.ultimateVisual={school:'thunder',x:1100,y:900,life:.4};
  globalThis.points=[];ctx.moveTo=(x,y)=>points.push([x,y]);ctx.lineTo=(x,y)=>points.push([x,y]);render();`);
-assert.equal(run('points.some(([x,y])=>x===1110 && y===750)'),true);
-assert.equal(run('points.some(([x,y])=>x===1088 && y===780)'),true);
+assert.equal(run('points.some(([x,y])=>x===1100 && y===820)'),true);
 assert.equal(run('points.some(([x,y])=>x===1100 && y===900)'),true);
 console.log('PASS: offscreen/in-map spawns across sizes, corners, edges, random extremes; no-space deferral; paused build/tree; cooldown ring; scrolled lightning');
