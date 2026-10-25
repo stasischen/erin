@@ -224,7 +224,7 @@ body { touch-action: auto; }
 .upgrade-panel { container-name: upgrade-panel; container-type: size; height: min(620px, 100%); min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 4px; overflow: hidden; }
 .upgrade-panel h2 { font-size: 20px; margin: 0; }
 .upgrade-panel > p { font-size: 11px; margin: 0; align-self: center; }
-.upgrade-workspace { grid-column: 1 / -1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 17fr); gap: 4px; padding: 0; }
+.upgrade-workspace { grid-column: 1 / -1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); gap: 4px; padding: 0; }
 .upgrade-panel .upgrade-cards { min-height: 0; gap: 4px; align-items: stretch; }
 .upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 5px; gap: 6px; line-height: 1.3; overflow-wrap: anywhere; }
 .upgrade-panel .upgrade-card strong { font-size: 15px; }

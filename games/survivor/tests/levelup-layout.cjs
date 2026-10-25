@@ -24,7 +24,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   for(const n of document.querySelectorAll('#upgradeCards button')){if(n.scrollHeight>n.clientHeight+1)throw Error('卡片文字裁切');const r=n.getBoundingClientRect(),workspace=document.querySelector('.upgrade-workspace').getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(r.left<workspace.left-1||r.right>workspace.right+1||r.top<workspace.top-1||r.bottom>workspace.bottom+1||!n.contains(hit))throw Error('卡片超出工作區或被遮住');}
   const panel=document.querySelector('#upgradePanel'),preview=document.querySelector('#upgradePreview'),f=preview.querySelector('iframe');
   const area=n=>n.offsetWidth*n.offsetHeight;
-  if(area(preview)/area(panel)<.4 && Math.min(innerWidth,innerHeight)>=360)throw Error('展示未達面板40%');
+  if(Math.min(innerWidth,innerHeight)>=360 && (area(preview)/area(panel)<.28 || area(preview)/area(panel)>.38))throw Error('展示不在面板28～38%');
   const cards=[...document.querySelectorAll('#upgradeCards button')];
   if(cards.some(c=>Math.abs(c.offsetTop-cards[0].offsetTop)>1 || Math.abs(c.offsetHeight-cards[0].offsetHeight)>1))throw Error('三卡未平均並排');
   const used=[...cards,preview,document.querySelector('.upgrade-actions'),panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);

@@ -5,17 +5,22 @@ let previewVisible = frameElement._previewVisible !== false;
 const previewCard = UPGRADES.find(c=>c.id===previewSpec.id);
 if(previewCard && previewSpec.kind==='effect') previewCard.effects=[previewCard.effects[previewSpec.index]];
 gameSettings.sound = false; gameSettings.vibration = false;
-// 普攻鏡頭約放大 2.5 倍；範圍招式保留足夠場地。依 iframe 比例繪製，不拉伸。
+// 所有入口共用 1.65 倍基準；僅依真實效果的邊界拉遠，沒有另一套特寫。
+const PREVIEW_COMPOSITION = { scale: 1.65, padding: 12, targetDistances: [50,85,120], originX: 45 };
 const previewFeatures = previewCard ? previewCard.effects.map(e=>e.feature).filter(Boolean) : [];
-const previewWide = previewSpec.kind === 'move' || previewFeatures.some(id=>/ultimate|dash|fusion-storm/.test(id)) || (previewCard && previewCard.effects.some(e=>!e.feature && (e.radius>100 || e.trigger==='dash')));
-const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':gameSettings.bombRadius,'thunder-counter':BUILD_TUNING.counterRadius,'fusion-puddle':gameSettings.bombRadius};
-const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []));
+const previewMove = previewSpec.kind === 'move' && BOSS_MOVES.find(m=>m.id===previewSpec.id);
+const previewDash = previewFeatures.some(id=>/dash|fusion-storm/.test(id)) || (previewCard && previewCard.effects.some(e=>!e.feature && e.trigger==='dash'));
+const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':gameSettings.bombRadius,'thunder-counter':BUILD_TUNING.counterRadius,'fusion-puddle':gameSettings.bombRadius,'wind-ultimate':BUILD_TUNING.tornadoRadius+50};
+const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []), previewMove && previewMove.kind==='ring' ? previewMove.radius : 0);
 let previewOrigin = {x:0,y:0};
 function sizePreview() {
   const width = document.documentElement ? document.documentElement.clientWidth : 640;
   const height = document.documentElement ? document.documentElement.clientHeight : 360;
   const ratio = Math.max(.5, width / Math.max(1,height));
-  state.height = Math.max(previewWide ? 360 : height / 2.5, previewRadius ? (previewRadius+24)*2 : 0);
+  const padding = PREVIEW_COMPOSITION.padding;
+  const displacement = previewCard ? Math.max(0,...previewCard.effects.filter(e=>!e.feature && e.type==='knockback').map(e=>Math.abs(e.distance||0))) : 0;
+  const halfWidth = previewMove ? Math.max(250, previewMove.kind==='dash' ? previewMove.distance : 0) : previewDash ? PLAYER_SPEED*gameSettings.dashMultiplier*gameSettings.dashSeconds+padding : 92+displacement;
+  state.height = Math.max(height / PREVIEW_COMPOSITION.scale, (Math.max(halfWidth,previewRadius)+padding)*2/ratio, previewRadius ? (previewRadius+padding)*2 : 80);
   state.width = state.height * ratio;
   canvas.width = Math.round(state.width * 3); canvas.height = Math.round(state.height * 3);
   ctx.setTransform(3,0,0,3,0,0); ctx.imageSmoothingEnabled = false;
@@ -32,8 +37,8 @@ function resetPreview() {
   state.spawnTimer = 999; state.shotTimer = 999; state.player.invincible = 999;
   previewTime = 0; previewFired = false;
   const p = state.player;
-  previewOrigin = {x:p.x + (previewWide ? 0 : 45), y:p.y}; updateCamera();
-  state.enemies = [50,85,120].map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
+  previewOrigin = {x:p.x + PREVIEW_COMPOSITION.originX, y:p.y}; updateCamera();
+  state.enemies = PREVIEW_COMPOSITION.targetDistances.map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
   if (previewSpec.kind === 'move') {
     state.enemies = [];
     state.boss = {x:p.x-160,y:p.y,r:32,hp:2000,maxHp:2000,speed:0,wobble:0,flash:0};
@@ -80,7 +85,11 @@ function stepPreview(dt) {
   for(let left=simulationSeconds;left>0;left-=.05) tick(Math.min(.05,left));
   // 老師召喚在正式遊戲從鏡頭外進場，展示縮短走入鏡頭的等待。
   if(previewSpec.kind==='move') state.enemies.forEach(e=>{ if(!targetVisible(e)){e.x=state.player.x+100;e.y=state.player.y+40;} });
-  if (previewSpec.kind !== 'move') state.enemies.forEach(e=>{e.x=e.homeX;e.y=e.homeY;e.knockback=0;});
+  // 命中時保留引擎的擊退／吸引位移，最後 .7 秒平順回位；重播不跳動。
+  if (previewSpec.kind !== 'move' && previewTime > 2.3) {
+    const blend = Math.min(1, dt / Math.max(dt, 3-previewTime));
+    state.enemies.forEach(e=>{e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;e.knockback=0;});
+  }
   paintPreview();
 }
 function paintPreview() {

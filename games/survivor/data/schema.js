@@ -70,7 +70,7 @@
             return { type: effect.type, feature: effect.feature, power: num(effect.power, 1, 3, '組合強度', true) };
           }
           const e = { type: choice(effect.type, Object.keys(TYPES), '積木'), trigger: choice(effect.trigger, ['hit','skill','dash','interval'], '觸發時機') };
-          for (const key of Object.keys(PARAMS)) e[key] = num(effect[key], BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
+          for (const key of Object.keys(PARAMS)) e[key] = num(effect[key], key === 'distance' && e.type === 'knockback' ? -300 : BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
           return e;
         });
         return result;
@@ -102,6 +102,8 @@
         for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
         return result;
       });
+      // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
+      if (input.stages !== undefined && JSON.stringify(input.stages) !== JSON.stringify(data.stages)) fail('本版尚未開放關卡編輯');
       // 波次只預留資料位置，本版不提供編輯。
       if (JSON.stringify(input.waves) !== JSON.stringify(data.waves)) fail('本版尚未開放關卡編輯');
     } catch (error) { errors.push(error.message); }

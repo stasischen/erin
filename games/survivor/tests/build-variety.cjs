@@ -87,7 +87,7 @@ for(const school of ['water','wind','thunder']) {
  assert.ok(run('state.enemies[0].hp')<1000);
  run('globalThis.frozen=JSON.stringify([state.fields,state.ultimateTimer,state.ultimateVisual]); showOverlay("paused"); tick(5);');
  assert.equal(run('JSON.stringify([state.fields,state.ultimateTimer,state.ultimateVisual])===frozen'),true);
- run('togglePause(); summonTeacher(); state.bossIntro=0; state.enemies=[]; state.boss.x=480; state.boss.y=300; state.boss.hp=1; state.elapsed=0; state.ultimateTimer=0; updateUltimate(.05);');
+ run('togglePause(); state.stageIndex=STAGES.length-1; summonTeacher(); state.bossIntro=0; state.enemies=[]; state.boss.x=480; state.boss.y=300; state.boss.hp=1; state.elapsed=0; state.ultimateTimer=0; updateUltimate(.05);');
  assert.equal(run('state.mode'),'won');
  run('render(); resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();'); assert.equal(run('state.ultimateVisual'),null); assert.equal(run('state.ultimateTimer'),0);
 }

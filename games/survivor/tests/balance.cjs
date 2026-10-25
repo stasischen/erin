@@ -77,18 +77,18 @@ run('state.enemyShots = [{source:"teacher",life:4,damage:12,x:state.player.x,y:s
 assert.equal(run('state.player.health'), 78);
 for (const [type, damage] of [['jaben', 15], ['otsubon', 12]]) {
   fresh();
-  run(`state.elapsed = ${type === 'jaben' ? 0 : 60}; Math.random = () => ${type === 'jaben' ? 0.99 : 0}; spawnEnemy(); Math.random = Object.getPrototypeOf(Math).random; Object.assign(state.enemies[0], { x: state.player.x, y: state.player.y, speed: 0 }); tick(0);`);
+  run(`state.elapsed = state.stageElapsed = ${type === 'jaben' ? 0 : 60}; Math.random = () => ${type === 'jaben' ? 0.99 : 0}; spawnEnemy(); Math.random = Object.getPrototypeOf(Math).random; Object.assign(state.enemies[0], { x: state.player.x, y: state.player.y, speed: 0 }); tick(0);`);
   assert.equal(run('state.player.health'), 90 - damage);
   assert.equal(run('state.player.invincible'), 1);
 }
 // 現存敵人也隨時間加速（60 秒時 1.10 倍）。
 fresh();
-run('state.elapsed = 60; spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 300, speed: 100 }); tick(0.05);');
+run('state.elapsed = state.stageElapsed = 60; spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 300, speed: 100 }); tick(0.05);');
 assert.ok(Math.abs(run('state.enemies[0].x') - 105.5) < 0.001);
 // 波次間隔使用 1.84/1.495/1.15/.8625/.6325/.5175 秒，並保留速度滑桿倍率。
 for (const [seconds, interval] of [[0, 1.84], [20, 1.495], [35, 1.15], [60, .8625], [90, .6325], [105, .5175]]) {
   fresh();
-  run(`state.elapsed = ${seconds}; state.spawnTimer = 0; tick(0);`);
+  run(`state.elapsed = state.stageElapsed = ${seconds}; state.spawnTimer = 0; tick(0);`);
   assert.equal(run('state.enemies.length'), 1);
   assert.equal(run('state.spawnTimer'), interval);
 }

@@ -108,7 +108,8 @@
       select(box, '什麼時候發動？', effect, 'trigger', {hit:'水球命中時',skill:'按技能時',dash:'按衝刺時',interval:'每隔一段時間'});
       el('p', '「間隔秒數」也是這個積木再次發動前的休息時間。傷害隨卡片等級增加。', box);
       const fields = grid(box), keys = { projectile:['damage','speed','count','spread','interval'], aoe:['damage','radius','interval'], chain:['damage','radius','count','interval'], 'dash-trail':['damage','radius','duration','interval'], slow:['radius','duration','multiplier','interval'], stun:['radius','duration','interval'], knockback:['radius','distance','interval'], summon:['damage','radius','duration','speed','count','interval'], 'ring-with-gap':['damage','radius','gap','interval'] };
-      keys[effect.type].forEach(key => range(fields, effect, key));
+      keys[effect.type].forEach(key => range(fields, effect, key, key === 'distance' && effect.type === 'knockback' ? [-300,300,5] : undefined));
+      if (effect.type === 'knockback') el('p', '距離正數推開，負數拉近。', box);
       if (effect.type === 'dash-trail') el('p', '按衝刺時會在沿路留下範圍痕跡。', box);
       if (effect.type === 'summon') el('p', '小幫手留在召喚位置，暫時自動發射水球。', box);
     }

@@ -36,5 +36,5 @@ ui=setup({search:'?editor=1'});assert.equal(ui.state.mode,'maker');ui.ids.makerC
 ui=setup({maker:true});ui.window.openSurvivorMaker('試玩結束');assert.equal(ui.state.mode,'maker');assert.equal(ui.ids.makerStatus.textContent,'試玩結束');ui.ids.makerClose.fire('click');assert.equal(ui.location.href,'./');
 // 勝敗都呼叫實際的遊戲返回事件；一般模式保留原結算。
 const createRun=require('./maker-support.cjs');
-for(const won of [false,true]){const run=createRun({maker:true});run('window.openSurvivorMaker = text => { globalThis.result = text; state.mode="maker"; }; startGame();');run(`finishRun(${won});`);assert.equal(run('state.mode'),'maker');assert.ok(run('result').includes(won?'過關':'結束'));}
+for(const won of [false,true]){const run=createRun({maker:true});run('window.openSurvivorMaker = text => { globalThis.result = text; state.mode="maker"; }; startGame(); state.stageIndex=STAGES.length-1;');run(`finishRun(${won});`);assert.equal(run('state.mode'),'maker');assert.ok(run('result').includes(won?'過關':'結束'));}
 console.log('PASS: in-game entry/exit, five custom-control tabs, names/icons/effect edits persist, play route, cycles/storage failure block play, reset, both game outcomes return to Maker');
