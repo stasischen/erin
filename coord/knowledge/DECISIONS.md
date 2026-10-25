@@ -48,3 +48,5 @@
 - 家長要求 Maker 形式，這次先不做美術與關卡編輯，先讓小朋友自訂技能樹、怪物種類／技能及老師招式；資料只存本機，保留波次資料位置。`survivor-maker-data` 已製作資料檔、Maker 和安全驗證，原有配方保留相容並加入九種可組合通用積木；預設作品通過重構前 153 組玩法快照與既有測試。資源版本 20261025o、sw 快取 v19。實際操作和難度尚待 Grok 審查及 Erin／家長試玩；未代替 Erin 決定新設計。來源：`coord/inbox/done/20261025T103151Z-parent-maker-data.md`；驗證及工程限制：`docs/survivor-maker-data-validation.md`。
 
 - 家長回饋「這樣很怪 可以跟遊戲介面整合嗎？」；依指定範圍將 Maker 搬進遊戲橫向容器，使用深色像素面板、卡片樹、怪物預覽、老師招式卡及觸控數值控制，保留作品格式和驗證，試玩勝敗回設計室。資源版本 20261025p、sw v20；11 組工程測試通過，瀏覽器／實機版面因沙盒限制尚待驗證，介面手感仍由 Erin 試玩確認。來源：`coord/inbox/done/20261025T105623Z-parent-maker-ingame.md`；驗證：`docs/survivor-maker-ingame-validation.md`。
+
+- 2026-10-25 家長要求遊戲與 Maker 的 emoji 改為共用程式點陣圖示、每張預設卡不同，Maker 用圖示集挑選並自動對應舊作品。來源：`coord/inbox/done/20261025T110552Z-parent-pixel-icons.md`。
