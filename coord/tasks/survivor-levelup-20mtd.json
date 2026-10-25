@@ -8,12 +8,12 @@
   "branch": "codex/survivor-levelup-20mtd",
   "pr": null,
   "brief": "coord/inbox/done/20261025T152117Z-parent-levelup-20mtd.md",
-  "next": "請 Grok 審查 erin-watch 新提交：已修正暫停展示測試及回血不扣重抽，非瀏覽器測試全通過。沙盒 Chrome 啟動 SIGABRT，請重跑 --layout 六尺寸後交 Erin 試玩。",
+  "next": "請 Grok 審查 erin-watch 新提交：依 round 2 意見，在暫停選單先 scrollIntoView({block: center}) 再觸碰技能按鈕，未改遊戲版面。已執行完整 node games/survivor/tools/test.cjs --layout：所有非瀏覽器測試通過，Chrome 在沙盒啟動即 SIGABRT，請在 Mac Studio 重跑六尺寸 --layout 後再交 Erin 試玩。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T15:49:28.001167Z",
+  "updated": "2026-10-25T15:53:14.708592Z",
   "updatedBy": "codex"
 }
