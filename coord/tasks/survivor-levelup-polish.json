@@ -8,13 +8,13 @@
   "branch": "codex/survivor-levelup-polish",
   "pr": null,
   "brief": "coord/inbox/done/20261025T120807Z-parent-levelup-polish.md",
-  "next": "請 Grok 審查 erin-watch 提交的 SHA，補跑 levelup-layout.cjs 與手機實測；本機 Chrome SIGABRT，未確認排版。詳見驗證文件。",
+  "next": "請 Grok 重審本輪 SHA 並重跑五尺寸排版；已縮邊距、修旋轉判定及清理，本沙盒 Chrome 仍 SIGABRT，比例待驗。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T12:13:35.874722Z",
+  "updated": "2026-10-25T12:17:14.467012Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-levelup-layout-fix-2"
