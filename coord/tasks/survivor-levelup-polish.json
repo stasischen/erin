@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-levelup-polish",
+  "title": "小怪獸：選卡均衡版面與近距離效果展示",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-levelup-polish",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T120807Z-parent-levelup-polish.md",
+  "next": "請 Grok 重審本輪 SHA 並重跑五尺寸排版；已縮邊距、修旋轉判定及清理，本沙盒 Chrome 仍 SIGABRT，比例待驗。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T12:17:14.467012Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-levelup-layout-fix-2"
+  ]
+}

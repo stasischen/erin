@@ -79,3 +79,20 @@ assert.equal(taps('state.mode'),'playing');assert.equal(taps('upgradeLevel("rapi
 taps.elements.upgradeCards.children[1].listeners.dblclick();
 assert.equal(taps('upgradeLevel("rapid-water")'),1,'原生 dblclick 不會重複升級');
 console.log('PASS: focus does not apply, per-card double-tap timing, slow taps only preview, native dblclick applies at most once');
+
+// 第零格即完成定位；靜止標靶不受追蹤或擊退而漂移，固定鏡頭對準命中區。
+const close=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'big-water',level:1}}});
+const homes=close('JSON.stringify(state.enemies.map(e=>[e.x,e.y]))');
+const camera=close('JSON.stringify([state.cameraX,state.cameraY])');
+assert.equal(close('state.height'),144,'普攻取景為360/144=2.5倍');
+let hit=false;
+for(let i=0;i<180;i++) {
+ close('stepPreview(.05)');
+ assert.equal(close('JSON.stringify(state.enemies.map(e=>[e.x,e.y]))'),homes,'起始、命中後與重播位置一致');
+ assert.equal(close('JSON.stringify([state.cameraX,state.cameraY])'),camera,'鏡頭不因角色走路而把假怪推到上方');
+ hit=hit||close('state.enemies.some(e=>e.hp<e.maxHp)');
+}
+assert.ok(hit,'近距離真實水球命中');
+const wide=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'water-ultimate',level:1}}});
+assert.ok(wide('state.height')>=360,'巨浪取景放寬');
+console.log('PASS: t=0 fixed targets, hit and three loop positions, fixed close camera, 2.5x shot framing, wide ultimate framing');

@@ -220,32 +220,33 @@ body { background: #142331; font-family: ui-monospace, "PingFang TC", "Microsoft
 body { touch-action: auto; }
 #gameCanvas { touch-action: none; }
 .overlay { min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
-.upgrade-panel { container-name: upgrade-panel; container-type: size; height: min(620px, 100%); min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr) 64px; gap: 4px 8px; padding: 8px; overflow: hidden; }
-.upgrade-panel h2 { grid-column: 1 / -1; font-size: 20px; margin: 0; }
-.upgrade-panel > p { grid-column: 1 / -1; font-size: 12px; margin: 0; }
-.upgrade-workspace { grid-column: 1 / -1; container-type: size; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 10px; padding: 4px; }
-.upgrade-panel .upgrade-cards { min-height: 0; gap: 6px; align-items: start; }
-.upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 5px; gap: 3px; line-height: 1.2; overflow-wrap: anywhere; }
+/* 左側三卡填滿，右側展示與操作共用同一欄，避免空白的獨立頁尾。 */
+.upgrade-panel { container-name: upgrade-panel; container-type: size; height: min(620px, 100%); min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 4px; overflow: hidden; }
+.upgrade-panel h2 { font-size: 20px; margin: 0; }
+.upgrade-panel > p { font-size: 11px; margin: 0; align-self: center; }
+.upgrade-workspace { grid-column: 1 / -1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 17fr); gap: 4px; padding: 0; }
+.upgrade-panel .upgrade-cards { min-height: 0; gap: 4px; align-items: stretch; }
+.upgrade-panel .upgrade-card { min-width: 0; min-height: 0; padding: 5px; gap: 6px; line-height: 1.3; overflow-wrap: anywhere; }
 .upgrade-panel .upgrade-card strong { font-size: 15px; }
 .upgrade-panel .upgrade-card span:not(.upgrade-icon), .upgrade-panel .upgrade-card small { font-size: 11px; }
 .upgrade-panel .upgrade-icon { line-height: 0; }
-.upgrade-panel .upgrade-icon .pixel-icon { width: 24px; height: 24px; }
-#upgradePreview { min-width: 0; margin: 0; padding: 4px; text-align: center; }
-#upgradePreview iframe { min-height: 0; width: min(100%, calc((100cqh - 62px) * 16 / 9)); height: auto; aspect-ratio: 16 / 9; margin: 3px auto; }
+.upgrade-panel .upgrade-icon .pixel-icon { width: 32px; height: 32px; }
+.upgrade-demo { min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) 64px; gap: 4px; position: relative; }
+#upgradePreview { min-width: 0; min-height: 0; margin: 0; padding: 4px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 4px; text-align: center; }
+/* 小場景依框的比例設定鏡頭，畫布不拉伸，也不受共用展示的 480px 限制。 */
+#upgradePreview iframe { min-height: 0; min-width: 0; width: 100%; height: 100%; max-width: none; aspect-ratio: auto; margin: 0; }
 #upgradePreview strong, #upgradePreview p { display: block; font-size: 11px; line-height: 16px; margin: 0; }
 #upgradePreview p { white-space: nowrap; overflow: auto; }
-#confirmUpgrade { grid-column: 2; grid-row: 4; justify-self: end; align-self: end; display: flex; align-items: center; gap: 8px; min-width: 132px; width: auto; height: 64px; min-height: 64px; padding: 8px 12px; border-radius: 2px; font-size: 18px; margin: 0; }
+.upgrade-actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#confirmUpgrade { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 132px; width: auto; height: 64px; min-height: 64px; padding: 8px; border-radius: 2px; font-size: 18px; margin: 0; }
 #confirmUpgrade .pixel-icon { width: 32px; height: 32px; }
 #confirmUpgrade:disabled { opacity: .45; cursor: default; }
-.upgrade-panel > .tree-details { grid-column: 1; grid-row: 4; align-self: end; margin: 0; max-height: 64px; overflow: auto; text-align: left; }
-.upgrade-panel .tree-details summary { padding: 4px; }
-/* 短面板將長說明交給右側展示與技能樹，卡片保留名稱、圖示和等級。 */
+.upgrade-actions > .tree-details { margin: 0; min-width: 0; text-align: left; }
+.upgrade-actions .tree-details summary { padding: 4px; }
+.upgrade-actions .tree-details[open] { position: absolute; inset: 0; z-index: 2; padding: 8px; overflow: auto; background: #142b40; border: 2px solid #7196ad; }
+.upgrade-actions .skill-tree { grid-template-columns: 1fr; }
 @container upgrade-panel (height < 400px) {
   .upgrade-card .upgrade-description, .upgrade-card .requirements { display: none; }
-}
-@container upgrade-panel (height < 200px) {
-  .upgrade-workspace { grid-template-columns: minmax(0, 1fr); }
-  #upgradePreview { display: none; }
 }
 .upgrade-panel, .settings-panel, .message-card, .maker-editor { min-height: 0; touch-action: pan-x pan-y; overscroll-behavior: contain; }
 .upgrade-panel *, .settings-panel .skill-preview-host, .maker-editor * { touch-action: pan-x pan-y; }
