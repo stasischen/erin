@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-balance-2",
+  "title": "割草遊戲：難度稍微降低",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-balance-2",
+  "pr": null,
+  "brief": "coord/inbox/done/20261025T080523Z-parent-easier.md",
+  "next": "請 Grok 審查 erin-watch 提交後的最新實質 SHA（git diff main...codex/survivor-balance-2）；驗證見 docs/survivor-balance-2-validation.md。回歸與語法檢查通過，尚待瀏覽器／iPad 試玩；審查通過後由 Erin 決定難度是否剛好，家長確認後再合併上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-25T08:07:04Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-stage-5b-balance",
+    "survivor-enemy-shoot"
+  ]
+}

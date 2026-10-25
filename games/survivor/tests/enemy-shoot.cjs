@@ -58,12 +58,12 @@ assert.equal(run('state.enemyShots.length'), 48);
 fresh();
 run(`state.level = 8; tick(0); globalThis.bookShot = state.enemyShots[0];
   Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 0 }); tick(0);`);
-assert.equal(run('state.player.health'), 72);
+assert.equal(run('state.player.health'), 84);
 assert.equal(run('state.enemyShotPool.includes(bookShot)'), true);
 run('state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);');
 assert.equal(run('state.enemyShots[0] === bookShot'), true);
 run('Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 0 }); state.player.invincible = 0.01; tick(0.05);');
-assert.equal(run('state.player.health'), 72);
+assert.equal(run('state.player.health'), 84);
 // 出界回收，再由老師重用仍更新來源、傷害、半徑、文字。
 run(`state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);
   state.enemyShots[0].x = -100; tick(0); summonTeacher(); state.boss.y = 100; state.bossIntro = 0; state.bossShotTimer = 0; tick(0);`);
@@ -80,7 +80,7 @@ fresh();
 run('state.level = 8; state.enemies = []; tick(0); for (let i = 0; i < 81; i++) tick(0.05);');
 assert.equal(run('enemyNotice.hidden'), true);
 fresh();
-run(`state.level = 8; for (let i = 1; i < 32; i++) { spawnEnemy(); Object.assign(state.enemies[i], { x: 100, y: 100, speed: 0, shotCooldown: 0 }); }
+run(`state.level = 8; for (let i = 1; i < 26; i++) { spawnEnemy(); Object.assign(state.enemies[i], { x: 100, y: 100, speed: 0, shotCooldown: 0 }); }
   globalThis.lastCount = 0; globalThis.lastShotTime = -999; globalThis.shortestGap = Infinity;
   for (let i = 0; i < 120; i++) { tick(0.05); if (state.enemyShots.length > lastCount) { shortestGap = Math.min(shortestGap, state.elapsed - lastShotTime); lastShotTime = state.elapsed; lastCount = state.enemyShots.length; } }`);
 assert.ok(run('shortestGap >= 0.65 - 1e-8'));
@@ -96,8 +96,8 @@ assert.equal(run('state.enemyShots.length'), 0);
 assert.equal(run('state.bookShotTimer'), 0);
 assert.equal(run('state.bookShootingStarted'), false);
 assert.equal(run('enemyNotice.hidden'), true);
-// 舊 v2 設定保留，新欄位補預設；設定頁寫入、讀回及範圍限制。
-const saved = setup({ 'erin-survivor-settings-v2': JSON.stringify({ playerHealth: 110, enemyShotDamage: 999, enemyShotSpeed: 80 }) });
+// v3 自訂設定保留，缺少欄位補預設；設定頁寫入、讀回及範圍限制。
+const saved = setup({ 'erin-survivor-settings-v3': JSON.stringify({ playerHealth: 110, enemyShotDamage: 999, enemyShotSpeed: 80 }) });
 assert.equal(saved('gameSettings.enemyShootLevel'), 8);
 assert.equal(saved('gameSettings.playerHealth'), 110);
 assert.equal(saved('gameSettings.enemyShotDamage'), 30);
