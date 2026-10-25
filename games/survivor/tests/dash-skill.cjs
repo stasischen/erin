@@ -5,10 +5,10 @@ const assert = require('node:assert/strict');
 const source = fs.readFileSync(process.env.SURVIVOR_SOURCE || `${__dirname}/../game.js`, 'utf8');
 function setup(saved = {}) {
   const elements = {}; const windowListeners = {}; const documentListeners = {};
-  const context2d = new Proxy({}, { get: (target, key) => target[key] || (() => {}) });
+  const context2d = new Proxy({}, { get: (target, key) => key in target ? target[key] : (() => {}) });
   function element() { return { style: {}, querySelector: () => ({ textContent: "" }), setPointerCapture() {}, hidden: false, classList: { add() {}, remove() {} }, listeners: {}, addEventListener(name, callback) { this.listeners[name] = callback; }, append() {}, appendChild() {}, setAttribute() {}, getContext: () => context2d, getBoundingClientRect: () => ({ width: 800, height: 600, left: 0, top: 0 }) }; }
   const storage = { ...saved };
-  const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { innerWidth: 400, innerHeight: 800, addEventListener(name, callback) { (windowListeners[name] ||= []).push(callback); } }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
+  const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { innerWidth: 800, innerHeight: 600, addEventListener(name, callback) { (windowListeners[name] ||= []).push(callback); } }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
   vm.runInContext(source, context);
   context.windowListeners = windowListeners; context.elements = elements; context.storage = storage;
   return (code) => vm.runInContext(code, context);
@@ -89,11 +89,52 @@ run(`globalThis.key = (key,repeat=false) => ({key,repeat,preventDefault(){},targ
 assert.equal(run('state.mode'), 'playing'); assert.equal(run('state.dashCooldown'), 2.5); assert.ok(run('state.bomb'));
 run('state.dashCooldown = 0; windowListeners.keydown[0](key(" ",true));'); assert.equal(run('state.dashCooldown'), 0);
 run('windowListeners.keydown[0](key("Escape"));'); assert.equal(run('state.mode'), 'paused');
-// 設定相容 v3、缺欄位補預設；直向提示可關閉且重開不重播。
+// 設定相容 v3、缺欄位補預設。
 const saved = setup({'erin-survivor-settings-v3': JSON.stringify({playerHealth:110,dashCooldown:99})});
 assert.equal(saved('gameSettings.playerHealth'), 110); assert.equal(saved('gameSettings.dashCooldown'), 8); assert.equal(saved('gameSettings.bombDamage'), 100);
 saved('updateSettingValue("bombDamage", 150); gameSettings = loadSavedSettings();'); assert.equal(saved('gameSettings.bombDamage'), 150);
-fresh(); run('maybeShowPortraitHint();'); assert.equal(run('portraitHint.hidden'), false);
-run('closePortraitHint.listeners.click(); maybeShowPortraitHint();'); assert.equal(run('portraitHint.hidden'), true);
-assert.equal(run('storage["erin-survivor-portrait-hint-v1"]'), 'seen');
-console.log('PASS: dash duration/direction/clamp/invincibility, bomb delay/range/knockback/kills/boss, cooldown/pause/restart, multipointer/keyboard, settings/portrait hint');
+// 座標測試包含非零原點、90 度旋轉與縮放；拖曳要沿玩家看到的遊戲方向。
+fresh();
+run(`elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:820,width:800,height:600});`);
+assert.equal(run('canvasPoint({clientX:120,clientY:230}).x'), 100);
+assert.equal(run('canvasPoint({clientX:120,clientY:230}).y'), 200);
+run(`window.innerWidth = 600; window.innerHeight = 900;
+  elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:620,width:600,height:800});
+  elements.gameCanvas.listeners.pointerdown(pointer(31,420,130));
+  elements.gameCanvas.listeners.pointermove(pointer(31,420,165));`);
+assert.equal(run('state.joy.baseX'), 100); assert.equal(run('state.joy.baseY'), 200);
+assert.equal(run('state.joy.x'), 1); assert.equal(run('state.joy.y'), 0);
+run('elements.gameCanvas.listeners.pointermove(pointer(31,385,130));');
+assert.equal(run('state.joy.x'), 0); assert.equal(run('state.joy.y'), 1);
+run('elements.dashButton.listeners.pointerdown(pointer(32,60,750)); elements.skillButton.listeners.pointerdown(pointer(33,100,700));');
+assert.equal(run('state.pointerId'), 31); assert.equal(run('state.dashCooldown'), 2.5); assert.ok(run('state.bomb'));
+// 縮放後仍回到遊戲座標。
+run('elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:320,width:300,height:400});');
+assert.equal(run('canvasPoint({clientX:220,clientY:80}).x'), 100);
+assert.equal(run('canvasPoint({clientX:220,clientY:80}).y'), 200);
+// Canvas 使用未旋轉的內容尺寸；改版面釋放舊輸入、保留進度與冷卻。
+run(`elements.gameCanvas.clientWidth = 720; elements.gameCanvas.clientHeight = 320;
+  state.elapsed = 42; state.player.x = 790; state.player.y = 590;
+  state.keys.add('w'); resize();`);
+assert.equal(run('state.width'), 720); assert.equal(run('state.height'), 320);
+assert.equal(run('canvas.width'), 720); assert.equal(run('canvas.height'), 320);
+assert.equal(run('state.player.x'), 702); assert.equal(run('state.player.y'), 302);
+assert.equal(run('ctx.imageSmoothingEnabled'), false);
+assert.equal(run('state.joy'), null); assert.equal(run('state.pointerId'), null);
+assert.equal(run('state.keys.size'), 0); assert.equal(run('state.elapsed'), 42);
+assert.equal(run('state.dashCooldown'), 2.5);
+run(`showOverlay('paused'); window.innerWidth = 900; window.innerHeight = 600;
+  elements.gameCanvas.clientWidth = 800; elements.gameCanvas.clientHeight = 500; resize();`);
+assert.equal(run('state.mode'), 'paused'); assert.equal(run('state.width'), 800);
+assert.equal(run('typeof maybeShowPortraitHint'), 'undefined');
+assert.equal(run('storage["erin-survivor-portrait-hint-v1"]'), undefined);
+console.log('PASS: landscape/rotated/scaled joystick, multipointer actions, canvas size, resize input reset/progress/pause, removed portrait hint');
+console.log('PASS: dash duration/direction/clamp/invincibility, bomb delay/range/knockback/kills/boss, cooldown/pause/restart, multipointer/keyboard, settings');
+
+// 順時針旋轉後，容器上／右／下／左分別接觸螢幕右／下／左／上。
+const css = fs.readFileSync(`${__dirname}/../style.css`, 'utf8');
+const portraitShell = css.match(/@media \(orientation: portrait\)\s*\{\s*\.game-shell\s*\{([^}]+)\}/)[1];
+for (const [local, screen] of [['top', 'right'], ['right', 'bottom'], ['bottom', 'left'], ['left', 'top']]) {
+  assert.ok(portraitShell.includes(`--safe-${local}: env(safe-area-inset-${screen}, 0px)`));
+}
+console.log('PASS: clockwise portrait safe-area mapping');
