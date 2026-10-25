@@ -1,7 +1,7 @@
 // 換新版網站時增加版本號，啟用後會清除舊快取。
 // /erin/ 底下的檔案一律先問網路並更新快取，確保 ?v= 新版會立即生效；
 // 只有離線時才忽略查詢字串，退回已快取的同名檔案。
-const CACHE_NAME = 'erin-games-v18';
+const CACHE_NAME = 'erin-games-v19';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
   '',
@@ -30,7 +30,9 @@ const PRECACHE_URLS = [
   'games/mario-like/', 'games/mario-like/style.css', 'games/mario-like/game.js',
   'games/piano/', 'games/piano/style.css', 'games/piano/game.js',
   'games/pet-care/', 'games/pet-care/style.css', 'games/pet-care/game.js',
-  'games/survivor/', 'games/survivor/style.css', 'games/survivor/game.js'
+  'games/survivor/', 'games/survivor/style.css', 'games/survivor/game.js',
+  'games/survivor/data/defaults.js', 'games/survivor/data/schema.js',
+  'games/survivor/maker/', 'games/survivor/maker/index.html', 'games/survivor/maker/style.css', 'games/survivor/maker/maker.js'
 ].map((path) => ROOT + path);
 
 self.addEventListener('install', (event) => {

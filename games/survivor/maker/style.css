@@ -1,0 +1,17 @@
+:root { font-family: system-ui, sans-serif; color: #20374b; background: #f2f7fc; }
+* { box-sizing: border-box; }
+body { margin: 0 auto; max-width: 1100px; padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+h1 { font-size: 1.65rem; margin: 18px 0 8px; } h2 { font-size: 1.3rem; } h3 { font-size: 1.1rem; }
+a { color: #176897; } p { line-height: 1.7; }
+button, input, select { font: inherit; min-height: 46px; border: 1px solid #9eb6cb; border-radius: 9px; padding: 8px 12px; background: white; color: inherit; }
+button { cursor: pointer; touch-action: manipulation; } button:hover { background: #e5f4ff; } button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #176897; outline-offset: 2px; }
+.actions, nav { display: flex; flex-wrap: wrap; gap: 8px; } .actions { position: sticky; top: 0; z-index: 2; background: #f2f7fc; padding: 12px 0; } #play { background: #176897; color: white; font-weight: 700; }
+nav button[aria-pressed="true"] { background: #d6ebff; border: 2px solid #176897; }
+#status { min-height: 28px; margin: 0 0 12px; font-weight: 600; } #status.error { color: #ac243d; }
+.panel { background: white; border: 1px solid #c3d4e2; border-radius: 14px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px 24px; }
+label { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; } label.check { flex-direction: row; align-items: center; min-height: 44px; } input[type="checkbox"] { width: 24px; height: 24px; min-height: 24px; margin-right: 8px; }
+input[type="range"] { width: 100%; padding: 0; accent-color: #176897; } input[type="text"], select { max-width: 100%; width: 100%; } output { font-variant-numeric: tabular-nums; }
+fieldset { border: 1px solid #c3d4e2; border-radius: 10px; margin: 16px 0; padding: 14px; } legend { padding: 0 6px; font-weight: 700; }
+summary { min-height: 44px; cursor: pointer; padding: 10px; } aside { color: #526c80; font-size: .95rem; }
+@media (max-width: 500px) { .panel { padding: 14px; } .grid { grid-template-columns: 1fr; } }

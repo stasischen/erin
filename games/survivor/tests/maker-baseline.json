@@ -1,0 +1,6910 @@
+[
+  {
+    "id": "big-water",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 43.75,
+      "interval": 0.72,
+      "hp": [
+        99956.25,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "big-water",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 78.75,
+      "interval": 0.72,
+      "hp": [
+        99921.25,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "rapid-water",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.612,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "rapid-water",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.18,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "multi-water",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99830,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "multi-water",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99760,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "onion-dash",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1295.7600000000002,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "onion-dash",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1336.7999999999997,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "bubble-shield",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "bubble-shield",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "gem-magnet",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "gem-magnet",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "piercing-water",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99965,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "piercing-water",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99965,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "splash-water",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "splash-water",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99987.75,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "auto-heal",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "auto-heal",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-attack",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-attack",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99975.5,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-skill",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99841,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1200,
+          900,
+          110,
+          0.5999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-skill",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99685,
+        99840,
+        99940
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1200,
+          900,
+          154,
+          0.5999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-dash",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99769,
+        99988,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "water",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-dash",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99385,
+        99940,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "water",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "water-ultimate",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99885,
+        99920,
+        99920
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 8.049999999999972
+    }
+  },
+  {
+    "id": "water-ultimate",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99789,
+        99824,
+        99824
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 8.049999999999972
+    }
+  },
+  {
+    "id": "wind-attack",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99965,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-attack",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99965,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-dash",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99941,
+        99988,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "wind",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "wind",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-dash",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99905,
+        99940,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "wind",
+          1248,
+          900,
+          50.4,
+          0.049999999999998795
+        ],
+        [
+          "wind",
+          1272,
+          900,
+          50.4,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-speed",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-speed",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "wind-ultimate",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99885,
+        99840,
+        99920
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0.05000000000000007
+    }
+  },
+  {
+    "id": "wind-ultimate",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99789,
+        99648,
+        99824
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0.05000000000000007
+    }
+  },
+  {
+    "id": "thunder-attack",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99982.5,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-attack",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99965,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-skill",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99815,
+        99850,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-skill",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99615,
+        99650,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-counter",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99815,
+        99950,
+        99950
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-counter",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99615,
+        99750,
+        99750
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "thunder-ultimate",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99920,
+        99965,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0.049999999999998795
+    }
+  },
+  {
+    "id": "thunder-ultimate",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99824,
+        99965,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0.049999999999998795
+    }
+  },
+  {
+    "id": "fusion-puddle",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "fusion-puddle",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99865,
+        99900,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "fusion-storm",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99769,
+        99988,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "water",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "fusion-storm",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99385,
+        99940,
+        100000
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "water",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "water",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "fusion-dash",
+    "level": 1,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99769,
+        99956.5,
+        99991
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "thunder",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "thunder",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "id": "fusion-dash",
+    "level": 5,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        99385,
+        99782.5,
+        99955
+      ],
+      "position": [
+        1285.5,
+        900
+      ],
+      "shots": [],
+      "fields": [
+        [
+          "thunder",
+          1248,
+          900,
+          36,
+          0.049999999999998795
+        ],
+        [
+          "thunder",
+          1272,
+          900,
+          36,
+          0.0999999999999988
+        ]
+      ],
+      "enemyShots": [],
+      "boss": null,
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "words",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          129.74248417195406,
+          -37.30801255615536,
+          12
+        ],
+        [
+          1050,
+          900,
+          135,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          129.74248417195406,
+          37.30801255615536,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0.9,
+          false,
+          0,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          5,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.7,
+          5,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.6499999999999999,
+          5,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.34999999999999987,
+          5,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          6,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.7,
+          6,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.6499999999999999,
+          6,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.34999999999999987,
+          6,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          -95.98922047715601,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          -59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          -20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          168.77746809515727,
+          20.35107523911629,
+          12
+        ],
+        [
+          1050,
+          900,
+          159.10246002524892,
+          59.88661965676529,
+          12
+        ],
+        [
+          1050,
+          900,
+          140.30705453464532,
+          95.98922047715601,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.7,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.6499999999999999,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "chalk",
+          1050,
+          900,
+          0,
+          true,
+          0.34999999999999987,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "chalk",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          -112.09539423515042,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          -78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          -40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          170,
+          0,
+          12
+        ],
+        [
+          1050,
+          900,
+          165.12745572484505,
+          40.40944649261288,
+          12
+        ],
+        [
+          1050,
+          900,
+          150.7891368724783,
+          78.50245984205209,
+          12
+        ],
+        [
+          1050,
+          900,
+          127.80697395395215,
+          112.09539423515042,
+          12
+        ]
+      ],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.5238095238095238,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1071,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.47380952380952385,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1197,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.1738095238095239,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1270,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.5238095238095238,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1071,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.47380952380952385,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1197,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.1738095238095239,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1270,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.5238095238095238,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1071,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.47380952380952385,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1197,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "dash",
+          1050,
+          900,
+          0,
+          true,
+          0.1738095238095239,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "dash",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1270,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            },
+            {
+              "x": 1304.300591833009,
+              "y": 996.0626274862332,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            },
+            {
+              "x": 1304.300591833009,
+              "y": 996.0626274862332,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1304.2160455130245,
+              "y": 964.4280178286112,
+              "r": 34
+            },
+            {
+              "x": 1218.775370257594,
+              "y": 1007.7950143367937,
+              "r": 34
+            },
+            {
+              "x": 1312.5934328487715,
+              "y": 918.3148275085158,
+              "r": 34
+            },
+            {
+              "x": 1304.300591833009,
+              "y": 996.0626274862332,
+              "r": 34
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "rain",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0.9,
+          false,
+          0,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "call",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          48,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 48
+            }
+          ]
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "call",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 78,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "words",
+          1050,
+          900,
+          0.9,
+          false,
+          0,
+          3,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.3,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "summon",
+          1050,
+          900,
+          0,
+          true,
+          0.25,
+          null,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "summon",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000,
+        120,
+        120,
+        120,
+        120
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "rain",
+          1050,
+          900,
+          0.9,
+          false,
+          0,
+          null,
+          34,
+          [
+            {
+              "x": 1200,
+              "y": 900,
+              "r": 34
+            },
+            {
+              "x": 1103.1681260361684,
+              "y": 868.4799135631462,
+              "r": 34
+            },
+            {
+              "x": 1329.653269552923,
+              "y": 851.5860006026713,
+              "r": 34
+            },
+            {
+              "x": 1277.867071909655,
+              "y": 1015.0342971342349,
+              "r": 34
+            },
+            {
+              "x": 1112.968272763085,
+              "y": 918.3531148251409,
+              "r": 34
+            }
+          ]
+        ],
+        [
+          "chalk",
+          1050,
+          900,
+          0.9,
+          false,
+          0,
+          7,
+          0,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 1,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 1,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.6,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 1,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.55,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 1,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.2499999999999998,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 1,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        2000
+      ],
+      "phase": 1,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          0.49999999999999917,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 2,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 2,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.6,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 2,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.55,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 2,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.2499999999999998,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 2,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        1100
+      ],
+      "phase": 2,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          0.49999999999999917,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 3,
+    "frame": 10,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0.34999999999999976,
+          false,
+          0,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 3,
+    "frame": 17,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.6,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 3,
+    "frame": 18,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.55,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 3,
+    "frame": 24,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          1.2499999999999998,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  },
+  {
+    "boss": "ring",
+    "phase": 3,
+    "frame": 39,
+    "state": {
+      "health": 90,
+      "damage": 35,
+      "interval": 0.72,
+      "hp": [
+        100000,
+        100000,
+        100000
+      ],
+      "position": [
+        1200,
+        900
+      ],
+      "shots": [],
+      "fields": [],
+      "enemyShots": [],
+      "boss": [
+        1050,
+        900,
+        500
+      ],
+      "phase": 3,
+      "moves": [
+        [
+          "ring",
+          1200,
+          900,
+          0,
+          true,
+          0.49999999999999917,
+          null,
+          145,
+          []
+        ]
+      ],
+      "ultimate": 0
+    }
+  }
+]
