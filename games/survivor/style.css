@@ -232,7 +232,11 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .settings-controls .attack-mode-toggle { margin: 0; }
 .settings-controls button { min-height: 38px; }
 .settings-controls .setting-row { display: grid; grid-template-columns: 1fr; }
-.settings-panel > .settings-actions { position: sticky; bottom: -10px; background: #142b40; padding: 8px 0 0; }
+/* 內容與操作列各佔一列，底部按鈕永遠不覆蓋最後一個控制項。 */
+.settings-panel { display: flex; flex-direction: column; overflow: hidden; }
+.settings-panel > h2, .settings-panel > p, .settings-panel > .settings-actions { flex-shrink: 0; }
+.settings-panel > .settings-controls { min-height: 0; overflow: auto; padding-bottom: max(32px,var(--safe-bottom)); }
+.settings-panel > .settings-actions { position: static; background: #142b40; padding: 8px 0 4px; margin-top: 0; }
 .pause-build[hidden] { display: none; }
 .pause-build { text-align: left; }
 .pause-build h3 { font-size: 16px; }

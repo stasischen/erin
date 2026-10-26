@@ -87,50 +87,51 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   // 已持有技能位於暫停卡；窄螢幕先捲入畫面再模擬觸碰。
   await evaluate("togglePause();document.querySelector('#buildSlots button').scrollIntoView({block:'center'});true");await touch('#buildSlots button');assert.equal(await evaluate("!!document.querySelector('#ownedPreview iframe')"),true);
   await evaluate("showOverlay('paused');openSurvivorMaker();true");await touch('[data-tab="cards"]');
-  assert.equal(await evaluate(`(()=>{for(const selector of ['.maker-tree','#makerCardEdit','.maker-footer','#play']){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(r.width<40||r.height<40||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('Maker '+selector+' 不完整');}const list=document.querySelector('.maker-tree'),edit=document.querySelector('#makerCardEdit');const a=list.getBoundingClientRect(),b=edit.getBoundingClientRect(),rotated=innerHeight>innerWidth;const listEnd=rotated?a.bottom:a.right,editStart=rotated?b.top:b.left;if(listEnd>editStart+1)throw Error('Maker 兩欄重疊或未依 shell 橫向排列');return true;})()`),true);
-  await touch('.maker-tree button');assert.equal(await evaluate("document.querySelector('.maker-tree button').getAttribute('aria-pressed')==='true' && !!document.querySelector('#makerCardEdit input')"),true);
-  // 每個分頁與技能樹的兩個內層捲動區都要能到達最後一項。
-  for (const tab of ['schools','cards','enemies','boss','numbers']) {
-    await evaluate(`document.querySelector('[data-tab="${tab}"]').scrollIntoView({block:'nearest'});true`);
+  // 六個分類在頂端，左列選項目，中間只建立一份編輯面板。
+  for (const tab of ['weapons','cards','enemies','boss','stages','rules']) {
     await touch(`[data-tab="${tab}"]`);
     assert.equal(await evaluate(`(async()=>{
-      const editor=document.querySelector('#editor');
-      if(editor.clientHeight<80||editor.scrollWidth>editor.clientWidth+2)throw Error('內容區太小或橫向溢出');
-      if(getComputedStyle(editor).touchAction==='none')throw Error('內容區禁止觸控捲動');
-      const scrollAreas=document.querySelector('.maker-card-workspace') ? [...editor.querySelectorAll('.maker-tree,.maker-card-edit')] : [editor];
-      for(const area of scrollAreas) {
-        if(!['auto','scroll'].includes(getComputedStyle(area).overflowY))throw Error('內容沒有開放手動捲動');
-        area.scrollTop=area.scrollHeight;
-        await new Promise(resolve=>requestAnimationFrame(resolve));
-        if(area.scrollTop+area.clientHeight<area.scrollHeight-2)throw Error('內容末端無法到達');
+      const editor=document.querySelector('#editor'),nav=document.querySelector('.maker-tabs'),content=document.querySelector('.maker-content'),list=document.querySelector('.maker-items');
+      // 比較同一 offsetParent 的版面座標；直向時 game-shell 旋轉，螢幕上下左右已不同。
+      if(nav.offsetParent!==editor.offsetParent)throw Error('分類與編輯區座標基準不同');
+      if(nav.offsetTop+nav.offsetHeight>editor.offsetTop+1)throw Error('分類未放在上方');
+      if(content.clientHeight<80||editor.scrollWidth>editor.clientWidth+2)throw Error('內容區太小或橫向溢出');
+      if(list.offsetParent!==content.offsetParent)throw Error('左列與編輯內容座標基準不同');
+      if(list.offsetLeft+list.offsetWidth>content.offsetLeft+1)throw Error('左列重疊編輯區');
+      const ids=[...list.querySelectorAll('[data-item]')].map(b=>b.dataset.item);
+      for(const id of ids) {
+        document.querySelector('[data-item="'+id+'"]').click();
+        const area=document.querySelector('.maker-content');
+        for(const details of area.querySelectorAll('details')) details.open=true;
+        if(document.querySelectorAll('.maker-item-heading').length!==1)throw Error('同時編輯多個項目');
         const controls=[...area.querySelectorAll('input,button,summary')].filter(n=>n.getClientRects().length);
-        const last=controls[controls.length-1];
-        if(!last)throw Error('缺少內容控制項');
+        const last=controls[controls.length-1];if(!last)throw Error('缺少控制項');
         last.scrollIntoView({block:'nearest',inline:'nearest'});
+        await new Promise(resolve=>requestAnimationFrame(resolve));
         const r=last.getBoundingClientRect(),a=area.getBoundingClientRect();
-        if(r.left<a.left-1||r.right>a.right+1||r.top<a.top-1||r.bottom>a.bottom+1||!last.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)))throw Error('最後控制項被裁切或遮擋');
-      }
-      for(const input of editor.querySelectorAll('input[type="text"]')) {
-        input.scrollIntoView({block:'nearest',inline:'nearest'});
-        const r=input.getBoundingClientRect();
-        if(!input.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)))throw Error('名稱列無法到達或被遮住');
-        if(input.offsetWidth>input.parentElement.clientWidth+1||input.offsetWidth>450)throw Error('名稱欄位過寬');
+        if(r.left<a.left-1||r.right>a.right+1||r.top<a.top-1||r.bottom>a.bottom+1||!last.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)))throw Error(id+' 最後控制項被遮住');
       }
       return true;
-    })()`),true,`Maker ${tab} 可捲到底`);
+    })()`),true,`Maker ${tab} 每個項目可到達末端`);
   }
+  await evaluate(`document.querySelector('[data-tab="rules"]').click();document.querySelector('[data-item="defaults"]').click();document.querySelector('.maker-content details').open=true;[...document.querySelectorAll('.maker-content button')].find(b=>b.textContent.startsWith('搖桿跟隨')).click();true`);
+  assert.equal(await evaluate("document.querySelector('.maker-content details').open"),true);
+  // 個人設定末端滑桿與固定按鈕列分開，不能互相遮擋。
+  await evaluate("document.querySelector('#makerClose').click();openSettings();true");
+  assert.equal(await evaluate(`(()=>{const controls=document.querySelector('#settingsControls'),last=controls.lastElementChild;last.scrollIntoView({block:'end'});const actions=document.querySelector('#settingsPanel .settings-actions');if(controls.offsetParent!==actions.offsetParent)throw Error('設定控制區與按鈕列座標基準不同');return controls.offsetTop+controls.offsetHeight<=actions.offsetTop+1;})()`),true);
+  await evaluate("closeSettings();openSurvivorMaker();true");
   // 怪物滑桿旁即時預覽，拉桿輸入後同一 iframe 更新；「試這隻」帶目前 draft。
-  await evaluate(`document.querySelector('[data-tab="enemies"]').click();document.querySelector('.enemy-preview-toggle').open=true;true`);
+  await evaluate(`document.querySelector('[data-tab="enemies"]').click();document.querySelector('.maker-items [data-item]').click();if(document.querySelector('.maker-preview').hidden)document.querySelector('.maker-item-heading button:last-child').click();document.querySelector('.enemy-preview-toggle').open=true;true`);
   assert.equal(await evaluate(`(async()=>{
     const details=document.querySelector('.enemy-preview-toggle');
     for(let n=0;n<100;n++){if(details.querySelector('iframe')?.contentWindow.updatePracticeData)break;await new Promise(r=>setTimeout(r,20));}
     const f=details.querySelector('iframe');if(!f||!f.contentWindow.updatePracticeData)throw Error('即時預覽未載入');
-    const slider=details.parentElement.querySelector('input[aria-label="移動速度"]');
+    const slider=document.querySelector('.maker-content input[aria-label="移動速度"]');
     slider.value=65;slider.dispatchEvent(new Event('input',{bubbles:true}));
     if(details.querySelector('iframe')!==f||f.contentWindow.eval('practiceEnemy.speed')!==65)throw Error('拉桿未即時更新同一場景');
     details.scrollIntoView({block:'nearest'});
     if(f.getBoundingClientRect().width>document.querySelector('#editor').clientWidth+1)throw Error('小預覽橫向溢出');
-    const trial=[...details.parentElement.querySelectorAll('button')].find(b=>b.textContent==='試這隻');
+    const trial=[...document.querySelector('.maker-content').querySelectorAll('button')].find(b=>b.textContent==='試這隻');
     trial.scrollIntoView({block:'nearest'});const r=trial.getBoundingClientRect();
     if(!trial.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)))throw Error('試這隻被遮住');
     trial.click();return true;
@@ -144,14 +145,14 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   })()`),true);
   // 老師招式沿用真實引擎小場景；改預警滑桿後不用重開 Maker。
   assert.equal(await evaluate(`(async()=>{
-    document.querySelector('[data-tab="boss"]').click();
+    document.querySelector('[data-tab="boss"]').click();document.querySelector('[data-item="'+SurvivorData.defaults().boss.moves[0].id+'"]').click();
     const box=document.querySelector('.maker-move'),slider=box.querySelector('input[aria-label="預警秒數"]');
     if(!slider)throw Error('缺少老師預警拉桿');slider.value=1.2;slider.dispatchEvent(new Event('input',{bubbles:true}));
     await new Promise(r=>setTimeout(r,180));
-    const f=box.querySelector('.skill-preview-host iframe');if(!f||f._previewPayload.data.boss.moves.find(m=>m.id===f._previewPayload.spec.id).warning!==1.2)throw Error('老師預覽沒有跟著拉桿更新');
+    const f=document.querySelector('.maker-preview .skill-preview-host iframe');if(!f||f._previewPayload.data.boss.moves.find(m=>m.id===f._previewPayload.spec.id).warning!==1.2)throw Error('老師預覽沒有跟著拉桿更新');
     document.querySelector('[data-tab="enemies"]').click();return true;
   })()`),true);
-  await evaluate(`document.querySelector('[data-tab="practice"]').click();true`);
+  await evaluate(`document.querySelector('.maker-item-heading button').click();true`);
   assert.equal(await evaluate(`(async()=>{
     const frame=document.querySelector('.practice-dock iframe');
     for(let i=0;i<100;i++){if(frame.contentWindow.updatePracticeData)break;await new Promise(resolve=>setTimeout(resolve,20));}

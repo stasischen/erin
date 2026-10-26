@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-maker-shell",
+  "title": "Maker 六分頁與單項編輯外殼",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-maker-shell",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T085530Z-parent-maker-shell.md",
+  "next": "已處理 Grok 對 a259afc 的三處旋轉座標誤判，僅修改版面測試與交接文件；一般測試與版本檢查全過，--layout 的 Chrome 啟動即 SIGABRT，九尺寸尚未驗證。請 erin-watch 提交、push 並更新 PR，交 Grok 審查最後 SHA 並重跑九尺寸版面測試。Godot §11.6 與既有差距見 docs/survivor-maker-shell-validation.md；遊戲程式、資源與版本未改，沒有待 Erin 決定事項。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T09:22:25.075987Z",
+  "updatedBy": "codex"
+}
