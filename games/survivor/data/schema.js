@@ -52,6 +52,7 @@
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
       if (input.attackMode !== undefined) data.attackMode = choice(input.attackMode,['auto','manual'],'攻擊模式');
+      data.attackModeChosen = input.attackModeChosen === true;
       // 舊作品的兩把武器／缺省欄位自動補齊；未知或重複 id 拒絕。
       if (input.weapons !== undefined) {
         if (!Array.isArray(input.weapons) || input.weapons.length < 2 || input.weapons.length > data.weapons.length || new Set(input.weapons.map(w=>w && w.id)).size !== input.weapons.length || input.weapons.some(w=>!w || !data.weapons.some(b=>b.id===w.id))) fail('武器清單不正確');
@@ -265,7 +266,10 @@
       const raw = localStorage.getItem(KEY);
       if (!raw) return { valid: true, data: defaults(), errors: [] };
       if (raw.length > 150000) throw new Error('作品資料太大');
-      return validate(JSON.parse(raw));
+      const saved = JSON.parse(raw);
+      // 舊版 auto 是預設，沒有選擇紀錄時改用手動；不改動其他作品內容。
+      if (saved && saved.attackMode === 'auto' && saved.attackModeChosen !== true) saved.attackMode = 'manual';
+      return validate(saved);
     } catch (_) { return { valid: false, data: defaults(), errors: ['無法讀取作品，已使用預設'] }; }
   }
   function save(input) {

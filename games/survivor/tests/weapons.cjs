@@ -1,7 +1,7 @@
 // 固定位置、操作與 dt → 預期命中／傷害／事件；可移植到另一個引擎。
 const assert=require('node:assert/strict'), createRun=require('./maker-support.cjs');
 const run=createRun(), json=code=>JSON.parse(run(`JSON.stringify(${code})`));
-function fresh(ids=[]) {run(`resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='candy-hammer';state.spawnTimer=999;state.shotTimer=999;state.player.x=400;state.player.y=300;updateCamera();state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,1]));globalThis.book=(dx=50,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:8,speed:0,damage:0,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});state.enemies=[book()];`);}
+function fresh(ids=[]) {run(`GAME_DATA.attackMode='auto';resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='candy-hammer';state.spawnTimer=999;state.shotTimer=999;state.player.x=400;state.player.y=300;updateCamera();state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,1]));globalThis.book=(dx=50,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:8,speed:0,damage:0,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});state.enemies=[book()];`);}
 // Sector boundary, rear, outside reach, full spin, and branch-cut angles.
 fresh();run(`globalThis.e=SurvivorWeapons.swing(activeWeapon(),1,0,{extraArc:0,size:1,damage:20,push:0});`);
 assert.equal(run('e.arc'),Math.PI*2/3);assert.equal(run('e.radius'),70);assert.equal(run('e.damage'),32);

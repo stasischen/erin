@@ -15,6 +15,7 @@ settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
 resetSettingsButton.addEventListener("click", () => {
   gameSettings = { ...SETTING_DEFAULTS };
+  setAttackMode("manual");
   saveSettings(); makeSettingsControls();
   updateSettingValue("playerSpeed", gameSettings.playerSpeed);
   ENEMY_TYPES[0].speed = gameSettings.enemySpeed; ENEMY_TYPES[0].hp = gameSettings.enemyHealth;

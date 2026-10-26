@@ -226,7 +226,15 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
-    select(grid(panel('攻擊操作')),'攻擊模式',draft,'attackMode',{auto:'自動',manual:'手動'});
+    const attackPanel = panel('攻擊操作');
+    const mode = button(attackPanel, '', () => {
+      draft.attackMode = draft.attackMode === 'manual' ? 'auto' : 'manual';
+      draft.attackModeChosen = true; changed(); render();
+    });
+    mode.className = 'attack-mode-toggle'; mode.setAttribute('role', 'switch');
+    mode.setAttribute('aria-label', '手動攻擊'); mode.setAttribute('aria-checked', String(draft.attackMode === 'manual'));
+    mode.innerHTML = '<span class="mode-pixel" aria-hidden="true"></span><span>攻擊：' + (draft.attackMode === 'manual' ? '手動' : '自動') + '　切換</span>';
+    el('p', '這是作品與練習場的攻擊設定；首頁遊戲請用開始畫面或暫停選單切換。', attackPanel);
     const jp=panel('左搖桿'), jf=grid(jp), j=draft.joystick;
     const follow=button(jf,'搖桿跟隨：'+(j.follow?'開':'關'),()=>{j.follow=!j.follow;changed();render();});
     follow.setAttribute('role','switch'); follow.setAttribute('aria-checked',String(j.follow));

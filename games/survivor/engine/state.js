@@ -41,6 +41,7 @@ const SETTING_DEFAULTS = {
   bombRadius: UPGRADE_TUNING.bombRadius,
   bombKnockback: UPGRADE_TUNING.bombKnockback,
   actionButtonSize: UPGRADE_TUNING.actionButtonSize,
+  attackMode: "manual", attackModeChosen: false,
   sound: true, music: true, vibration: true
 };
 const SETTING_CONTROLS = [
@@ -74,6 +75,9 @@ function loadSavedSettings() {
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     const result = { ...SETTING_DEFAULTS };
+    if (saved.attackModeChosen === true && ["auto", "manual"].includes(saved.attackMode)) {
+      result.attackMode = saved.attackMode; result.attackModeChosen = true;
+    }
     for (const item of SETTING_CONTROLS) {
       const value = Number(saved[item.key]);
       if (Number.isFinite(value)) result[item.key] = Math.max(item.min, Math.min(item.max, value));
@@ -85,6 +89,7 @@ function loadSavedSettings() {
   } catch (_) { return { ...SETTING_DEFAULTS }; }
 }
 let gameSettings = MAKER_MODE ? { ...SETTING_DEFAULTS } : loadSavedSettings();
+if (!MAKER_MODE) GAME_DATA.attackMode = gameSettings.attackMode;
 function saveSettings() {
   try { if (!MAKER_MODE) localStorage.setItem(SETTINGS_KEY, JSON.stringify(gameSettings)); } catch (_) { /* 儲存空間不可用時仍可正常遊玩 */ }
 }

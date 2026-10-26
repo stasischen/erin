@@ -102,6 +102,10 @@ function updateManualControls() {
   for(const [kind,button] of Object.entries(manualButtons)) {
     if(!button)continue;
     button.hidden=!enabled;
+    if (kind === 'attack' && button.dataset.weaponIcon !== activeWeapon().icon) {
+      button.dataset.weaponIcon = activeWeapon().icon;
+      button.innerHTML = '<span aria-hidden="true">' + SurvivorIcons.html(activeWeapon().icon) + '</span>';
+    }
     const remaining=kind==='special'?(state.specialCooldown||0):(state.manualRecovery||0);
     button.setAttribute('aria-disabled',String(remaining>0));
     button.style.background=`conic-gradient(#9df6ff ${Math.max(0,1-remaining/(kind==='special'?6:.12))*360}deg,#375776 0deg)`;

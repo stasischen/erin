@@ -43,8 +43,8 @@ for(const weapon of ['water-ball','candy-hammer']) {
  if(weapon==='water-ball')assert.equal(run('state.projectiles.every(s=>s.vx>0)'),true);
  else assert.equal(run('state.vfx.filter(v=>v.kind==="hammer-swing").length'),1);
 }
-// Old works default to auto, unknown values fail, saved manual works survive validation.
-assert.equal(run('(()=>{const d=SurvivorData.defaults();delete d.attackMode;return SurvivorData.validate(d).data.attackMode})()'),'auto');
+// Old works default to manual, unknown values fail, saved manual works survive validation.
+assert.equal(run('(()=>{const d=SurvivorData.defaults();delete d.attackMode;return SurvivorData.validate(d).data.attackMode})()'),'manual');
 assert.equal(run('(()=>{const d=SurvivorData.defaults();d.attackMode="manual";return SurvivorData.validate(d).data.attackMode})()'),'manual');
 assert.equal(run('(()=>{const d=SurvivorData.defaults();d.attackMode="unknown";return SurvivorData.validate(d).valid})()'),false);
 // Real practice loads manual data and attacks only on an explicit release.
