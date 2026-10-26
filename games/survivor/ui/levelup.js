@@ -41,7 +41,7 @@ function chooseUpgradeCards(excludedIds = []) {
   const available = fresh.length >= Math.min(3, eligible.length) ? fresh : eligible;
   if (!available.length) { state.pendingChoices = [{ id: "heal", icon: "heal", name: "回血", description: "恢復 1 顆心" }]; }
   else {
-    state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, {...GAME_DATA.schoolRules, rareWeight:GAME_DATA.schoolRules.rareWeight * (effectLevel("item-clover") ? GAME_DATA.neutralRules.luckyRareMultiplier : 1)}, [Math.random(), Math.random(), Math.random()]);
+    state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, {...GAME_DATA.schoolRules, rareWeight:GAME_DATA.schoolRules.rareWeight * (effectLevel("item-clover") ? cardBlock('item-clover','onOffer').actions[0].multiplier : 1)}, [Math.random(), Math.random(), Math.random()]);
   }
   showUpgradeChoices();
 }

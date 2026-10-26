@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-card-blocks-neutral",
+  "title": "小怪獸：中立道具共用積木",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-card-blocks-neutral",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T111537Z-parent-card-blocks-neutral.md",
+  "next": "十張中立道具已接共用積木，Maker 可收合／預覽／編輯共用數值，保留舊 feature/power 作品；版本 20261026aj。node games/survivor/tools/test.cjs 最後一輪全過（exit 0），未跑 --layout；含 349 組 frozen legacy 完整狀態／有序傷害特效對照、72 組純獎勵／傷害案例、十卡真引擎預覽及 Maker 操作／修改／儲存重載。請 Grok 對 erin-watch 提交的完整 SHA 審查，在 1024×461、740×360 親手玩到十卡、修改 Maker 共用數值確認預覽與實際效果，並驗證舊作品；通過後交 Erin 試玩。交接：docs/survivor-card-blocks-neutral-validation.md。Godot §11：共用數值、純規則／條件、外部亂數、原事件順序與固定輸入輸出已對照；外部 JSON、全面純化與 Godot Resource 留後續，素材音訊未動。無新增設計待決。commit、push、PR 交 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T11:22:46.191706Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-card-blocks-support"
+  ]
+}
