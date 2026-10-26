@@ -5,7 +5,7 @@
   const lines = []; let failures = 0;
   function check(ok, label) { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failures++; }
   // 實際 DOM 排版：手機、iPad、直拿旋轉、工具列佔用高度與安全區。
-  const cases = [[412,915,412,915,0,0], [384,832,384,832,0,0], [915,412,915,412,0,0], [800,360,800,360,0,0], [732,310,732,310,0,0], [1024,768,1024,768,0,0]];
+  const cases = [[412,915,412,915,0,0], [384,832,384,832,0,0], [915,412,915,412,0,0], [800,360,800,360,0,0], [732,310,732,310,0,0], [1024,768,1024,768,0,0], [1024,461,1024,461,0,0], [740,360,740,360,0,0], [461,1024,461,1024,0,0]];
   for (const [iw,ih,vw,vh,left,top] of cases) {
     const frame = document.createElement('iframe'); frame.style.cssText = `width:${iw}px;height:${ih}px;border:0`;
     const loaded = new Promise(resolve => frame.onload = resolve); frame.src = '../index.html'; document.body.append(frame); await loaded;
@@ -57,8 +57,9 @@
       check(w.getComputedStyle(d.body).touchAction!=='none','祖先允許觸控捲動');
       w.closeSettings(); w.showOverlay('paused'); d.querySelector('#makerLink').click();
       for (const tab of d.querySelectorAll('[data-tab]')) {
-        tab.click();
+        tab.scrollIntoView({block:'nearest'}); tab.click();
         for (const selector of ['.maker-toolbar','.maker-tabs','.maker-editor','.maker-footer']) within(d.querySelector(selector),`Maker ${tab.dataset.tab} ${selector}`);
+        if(tab.dataset.tab==='practice') { check(!!d.querySelector('.practice-dock iframe'),'練習場分頁已開啟'); continue; }
         const editor=d.querySelector('#editor'); editor.scrollTop=editor.scrollHeight;
         check(editor.clientHeight>35 && editor.scrollWidth<=editor.clientWidth+2 && editor.scrollTop+editor.clientHeight>=editor.scrollHeight-2,`Maker ${tab.dataset.tab} 末端可達`);
       }

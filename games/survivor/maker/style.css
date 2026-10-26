@@ -7,28 +7,28 @@
 #play { flex-shrink: 0; min-width: 140px; font-size: 22px; background: #2176a0; }
 
 /* Maker */
-.maker-room { position: absolute; z-index: 6; top: 0; right: 0; bottom: 0; left: 0; display: grid; padding-top: max(8px, var(--safe-top)); padding-right: max(10px, var(--safe-right)); padding-bottom: max(8px, var(--safe-bottom)); padding-left: max(10px, var(--safe-left)); gap: 8px; background: #102538; color: #eef8ff; grid-template-rows: 44px 44px minmax(0, 1fr) 56px; }
+.maker-room { position: absolute; z-index: 6; top: 0; right: 0; bottom: 0; left: 0; display: grid; padding-top: max(8px, var(--safe-top)); padding-right: max(10px, var(--safe-right)); padding-bottom: max(8px, var(--safe-bottom)); padding-left: max(10px, var(--safe-left)); gap: 8px; background: #102538; color: #eef8ff; grid-template-columns: 116px minmax(0, 1fr); grid-template-rows: 44px minmax(0, 1fr) 56px; overflow: hidden; }
 .maker-room[hidden] { display: none; }
 .maker-room button { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; cursor: pointer; box-shadow: 0 3px 0 #071522; }
 .maker-room summary { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; }
 .maker-room input { font: inherit; color: inherit; border: 2px solid #75adc8; background: #244963; padding-top: 8px; padding-right: 12px; padding-bottom: 8px; padding-left: 12px; min-height: 44px; touch-action: manipulation; }
 .maker-room button[aria-pressed="true"] { border-color: #ffe4a1; background: #385d70; }
 .maker-room button:active { transform: translateY(2px); }
-.maker-toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.maker-footer { display: flex; align-items: center; gap: 8px; min-width: 0; border-top: 2px solid #547c96; padding-top: 8px; min-height: 0; }
-.maker-tabs { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.maker-toolbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.maker-footer { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-width: 0; border-top: 2px solid #547c96; padding-top: 8px; min-height: 0; }
+.maker-tabs { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 3px 4px 8px 0; }
 .maker-toolbar strong { margin-right: auto; font-size: 20px; }
-.maker-toolbar button:first-of-type { width: 44px; flex-shrink: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-radius: 50%; font-size: 22px; }
-.maker-tabs button { flex: 1; min-width: 0; border-radius: 22px; font-weight: 800; }
-.maker-editor { min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; padding-top: 3px; padding-right: 5px; padding-bottom: 12px; padding-left: 0; }
+#save { width: 44px; flex-shrink: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-radius: 50%; font-size: 22px; }
+.maker-tabs button { flex: 0 0 auto; min-width: 0; text-align: left; white-space: nowrap; border-radius: 22px; font-weight: 800; }
+.maker-editor { min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; padding-top: 3px; padding-right: 5px; padding-bottom: 12px; padding-left: 0; }
 .maker-editor * { touch-action: pan-y; }
 .maker-editor .panel { padding-top: 14px; padding-right: 14px; padding-bottom: 14px; padding-left: 14px; margin-bottom: 12px; border: 2px solid #8cbad0; box-shadow: 4px 4px 0 #071522; background: #142b40; }
 .maker-editor h2 { margin-top: 0; margin-right: 0; margin-bottom: 12px; margin-left: 0; font-size: 21px; }
 .maker-editor h3 { margin-top: 8px; margin-right: 0; margin-bottom: 8px; margin-left: 0; font-size: 17px; }
 .maker-editor p { color: #bdd5e7; font-size: 14px; line-height: 1.6; }
 .maker-editor .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(235px, 100%), 1fr)); gap: 12px; }
-.maker-editor label { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 0; }
-.maker-editor input { width: 100%; min-width: 0; border-radius: 0; background: #091a2b; user-select: text; -webkit-user-select: text; }
+.maker-editor label { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 0; }
+.maker-editor input { width: 100%; max-width: 28ch; min-width: 0; border-radius: 0; background: #091a2b; user-select: text; -webkit-user-select: text; }
 .maker-editor fieldset { min-width: 0; margin-top: 12px; margin-right: 0; margin-bottom: 12px; margin-left: 0; border: 2px solid #547c96; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; }
 .maker-editor legend { padding-top: 6px; padding-right: 10px; padding-bottom: 6px; padding-left: 10px; background: #244963; border: 2px solid #75adc8; }
 .maker-choice { margin-top: 8px; margin-right: 0; margin-bottom: 8px; margin-left: 0; }
@@ -47,7 +47,7 @@
 .maker-portrait { font-size: 64px; background: #213d54; text-align: center; width: 128px; height: 100px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-bottom: 12px; }
 .maker-moves { display: flex; gap: 10px; overflow-x: auto; touch-action: pan-x; padding-top: 4px; padding-right: 4px; padding-bottom: 10px; padding-left: 4px; }
 .maker-moves .upgrade-card { flex: 0 0 150px; min-height: 90px; }
-.maker-editor input.maker-slider { appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border: 0; background: transparent; touch-action: none; cursor: pointer; }
+.maker-editor input.maker-slider { max-width: none; appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border: 0; background: transparent; touch-action: none; cursor: pointer; }
 .maker-slider::-webkit-slider-runnable-track { height: 12px; background: #091a2b; border: 2px solid #75adc8; }
 .maker-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 26px; height: 32px; margin-top: -12px; border: 3px solid #d1efff; border-radius: 0; background: #2176a0; box-shadow: 3px 3px 0 #071522; }
 .maker-slider::-moz-range-track { height: 8px; background: #091a2b; border: 2px solid #75adc8; }
@@ -74,6 +74,11 @@
 
 .maker-encounters .encounter-toggle { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
 .maker-encounters .encounter-toggle button, .maker-encounters .encounter-adjust { border-radius: 50%; width: 48px; height: 48px; min-height: 48px; padding: 8px; }
-/* 沿用 game-shell 的固定橫向座標；左側滑桿可邊改邊看。 */
-.maker-room.with-practice{padding-right:62%}.practice-dock{position:absolute;inset:0 0 0 38%;background:#142331;border-left:3px solid #8bb4bc;z-index:4;padding-top:44px}.practice-dock iframe{width:100%;height:100%;border:0;display:block}.practice-close{position:absolute;right:8px;top:2px;width:40px;height:40px;border-radius:50%;padding:8px;display:grid;place-items:center}.maker-room.with-practice .maker-toolbar{overflow-x:auto}.maker-room.with-practice .maker-toolbar strong{display:none}.maker-room.with-practice .maker-toolbar button{flex-shrink:0}.maker-room.with-practice .maker-toolbar button:not(:first-of-type){font-size:12px}.maker-room.with-practice .maker-tabs{overflow:auto}.maker-room.with-practice .grid{grid-template-columns:1fr}
-#save{width:44px;flex-shrink:0;padding:0;border-radius:50%}.maker-room.with-practice .maker-tabs button{flex:0 0 44px;width:44px;padding:8px;font-size:0;border-radius:50%}.maker-room.with-practice .maker-tabs .pixel-icon{width:24px;height:24px}.maker-room .practice-close{width:44px;height:44px;padding:8px}
+/* 每頁保留固定可視範圍；練習場使用整個內容區，不壓縮編輯欄。 */
+.maker-editor .panel { min-width: 0; max-width: 100%; }
+.maker-editor:has(.practice-dock) { overflow: hidden; padding: 0; }
+.practice-dock { height: 100%; min-height: 0; min-width: 0; display: grid; grid-template-rows: 44px minmax(0, 1fr); background: #142331; }
+.practice-dock iframe { width: 100%; height: 100%; min-height: 0; border: 0; display: block; }
+.practice-dock header { display: flex; align-items: center; justify-content: space-between; padding-left: 8px; }
+.maker-room .practice-close { width: 44px; height: 44px; padding: 8px; border-radius: 50%; }
+#save { width: 44px; flex-shrink: 0; padding: 0; border-radius: 50%; }
