@@ -68,6 +68,32 @@ globalThis.SurvivorEffectBlocks = (() => {
       {trigger:'onRainTick',actions:[{type:'slow',duration:op('multiply',arg('dt'),2),multiplier:0},
         {type:'wet',duration:ref('schoolRules.wetSeconds')}]}]}
   );
+  // 風卡：原事件負責生命週期，積木描述公式、範圍與動作；舊作品不用改格式。
+  const windField={...waterField,school:'wind',damage:op('multiply',ref('build.fieldDamage'),op('max',1,arg('level')))};
+  recipes.push(
+    {feature:'wind-attack',rules:[{trigger:'onShot',actions:[{type:'attack-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('build.windSpeed')))}]}]},
+    {feature:'wind-speed',rules:[{trigger:'onShot',actions:[{type:'rate-multiplier',multiplier:op('add',1,op('multiply',arg('moving'),arg('level'),ref('build.movingRate')))}]}]},
+    {feature:'wind-dash',rules:[{trigger:'onDashTrail',actions:[windField]},
+      {trigger:'onFieldTick',actions:[{type:'push',distance:op('multiply',ref('build.pushDistance'),op('max',1,arg('level')))}]},
+      {trigger:'onSkillBlast',conditions:[{type:'radius',includeTargetRadius:true,radius:op('multiply',arg('radius'),ref('build.skillRadiusMultiplier'))}],actions:[{type:'push',distance:op('multiply',-1,ref('build.pullDistance'))}]}]},
+    {feature:'fusion-storm',rules:[{trigger:'onDashTrail',actions:[waterField,windField]}]},
+    {feature:'wind-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.tornadoTick'),
+      conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('build.fieldRadius')}],actions:[
+      {type:'damage',amount:op('multiply',ref('build.ultimateDamage'),op('add',1,op('multiply',op('subtract',arg('level'),1),ref('build.ultimateGrowth'))))},
+      {type:'orbit',radius:ref('build.tornadoRadius'),speed:ref('build.tornadoSpeed')}]}]},
+    {feature:'wind-blade',rules:[{trigger:'onShot',actions:[{type:'pierce',count:1}]},
+      {trigger:'onShotHit',conditions:[{type:'bladeEligible'},{type:'radius',radius:ref('schoolRules.windBladeRange')}],actions:[
+        {type:'blade',multiplier:ref('schoolRules.windBladeDamage'),range:ref('schoolRules.windBladeRange')}]},
+      {trigger:'onMeleeHit',conditions:[{type:'radius',radius:ref('schoolRules.windBladeRange')}],actions:[
+        {type:'blade',multiplier:ref('schoolRules.windBladeDamage')}]}]},
+    {feature:'wind-gust',rules:[{trigger:'onPulse',interval:ref('schoolRules.gustSeconds'),conditions:[{type:'radius',radius:ref('schoolRules.gustRadius')}],actions:[{type:'push',distance:ref('schoolRules.gustPush')}]}]},
+    {feature:'wind-refund',rules:[{trigger:'onDashEnd',actions:[{type:'refund',fraction:ref('schoolRules.refundCharge')}]}]},
+    {feature:'wind-light',rules:[{trigger:'onMove',actions:[{type:'move-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('schoolRules.lightSpeed')))}]},
+      {trigger:'onPickup',actions:[{type:'pickup-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('schoolRules.lightMagnet')))}]}]},
+    {feature:'wind-eye',rules:[{trigger:'onStill',conditions:[{type:'still',seconds:ref('schoolRules.eyeWait')}],actions:[{type:'wall',radius:ref('schoolRules.eyeRadius')}]},
+      {trigger:'onWallTick',conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('schoolRules.eyeRadius')}],actions:[{type:'push',distance:op('multiply',ref('schoolRules.eyePush'),arg('dt'))}]},
+      {trigger:'onEnemyShot',conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('schoolRules.eyeRadius')}],actions:[{type:'block-shot'}]}]}
+  );
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
   function collect(node) {
     if (!node || typeof node!=='object') return;
@@ -75,7 +101,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     Object.values(node).forEach(collect);
   }
   recipes.forEach(collect);
-  const inputs=new Set(['level','transformed','radius','damage','dt']);
+  const inputs=new Set(['level','transformed','radius','damage','dt','moving']);
   function value(expression, data, context={}) {
     if (typeof expression === 'number' && Number.isFinite(expression)) return expression;
     if (expression && refs.has(expression.ref)) {
@@ -106,11 +132,13 @@ globalThis.SurvivorEffectBlocks = (() => {
     return rule ? resolve(rule,data,context) : null;
   }
   function matches(condition,target,player={r:0},end={x:0,y:0}) {
+    if(condition.type==='still') return target.seconds>=condition.seconds;
+    if(condition.type==='bladeEligible') return !target.melee && target.pierce>0 && !target.blade;
     if(condition.type==='positiveDamage') return target.damage>0;
     if(condition.type==='bubbleActive') return !!target.bubble;
     if(condition.type==='wetTarget') return target.wetTimer>0;
     if(condition.type==='shotMultiple') return target.number % condition.every === 0;
-    if(condition.type==='radius') return condition.strict ? Math.hypot(target.dx,target.dy)<condition.radius : Math.hypot(target.dx,target.dy)<=condition.radius+(condition.includeTargetRadius?target.r:0);
+    if(condition.type==='radius') return condition.strict ? Math.hypot(target.dx,target.dy)<condition.radius+(condition.includeTargetRadius?target.r:0) : Math.hypot(target.dx,target.dy)<=condition.radius+(condition.includeTargetRadius?target.r:0);
     if(condition.type==='segmentTouching') {
       const length=end.x*end.x+end.y*end.y;
       const t=length?Math.max(0,Math.min(1,(target.dx*end.x+target.dy*end.y)/length)):0;
@@ -149,7 +177,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     const timers={...input.timers}, events=[];
     for (const recipe of definitions) if (input.levels[recipe.feature]) for (const rule of recipe.rules || []) {
       if (rule.trigger !== 'onTimer') {
-        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick'].includes(rule.trigger)) continue;
+        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick','onMeleeHit','onMove','onPickup','onStill','onWallTick','onEnemyShot'].includes(rule.trigger)) continue;
         throw new Error('Unsupported effect trigger');
       }
       const seconds=value(rule.interval,input.data);

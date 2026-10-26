@@ -87,11 +87,11 @@
     if (c.effects.length < 3) { const add = el('button', '＋ 加一個積木', edit); add.type = 'button'; add.addEventListener('click', () => { c.effects.push({type:'aoe',trigger:'skill',...api.PARAMS}); changed(); render(); }); }
   }
   function cardRecipe(id) {
-    return globalThis.SurvivorEffectBlocks && SurvivorEffectBlocks.recipes.find(r=>r.feature===id && (id.startsWith('thunder-') || id.startsWith('water-') || id==='fusion-dash' || id==='fusion-puddle'));
+    return globalThis.SurvivorEffectBlocks && SurvivorEffectBlocks.recipes.find(r=>r.feature===id && (id.startsWith('thunder-') || id.startsWith('water-') || id.startsWith('wind-') || id==='fusion-storm' || id==='fusion-dash' || id==='fusion-puddle'));
   }
-  const CARD_TRIGGERS={onWaterHit:'水攻擊命中時',onShotHit:'普攻命中時',onFieldTick:'水窪傷害計時到時',onPulse:'每隔一段時間',onDashEnd:'衝刺結束時',onDamage:'計算傷害時',onRainTick:'下雨持續時',onChain:'跳電命中時',onSkillBlast:'泡泡炸開時',onHurt:'受傷時',onUltimate:'終極技能準備好時',onDashTrail:'衝刺沿路留下痕跡',onShot:'發動普攻時',onSummonTimer:'每隔一段時間',onDashCross:'衝刺穿過怪物時',onTimer:'每隔一段時間'};
-  const CARD_CONDITIONS={shotMultiple:'普攻發數達到倍數',positiveDamage:'這次傷害大於零',bubbleActive:'泡泡盾還在',wetTarget:'目標身上濕濕的',radius:'範圍內的怪物',randomTarget:'隨機一隻可攻擊的怪物',killThreshold:'擊倒數達到門檻，且這次蓄電還沒用過',segmentTouching:'碰到衝刺路線的怪物',touching:'碰到主角的怪物'};
-  const CARD_ACTIONS={wet:'讓怪物濕濕的',slow:'讓怪物緩速',push:'推開怪物',bubble:'取得泡泡盾',absorb:'消耗泡泡盾並擋下這次傷害','damage-multiplier':'提高濕潤目標受到的傷害','big-drop':'放大這次普攻、增加傷害與擊退',rain:'開始下雨，持續影響全場怪物',chain:'連鎖閃電（每跳選最近的怪物，不重複命中）','chain-modifier':'增加跳電次數，每跳保留完整傷害',stun:'讓怪物暈眩',damage:'造成傷害',field:'留下流派痕跡（依流派造成傷害或緩速）',charged:'強化這次普攻，命中後跳電',summon:'放下避雷針，定時攻擊附近怪物',cue:'閃電提示'};
+  const CARD_TRIGGERS={onMeleeHit:'近戰命中後',onMove:'計算移動速度時',onPickup:'吸取寶石時',onStill:'站定不動時',onWallTick:'風牆持續時',onEnemyShot:'敵人子彈碰到風牆時',onWaterHit:'水攻擊命中時',onShotHit:'普攻命中時',onFieldTick:'流派痕跡傷害計時到時',onPulse:'每隔一段時間',onDashEnd:'衝刺結束時',onDamage:'計算傷害時',onRainTick:'下雨持續時',onChain:'跳電命中時',onSkillBlast:'泡泡炸開時',onHurt:'受傷時',onUltimate:'終極技能準備好時',onDashTrail:'衝刺沿路留下痕跡',onShot:'發動普攻時',onSummonTimer:'每隔一段時間',onDashCross:'衝刺穿過怪物時',onTimer:'每隔一段時間'};
+  const CARD_CONDITIONS={still:'站定達到等待秒數',bladeEligible:'遠程普攻仍可穿透，且不是小風刃',shotMultiple:'普攻發數達到倍數',positiveDamage:'這次傷害大於零',bubbleActive:'泡泡盾還在',wetTarget:'目標身上濕濕的',radius:'範圍內的怪物',randomTarget:'隨機一隻可攻擊的怪物',killThreshold:'擊倒數達到門檻，且這次蓄電還沒用過',segmentTouching:'碰到衝刺路線的怪物',touching:'碰到主角的怪物'};
+  const CARD_ACTIONS={'attack-multiplier':'加快普攻速度及距離（近戰放大範圍）','rate-multiplier':'依移動程度加快攻速',orbit:'繞著主角旋轉',pierce:'增加穿透次數',blade:'產生小風刃（近戰改成追斬）',refund:'回充部分衝刺進度','move-multiplier':'提高移動速度','pickup-multiplier':'擴大拾取範圍',wall:'建立保護風牆','block-shot':'擋掉敵人子彈',wet:'讓怪物濕濕的',slow:'讓怪物緩速',push:'推開怪物',bubble:'取得泡泡盾',absorb:'消耗泡泡盾並擋下這次傷害','damage-multiplier':'提高濕潤目標受到的傷害','big-drop':'放大這次普攻、增加傷害與擊退',rain:'開始下雨，持續影響全場怪物',chain:'連鎖閃電（每跳選最近的怪物，不重複命中）','chain-modifier':'增加跳電次數，每跳保留完整傷害',stun:'讓怪物暈眩',damage:'造成傷害',field:'留下流派痕跡（依流派造成傷害或緩速）',charged:'強化這次普攻，命中後跳電',summon:'放下避雷針，定時攻擊附近怪物',cue:'閃電提示'};
   function drawCardBlocks(parent,card,effect,index) {
     range(parent,effect,'power',undefined,'每級效果強度');
     el('p','數值與其他使用同一規則的卡片共用；修改後可按預覽看看。',parent);
