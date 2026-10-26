@@ -77,21 +77,29 @@
   ];
   const WEAPON_TRIGGERS={primary:'attackReleaseOrTimer',combo:'attackNumber',charge:'chargeReady',special:'specialRelease',dash:'dashAttack'};
   // 回饋 v1：倍率套在既有表現上；缺省欄位讓舊作品保持原手感。
-  const FEEDBACK_BOUNDS={hitStop:[0,2,.1],shake:[0,2,.1]};
+  // 秒、倍率及像素數值均可 JSON 序列化；舊作品只補缺少欄位。
+  const FEEDBACK_TIERS={
+    small:{sound:'hit',stopSeconds:.05,particles:5,trauma:.18,flash:1,numberScale:1},
+    medium:{sound:'water',stopSeconds:.09,particles:10,trauma:.38,flash:1,numberScale:1.3},
+    large:{sound:'lightning',stopSeconds:.15,particles:20,trauma:.65,flash:1,numberScale:1.7}
+  };
+  const FEEDBACK_BOUNDS={hitStop:[0,2,.1],shake:[0,2,.1],stopSeconds:[.04,.15,.01],particles:[0,30,1],trauma:[0,1,.01],flash:[0,1,.1],numberScale:[.5,2,.1]};
   const WARNING_STYLES={original:'原來樣式',outline:'只有外框',pulse:'閃動外框'};
   const FEEDBACK_SOUNDS={shoot:'出招',warning:'預警',hit:'命中',water:'水花',lightning:'閃電',none:'靜音'};
   function feedback(value,base) {
-    blockObject(value,['cue','sound','warningStyle','slash','hitStop','shake','hint'],'回饋');
-    const f={warningStyle:'original',slash:true,hitStop:base.sound==='warning'?0:1,shake:base.sound==='warning'?0:1,hint:true,...base,...value};
+    blockObject(value,['cue','sound','warningStyle','slash','hitStop','shake','hint','level',...Object.keys(FEEDBACK_BOUNDS)],'回饋');
+    if(value.level!==undefined && !['small','medium','large','custom'].includes(value.level)) throw new Error('回饋等級不支援');
+    const level=value.level||base.level||'small';
+    const f={...FEEDBACK_TIERS[level==='custom'?'small':level],level,warningStyle:'original',slash:true,hitStop:base.sound==='warning'?0:1,shake:base.sound==='warning'?0:1,hint:true,...base,...value};
     if(f.cue!==base.cue || !Object.keys(FEEDBACK_SOUNDS).includes(f.sound) || !Object.keys(WARNING_STYLES).includes(f.warningStyle)) throw new Error('回饋選項不支援');
     for(const key of ['slash','hint']) if(typeof f[key]!=='boolean') throw new Error('回饋開關不正確');
-    for(const key of Object.keys(FEEDBACK_BOUNDS)) if(typeof f[key]!=='number'||!Number.isFinite(f[key])||f[key]<0||f[key]>2) throw new Error('回饋強度超出範圍');
+    for(const key of Object.keys(FEEDBACK_BOUNDS)) if(typeof f[key]!=='number'||!Number.isFinite(f[key])||f[key]<FEEDBACK_BOUNDS[key][0]||f[key]>FEEDBACK_BOUNDS[key][1]) throw new Error('回饋強度超出範圍');
     return f;
   }
   function weaponCue(weapon,id) {return id==='special'?weapon.specialKind:weapon.kind==='melee'?'hammer-swing':'projectile';}
   function weaponFeedbackBase(weapon,id) {
     const impact=weapon.kind==='melee' && (id!=='special' || weapon.specialKind==='leap');
-    return {cue:weaponCue(weapon,id),sound:'shoot',hitStop:impact?1:0,shake:impact?1:0};
+    return {level:id==='charge'?'medium':'small',cue:weaponCue(weapon,id),sound:'shoot',hitStop:impact?1:0,shake:impact?1:0};
   }
   function weaponStacks(weapon) {
     return {version:1, moves:WEAPON_STACKS.map(def=>{
@@ -143,6 +151,7 @@
       const source=def.id==='phase'?owner.phaseAttack:def.id==='legacy'?owner.attack:owner;
       const move={id:def.id};
       for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].map(key=>[key,copy(part==='timing' && def.id==='phase' ? (source.timing || source)[key] : source[key])]));
+      if(def.id==='phase')move.timing.inputBuffer=source.timing?.inputBuffer??.12;
       move.trigger.event=def.event;
       move.feedback=feedback((owner.feedback||{})[def.id]||{}, {cue:def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning',sound:'warning',shake:def.id==='move'?1:0});
       return move;
@@ -163,7 +172,7 @@
       if(move.id!==def.id) throw new Error('招式積木識別碼不正確');
       const source={};
       for(const part of ['trigger','shape','timing','effect']) {
-        blockObject(move[part],def[part].concat(part==='trigger'?['event']:[]),part);
+        blockObject(move[part],def[part].concat(part==='trigger'?['event']:part==='timing'&&def.id==='phase'?['inputBuffer']:[]),part);
         for(const key of def[part]) {
           if(move[part][key]===undefined) throw new Error('招式積木缺少 '+key);
           source[key]=move[part][key];
@@ -172,7 +181,7 @@
       if(move.trigger.event!==def.event) throw new Error('招式觸發不支援');
       const cue=def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning';
       result.feedback={...result.feedback,[def.id]:feedback(move.feedback,{cue,sound:'warning',shake:def.id==='move'?1:0})};
-      if(def.id==='phase') {source.timing=Object.fromEntries(def.timing.map(k=>[k,source[k]]));result.phaseAttack=source;}
+      if(def.id==='phase') {source.timing={...Object.fromEntries(def.timing.map(k=>[k,source[k]])),inputBuffer:move.timing.inputBuffer??.12};result.phaseAttack=source;}
       else if(def.id==='legacy') result.attack=source;
       else Object.assign(result,source);
     });
@@ -260,7 +269,7 @@
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
     const timing = (source,bounds=TIMING_BOUNDS) => {
       if (!source || typeof source!=='object') fail('時機積木格式不正確');
-      return Object.fromEntries(Object.entries(bounds).map(([key,b])=>[key,num(source[key],b[0],b[1],key)]));
+      return {...Object.fromEntries(Object.entries(bounds).map(([key,b])=>[key,num(source[key],b[0],b[1],key)])),inputBuffer:num(source.inputBuffer===undefined?.12:source.inputBuffer,.1,.15,'輸入緩衝')};
     };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
@@ -284,7 +293,7 @@
           let source = input.weapons.find(w => w.id === weapon.id);
           if (!source && weapon.id === 'candy-sword') continue;
           if (!source || source.kind !== weapon.kind) fail('武器種類不正確');
-          source=source.blocks===undefined ? source : compileWeapon({...weapon,...source});
+          source=source.blocks===undefined ? source : compileWeapon({...weapon,...source,feedback:source.feedback});
           if(source.timing !== undefined) weapon.timing=timing(source.timing);
           if (weapon.kind === 'melee') for (const [field,bounds] of Object.entries(WEAPON_BOUNDS)) weapon[field] = num(source[field],bounds[0],bounds[1],field,field === 'spinEvery');
           for (const [field,bounds] of Object.entries(ATTACK_BOUNDS)) if(source[field] !== undefined) weapon[field]=num(source[field],bounds[0],bounds[1],field,field==='comboEvery');
@@ -300,11 +309,11 @@
       for(const weapon of data.weapons) {
         const source=input.weapons && input.weapons.find(w=>w.id===weapon.id);
         if(source) {
-          const compiled=compileWeapon({...weapon,...source});
+          const compiled=compileWeapon({...weapon,...source,feedback:source.feedback});
           for(const [key,b] of Object.entries(SPECIAL_BOUNDS)) if(compiled[key]!==undefined) weapon[key]=num(compiled[key],b[0],b[1],key,key==='specialCount');
           if(compiled.specialKind!==undefined) weapon.specialKind=choice(compiled.specialKind,[weapon.specialKind],'特殊招種類');
         }
-        if(source) weapon.feedback=compileWeapon({...weapon,...source}).feedback;
+        if(source) weapon.feedback=compileWeapon({...weapon,...source,feedback:source.feedback}).feedback;
         weapon.blocks=weaponStacks(weapon);
         weapon.feedback=Object.fromEntries(weapon.blocks.moves.map(m=>[m.id,m.feedback]));
       }
@@ -535,5 +544,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_TIERS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

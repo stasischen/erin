@@ -33,7 +33,7 @@ run(`result=SurvivorBodies.solve({...base,view:{x:500,y:500,width:100,height:100
  player:{x:500,y:800,r:18},bodies:[{x:571,y:500,r:20,mass:1},{x:580,y:500,r:30,mass:8}]})`);
 assert.ok(run('result.bodies[0].x>=570'));
 // 真實遊戲接合：衝刺最後一幀、額外保護、受傷無敵區分；重開清理。
-run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;
+run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;state.spawnTimer=999;state.shotTimer=999;
  GAME_DATA.elites.enabled=false;GAME_DATA.chocobear.enabled=false;
  globalThis.e=spawnEnemy({typeId:'jaben'});e.speed=0;
  globalThis.touch=()=>{e.x=state.player.x+10;e.y=state.player.y;};touch();
@@ -44,7 +44,7 @@ run('state.dashBodyPass=0;state.player.invincible=1;touch();tick(.02)');
 assert.ok(run('encounterDistance(e,state.player)>10'));
 run('resetGame()');assert.equal(run('state.dashBodyPass'),0);
 // 分離只更新身體，預警資料不動；包圍／分裂仍沿用原生成規則。
-run(`state.mode='playing';e=spawnEnemy({typeId:'pudding'});e.x=state.player.x+10;e.y=state.player.y;
+run(`state.mode='playing';GAME_DATA.hitJuice.enabled=false;e=spawnEnemy({typeId:'pudding'});e.x=state.player.x+10;e.y=state.player.y;
  updatePhasedAttack(e,0);globalThis.warning=JSON.stringify(e.phaseAttack);separateEnemyBodies(.02,null,false)`);
 assert.equal(run('JSON.stringify(e.phaseAttack)'),run('warning'));
 // 舊 Maker 作品補預設，邊界驗證與存讀套用。

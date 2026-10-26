@@ -199,11 +199,11 @@ function drawHero() {
   }
   if (look.forms.includes('water')) ctx.globalAlpha *= .65;
   const sprite = SPRITES.player;
-  if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2);
+  if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
   else {
     // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
     ctx.imageSmoothingEnabled = false;
-    drawOutlinedSprite(ctx, heroSchoolPicture(hurt, look.bodyColors), -20, -30, 40, 48);
+    drawOutlinedSprite(ctx, heroSchoolPicture(hurt, look.bodyColors), -20, -30, 40, 48,p.impactFlash?'#ffffff':undefined);
   }
   if (look.bodyColors.includes('thunder')) {
     // 第一張雷卡就帶火花；變身後原有的環繞光點仍保留。
@@ -378,8 +378,9 @@ function render() {
   }
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
-  const shake = gameSettings.vibration ? Math.max(state.bossShake>0?BOSS_TUNING.shakePixels:0,state.hitShake>0?state.hitShakePixels:0) : 0;
-  ctx.translate(-state.cameraX + Math.sin((state.juiceClock||state.elapsed) * 91) * shake, -state.cameraY + Math.cos((state.juiceClock||state.elapsed) * 83) * shake);
+  const camera=SurvivorFeedback.camera(state.trauma,state.juiceClock||state.elapsed,gameSettings.vibration);
+  if(camera.rotation){ctx.translate(state.width/2,state.height/2);ctx.rotate(camera.rotation);ctx.translate(-state.width/2,-state.height/2);}
+  ctx.translate(-state.cameraX+camera.x,-state.cameraY+camera.y);
   drawClassroom();
   drawBossZone();
   for (const offset of visibleWorldOffsets()) {
@@ -503,7 +504,7 @@ function render() {
         ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
         ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
       }
-      else if (effect.kind === "number") { ctx.font = "bold 15px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "number") { ctx.font = `bold ${15*(effect.numberScale||1)}px system-ui`; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
       else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
       else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
       else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
@@ -530,7 +531,7 @@ function render() {
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, (radius + 11) * scale, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * radius * scale, state.joy.baseY + state.joy.y * radius * scale, 19 * scale, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }
   ctx.restore();
-  for(const e of combatTargets()) e.impactFlash=0;
+  for(const e of [state.player,...combatTargets()]) e.impactFlash=0;
 }
 
 // 使用螢幕座標，跟著鏡頭及橫向畫面尺寸定位；現階段只有老師，未加入新菁英。

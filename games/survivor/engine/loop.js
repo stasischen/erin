@@ -75,7 +75,7 @@ function resize() {
 function resetGame() {
   if (typeof cancelManualAttack === "function") cancelManualAttack();
   state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
-  state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
+  state.trauma=0; state.inputBuffer=null; state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
   state.stageIndex = MAKER_MODE && typeof location!=='undefined' ? Math.max(0,STAGES.findIndex(s=>s.id===new URLSearchParams(location.search).get('stage'))) : 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
@@ -152,11 +152,17 @@ function finishRun(won) {
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
 function tick(dt) {
+  const inputDt=dt;
   if(state.mode==='playing') {
     state.juiceClock=(state.juiceClock||0)+dt;
     state.hitShake=countdown(state.hitShake||0,dt);
     if(!GAME_DATA.hitJuice.enabled || !GAME_DATA.hitJuice.intensity) {state.hitStop=0;state.hitShake=0;}
-    if(state.hitStop>0) {state.hitStop=countdown(state.hitStop,dt);return;}
+    state.hitStop=countdown(state.hitStop||0,dt);
+    state.trauma=SurvivorFeedback.trauma(state.trauma,0,dt);
+    for(const t of [state.player,...state.enemies,...(state.boss?[state.boss]:[])]) {
+      if((t.hitStop||0)>0 && GAME_DATA.hitJuice.enabled && GAME_DATA.hitJuice.intensity>0) {t.feedbackFrozen=true;t.hitStop=countdown(t.hitStop,dt);}
+      else {delete t.feedbackFrozen;delete t.hitStop;}
+    }
     for(const t of combatTargets()) t.impactSquash=countdown(t.impactSquash||0,dt);
   }
   if (state.mode === "playing" && state.slowMotion > 0) {
@@ -170,7 +176,7 @@ function tick(dt) {
   }
   if (state.mode !== "playing") return;
   if (openEncounterReward()) return;
-  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])]) updateTargetSlide(target,dt);
+  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])]) if(!target.feedbackFrozen)updateTargetSlide(target,dt);
   if(state.mode!=="playing") return;
   updateCamera();
   updateSkillVisuals(dt);
@@ -193,20 +199,21 @@ function tick(dt) {
       }
     }
   }
+  const playerDt=state.player.feedbackFrozen?0:dt;
   const input = movementInput();
   let dx = input.x, dy = input.y;
   if (Math.hypot(dx, dy) > 0.01) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
-  const dashTime = Math.min(dt, state.dashTimer);
+  const dashTime = Math.min(playerDt, state.dashTimer);
   const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
-  state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
-  state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
+  state.player.x += speed * (dx * (playerDt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
+  state.player.y += speed * (dy * (playerDt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
   clampToMap(state.player); updateCamera();
   // 這幀有衝刺就保護到碰撞判斷結束，最後才扣時間。
   if (state.dashTimer > 0 && !state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, dt);
-  state.dashTimer = countdown(state.dashTimer, dt);
+  state.dashTimer = countdown(state.dashTimer, playerDt);
   if (dashTime > 0 && state.dashTimer === 0) schoolDashEnded();
   if (state.dashCharges < maxDashCharges()) {
     state.dashCooldown = countdown(state.dashCooldown, dt);
@@ -220,7 +227,8 @@ function tick(dt) {
   state.dashGhosts = state.dashGhosts.filter(g => (g.life -= dt) > 0);
   if (dashTime > 0) state.dashGhosts.push({x:oldX,y:oldY,life:.22});
   state.skillCooldown = countdown(state.skillCooldown, dt);
-  if (typeof tickManualAttack === "function") tickManualAttack(dt);
+  if (typeof tickManualAttack === "function") tickManualAttack(playerDt);
+  flushBufferedInput(inputDt);
   if (state.mode !== "playing") return;
   updateActionControls();
   if (dashTime > 0) schoolDashCrossed(oldX,oldY,state.player.x,state.player.y);
@@ -265,11 +273,11 @@ function tick(dt) {
     for (const enemy of state.enemies) { if (enemy.miniboss) continue; enemy.x += (deltaX(state.boss.x, enemy.x)) * Math.min(1, dt * 3); enemy.y += (deltaY(state.boss.y, enemy.y)) * Math.min(1, dt * 3); }
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
-  state.shotTimer -= dt;
+  state.shotTimer -= playerDt;
   if (GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
-  if (GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
+  if (!state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
-    if (!enemy.alive) continue;
+    if (!enemy.alive || enemy.feedbackFrozen) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     if(!targetVisible(enemy)) enemy.phaseAttack=null;
@@ -289,6 +297,7 @@ function tick(dt) {
   if(!GAME_DATA.bodySeparation.enabled) separateTanks();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
+    if(dt>0 && (shot.hitStop||0)>0){shot.hitStop=countdown(shot.hitStop,dt);continue;}
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
     if (shot.rangeLeft <= 0) { if(shot.bigBubble) resolveWaterHit(shot); if(state.mode!=="playing")return; shot.alive = false; continue; }
@@ -297,7 +306,7 @@ function tick(dt) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
         schoolShotHit(shot, enemy);
-        damageEnemy(enemy, shot.damage);feedbackImpact(shot.feedback);
+        damageEnemy(enemy, shot.damage);feedbackImpact(shot.feedback,true,shot,enemy);
         if (!enemy.alive) splitNeutralShot(shot);
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
         if (state.mode !== "playing") return;
@@ -316,12 +325,12 @@ function tick(dt) {
       const boss = state.boss;
       playSound("hit");
       schoolShotHit(shot, boss);
-      feedbackImpact(shot.feedback);boss.hp -= schoolDamage(boss, shot.damage*(shot.autoCharged?teacherBonuses().damage:1)); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
+      feedbackImpact(shot.feedback,true,shot,boss);boss.hp -= schoolDamage(boss, shot.damage*(shot.autoCharged?teacherBonuses().damage:1)); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
       if(boss.hp>0)teacherRecoveryHit();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;
-      if (state.boss && state.boss.hp <= 0) { state.boss = null; finishRun(true); return; }
+      if (state.boss && state.boss.hp <= 0) { tierImpact('large',state.player,state.boss);state.boss = null; finishRun(true); return; }
     }
   }
   for (let i = state.projectiles.length - 1; i >= 0; i--) {
@@ -329,11 +338,12 @@ function tick(dt) {
   }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   updateBookShooting(dt);
-  updateBoss(dt);
+  if(!state.boss || !state.boss.feedbackFrozen)updateBoss(dt);
   updateBossZone(dt);
   if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     const shot = state.enemyShots[i];
+    if(dt>0 && (shot.hitStop||0)>0){shot.hitStop=countdown(shot.hitStop,dt);continue;}
     if(shot.phaseShot && (shot.life=countdown(shot.life,dt))<=0) {state.enemyShotPool.push(state.enemyShots.splice(i,1)[0]);continue;}
     shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);
     if (shot.source === "teacher" && (!state.boss || (!targetVisible(shot) && !shot.remote) || (shot.life -= dt) <= 0)) {
@@ -342,7 +352,7 @@ function tick(dt) {
     if (schoolWindWall() && cardBlockMatches(cardBlock('wind-eye','onEnemyShot').conditions[0],shot,state.player.x,state.player.y)) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
       if (state.practiceHit) pacingHurtPlayer(shot.damage || 0,shot.feedback);
-      if (!state.player.damageDisabled && state.player.invincible <= 0) { feedbackImpact(shot.feedback);state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
+      if (!state.player.damageDisabled && state.player.invincible <= 0) { feedbackImpact(shot.feedback,true,shot,state.player);state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (!shot.phaseShot && shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
@@ -370,6 +380,7 @@ function tick(dt) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && (enemy.miniboss || !GAME_DATA.bodyContact.pushOnly) && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
     const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !(state.boss.posture&&state.boss.posture.stun>0) && !(state.boss.stunTimer>0) && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
+      tierImpact('small',touchingEnemy||state.boss,state.player);
       state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? bodyContactDamage(touchingEnemy) : UPGRADE_TUNING.enemyDamage));
       counterDischarge(); if (state.mode !== "playing") return;
       state.player.invincible = INVINCIBLE_SECONDS;
@@ -392,7 +403,10 @@ function tick(dt) {
 
 // 小型背景圖塊預先繪製並快取；逐幀只貼鏡頭內圖塊，不配置世界大小的圖片。
 
-function renderLoop() { render(); requestAnimationFrame(renderLoop); }
+function renderLoop(now=0) {
+  if(state.mode!=='playing') {const dt=Math.min(.05,Math.max(0,(now-(state.visualTime||now))/1000));state.trauma=SurvivorFeedback.trauma(state.trauma,0,dt);state.juiceClock=(state.juiceClock||0)+dt;}
+  state.visualTime=now;render(); requestAnimationFrame(renderLoop);
+}
 
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
 function frame(now) { Survivor.audio.sync(); frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }

@@ -2204,7 +2204,7 @@ globalThis.SURVIVOR_DEFAULTS = {
 };
 
 // ✏️ Erin 可以改：手動普攻的起手、生效、收招、冷卻（秒）；自動模式沿用原間隔。
-SURVIVOR_DEFAULTS.weapons.forEach(w => { w.timing={windup:.1,active:.05,recovery:.12,cooldown:0}; });
+SURVIVOR_DEFAULTS.weapons.forEach(w => { w.timing={windup:.1,active:.05,recovery:.12,cooldown:0,inputBuffer:.12}; });
 
 // ✏️ Erin 可以改：特殊招的積木初值，全部沿用原本手感。
 SURVIVOR_DEFAULTS.weapons.forEach(w => Object.assign(w, {
@@ -2212,3 +2212,13 @@ SURVIVOR_DEFAULTS.weapons.forEach(w => Object.assign(w, {
   specialCooldown:6,specialCount:w.id==='water-ball'?5:1,specialSpread:w.id==='water-ball'?.18:0,
   specialRange:w.id==='candy-hammer'?110:420,specialDamage:2,specialLeapDistance:80,specialLeapSeconds:.25
 }));
+
+// ✏️ Erin 可以改：新作品使用三級回饋；舊作品由 schema 補欄位，保留原倍率。
+SURVIVOR_DEFAULTS.weapons.forEach(w => {
+  w.feedback=Object.fromEntries(['primary','combo','charge','special','dash'].map(id=>[id,{
+    level:id==='charge'?'medium':'small',hitStop:1,shake:1
+  }]));
+});
+
+SURVIVOR_DEFAULTS.enemies.forEach(e => {e.feedback={phase:{level:'small',hitStop:1,shake:1},legacy:{level:'small',hitStop:1,shake:1}};});
+SURVIVOR_DEFAULTS.boss.moves.forEach(m => {m.feedback={move:{level:'small',hitStop:1,shake:1}};});

@@ -15,7 +15,7 @@ near(run('SurvivorSlide.step(SurvivorSlide.impulse(null,100,0),1,10,[],[],{left:
 near(run('SurvivorSlide.step(SurvivorSlide.impulse(null,100,0),1,10,[],[],{left:-Infinity,right:Infinity,top:-Infinity,bottom:Infinity,zone:{x:0,y:0,r:60}}).dx'),50);
 function fresh(){run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;state.bossSpawned=true;GAME_DATA.elites.enabled=false;GAME_DATA.chocobear.enabled=false;globalThis.e=spawnEnemy({typeId:'jaben'});e.x=state.player.x+80;e.y=state.player.y;e.speed=0;e.hp=10000;globalThis.x=e.x;`);}
 fresh();run('shiftTarget(e,state.player.x,state.player.y,80)');near(run('e.x-x'),0);near(run('slidePrediction(e).dx'),80);
-run('state.hitStop=.05;tick(.05)');near(run('e.x-x'),0);run('tick(.05)');near(run('e.x-x'),35);
+run('e.hitStop=.05;tick(.05)');near(run('e.x-x'),0);run('tick(.05)');near(run('e.x-x'),35);
 run('state.mode="paused";tick(1)');near(run('e.x-x'),35);run('state.mode="playing";tick(.05);tick(.05);tick(.05)');near(run('e.x-x'),80);
 fresh();run('shiftTarget(e,state.player.x,state.player.y,80);resetGame()');assert.equal(run('state.player.slide||null'),null);
 fresh();run('globalThis.b=spawnEnemy({typeId:"jaben"});b.x=e.x+60;b.y=e.y;b.speed=0;b.hp=10000;shiftTarget(e,state.player.x,state.player.y,100);globalThis.end=slidePrediction(e).dx;updateTargetSlide(e,1)');near(run('e.x-x'),run('end'));assert.equal(run('e.slide'),null);

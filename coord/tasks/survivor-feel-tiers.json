@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-feel-tiers",
+  "title": "統一三級打擊回饋、鏡頭震動與輸入緩衝",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-feel-tiers",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T143440Z-parent-feel-tiers.md",
+  "next": "請 Grok 審查 erin-watch 提交後的實質 SHA。三級回饋、trauma 鏡頭、局部停頓、時機輸入緩衝及撞怪一次回饋已完成；node games/survivor/tools/test.cjs 全部通過（exit 0，59 個測試檔加版本檢查，未加 --layout），版本 20261026at。Godot §11 適用項目、舊作品相容、測試及移植差距見 docs/survivor-feel-tiers-validation.md。請在 740×360、1024×461、1180×820 操作驗收並跑 layout。無待家長或 Erin 決定事項；commit、push、開 PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T14:50:52.920755Z",
+  "updatedBy": "codex"
+}

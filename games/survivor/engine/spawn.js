@@ -31,13 +31,14 @@ function updateBookShooting(dt) {
   if (state.bossIntro > 0) return;
   state.bookShotTimer = Math.max(0, state.bookShotTimer - dt);
   for (const enemy of state.enemies) {
+    if(enemy.feedbackFrozen)continue;
     enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
     enemy.shotWarning = Math.max(0, (enemy.shotWarning || 0) - dt);
     if (!targetVisible(enemy)) { enemy.shotPrepared = false; enemy.shotWarning = 0; }
   }
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
+  const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !enemy.feedbackFrozen && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
   const allowed = ready.filter(e => {
     const type=ENEMY_TYPES.find(t=>t.id===e.typeId);

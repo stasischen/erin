@@ -137,10 +137,10 @@ function splitJelly(e) {
   for(let i=0;i<2 && state.jellyQueue.length<18;i++) state.jellyQueue.push({typeId:e.typeId,x:e.x+(i?10:-10),y:e.y});
 }
 
-function pacingHurtPlayer(damage,feedback) {
-  if (state.practiceHit) { if(state.dashTimer<=0 && state.player.invincible<=0) {state.practiceHit();feedbackImpact(feedback);} return; }
+function pacingHurtPlayer(damage,feedback,attacker=null) {
+  if (state.practiceHit) { if(state.dashTimer<=0 && state.player.invincible<=0) {state.practiceHit();feedbackImpact(feedback||{...SurvivorData.FEEDBACK_TIERS.small,hitStop:1,shake:1},true,attacker,state.player);} return; }
   if(state.player.damageDisabled || state.dashTimer>0 || state.player.invincible>0) return;
-  feedbackImpact(feedback);
+  feedbackImpact(feedback||{...SurvivorData.FEEDBACK_TIERS.small,hitStop:1,shake:1},true,attacker,state.player);
   state.player.health=Math.max(0,state.player.health-absorbSchoolHit(damage));
   state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;
   playSound('hurt'); updateHud(); counterDischarge();
@@ -173,7 +173,7 @@ function updatePhasedAttack(e,dt) {
       const dx=deltaX(state.player.x,a.x),dy=deltaY(state.player.y,a.y);
       const x=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),y=-dx*Math.sin(a.angle)+dy*Math.cos(a.angle);
       if(SurvivorPacing.inShape(c,x,y)) {
-        a.hit=true;pacingHurtPlayer(c.damage,enemyFeedback(e));
+        a.hit=true;pacingHurtPlayer(c.damage,enemyFeedback(e),e);
       }
     }
   }
