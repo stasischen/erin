@@ -68,8 +68,9 @@ function updateBookShooting(dt) {
 }
 
 // 先在鏡頭外選位置，再回到環形世界；四邊永遠都可以生成。
-function offscreenSpawn(r, side) {
-  const gap = r + 16, left = state.cameraX, top = state.cameraY;
+function offscreenSpawn(r, side, minimumDistance = state.player.r + r + 160) {
+  // 多留 1 格，避免接縫回圈的浮點誤差把邊緣外的位置判成不安全。
+  const gap = r + 17, left = state.cameraX, top = state.cameraY;
   const sides = [
     () => ({ x: left - gap, y: top + Math.random() * state.height }),
     () => ({ x: left + state.width + gap, y: top + Math.random() * state.height }),
@@ -82,7 +83,7 @@ function offscreenSpawn(r, side) {
     clampToMap(point);
     const dx = Math.abs(deltaX(point.x, centerX)), dy = Math.abs(deltaY(point.y, centerY));
     const distance = Math.hypot(deltaX(point.x, state.player.x), deltaY(point.y, state.player.y));
-    return (dx >= state.width / 2 + gap || dy >= state.height / 2 + gap) && distance >= state.player.r + r + 160;
+    return (dx >= state.width / 2 + r + 16 || dy >= state.height / 2 + r + 16) && distance >= minimumDistance;
   }
   const point = sides[side === undefined ? Math.floor(Math.random() * 4) : side%4]();
   if (safe(point)) return point;
