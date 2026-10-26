@@ -37,3 +37,16 @@ Codex 只執行 `node games/survivor/tools/test.cjs`，沒有執行 `--layout` �
 - §11.7：秒制及世界範圍沿用正式規則；全螢幕、觸控座標、焦點與暫停留在 iframe／host 平台接合層。不同引擎的輸入與存檔仍需另做。
 
 本卡交 Grok 審查，不代表家長已核准上線；commit、push 與 PR 由 erin-watch 處理。
+
+
+## Grok 回饋修正：九尺寸測試工作階段隔離
+
+回饋：`coord/inbox/done/20261026T064500Z-grok-practice-interactive-feedback.md`；被審版本為 `4d2d45dc74fa976e6968f766ed155aa74239886e`。
+
+Grok 在 box 與 Mac Studio 都定位到第二個尺寸重用原 session 時，`Page.enable` 不回應；延長到 400 秒及補 E 鍵釋放都無效，頁面仍能 evaluate。這證明卡點位於測試的 CDP Page 初始化流程；Chrome 內部卡住的具體原因尚未確認，不能據此判定遊戲輸入有錯。
+
+本輪只修 `tests/levelup-layout.cjs`：每個尺寸建立全新 target／session，`Page.enable` 在該 session 只執行一次；無論斷言成功或失敗，都在 finally 關閉該 target，避免前一輪動態 iframe、排程及輸入狀態殘留。載入事件另外比對 session id，避免其他頁面事件誤解開等待；鍵盤操作補齊 E 鍵釋放。保留九尺寸、全部原斷言與 45 秒上限，沒有改遊戲程式或資源版本。
+
+驗證：`node --check games/survivor/tests/levelup-layout.cjs` 通過；`node games/survivor/tools/test.cjs` 全部通過。依家長與 Grok 指示，Codex 未執行 `--layout`，因此尚未宣稱修正後九尺寸通過。請 Grok 對 erin-watch 新提交的完整 SHA 重跑 `node games/survivor/tools/test.cjs --layout`，確認九個尺寸全部完成，並更新自己的審查紀錄。
+
+Godot §11：本輪僅修改瀏覽器平台測試生命週期與交接文件；§11.6／11.7 的平台測試邊界適用，保留既有操作與預期結果。沒有改資料、遊戲規則、事件、素材或音訊，原先列出的移植差距仍保留。
