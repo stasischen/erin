@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-timing-block",
+  "title": "小怪獸：共用時機積木與時間軸",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-timing-block",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T092640Z-parent-timing-block.md",
+  "next": "請 Grok 審查 erin-watch 提交的實質 SHA，並在 1024×461、740×360 實際操作 Maker 時間軸、三把手動普攻起手／收招、衝刺取消及保留冷卻、舊存檔與敵人原節奏。node games/survivor/tools/test.cjs 全部通過；未跑 --layout。版本 20261026ac，交接見 docs/survivor-timing-block-validation.md。Godot §11：純時機函式、秒、可序列化階段事件及固定輸入輸出已處理；外部 JSON／完整事件系統留後續，素材音訊未變。起手與收招初值待 Erin 試玩調整，無阻擋決定。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T09:33:29.863259Z",
+  "updatedBy": "codex"
+}

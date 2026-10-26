@@ -7,7 +7,7 @@
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
   function message(text, error = false) { status.textContent = text; status.className = error ? 'error' : ''; }
-  function changed() { if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
+  function changed() { for(const e of draft.enemies) if(e.phaseAttack.timing) Object.assign(e.phaseAttack,e.phaseAttack.timing); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
   function panel(title) { const node = el('section', undefined, content); node.className = 'panel'; el('h2', title, node); return node; }
   function grid(parent) { const node = el('div', undefined, parent); node.className = 'grid'; return node; }
   function text(parent, label, object, key, maxLength = 24) { const row = el('label', label, parent), input = el('input', undefined, row); input.type = 'text'; input.maxLength = maxLength; input.value = object[key] || ''; input.addEventListener('input', () => { object[key] = input.value; changed(); }); }
@@ -192,7 +192,9 @@
       select(phase,'預警與命中形狀',e.phaseAttack,'shape',api.PHASE_SHAPES);
       toggle(phase,'子彈向四周發射（留缺口）',e.phaseAttack,'radial');
       const phaseNames={radius:'半徑／子彈半徑／直線半寬',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',windup:'起手預警秒數',active:'生效秒數（子彈最長壽命）',recovery:'收招停頓秒數',cooldown:'冷卻秒數',damage:'攻擊傷害',triggerDistance:'觸發距離',speed:'子彈速度',count:'子彈數',gapDegrees:'四周子彈缺口角度'};
-      for(const [key,bounds] of Object.entries(api.PHASE_BOUNDS)) range(phase,e.phaseAttack,key,bounds,phaseNames[key]);
+      if(!e.phaseAttack.timing)e.phaseAttack.timing=Object.fromEntries(Object.keys(api.TIMING_BOUNDS).map(key=>[key,e.phaseAttack[key]]));
+      drawTiming(phase,e.phaseAttack.timing,api.PHASE_BOUNDS);
+      for(const [key,bounds] of Object.entries(api.PHASE_BOUNDS)) if(!api.TIMING_BOUNDS[key]) range(phase,e.phaseAttack,key,bounds,phaseNames[key]);
       el('p','分階段攻擊開啟時取代下方舊攻擊。起手鎖定方向；子彈飛完才收招。紅色是危險範圍，收招時可以反擊。',phase);
       const attack = el('fieldset', undefined, p); el('legend','怪物的攻擊',attack);
       select(attack, '攻擊積木', e.attack, 'type', {none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
@@ -229,11 +231,32 @@
     }
     for (const [key,bounds] of Object.entries(api.PLAYER_BOUNDS)) range(pf,p,key,bounds,api.PLAYER_LABELS[key]);
   }
+  // 主角與敵人共用的時間軸；編輯秒數時即時更新比例與文字。
+  const timingViews=[];
+  const timingLabels={windup:'起手',active:'生效',recovery:'收招',cooldown:'冷卻'};
+  function refreshTimelines() {
+    for(const {node,source} of timingViews) {
+      node.textContent='';
+      for(const segment of SurvivorTiming.segments(source)) {
+        const item=el('span',timingLabels[segment.phase]+' '+Number(segment.seconds.toFixed(2))+'秒',node);
+        item.className='timing-'+segment.phase; item.style.flexGrow=String(segment.seconds || .01);
+      }
+    }
+  }
+  function drawTiming(parent,source,bounds) {
+    const box=el('fieldset',undefined,parent); el('legend','時機積木',box);
+    const node=el('div',undefined,box);node.className='timing-timeline';node.setAttribute('aria-label','攻擊時間軸');
+    timingViews.push({node,source}); refreshTimelines();
+    const fields=grid(box);
+    for(const key of Object.keys(api.TIMING_BOUNDS)) range(fields,source,key,bounds[key],key==='windup'?'起手預警秒數':key==='recovery'?'收招停頓秒數':timingLabels[key]+'秒數');
+  }
   function drawWeapons() {
     const weaponNames={interval:'揮擊間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
     const attackNames={chargeStun:'蓄力暈眩秒數',splashSize:'大泡泡水花半徑倍率',splashDamage:'大泡泡水花傷害比例',comboEvery:'連段下數',comboReset:'停止攻擊幾秒重置',comboMultiplier:'最後一段傷害倍率',chargeSeconds:'站定聚氣秒數',chargeMultiplier:'蓄力傷害倍率',moveRetention:'開始移動保留聚氣比例（0 為重置）',chargeSize:'蓄力範圍倍率',comboSize:'最後一段範圍倍率',comboPush:'蓄力／重刺額外擊退',finisherRecovery:'最後一段額外收招秒',stepDistance:'重刺踏步距離',thrustWidth:'突刺半寬'};
     for(const w of draft.weapons.filter(w=>w.id===selected.weapons)) {
       const fields=grid(panel(w.name+'連段與聚氣'));
+      drawTiming(fields,w.timing,api.TIMING_BOUNDS);
+      el('p','手動普攻放開後起手，生效時出招；衝刺可取消收招。自動攻擊沿用揮擊間隔。',fields);
       select(fields,'攻擊方向',w,'direction',{nearest:'朝最近的敵人',facing:'朝移動面向'});
       if(w.kind==='melee') for(const [key,label] of [['baseShape','普通招式'],['comboShape','最後一段招式'],['chargeShape','蓄力招式']]) select(fields,label,w,key,key==='comboShape'?{sector:'前方扇形',line:'前方直線',spin:'旋轉一圈'}:{sector:'前方扇形',line:'前方直線'});
       if(w.kind==='melee') for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) if(key!=='spinEvery') range(fields,w,key,bounds,weaponNames[key]);
@@ -301,6 +324,7 @@
     if(save()) location.href='?maker=1&play=1';
   }
   function render() {
+    timingViews.length=0;
     if (globalThis.SurvivorPreview) SurvivorPreview.stop();
     if (globalThis.SurvivorPractice) SurvivorPractice.close();
     if(defaultsDetails) {defaultsOpen=defaultsDetails.open;defaultsDetails=null;}

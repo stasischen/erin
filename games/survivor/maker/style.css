@@ -104,3 +104,8 @@
 :where(.game-shell[data-short~="compact"]) .maker-toolbar strong { font-size: 16px; }
 :where(.game-shell[data-short~="compact"]) #makerStatus { font-size: 12px; }
 :where(.game-shell[data-short~="compact"]) #play { min-width: 90px; font-size: 18px; }
+
+.timing-timeline { display:flex; flex-wrap:wrap; gap:4px; margin:8px 0; }
+.timing-timeline span { flex-basis:64px; padding:8px 4px; text-align:center; color:#102638; border-radius:6px; }
+.timing-windup { background:#ffe299; }.timing-active { background:#ffacaa; }
+.timing-recovery { background:#aee5ff; }.timing-cooldown { background:#d6c4fa; }

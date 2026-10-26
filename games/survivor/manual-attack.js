@@ -53,13 +53,13 @@ function releaseManualAttack(kind) {
       skillVisual('gust',state.player.x,state.player.y,{x2:state.player.x+Math.cos(event.angle)*special.leapDistance,y2:state.player.y+Math.sin(event.angle)*special.leapDistance,color:'#fff0a5'});
     } else executeManualSpecial(special);
   } else {
-    if(state.manualRecovery>0&&!dash)return;
-    state.weaponAttack={...(state.weaponAttack||{number:0,idle:0}),charge:event.charged?activeWeapon().chargeSeconds:0};
-    fireAtNearest(event);
+    if(state.manualTiming && state.manualTiming.phase!=='ready')return;
+    const timing={...activeWeapon().timing};
+    state.manualTiming={...SurvivorTiming.start(timing),config:timing,event};
     if(dash)state.manualDashUsed=true;
-    // 連點可走完連段；最後一段仍有既有的收招代價。
-    state.manualRecovery=.12+(state.attackRecovery||0);state.attackRecovery=0;
-    if(state.weaponAttack)state.weaponAttack.charge=0;
+    // 零起手可立即生效；其餘等待同一套時間軸進入 active。
+    if(!timing.windup) advanceManualTiming(0);
+
   }
   updateActionControls();
 }
@@ -83,9 +83,32 @@ function executeManualSpecial(event) {
   }
   playSound('shoot');
 }
+function advanceManualTiming(dt) {
+  let a=state.manualTiming;
+  if(!a || a.phase==='ready')return;
+  a=SurvivorTiming.advance(a,a.config,dt); state.manualTiming=a;
+  if(a.phase==='active' && a.entered) {
+    const event=a.event;
+    state.weaponAttack={...(state.weaponAttack||{number:0,idle:0}),charge:event.charged?activeWeapon().chargeSeconds:0};
+    fireAtNearest(event);
+    // 連段最後一擊的額外收招仍保留，供衝刺取消。
+    a.config={...a.config,recovery:a.config.recovery+(state.attackRecovery||0)};
+    state.attackRecovery=0;
+    if(state.weaponAttack)state.weaponAttack.charge=0;
+  }
+  state.manualRecovery=a.phase==='ready'?0:a.left;
+  if(a.phase!=='ready' && !a.left)advanceManualTiming(0);
+}
+function cancelManualRecovery() {
+  if(!manualMode() || !state.manualTiming)return;
+  state.manualTiming=SurvivorTiming.cancelRecovery(state.manualTiming,state.manualTiming.config);
+  // 零冷卻直接回到可出招；有冷卻仍必須等待。
+  if(state.manualTiming.phase==='cooldown' && !state.manualTiming.left)advanceManualTiming(0);
+  state.manualRecovery=state.manualTiming.phase==='ready'?0:state.manualTiming.left;
+}
 function tickManualAttack(dt) {
   if(!manualMode())return;
-  state.manualRecovery=countdown(state.manualRecovery||0,dt);
+  advanceManualTiming(dt);
   state.specialCooldown=countdown(state.specialCooldown||0,dt);
   for(const hold of Object.values(manualHolds))if(hold)hold.seconds+=dt;
   state.weaponAttack=SurvivorAttackInput.step(state.weaponAttack,activeWeapon(),dt,!!manualHolds.attack);
@@ -106,9 +129,9 @@ function updateManualControls() {
       button.dataset.weaponIcon = activeWeapon().icon;
       button.innerHTML = '<span aria-hidden="true">' + SurvivorIcons.html(activeWeapon().icon) + '</span>';
     }
-    const remaining=kind==='special'?(state.specialCooldown||0):(state.manualRecovery||0);
+    const remaining=kind==='special'?(state.specialCooldown||0):(state.manualTiming && state.manualTiming.phase!=='ready' ? Math.max(.001,state.manualTiming.left) : 0);
     button.setAttribute('aria-disabled',String(remaining>0));
-    button.style.background=`conic-gradient(#9df6ff ${Math.max(0,1-remaining/(kind==='special'?6:.12))*360}deg,#375776 0deg)`;
+    button.style.background=`conic-gradient(#9df6ff ${Math.max(0,1-remaining/(kind==='special'?6:Math.max(.001,state.manualTiming ? state.manualTiming.config[state.manualTiming.phase] : .12)))*360}deg,#375776 0deg)`;
   }
   if(state.mode!=='playing')cancelManualAttack();
 }

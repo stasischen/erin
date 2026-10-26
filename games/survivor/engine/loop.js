@@ -65,7 +65,7 @@ function resize() {
 
 function resetGame() {
   if (typeof cancelManualAttack === "function") cancelManualAttack();
-  state.specialCooldown=0; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
+  state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
   state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
   state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();

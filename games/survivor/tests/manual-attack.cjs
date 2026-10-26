@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),createRun=require('./maker-support.cjs'),fs=require('node:fs');
 const run=createRun();
 function fresh(weapon='candy-sword') {
- run(`GAME_DATA.attackMode='manual';resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='${weapon}';state.spawnTimer=999;state.eliteTimer=999;state.bearSpawned=true;state.shotTimer=0;state.player.damageDisabled=true;state.player.x=400;state.player.y=300;updateCamera();state.enemies=[];`);
+ run(`GAME_DATA.attackMode='manual';resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='${weapon}';state.spawnTimer=999;state.eliteTimer=999;state.bearSpawned=true;state.shotTimer=0;state.player.damageDisabled=true;state.player.x=400;state.player.y=300;updateCamera();state.enemies=[];GAME_DATA.weapons.forEach(w=>w.timing={windup:0,active:0,recovery:.12,cooldown:0});`);
 }
 fresh();run('for(let i=0;i<30;i++)tick(.05)');
 assert.equal(run('state.swingCount'),0);assert.equal(run('state.weaponAttack.charge'),0);

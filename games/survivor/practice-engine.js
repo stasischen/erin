@@ -21,6 +21,7 @@ function practiceStartRound() {
   practiceWasHit=false;practiceResolved=false;practiceHold=0;
   const angle=Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x));
   c.windup=practiceRules.windup(practiceRules.model(GAME_DATA,practiceId).windup,practiceRound,practiceFast);
+  if(c.timing)c.timing={...c.timing,windup:c.windup};
   if(!c.legacy)e.phaseAttack={phase:'windup',left:c.windup,x:e.x,y:e.y,angle,config:{...c},hit:false};
   else e.action={kind:c.shape==='charge'?'charge':'blast',warning:c.windup,angle};
   practiceBuildTimeline();
@@ -121,7 +122,7 @@ function practiceReset(keepPosition=false) {
 function practiceTimelineState() {
   const c=practiceConfig,e=practiceEnemy;
   if(!c.enabled) return {phase:'ready',left:0};
-  if(c.kind==='weapon') return {phase:'active',left:Math.max(0,state.shotTimer)};
+  if(c.kind==='weapon') return manualMode() ? state.manualTiming||{phase:'ready',left:0} : {phase:'active',left:Math.max(0,state.shotTimer)};
   if(!c.legacy) return e.phaseAttack||{phase:'ready',left:0};
   if(e.action) return e.action.warning>0?{phase:'windup',left:e.action.warning}:{phase:'active',left:e.action.life||0};
   return {phase:'cooldown',left:Math.max(0,c.cooldown-practiceHold)};

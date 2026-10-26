@@ -21,6 +21,7 @@
   const ATTACK_BOUNDS = {chargeStun:[0,2,.1],splashSize:[1,4,.1],splashDamage:[0,1,.05],comboEvery:[2,10,1],comboReset:[.3,5,.1],comboMultiplier:[1,5,.1],chargeSeconds:[.2,5,.1],chargeMultiplier:[1,5,.1],moveRetention:[0,1,.05],chargeSize:[1,3,.1],comboSize:[1,3,.1],comboPush:[0,100,1],finisherRecovery:[0,1,.05],stepDistance:[0,40,1],thrustWidth:[5,50,1]};
   const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
   const PHASE_BOUNDS = {radius:[4,150,1],innerRadius:[0,150,1],length:[40,500,5],angle:[20,180,5],windup:[.6,3,.05],active:[.1,4,.05],recovery:[.2,3,.05],cooldown:[.5,15,.1],damage:[0,30,1],triggerDistance:[40,500,5],speed:[50,200,5],count:[1,12,1],gapDegrees:[40,160,5]};
+  const TIMING_BOUNDS = {windup:[0,3,.05],active:[0,4,.05],recovery:[0,3,.05],cooldown:[0,15,.05]};
   const PHASE_SHAPES = {line:'直線',sector:'扇形',circle:'圓形',ring:'圓環',projectiles:'子彈型態'};
   const BEHAVIORS = {chase:'追趕',fast:'弧線快跑',tank:'擋住其他怪',shooter:'射擊後退',charger:'預警衝撞',bomber:'兩秒自爆',splitter:'分裂兩隻',support:'護盾輔助',still:'站在原地',retreat:'靠近後退'};
   const NEUTRAL_BOUNDS = {wavePush:[0,120,1],waveDamage:[0,100,1],waveCooldown:[.1,2,.1],"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
@@ -72,6 +73,10 @@
     // 名稱會顯示在既有技能樹 HTML；拒絕標籤及引號，保留中文字；舊作品的圖示文字自動轉換。
     const name = (v, label, max = 60) => { v = root.SurvivorIcons.clean(v); if (typeof v !== 'string' || !v.trim() || v.length > max || /[<>&"'`]/.test(v)) fail(label + ' 請使用簡短文字，不可包含 HTML 符號'); return v.trim(); };
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
+    const timing = (source,bounds=TIMING_BOUNDS) => {
+      if (!source || typeof source!=='object') fail('時機積木格式不正確');
+      return Object.fromEntries(Object.entries(bounds).map(([key,b])=>[key,num(source[key],b[0],b[1],key)]));
+    };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
       if (input.attackMode !== undefined) data.attackMode = choice(input.attackMode,['auto','manual'],'攻擊模式');
@@ -93,6 +98,7 @@
           const source = input.weapons.find(w => w.id === weapon.id);
           if (!source && weapon.id === 'candy-sword') continue;
           if (!source || source.kind !== weapon.kind) fail('武器種類不正確');
+          if(source.timing !== undefined) weapon.timing=timing(source.timing);
           if (weapon.kind === 'melee') for (const [field,bounds] of Object.entries(WEAPON_BOUNDS)) weapon[field] = num(source[field],bounds[0],bounds[1],field,field === 'spinEvery');
           for (const [field,bounds] of Object.entries(ATTACK_BOUNDS)) if(source[field] !== undefined) weapon[field]=num(source[field],bounds[0],bounds[1],field,field==='comboEvery');
           for(const field of ['baseShape','comboShape','chargeShape']) if(source[field]!==undefined) weapon[field]=choice(source[field],weapon.kind==='projectile'?['projectile']:field==='comboShape'?['sector','line','spin']:['sector','line'],field);
@@ -250,8 +256,11 @@
           if(!a || typeof a.enabled!=='boolean' || typeof a.radial!=='boolean') fail('分階段攻擊開關格式錯誤');
           result.phaseAttack={enabled:a.enabled,radial:a.radial,shape:choice(a.shape,Object.keys(PHASE_SHAPES),'攻擊形狀')};
           for(const [key,b] of Object.entries(PHASE_BOUNDS)) result.phaseAttack[key]=num(a[key],b[0],b[1],key,key==='count');
+          result.phaseAttack.timing=timing(a.timing || a,Object.fromEntries(Object.keys(TIMING_BOUNDS).map(k=>[k,PHASE_BOUNDS[k]])));
+          Object.assign(result.phaseAttack,result.phaseAttack.timing);
           if(a.shape==='ring' && a.innerRadius>=a.radius) fail('圓環內圈需小於外圈');
         }
+        if(!result.phaseAttack.timing) result.phaseAttack.timing=timing(result.phaseAttack,Object.fromEntries(Object.keys(TIMING_BOUNDS).map(k=>[k,PHASE_BOUNDS[k]])));
         return result;
       });
       const b = { ...input.boss };
@@ -310,5 +319,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);
