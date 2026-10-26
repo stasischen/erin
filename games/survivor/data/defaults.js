@@ -2573,3 +2573,13 @@ SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
   const s=m.blocks;
   m.blocks={version:1,moves:[{id:'move',trigger:{event:s.trigger},shape:s.shape,timing:s.timing,effect:{damage:s.actions[0].amount,speed:s.actions[1].speed},feedback:s.feedback}]};
 }));
+
+// ✏️ Erin 可以改：第二批試煉使用相同的觸發／形狀／時機／效果／回饋積木。
+(()=>{
+ const move=(id,name,type,radius,angle,active,speed,phase=1)=>({id,name,minPhase:phase,weight:1,blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type,radius,angle,thickness:12},timing:{windup:1.1,active,recovery:.9,cooldown:.6},effect:{damage:12,speed,duration:id==='tornado'?5:id==='frost-dash'?2.8:4,interval:id==='spiral'?.5:id==='frost-dash'?.14:.6,count:id==='spiral'?19:7,slow:.55,rotation:id==='cross'?Math.PI/2:1.1},feedback:{level:'medium',warning:'ground',pose:id}}]}});
+ SURVIVOR_DEFAULTS.gallery.bosses.push(
+ {id:'frostfire',name:'雙子霜火',artId:'character/frost-twin',hp:1250,radius:30,speed:65,phases:[{threshold:1,speed:1},{threshold:.5,speed:1.4}],moves:[
+ move('frost-dash','霜之衝刺','line',40,0,.7,440),move('nova','火焰新星','ring',180,80,1.6,140),move('cross','十字光束','cross',180,0,1.4,0),move('icefall','天降冰錐','circle',65,0,.2,0,2),move('meteor','隕石','circle',80,0,.2,0,2)]},
+ {id:'winged',name:'羽翼古神',artId:'character/winged',hp:2200,radius:35,speed:75,phases:[{threshold:1,speed:1},{threshold:.5,speed:1.2}],moves:[
+ move('dive','俯衝轟炸','circle',110,0,.65,0),move('feathers','羽毛扇形噴射','sector',180,90,.3,200),move('tornado','追蹤龍捲風','circle',36,0,.3,65),move('spiral','螺旋羽毛彈幕','ring',180,65,3.2,160,2)]});
+})();

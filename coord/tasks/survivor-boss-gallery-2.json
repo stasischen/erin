@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-gallery-2",
+  "title": "王的試煉：雙子霜火與羽翼古神",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-gallery-2",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T170631Z-parent-boss-gallery-2.md",
+  "next": "請 Grok 審查本輪 SHA，補三尺寸實戰、架勢暈眩與 Maker；測試全過。Godot §11 對照及待驗項見 docs/survivor-boss-gallery-2.md；Git 由 erin-watch 處理。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T17:20:08.340367Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-gallery-1",
+    "survivor-boss-ai",
+    "survivor-godot-art-prep"
+  ]
+}

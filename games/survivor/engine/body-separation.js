@@ -83,14 +83,15 @@
 function separateEnemyBodies(dt,previous,passThrough) {
   if(state.bossIntro>0 || !GAME_DATA.bodySeparation.enabled)return;
   const refs=state.enemies.filter(e=>e.alive);
-  if(state.boss && targetVisible(state.boss))refs.push(state.boss);
+  for(const boss of state.trial?trialBodies():state.boss?[state.boss]:[])if(targetVisible(boss))refs.push(boss);
   const result=SurvivorBodies.solve({config:GAME_DATA.bodySeparation,dt,
     world:{width:state.worldWidth,height:state.worldHeight},
     view:{x:state.player.x,y:state.player.y,width:state.width,height:state.height},
     previous,passThrough,player:{x:state.player.x,y:state.player.y,r:state.player.r},
-    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss || !!e.feedbackFrozen,mass:targetMass(e)}))});
+    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss || !!e.trialActor || !!e.feedbackFrozen,mass:targetMass(e)}))});
   if(!state.player.feedbackFrozen){state.player.x=result.player.x;state.player.y=result.player.y;}
   result.bodies.forEach((b,i)=>{refs[i].x=b.x;refs[i].y=b.y;});
+  if(state.trial)for(const body of [state.player,...refs])clampToMap(body);
   updateCamera();
 }
 
@@ -98,14 +99,14 @@ Survivor.engine["body-separation"]={rules:SurvivorBodies,separateEnemyBodies};
 
 function targetMass(target) {
   const type=ENEMY_TYPES.find(e=>e.id===target.typeId);
-  return SurvivorBodies.mass({boss:target===state.boss,miniboss:target.miniboss,
+  return SurvivorBodies.mass({boss:target===state.boss||!!target.trialActor,miniboss:target.miniboss,
     mass:target.mass ?? (type && type.mass),behavior:target.behavior},GAME_DATA.knockback);
 }
 function targetDisplacement(target,distance) {
   const c=GAME_DATA.knockback;
   const armor=target.displacementMultiplier ?? 1;
   return SurvivorBodies.displacement(distance,targetMass(target),c,
-    armor*(c.enabled && target===state.boss ? c.bossMultiplier : 1));
+    armor*(c.enabled && (target===state.boss||target.trialActor) ? c.bossMultiplier : 1));
 }
 
 // 可移植擊退積木：衝量以「剩餘位移」儲存，速度為 2 * 位移 / 剩餘秒數。
@@ -160,7 +161,7 @@ globalThis.SurvivorSlide = (() => {
   return {impulse,sweep,step};
 })();
 function slideObstacles(target) {
-  const refs=[state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])].filter(t=>t!==target && (t===state.player || targetVisible(t)));
+  const refs=[state.player,...state.enemies.filter(e=>e.alive),...(state.trial?trialBodies():state.boss?[state.boss]:[])].filter(t=>t!==target && (t===state.player || targetVisible(t)));
   const circles=refs.map(t=>({x:deltaX(t.x,target.x),y:deltaY(t.y,target.y),r:t.r}));
   const walls=[];
   for(const m of state.bossMoves) if(m.active && bossKind(m)==='barriers') for(const sign of [-1,1]) walls.push({x:deltaX(m.x+sign*m.wallWidth,target.x)-8,y:deltaY(m.y,target.y)-m.radius,width:16,height:m.radius*2});

@@ -14,3 +14,7 @@
 - 原創像素圖：`../art/characters/gatekeeper.png`，16×16，沒有使用外部素材或原作角色圖片。
 - 可編輯原稿／產生器：`../tools/gatekeeper-art.py`。
 - 美術清單 id：`character/gatekeeper`；動畫動作與地面預警使用可替換的程式圖。
+
+## 王的試煉：霜火雙子與羽翼古神
+
+`art/characters/frost-twin.png`、`fire-twin.png`、`winged.png` 為本專案原創 16×16 像素圖，無外部素材。可編輯原稿：`tools/gallery-art.py`（沿用 `tools/gatekeeper-art.py` 的 PNG 格式）；同一幀套用動作變形，逐幀動畫尚未製作。穩定美術 id、尺寸與錨點見 `art-manifest.js`。

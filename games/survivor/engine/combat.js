@@ -5,22 +5,12 @@ function targetVisible(target) {
   return Math.abs(x) + r <= state.width / 2 && Math.abs(y) + r <= state.height / 2;
 }
 function canAttackTarget(target) {
-  if(state.trial&&target.emergeTimer>0)return false;
+  if(state.trial&&(target.emergeTimer>0||target.trialActor&&(state.bossIntro>0||target.hp<=0)))return false;
   return targetVisible(target) && Math.hypot(deltaX(target.x, state.player.x), deltaY(target.y, state.player.y)) <= BUILD_TUNING.attackRadius &&
     (target !== state.boss || state.bossIntro <= 0);
 }
 function closestEnemy() {
-  let target = null, best = Infinity;
-  for (const enemy of state.enemies) {
-    if (!enemy.alive || !canAttackTarget(enemy)) continue;
-    const distance = (deltaX(enemy.x, state.player.x)) ** 2 + (deltaY(enemy.y, state.player.y)) ** 2;
-    if (distance < best) { best = distance; target = enemy; }
-  }
-  if (state.boss && canAttackTarget(state.boss)) {
-    const distance = (deltaX(state.boss.x, state.player.x)) ** 2 + (deltaY(state.boss.y, state.player.y)) ** 2;
-    if (distance < best) target = state.boss;
-  }
-  return target;
+  return combatTargets().reduce((best,target)=>!best||Math.hypot(deltaX(target.x,state.player.x),deltaY(target.y,state.player.y))<Math.hypot(deltaX(best.x,state.player.x),deltaY(best.y,state.player.y))?target:best,null);
 }
 
 function fireAtNearest(command = null) {
@@ -152,9 +142,10 @@ function grantExperience(value) {
 }
 
 function combatTargets() {
-  return state.enemies.filter((enemy) => enemy.alive).concat(state.boss ? [state.boss] : []).filter(canAttackTarget);
+  return state.enemies.filter((enemy) => enemy.alive).concat(state.trial?trialBodies():state.boss ? [state.boss] : []).filter(canAttackTarget);
 }
 function hitBuildTarget(target, damage, attack = {}) {
+  if(target.trialActor&&target!==state.boss)return withTrialBody(target,()=>hitBuildTarget(target,damage,attack));
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
     if(attack.charged)damage*=teacherBonuses().damage;
@@ -162,7 +153,7 @@ function hitBuildTarget(target, damage, attack = {}) {
     damageNumber(target, damage);
     target.meleeFlash=false;
     target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
-    if (target.hp <= 0) { tierImpact('large',state.player,target);state.boss = null; finishRun(true); }
+    if (target.hp <= 0) { tierImpact('large',state.player,target);if(state.trial)trialBossDefeated(target);else {state.boss = null; finishRun(true);} }
     else teacherRecoveryHit();
   } else if (target.alive) damageEnemy(target, damage);
 }
@@ -459,9 +450,13 @@ function updateBomb(dt) {
     enemy.slide=previous; // 炸彈沿用自己的距離，不額外加普攻擊退。
     if (enemy.alive) pushAway(enemy);
   }
-  if (state.boss && canAttackTarget(state.boss) && Math.hypot(deltaX(state.boss.x, bomb.x), deltaY(state.boss.y, bomb.y)) <= bomb.radius + state.boss.r) {
-    state.boss.hp -= schoolDamage(state.boss, bomb.damage); state.boss.flash = HIT_FLASH_SECONDS; state.boss.meleeFlash=false; pushAway(state.boss); updateHud();
-    if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
+  for(const boss of state.trial?trialBodies():state.boss?[state.boss]:[]) {
+    if(!canAttackTarget(boss)||Math.hypot(deltaX(boss.x,bomb.x),deltaY(boss.y,bomb.y))>bomb.radius+boss.r)continue;
+    withTrialBody(boss,()=>{
+      boss.hp-=schoolDamage(boss,bomb.damage);boss.flash=HIT_FLASH_SECONDS;boss.meleeFlash=false;pushAway(boss);updateHud();
+      if(boss.hp<=0){if(state.trial)trialBossDefeated(boss);else {state.boss=null;finishRun(true);}}
+    });
+    if(state.mode!=='playing')return;
   }
   burst(bomb.x, bomb.y, "#80eaff", 20); playSound("explosion");
 }

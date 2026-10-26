@@ -328,9 +328,17 @@
         for(const m of b.moves) {
           const field=el('fieldset',undefined,box);el('legend',m.name,field);const s=m.blocks.moves[0];
           range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');
-          range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(s.shape.type==='sector')range(field,s.shape,'angle',[0,360,5],'扇形角度');
+          range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(['sector','ring'].includes(s.shape.type))range(field,s.shape,'angle',[0,360,5],s.shape.type==='ring'?'安全缺口角度':'扇形角度');
           for(const [key,bounds,label] of [['windup',[.6,3,.05],'預警'],['active',[.1,4,.05],'出手'],['recovery',[.2,3,.05],'收招'],['cooldown',[.1,8,.1],'冷卻']])range(field,s.timing,key,bounds,label+'秒數');
           range(field,s.effect,'damage',[0,40,1],'傷害');range(field,s.effect,'speed',[0,600,10],'招式移速');
+          if(s.effect.duration!==undefined){
+            if(['nova','cross'].includes(m.id))range(field,s.shape,'thickness',[2,40,1],'環／光束半寬');
+            if(['frost-dash','tornado','feathers','spiral'].includes(m.id))range(field,s.effect,'duration',[.1,10,.1],'危險區／羽毛壽命秒數');
+            if(['frost-dash','spiral'].includes(m.id))range(field,s.effect,'interval',[.1,3,.05],'生成間隔秒數');
+            if(['feathers','spiral'].includes(m.id))range(field,s.effect,'count',[1,32,1],'每次羽毛數量');
+            if(m.id==='frost-dash')range(field,s.effect,'slow',[.2,1,.05],'冰面剩餘速度');
+            if(['cross','spiral'].includes(m.id))range(field,s.effect,'rotation',[0,6,.05],m.id==='cross'?'全招旋轉弧度':'每秒旋轉弧度');
+          }
         }
       }
     } else if(selected.boss==='ai') {

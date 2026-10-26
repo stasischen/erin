@@ -487,7 +487,8 @@
         return result;
       });
       if(input.gallery !== undefined) {
-        const g=input.gallery, base=data.gallery;
+        const base=data.gallery, g={...input.gallery};
+        if(Array.isArray(g.bosses)&&g.bosses.length===1&&g.bosses[0].id==='gatekeeper')g.bosses=[...g.bosses,...JSON.parse(JSON.stringify(base.bosses.slice(1)))];
         if(!g || g.schemaVersion!==1 || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
         const result={schemaVersion:1};
         for(const [k,lo,hi] of [['arenaRadius',420,1200],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
@@ -502,7 +503,7 @@
             const originalMove=original.moves[j],s=m.blocks && m.blocks.moves && m.blocks.moves[0];
             if(m.id!==originalMove.id || !s || m.blocks.version!==1 || m.blocks.moves.length!==1 || s.id!=='move' || !s.trigger || s.trigger.event!=='onSelect' || s.shape.type!==originalMove.blocks.moves[0].shape.type || !s.feedback || s.feedback.pose!==m.id || s.feedback.warning!=='ground' || s.feedback.level!=='medium' || !s.effect)fail('試煉招式積木錯誤');
             const timing={};for(const [k,lo,hi] of [['windup',.6,3],['active',.1,4],['recovery',.2,3],['cooldown',.1,8]])timing[k]=num(s.timing[k],lo,hi,k);
-            return {id:m.id,name:name(m.name,'試煉招式',24),minPhase:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度')},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度')},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
+            return {id:m.id,name:name(m.name,'試煉招式',24),minPhase:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度'),...(originalMove.blocks.moves[0].shape.thickness!==undefined?{thickness:num(s.shape.thickness,2,40,'環或光束半寬')}:{})},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度'),...(originalMove.blocks.moves[0].effect.duration!==undefined?{duration:num(s.effect.duration,.1,10,'危險區／彈幕壽命'),interval:num(s.effect.interval,.1,3,'生成間隔'),count:num(s.effect.count,1,32,'羽毛數量',true),slow:num(s.effect.slow,.2,1,'冰面剩餘速度'),rotation:num(s.effect.rotation,0,6,'旋轉速度')}:{})},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
           });return boss;
         });data.gallery=result;
       }
