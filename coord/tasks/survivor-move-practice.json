@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-move-practice",
+  "title": "招式練習場：真實攻擊重播與時間軸",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-move-practice",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T051137Z-parent-move-practice.md",
+  "next": "請 Grok 獨立審查 erin-watch 提交的最後實質 SHA 並跑 --layout，特別確認直向旋轉、小螢幕分欄、iframe 搖桿與連續調整滑桿。已完成八招真實引擎練習場、木頭假人、免傷走位、資料產生的說明與時間軸、即時重載與離線快取，版本 20261026s；node games/survivor/tools/test.cjs 全部通過，未跑 --layout。甜甜圈／跳跳糖沿用正式遊戲舊流程，明示零收招；沒有改其玩法。老師招式與連躲挑戰屬可選，本次未加。Godot §11 對照、測試與限制見 docs/survivor-move-practice-validation.md。無須先決定的設計事項；請 Erin 待審查後試玩預警、旋轉與浪花。commit、push、PR 由 erin-watch 代勞，未核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T05:21:06.258306Z",
+  "updatedBy": "codex"
+}
