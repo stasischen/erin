@@ -22,14 +22,14 @@ function absorbSchoolHit(damage) {
   }
   return SurvivorWeapons.receivedDamage(damage, activeWeapon());
 }
-function schoolWindWall() { return state.schoolCombat && effectLevel('wind-eye') && state.schoolCombat.still >= GAME_DATA.schoolRules.eyeWait; }
+function schoolWindWall() { return state.schoolCombat && effectLevel('wind-eye') && SurvivorEffectBlocks.matches(cardBlock('wind-eye','onStill').conditions[0],{seconds:state.schoolCombat.still}); }
 function schoolDashEnded() {
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
   if (!c) return;
   if (effectLevel('water-bubble')) c.bubble = cardBlock('water-bubble','onDashEnd').actions[0].active;
   if (effectLevel('wind-refund')) {
     // 半格是回充進度，不能用半格再發動一次完整衝刺。
-    state.dashCooldown = Math.max(0, state.dashCooldown - gameSettings.dashCooldown * r.refundCharge);
+    state.dashCooldown = Math.max(0, state.dashCooldown - gameSettings.dashCooldown * cardBlock('wind-refund','onDashEnd').actions[0].fraction);
     if (state.dashCooldown === 0 && state.dashCharges < maxDashCharges()) { state.dashCharges++; state.dashCooldown = state.dashCharges < maxDashCharges() ? gameSettings.dashCooldown : 0; }
   }
 }
@@ -39,12 +39,13 @@ function schoolShotHit(shot, target) {
   if (!shot.melee) waveNeutralHit(target,shot.vx,shot.vy);
   if (shot.push) shiftTarget(target, shot.x - shot.vx, shot.y - shot.vy, shot.push);
   if (shot.charged) { lightning(state.player.x,state.player.y,target.x,target.y); schoolEffect('thunder',target,target.x,target.y,shot.damage,shot.hitList); }
-  if (!shot.melee && effectLevel('wind-blade') && shot.pierce > 0 && !shot.blade) {
-    const other = combatTargets().find(e => !shot.hitList.includes(e) && Math.hypot(deltaX(e.x,target.x),deltaY(e.y,target.y)) <= r.windBladeRange);
+  const blade=cardBlock('wind-blade','onShotHit');
+  if (effectLevel('wind-blade') && SurvivorEffectBlocks.matches(blade.conditions[0],shot)) {
+    const other = combatTargets().find(e => !shot.hitList.includes(e) && cardBlockMatches(blade.conditions[1],e,target.x,target.y));
     skillVisual('gust',target.x,target.y,{x2:target.x+shot.vx*.15,y2:target.y+shot.vy*.15,color:BUILD_TUNING.wind.color});
     if (other && state.projectiles.length < PROJECTILE_LIMIT) {
       const a = Math.atan2(deltaY(other.y,target.y),deltaX(other.x,target.x));
-      state.projectiles.push(takeFromPool(state.projectilePool,{x:target.x,y:target.y,vx:Math.cos(a)*PROJECTILE_SPEED,vy:Math.sin(a)*PROJECTILE_SPEED,r:5,damage:shot.damage*r.windBladeDamage,rangeLeft:r.windBladeRange,hitList:[target],alive:true,blade:true,pierce:0,schools:[],colors:['wind'],transformed:false,push:0,charged:false,maker:true}));
+      state.projectiles.push(takeFromPool(state.projectilePool,{x:target.x,y:target.y,vx:Math.cos(a)*PROJECTILE_SPEED,vy:Math.sin(a)*PROJECTILE_SPEED,r:5,damage:shot.damage*blade.actions[0].multiplier,rangeLeft:blade.actions[0].range,hitList:[target],alive:true,blade:true,pierce:0,schools:[],colors:['wind'],transformed:false,push:0,charged:false,maker:true}));
     }
   }
 }
@@ -68,7 +69,8 @@ function updateSchoolCombat(dt) {
     push(fountain.conditions[0].radius,fountain.actions[0].distance,BUILD_TUNING.water.color);
     for (const t of combatTargets()) if (cardBlockMatches(fountain.conditions[0],t,state.player.x,state.player.y)) applyCardTargetActions({actions:fountain.actions.slice(1)},t);
   });
-  pulse('wind-gust',r.gustSeconds,() => push(r.gustRadius,r.gustPush,BUILD_TUNING.wind.color));
+  const gust=cardBlock('wind-gust','onPulse');
+  pulse('wind-gust',gust.interval,() => push(gust.conditions[0].radius,gust.actions[0].distance,BUILD_TUNING.wind.color));
   const rain=cardBlock('water-rain','onPulse');
   pulse('water-rain',rain.interval,() => {
     c.rain = rain.actions[0].duration;
@@ -93,7 +95,8 @@ function updateSchoolCombat(dt) {
     }
   }
   c.rods = c.rods.filter(rod => rod.life > 0);
-  if (schoolWindWall()) for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,state.player.x),deltaY(target.y,state.player.y)) < r.eyeRadius + target.r) shiftTarget(target,state.player.x,state.player.y,r.eyePush*dt);
+  const wall=cardBlock('wind-eye','onWallTick',{dt});
+  if (schoolWindWall()) for (const target of combatTargets()) if (cardBlockMatches(wall.conditions[0],target,state.player.x,state.player.y)) shiftTarget(target,state.player.x,state.player.y,wall.actions[0].distance);
   applyEffectBlockTimer(dt);
 
 }

@@ -187,7 +187,7 @@ function tick(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(dt, state.dashTimer);
-  const speed = PLAYER_SPEED * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightSpeed) * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
+  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -321,7 +321,7 @@ function tick(dt) {
     if (shot.source === "teacher" && (!state.boss || !targetVisible(state.boss) || !targetVisible(shot) || (shot.life -= dt) <= 0)) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
-    if (schoolWindWall() && Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < GAME_DATA.schoolRules.eyeRadius + shot.r) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
+    if (schoolWindWall() && cardBlockMatches(cardBlock('wind-eye','onEnemyShot').conditions[0],shot,state.player.x,state.player.y)) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
       if (state.practiceHit) pacingHurtPlayer(shot.damage || 0);
       if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
@@ -333,7 +333,7 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = deltaX(state.player.x, gem.x), dy = deltaY(state.player.y, gem.y), distance = Math.hypot(dx, dy);
-    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * (1 + effectLevel("wind-light") * GAME_DATA.schoolRules.lightMagnet) * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * cardBlock('wind-light','onPickup').actions[0].multiplier * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
     if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     clampToMap(gem);
     if (distance < state.player.r + gem.r + 3) { gem.alive = false; neutralEvent("pickup", gem.x, gem.y); grantExperience(gem.value); if (state.mode === "levelup") break; }

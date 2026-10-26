@@ -174,7 +174,7 @@ function drawHero() {
   const look = buildAppearance(), color = BUILD_TUNING[look.main].color;
   if (look.forms.length || state.schoolCombat && state.schoolCombat.bubble || schoolWindWall()) {
     ctx.strokeStyle = state.schoolCombat && state.schoolCombat.bubble ? '#b4efff' : color; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0,0,schoolWindWall() ? GAME_DATA.schoolRules.eyeRadius : p.r+9,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,0,schoolWindWall() ? cardBlock('wind-eye','onStill').actions[0].radius : p.r+9,0,Math.PI*2); ctx.stroke();
   }
   if (look.forms.includes('wind')) {
     ctx.fillStyle=BUILD_TUNING.wind.color;

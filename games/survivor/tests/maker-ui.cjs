@@ -182,3 +182,29 @@ console.log('PASS: ten thunder card stacks, fold/preview persistence, shared num
   assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：噴泉'));
 }
 console.log('PASS: ten water card stacks, fold/preview persistence, shared edit and old-work reload');
+
+// Wind stacks reuse the same editor, refs and old-work storage.
+{
+  const m=setup();m.tab('cards');
+  const ids=['wind-attack','wind-dash','wind-speed','wind-ultimate','fusion-storm','wind-blade','wind-gust','wind-refund','wind-light','wind-eye'];
+  for(const id of ids) {
+    m.item(id);
+    const stacks=m.nodes().filter(n=>n.className==='card-block-stack');
+    assert.ok(stacks.length,id);assert.equal(stacks[0].open,false);
+    stacks[0].open=true;stacks[0].fire('toggle');
+    assert.ok(!stacks.some(n=>n.textContent.includes('undefined')),id);
+    assert.ok(stacks[0].textContent.includes('動作 →'),id);
+    m.click('看這個積木的效果');assert.equal(m.calls[m.calls.length-1].spec.id,id);
+    assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
+  }
+  m.ids.save.fire('click');const beforePush=JSON.parse(m.storage['erin-survivor-maker-v1']).schoolRules.gustPush;
+  m.item('wind-gust');
+  const row=m.nodes().find(n=>n.className==='maker-number'&&n.textContent.startsWith('吹飛距離'));
+  assert.ok(row);row.children[1].children.find(n=>n.tag==='button'&&n._text==='＋').fire('click');
+  m.ids.save.fire('click');const saved=JSON.parse(m.storage['erin-survivor-maker-v1']);
+  assert.equal(saved.schoolRules.gustPush,beforePush+1);
+  const reloaded=setup({saved:m.storage});reloaded.tab('cards');reloaded.item('wind-gust');
+  assert.ok(reloaded.nodes().find(n=>n.className==='card-block-stack'));
+  assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：吹飛'));
+}
+console.log('PASS: ten wind card stacks, fold/preview persistence, shared edit and old-work reload');

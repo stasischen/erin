@@ -47,7 +47,7 @@ function swingAtNearest(dash = false, command = null) {
   const look = buildAppearance();
   const event = SurvivorWeapons.swing(weapon,number,command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY),{
     extraArc:effectLevel('multi-water') * UPGRADE_TUNING.extraShotAngle,
-    size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * (1+effectLevel('big-water')*UPGRADE_TUNING.waterSizePerLevel) * (1+effectLevel('wind-attack')*BUILD_TUNING.windSpeed) * (1+effectLevel('piercing-water')*.1) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
+    size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * (1+effectLevel('big-water')*UPGRADE_TUNING.waterSizePerLevel) * cardBlock('wind-attack','onShot').actions[0].multiplier * (1+effectLevel('piercing-water')*.1) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
     damage:effectiveDamage()*properties.damage*(boosted ? UPGRADE_TUNING.dashAttackDamage : 1),push:properties.push
   },{...sequence.event,dash});
   const targets = combatTargets();
@@ -94,8 +94,9 @@ function swingAtNearest(dash = false, command = null) {
   if(event.step && state.mode==='playing') {state.player.x+=Math.cos(event.angle)*event.step;state.player.y+=Math.sin(event.angle)*event.step;clampToMap(state.player);updateCamera();}
   // 風刃變成一次近距離追斬；不額外發射遠程水球。
   if(effectLevel('wind-blade')) {
-    const other=combatTargets().find(t=>!hits.includes(t) && Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y))<=event.radius+t.r && hits.some(h=>Math.hypot(deltaX(t.x,h.x),deltaY(t.y,h.y))<=r.windBladeRange));
-    if(other) {skillVisual('gust',state.player.x,state.player.y,{x2:other.x,y2:other.y,color:BUILD_TUNING.wind.color});hitBuildTarget(other,event.damage*r.windBladeDamage);}
+    const blade=cardBlock('wind-blade','onMeleeHit');
+    const other=combatTargets().find(t=>!hits.includes(t) && Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y))<=event.radius+t.r && hits.some(h=>cardBlockMatches(blade.conditions[0],t,h.x,h.y)));
+    if(other) {skillVisual('gust',state.player.x,state.player.y,{x2:other.x,y2:other.y,color:BUILD_TUNING.wind.color});hitBuildTarget(other,event.damage*blade.actions[0].multiplier);}
   }
 }
 Survivor.engine.weapons = {activeWeapon,swingAtNearest,rules:SurvivorWeapons};
