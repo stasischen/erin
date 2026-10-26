@@ -37,7 +37,7 @@ function updateBookShooting(dt) {
   }
   if (state.bookShotTimer > 0 || state.enemyShots.filter((shot) => shot.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) return;
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
-  const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
+  const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !slideControlLocked(enemy) && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
   const allowed = ready.filter(e => {
     const type=ENEMY_TYPES.find(t=>t.id===e.typeId);

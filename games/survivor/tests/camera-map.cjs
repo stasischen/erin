@@ -38,7 +38,10 @@ run(`resetGame(); state.mode='playing'; state.spawnTimer=999; state.shotTimer=99
   state.enemies=[{x:1300,y:900,r:17,speed:0,damage:15,hp:100,maxHp:100,alive:true,wobble:0,flash:0,shotCooldown:0,typeId:'jaben'}];
   state.projectiles=[{x:1300,y:900,vx:0,vy:0,r:12,damage:35,pierce:0,hitList:[],alive:true,rangeLeft:100}]; tick(0);`);
 run('updateBookShooting(GAME_DATA.pacing.warning)');
-assert.equal(run('state.enemies[0].hp'),65); assert.equal(run('state.enemyShots.length'),1);
+assert.equal(run('state.enemies[0].hp'),65); assert.equal(run('state.enemyShots.length'),0);
+// 被水球擊退時不能丟字；滑完重新預警後才出招。
+run('updateTargetSlide(state.enemies[0],.3);updateBookShooting(0);updateBookShooting(GAME_DATA.pacing.warning)');
+assert.equal(run('state.enemyShots.length'),1);
 run('state.enemies[0].x=100; state.bookShotTimer=0; state.enemies[0].shotCooldown=0; state.enemyShots=[]; updateBookShooting(0);');
 assert.equal(run('state.enemyShots.length'),0);
 // visualViewport 工具列／平移／直拿，尺寸和原點不再取 100vh。

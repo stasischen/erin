@@ -37,6 +37,7 @@ globalThis.SurvivorWeapons = (() => {
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
 function activeWeapon() { return GAME_DATA.weapons.find(w => w.id === state.weaponId) || GAME_DATA.weapons[0]; }
 function swingAtNearest(dash = false, command = null) {
+  if(slideControlLocked(state.player)) return;
   const target = closestEnemy(), weapon = activeWeapon();
   if (!target && !command) return;
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;

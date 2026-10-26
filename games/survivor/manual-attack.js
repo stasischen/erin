@@ -27,6 +27,7 @@ function manualAimAngle(hold) {
   return t?Math.atan2(deltaY(t.y,state.player.y),deltaX(t.x,state.player.x)):Math.atan2(state.faceY,state.faceX);
 }
 function beginManualAttack(kind, pointerId=null, point=null) {
+  if(slideControlLocked(state.player)) return false;
   if(!manualMode()||state.mode!=='playing'||manualHolds[kind])return false;
   if(kind==='special'&&(state.specialCooldown>0||state.manualLeap))return false;
   manualHolds[kind]={pointerId,origin:point,angle:null,seconds:0};
@@ -40,7 +41,7 @@ function cancelManualAttack() {
 }
 function releaseManualAttack(kind) {
   const hold=manualHolds[kind];manualHolds[kind]=null;
-  if(!hold||!manualMode()||state.mode!=='playing')return;
+  if(!hold||!manualMode()||state.mode!=='playing'||slideControlLocked(state.player))return;
   const dash=state.dashTimer>0&&!state.manualDashUsed;
   const event=SurvivorAttackInput.release(kind,hold.seconds,manualAimAngle(hold),activeWeapon(),dash);
   state.lastAttackInput=event;
@@ -107,6 +108,7 @@ function cancelManualRecovery() {
   state.manualRecovery=state.manualTiming.phase==='ready'?0:state.manualTiming.left;
 }
 function tickManualAttack(dt) {
+  if(slideControlLocked(state.player)) {cancelManualAttack();return;}
   if(!manualMode())return;
   advanceManualTiming(dt);
   state.specialCooldown=countdown(state.specialCooldown||0,dt);

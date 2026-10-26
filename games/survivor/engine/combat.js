@@ -23,6 +23,7 @@ function closestEnemy() {
 }
 
 function fireAtNearest(command = null) {
+  if(slideControlLocked(state.player)) return;
   if (activeWeapon().kind === "melee") { swingAtNearest(!!(command && command.dash), command); return; }
   const target = closestEnemy();
   if ((!target && !command) || state.projectiles.length >= PROJECTILE_LIMIT) return;
@@ -388,7 +389,7 @@ function imminentDashThreat() {
   return false;
 }
 function activateDash() {
-  if (state.mode !== "playing" || state.dashTimer > 0 || state.dashCharges <= 0) return;
+  if (state.mode !== "playing" || slideControlLocked(state.player) || state.dashTimer > 0 || state.dashCharges <= 0) return;
   const teacherThreat=teacherDodgeThreat();
   const perfect = teacherThreat || imminentDashThreat();
   const input = movementInput(), length = Math.hypot(input.x, input.y);
@@ -418,7 +419,7 @@ function activateDash() {
   state.manualDashUsed=false; playSound("dash"); updateActionControls();
 }
 function activateSkill() {
-  if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
+  if (state.mode !== "playing" || slideControlLocked(state.player) || state.skillCooldown > 0 || state.bomb) return;
   state.bomb = { x: state.player.x, y: state.player.y, timer: gameSettings.bombDelay,
     delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`) || school === "wind" && effectLevel("wind-dash")) };
   state.skillCooldown = gameSettings.bombCooldown;

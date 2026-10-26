@@ -109,7 +109,7 @@ function targetDisplacement(target,distance) {
 }
 
 // 可移植擊退積木：衝量以「剩餘位移」儲存，速度為 2 * 位移 / 剩餘秒數。
-// 二次 ease-out 精確積分，30/60/120 fps 的總位移相同。
+// 二次 ease-out 以固定物理步精確積分，30/60/120 fps 的總位移相同。
 globalThis.SurvivorSlide = (() => {
   function impulse(previous, dx, dy, seconds=.2) {
     const duration=Math.max(.15,Math.min(.25,seconds));
@@ -151,11 +151,25 @@ globalThis.SurvivorSlide = (() => {
     }
     return {dx:dx*fraction,dy:dy*fraction,fraction,hit};
   }
+  // 固定 1/120 秒物理步；不足一步的時間存在純資料中，留到下次。
+  // 障礙也隨已走距離換算，長幀仍逐步掃掠，不穿過薄牆或身體。
+  const fixedSeconds=1/120;
   function step(motion,dt,r=0,circles=[],walls=[],bounds=null) {
     if(!motion || dt<=0)return {motion,dx:0,dy:0,hit:-1};
-    const time=Math.max(0,motion.time-dt),ratio=time/motion.time;
-    const moved=sweep(motion.x*(1-ratio*ratio),motion.y*(1-ratio*ratio),r,circles,walls,bounds);
-    return {...moved,motion:time>1e-7 && moved.fraction===1?{...motion,x:motion.x*ratio*ratio,y:motion.y*ratio*ratio,time}:null};
+    let pending=(motion.pending||0)+dt,dx=0,dy=0,hit=-1,current={...motion};
+    while(current) {
+      const h=Math.min(fixedSeconds,current.time);
+      if(pending+1e-10<h)break;
+      pending=Math.max(0,pending-h);
+      const time=Math.max(0,current.time-h),ratio=time/current.time;
+      const shiftedBounds=bounds?{left:bounds.left-dx,right:bounds.right-dx,top:bounds.top-dy,bottom:bounds.bottom-dy,
+        ...(bounds.zone?{zone:{...bounds.zone,x:bounds.zone.x-dx,y:bounds.zone.y-dy}}:{})}:null;
+      const moved=sweep(current.x*(1-ratio*ratio),current.y*(1-ratio*ratio),r,
+        circles.map(b=>({...b,x:b.x-dx,y:b.y-dy})),walls.map(b=>({...b,x:b.x-dx,y:b.y-dy})),shiftedBounds);
+      dx+=moved.dx;dy+=moved.dy;hit=moved.hit;
+      current=time>1e-7 && moved.fraction===1?{...current,x:current.x*ratio*ratio,y:current.y*ratio*ratio,time}:null;
+    }
+    return {motion:current?{...current,pending}:null,dx,dy,hit};
   }
   return {impulse,sweep,step};
 })();
@@ -189,3 +203,6 @@ function updateTargetSlide(target,dt) {
   }
   if(!target.slide)target.slideWave=false;
 }
+
+// 外層保留這一幀開始時的失控狀態，最後一步也不混入自主移動。
+function slideControlLocked(target) { return !!(target.slide || target.slideHeld); }

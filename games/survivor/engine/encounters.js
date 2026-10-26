@@ -83,7 +83,7 @@ function updateEncounters(dt) {
   state.syrup = state.syrup.filter(s => (s.life -= dt) > 0);
   for (const s of state.syrup) s.warning = countdown(s.warning,dt);
   for (const enemy of state.enemies) {
-    if (!enemy.alive) continue;
+    if (!enemy.alive || slideControlLocked(enemy)) continue;
     if (enemy.miniboss) {
       // 畫面外不攻擊；回到畫面內至少休息一次，重擊不會突然落下。
       if (!targetVisible(enemy) || state.bossIntro > 0) {

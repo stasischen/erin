@@ -82,3 +82,5 @@
 - 2026-10-26：依家長同意的統一拼圖第 4 步，將三武器普通攻擊、連段重招、蓄力、獨立特殊招及衝刺斬整理成五部分可收合積木；舊作品載入轉換，保留原初值與戰鬥接合。回饋參數編輯留第 7 步，敵人遷移留第 5 步。來源：`coord/inbox/done/20261026T094145Z-parent-weapon-blocks.md`；驗證及待上手項目見 `docs/survivor-weapon-blocks-validation.md`，尚待 Grok 審查與 Erin 試玩，未核准上線。
 
 - 2026-10-26：家長轉述「預警文字可以拿掉 看起來很怪」；四種波次事件移除文字橫幅，保留事件預警並以邊緣脈動與音效呈現，老師戰及其他必要文字保留。（來源：`coord/inbox/done/20261026T131537Z-parent-wave-warning-text.md`；驗證與待試玩：`docs/survivor-wave-warning-text-validation.md`）
+
+- 2026-10-26：家長確認擊退是短且有上限的 ease-out 推力、期間暫時不能自主移動或出招，使用固定物理步長與掃掠；延續「撞到會停，比較真實」，保留怪物身體阻擋，紫霧圈不阻擋。固定步及失控狀態沿用可序列化純規則，方便之後 Godot 接美術。來源：`coord/inbox/done/20261026T140917Z-parent-knockback-slide-decision.md`、`coord/inbox/done/20261026T142627Z-parent-knockback-slide-rules.md`；交接見 `docs/survivor-knockback-slide-validation.md`，仍待 Grok 審查、Erin 試玩。

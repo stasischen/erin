@@ -116,6 +116,7 @@ function updateBoss(dt) {
   state.bossShake = countdown(state.bossShake, dt); state.bossShout = countdown(state.bossShout, dt);
   const b = state.boss;
   if (!b || state.bossIntro > 0) { clearBossMoves(); return; }
+  if(slideControlLocked(b)) {b.pursuing=false;return;}
   b.posture=SurvivorPosture.step(b.posture,null,GAME_DATA.boss.posture,dt).state;
   b.recoveryLeft=countdown(b.recoveryLeft||0,dt);
   b.wobble += dt * 3; b.flash = Math.max(0, b.flash - dt);

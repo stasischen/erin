@@ -170,7 +170,10 @@ function tick(dt) {
   }
   if (state.mode !== "playing") return;
   if (openEncounterReward()) return;
-  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])]) updateTargetSlide(target,dt);
+  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])]) {
+    if(target.slide) target.slideHeld=true; else delete target.slideHeld;
+    updateTargetSlide(target,dt);
+  }
   if(state.mode!=="playing") return;
   updateCamera();
   updateSkillVisuals(dt);
@@ -193,12 +196,13 @@ function tick(dt) {
       }
     }
   }
-  const input = movementInput();
+  const playerLocked=slideControlLocked(state.player);
+  const input = playerLocked ? {x:0,y:0} : movementInput();
   let dx = input.x, dy = input.y;
   if (Math.hypot(dx, dy) > 0.01) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
-  const dashTime = Math.min(dt, state.dashTimer);
+  const dashTime = playerLocked ? 0 : Math.min(dt, state.dashTimer);
   const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
@@ -240,7 +244,7 @@ function tick(dt) {
   if(state.player.perfectFlash>0)state.player.perfectFlash=countdown(state.player.perfectFlash,dt);
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
-  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
+  if (!playerLocked && GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
@@ -273,11 +277,11 @@ function tick(dt) {
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     if(!targetVisible(enemy)) enemy.phaseAttack=null;
-    updateEnemyBehavior(enemy,dt);
+    if (!slideControlLocked(enemy)) updateEnemyBehavior(enemy,dt);
     if(state.mode!=="playing") return;
     if(!enemy.alive) continue;
     const direction=enemyDirection(enemy,distance), curve=enemy.behavior==='fast' ? Math.sin(enemy.wobble)*.65 : 0;
-    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
+    const speed=(slideControlLocked(enemy)?0:1)*enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
     enemy.x += (vx-vy*curve)/distance * speed * dt;
     enemy.y += (vy+vx*curve)/distance * speed * dt;
     clampToMap(enemy);
