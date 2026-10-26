@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-view-fullscreen",
+  "title": "小怪獸：全螢幕固定面積視野",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-view-fullscreen",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T130249Z-parent-view-fullscreen.md",
+  "next": "請 Grok 審查並依 docs/survivor-view-fullscreen-validation.md 實機操作。測試全過，版本 ao。Godot §11 對照見文件。提交由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T13:08:06.847470Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-view-teacher",
+    "survivor-wave-blocks"
+  ]
+}

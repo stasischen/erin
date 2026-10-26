@@ -80,8 +80,8 @@ fresh(); run('state.width=2000; state.height=1000; state.cameraX=0; state.camera
 assert.equal(run('state.enemies[0].hp'),10000);
 // 邊緣箭頭四向與斜角、手機和平板尺寸、平移鏡頭均保持在畫面內。
 for (const [w,h] of [[667,375],[844,390],[1024,768]]) for (const [dx,dy] of [[-2000,0],[2000,0],[0,-2000],[0,2000],[2000,2000]]) {
-  fresh(); run(`state.width=${w}; state.height=${h}; state.boss={x:state.cameraX+${w}/2+${dx},y:state.cameraY+${h}/2+${dy},r:32,wobble:0,flash:0,hp:2000,maxHp:2000};`);
-  assert.ok(run('bossGuide().x>=30 && bossGuide().x<=state.width-30 && bossGuide().y>=30 && bossGuide().y<=state.height-30'));
+  fresh(); run(`applyWorldViewport(${w},${h}); state.boss={x:state.cameraX+state.width/2+${dx},y:state.cameraY+state.height/2+${dy},r:32,wobble:0,flash:0,hp:2000,maxHp:2000};`);
+  assert.ok(run('bossGuide().x*state.zoom>=30-1e-7 && bossGuide().x*state.zoom<=state.screenWidth-30+1e-7 && bossGuide().y*state.zoom>=30-1e-7 && bossGuide().y*state.zoom<=state.screenHeight-30+1e-7'));
   run('render();');
   assert.ok(run('drawCalls.every(c=>c.slice(1).every(v=>typeof v!=="number" || Number.isFinite(v)))'));
 }
