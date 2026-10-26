@@ -55,7 +55,7 @@ function fireAtNearest(command = null) {
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
 function resolveWaterHit(shot) {
-  playSound("water");
+  queueImpact(0,'water',-1);
   if(shot.bigBubble) {
     shot.bigBubble=false;
     const weapon=GAME_DATA.weapons.find(w=>w.id==='water-ball');
@@ -110,8 +110,8 @@ function damageNumber(target, damage) {
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
-  if (encounterShield(enemy, damage)) { playSound("hit"); return; }
-  playSound("hit");
+  if (encounterShield(enemy, damage)) { damageHitSound(); return; }
+  damageHitSound();
   damage = schoolDamage(enemy, damage);
   enemy.meleeFlash=false;
   enemy.hp -= damage;
@@ -157,7 +157,7 @@ function hitBuildTarget(target, damage, attack = {}) {
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
     if(attack.charged)damage*=teacherBonuses().damage;
-    playSound("hit");
+    damageHitSound();
     damageNumber(target, damage);
     target.meleeFlash=false;
     target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();

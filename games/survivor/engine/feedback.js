@@ -6,6 +6,12 @@ globalThis.SurvivorFeedback = {
       shake:.12*intensity*(f.shake??1),pixels:2*intensity*(heavy?1.5:1)*(f.shake??1),
       trauma:f.trauma*intensity*(f.shake??1),particles:Math.ceil(f.particles*intensity),flash:f.flash*intensity,numberScale:f.numberScale};
   },
+  // 同一更新幀／揮擊只取最強回饋；音效強度與震動開關無關。
+  mergeImpact(previous,event) {
+    const p=previous||{trauma:0,sound:null,priority:-Infinity};
+    return {trauma:Math.max(p.trauma,event.trauma||0),
+      sound:event.priority>p.priority?event.sound:p.sound,priority:Math.max(p.priority,event.priority)};
+  },
   trauma(value,added,dt) {return Math.max(0,Math.min(1,(value||0)+added)-Math.max(0,dt)*1.8);},
   camera(value,clock,enabled) {
     const strength=enabled?Math.min(1,Math.max(0,value||0))**2:0;
@@ -18,6 +24,26 @@ function moveFeedback(owner,id='primary') {
   const level=f.level||(id==='charge'?'medium':'small');
   return {...SurvivorData.FEEDBACK_TIERS[level==='custom'?'small':level],level,sound:undefined,warningStyle:'original',slash:true,hitStop:['phase','legacy','move'].includes(id)?0:1,shake:['phase','legacy'].includes(id)?0:1,hint:true,...f};
 }
+// 接合層：巢狀揮擊沿用同一批，return／換場也一定結算；不跨幀保留。
+let impactBatch=null;
+function withImpactBatch(action) {
+  if(impactBatch)return action();
+  impactBatch={trauma:0,sound:null,priority:-Infinity};
+  try {return action();}
+  finally {
+    const result=impactBatch;impactBatch=null;
+    state.trauma=SurvivorFeedback.trauma(state.trauma,result.trauma,0);
+    if(result.sound && result.sound!=='none')playSound(result.sound);
+  }
+}
+function queueImpact(trauma=0,sound=null,priority=-Infinity) {
+  if(impactBatch)impactBatch=SurvivorFeedback.mergeImpact(impactBatch,{trauma,sound,priority});
+  else {
+    state.trauma=SurvivorFeedback.trauma(state.trauma,trauma,0);
+    if(sound && sound!=='none')playSound(sound);
+  }
+}
+function damageHitSound() {queueImpact(0,'hit',-1);}
 function feedbackSound(config,fallback) {const sound=config.sound===undefined?fallback:config.sound;if(sound!=='none')playSound(sound);}
 function enemyFeedback(enemy,id='phase') {return moveFeedback(ENEMY_TYPES.find(t=>t.id===enemy.typeId),id);}
 function weaponFeedback(event={}) {
@@ -40,7 +66,7 @@ function feedbackImpact(config,shake=true,attacker=null,target=state.player) {
   state.hitStop=Math.max(state.hitStop||0,scaled.stop);
   state.hitShake=Math.max(state.hitShake||0,scaled.shake);
   state.hitShakePixels=Math.max(state.hitShakePixels||0,scaled.pixels);
-  state.trauma=SurvivorFeedback.trauma(state.trauma,scaled.trauma,0);
+  queueImpact(scaled.trauma,target && strength?(f.sound===undefined?'hit':f.sound):null,target && strength?f.trauma:-Infinity);
   for(const actor of [attacker,target])if(actor && scaled.stop>0){actor.hitStop=Math.max(actor.hitStop||0,scaled.stop);actor.feedbackFrozen=true;}
   if(target && strength) {
     target.impactFlash=scaled.flash;target.meleeFlash=true;target.impactSquash=.14*strength;
@@ -48,7 +74,6 @@ function feedbackImpact(config,shake=true,attacker=null,target=state.player) {
     const number=[...state.effects].reverse().find(e=>e.kind==='number'&&e.x===target.x);
     if(number)number.numberScale=scaled.numberScale;
     burst(target.x,target.y,'#fff0a5',scaled.particles);
-    feedbackSound(f,'hit');
   }
 }
 function tierImpact(level,attacker,target,extra={}) {
@@ -62,5 +87,5 @@ Survivor.engine.feedback={rules:SurvivorFeedback,moveFeedback,feedbackSound,feed
 
 function bossFeedbackShake(move) {
   const f=moveFeedback(bossDefinition(move),'move'),h=GAME_DATA.hitJuice;
-  state.trauma=SurvivorFeedback.trauma(state.trauma,h.enabled?f.trauma*f.shake*h.intensity:0,0);
+  queueImpact(h.enabled?f.trauma*f.shake*h.intensity:0);
 }

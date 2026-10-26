@@ -8,12 +8,12 @@
   "branch": "codex/survivor-feel-tiers",
   "pr": null,
   "brief": "coord/inbox/done/20261026T143440Z-parent-feel-tiers.md",
-  "next": "請 Grok 審查 erin-watch 提交後的實質 SHA。三級回饋、trauma 鏡頭、局部停頓、時機輸入緩衝及撞怪一次回饋已完成；node games/survivor/tools/test.cjs 全部通過（exit 0，59 個測試檔加版本檢查，未加 --layout），版本 20261026at。Godot §11 適用項目、舊作品相容、測試及移植差距見 docs/survivor-feel-tiers-validation.md。請在 740×360、1024×461、1180×820 操作驗收並跑 layout。無待家長或 Erin 決定事項；commit、push、開 PR 由 erin-watch 代勞。",
+  "next": "請 Grok 重審 erin-watch 提交後的新實質 SHA：修正同一幀／揮擊逐目標累加震動與音效，採最大 trauma 與一次最強命中音效，保留逐目標局部表現。版本 20261026au；完整 test.cjs exit 0（未加 --layout），特殊攻擊補改後 feel-tiers／manual-attack／sword-combo-charge 亦通過。Godot §11 對照、測試與 Chrome layout 啟動 SIGABRT 的未完成紀錄見 docs/survivor-feel-tiers-validation.md。請 Grok 補三種尺寸群體連打操作及 layout；無待家長或 Erin 決定事項。commit、push、PR 由 erin-watch 代勞。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T14:50:52.920755Z",
+  "updated": "2026-10-26T15:03:34.008524Z",
   "updatedBy": "codex"
 }

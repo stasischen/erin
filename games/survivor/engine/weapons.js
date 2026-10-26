@@ -36,7 +36,8 @@ globalThis.SurvivorWeapons = (() => {
 
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
 function activeWeapon() { return GAME_DATA.weapons.find(w => w.id === state.weaponId) || GAME_DATA.weapons[0]; }
-function swingAtNearest(dash = false, command = null) {
+function swingAtNearest(dash = false, command = null) {return withImpactBatch(()=>swingWithImpacts(dash,command));}
+function swingWithImpacts(dash,command) {
   const target = closestEnemy(), weapon = activeWeapon();
   if (!target && !command) return;
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
@@ -63,7 +64,7 @@ function swingAtNearest(dash = false, command = null) {
   const feedbackEvent={...event,feedbackId:event.charged?'charge':dash?'dash':event.heavy?'combo':'primary'};
   const feedback=weaponFeedback(feedbackEvent);
   const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
-  skillVisual('hammer-swing',state.player.x,state.player.y,visual); feedbackSound(feedback,'shoot');
+  skillVisual('hammer-swing',state.player.x,state.player.y,visual); queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
   if (effectLevel('item-rear') && !event.spin && !event.charged) {
     const rear={...event,angle:event.angle+Math.PI};

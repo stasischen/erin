@@ -151,7 +151,8 @@ function finishRun(won) {
 
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
-function tick(dt) {
+function tick(dt) {return withImpactBatch(()=>tickImpacts(dt));}
+function tickImpacts(dt) {
   const inputDt=dt;
   if(state.mode==='playing') {
     state.juiceClock=(state.juiceClock||0)+dt;
@@ -323,7 +324,7 @@ function tick(dt) {
     if (shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(deltaX(state.boss.x, shot.x), deltaY(state.boss.y, shot.y)) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
-      playSound("hit");
+      damageHitSound();
       schoolShotHit(shot, boss);
       feedbackImpact(shot.feedback,true,shot,boss);boss.hp -= schoolDamage(boss, shot.damage*(shot.autoCharged?teacherBonuses().damage:1)); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
       if(boss.hp>0)teacherRecoveryHit();

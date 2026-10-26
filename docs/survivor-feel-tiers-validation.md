@@ -1,6 +1,6 @@
 # 三級打擊回饋交接
 
-卡片：`survivor-feel-tiers`；版本：`20261026at`。實作由 Codex 完成，程式審查與三種尺寸操作驗收交 Grok；本文件不是審查通過紀錄。
+卡片：`survivor-feel-tiers`；版本：`20261026au`。實作由 Codex 完成，程式審查與三種尺寸操作驗收交 Grok；本文件不是審查通過紀錄。
 
 ## 行為與資料
 
@@ -15,7 +15,7 @@
 
 結果：59 個測試檔及版本檢查全部通過，結束碼 0；`git diff --check` 無空白錯誤。
 
-唯一執行的測試指令：`node games/survivor/tools/test.cjs`，未加 `--layout`。
+初版執行的測試指令：`node games/survivor/tools/test.cjs`，未加 `--layout`。
 
 新增 `tests/feel-tiers.cjs` 驗證三級數值、trauma 上限／線性衰減／平方振幅／震動關閉與上下限、阻擋一次與未阻擋零事件、緩衝精確邊界／過期、交手雙方停住而第三隻怪與彈幕繼續、衝刺與攻擊只執行一次、碰撞像素與擋路者不動、Maker 儲存／載入及非法資料拒絕。`maker-ui.cjs` 操作等級選擇、單項調整、自訂、輸入緩衝並儲存重載。
 
@@ -29,3 +29,12 @@ Grok 尚需在 740×360、1024×461、1180×820 實際操作：等級與自訂�
 - 11.2／11.3／11.6：`SurvivorFeedback.scale/trauma/camera/collision` 與 `SurvivorTiming.buffer/consume` 只接收資料、秒數並回傳結果；碰撞事件只有 type／level，接合層才更新 actor、音效與像素。固定輸入測試可在 Godot 重建。沒有另建事件匯流排。
 - 11.4／11.5：未新增外部素材，煙塵沿用像素粒子；既有 sprite 和合成音效來源保留。日後可替換接合層的粒子／音效為 Godot 場景及素材，PNG／WAV 匯出仍是既有差距。
 - 11.7：碰撞與鏡頭位移使用世界單位、旋轉用弧度，緩衝與停頓用秒，不查 DOM 尺寸。Maker、觸控、Canvas、音訊與儲存留在網頁接合層。
+
+## Grok 退回修正（20261026au）
+
+- 同一 `tick` 更新幀內的震動取最大 trauma，只加一次；直接由操作觸發的揮擊及特殊攻擊各自建立批次，巢狀呼叫共用批次。同幀同時命中不同等級時取最強級別，不按目標數相加。每個目標仍各自受傷、停頓、閃白、縮放與出粒子。
+- 命中音效在批次結束時只播放一次，最強回饋覆蓋舊傷害 hit、水花及近戰起手音效；同強度取第一個。自訂 `none` 仍能靜音。遠程發射、死亡、預警等不同用途音效保留。
+- 批次只活在一次同步呼叫，使用 finally 結算，即使中途 return／換場也不留待下一幀；後續揮擊可重新增加 trauma 並播放音效。
+- Godot §11.2／11.3／11.6：新增純函式 `SurvivorFeedback.mergeImpact(previous,event)`，回傳合併 trauma／sound／priority，不直接碰音訊或 actor；批次接合層才更新鏡頭並播放一次音效。固定測試涵蓋 1／12／100 個小事件相同、混級順序、真實錘子 1／12 目標、特殊落地、同幀投射物 12 目標、巢狀批次、靜音及下一次攻擊。其餘 §11 適用項目與移植差距沿用上節。
+- 原始需求指定 Codex 不跑 layout；本輪誤嘗試執行一次，Chrome 啟動即 SIGABRT，未完成版面驗證。後續版面與三種尺寸實際操作仍交 Grok，不以此嘗試當成通過。
+- 本輪驗證：`node games/survivor/tools/test.cjs` 全部通過（exit 0，未加 --layout）；特殊攻擊批次補改後另跑 `feel-tiers.cjs`、`manual-attack.cjs`、`sword-combo-charge.cjs` 皆通過。版本同步檢查通過；`git diff --check` 無空白錯誤。程式審查仍由 Grok 執行。

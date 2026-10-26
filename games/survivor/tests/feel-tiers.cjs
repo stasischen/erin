@@ -26,6 +26,43 @@ assert.deepEqual(json('pending'),{command:{kind:'dash'},left:.12});
 assert.deepEqual(json('SurvivorTiming.consume(pending,.121,true)'),{buffer:null,command:null});
 assert.deepEqual(json('SurvivorTiming.consume(null,0,true)'),{buffer:null,command:null});
 function fresh(){run(`resetGame();state.mode='playing';GAME_DATA.attackMode='manual';GAME_DATA.hitJuice.enabled=true;GAME_DATA.hitJuice.intensity=1;state.weaponId='candy-sword';state.spawnTimer=Infinity;state.shotTimer=Infinity;state.player.damageDisabled=true;GAME_DATA.elites.enabled=false;GAME_DATA.chocobear.enabled=false;`);}
+// 純事件合併：一次小揮擊打 1／12／100 隻相同，原輸入不變。
+for(const count of [1,12,100]) {
+ run(`globalThis.smallEvent={trauma:.18,sound:'hit',priority:.18};globalThis.merged=null;
+ for(let i=0;i<${count};i++)merged=SurvivorFeedback.mergeImpact(merged,smallEvent);`);
+ assert.deepEqual(json('merged'),{trauma:.18,sound:'hit',priority:.18});
+ assert.deepEqual(json('smallEvent'),{trauma:.18,sound:'hit',priority:.18});
+ near(run('SurvivorFeedback.trauma(.2,merged.trauma,0)'),.38);
+}
+for(const levels of ["['small','large','medium']","['large','small','medium']"]) {
+ run(`merged=null;for(const level of ${levels}){const f=SurvivorData.FEEDBACK_TIERS[level];merged=SurvivorFeedback.mergeImpact(merged,{trauma:f.trauma,sound:f.sound,priority:f.trauma});}`);
+ assert.deepEqual(json('merged'),{trauma:.65,sound:'lightning',priority:.65});
+}
+// 真實錘擊：群體只震一次、播一次，逐隻仍受傷及停頓；下一揮可再次回饋。
+run("globalThis.sounds=[];playSound=id=>sounds.push(id)");
+for(const count of [1,12]) {
+ fresh();run(`state.weaponId='candy-hammer';state.enemies=[];
+ for(let i=0;i<${count};i++){const e=spawnEnemy({typeId:'jaben'});e.x=state.player.x+40;e.y=state.player.y;e.hp=10000;}
+ sounds=[];swingAtNearest(false,{angle:0});`);
+ near(run('state.trauma'),.18);
+ assert.deepEqual(json('sounds'),['hit']);
+ assert.equal(run('state.enemies.every(e=>e.hp<10000 && e.hitStop===.05)'),true);
+ run('sounds=[];swingAtNearest(false,{angle:0})');near(run('state.trauma'),.36);assert.deepEqual(json('sounds'),['hit']);
+}
+fresh();run(`state.weaponId='candy-hammer';state.enemies=[];for(let i=0;i<12;i++){const e=spawnEnemy({typeId:'jaben'});e.x=state.player.x+40;e.y=state.player.y;e.hp=10000;}sounds=[];executeManualSpecial({kind:'leap',angle:0,range:100,damageMultiplier:1});`);
+near(run('state.trauma'),.18);assert.deepEqual(json('sounds'),['hit']);
+// 同一幀投射物貫穿 12 隻只加一次；下一幀批次清空，沒有延遲音效。
+fresh();run(`state.weaponId='water-ball';state.player.x=400;state.player.y=300;updateCamera();state.enemies=[];
+ for(let i=0;i<12;i++){const e=spawnEnemy({typeId:'jaben'});e.x=450;e.y=300;e.hp=10000;e.speed=0;}
+ state.projectiles=[{x:450,y:300,r:10,vx:0,vy:0,rangeLeft:500,alive:true,hitList:[],pierce:100,damage:1,feedback:weaponFeedback()}];sounds=[];tick(0);`);
+near(run('state.trauma'),.18);assert.deepEqual(json('sounds'),['hit']);
+assert.equal(run('state.enemies.every(e=>e.hp<10000)'),true);
+run('sounds=[];tick(0)');near(run('state.trauma'),.18);assert.deepEqual(json('sounds'),[]);
+// 巢狀批次以最強音效為準，none 會蓋掉舊 hit；return 後不殘留。
+fresh();run("sounds=[];withImpactBatch(()=>{damageHitSound();tierImpact('small',null,state.player);withImpactBatch(()=>tierImpact('large',null,state.player));tierImpact('medium',null,state.player);});");
+near(run('state.trauma'),.65);assert.deepEqual(json('sounds'),['lightning']);
+run("sounds=[];withImpactBatch(()=>{damageHitSound();tierImpact('small',null,state.player,{sound:'none'});});");assert.deepEqual(json('sounds'),[]);
+run("sounds=[];tierImpact('medium',null,state.player)");assert.deepEqual(json('sounds'),['water']);
 // 真實交手：雙方停住；第三隻怪、彈幕、遊戲時間繼續。
 fresh();run(`globalThis.hit=spawnEnemy({typeId:'jaben'}),other=spawnEnemy({typeId:'jaben'});
 hit.x=state.player.x+50;hit.y=state.player.y;hit.hp=10000;hit.speed=100;

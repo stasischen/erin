@@ -70,7 +70,8 @@ function executeAttackInput(event) {
   }
   updateActionControls();
 }
-function executeManualSpecial(event) {
+function executeManualSpecial(event) {return withImpactBatch(()=>manualSpecialImpacts(event));}
+function manualSpecialImpacts(event) {
   if(event.kind==='leap') {
     const swing={angle:event.angle,arc:Math.PI*.8,radius:event.range,damage:effectiveDamage()*event.damageMultiplier,push:45,heavy:true,shape:'sector',width:20};
     skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,...(moveFeedback(activeWeapon(),'special').slash?{}:{slash:false}),colors:['water'],life:.3});
@@ -88,7 +89,9 @@ function executeManualSpecial(event) {
         feedback:feedbackPayload(weaponFeedback({feedbackId:'special'})),rangeLeft:event.range,colors:buildAppearance().colors,schools:[],hitList:[],alive:true,push:0,charged:false,blade:event.kind==='sword-wave',bigBubble:false,autoCharged:false,boosted:false,bounces:0,fragment:false,maker:false}));
     }
   }
-  feedbackSound(moveFeedback(activeWeapon(),'special'),'shoot');
+  const feedback=moveFeedback(activeWeapon(),'special');
+  if(event.kind==='leap')queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
+  else feedbackSound(feedback,'shoot');
 }
 function advanceManualTiming(dt) {
   let a=state.manualTiming;
