@@ -2082,3 +2082,10 @@ globalThis.SURVIVOR_DEFAULTS = {
 
 // ✏️ Erin 可以改：手動普攻的起手、生效、收招、冷卻（秒）；自動模式沿用原間隔。
 SURVIVOR_DEFAULTS.weapons.forEach(w => { w.timing={windup:.1,active:.05,recovery:.12,cooldown:0}; });
+
+// ✏️ Erin 可以改：特殊招的積木初值，全部沿用原本手感。
+SURVIVOR_DEFAULTS.weapons.forEach(w => Object.assign(w, {
+  specialKind:w.id==='candy-hammer'?'leap':w.id==='candy-sword'?'sword-wave':'water-fan',
+  specialCooldown:6,specialCount:w.id==='water-ball'?5:1,specialSpread:w.id==='water-ball'?.18:0,
+  specialRange:w.id==='candy-hammer'?110:420,specialDamage:2,specialLeapDistance:80,specialLeapSeconds:.25
+}));

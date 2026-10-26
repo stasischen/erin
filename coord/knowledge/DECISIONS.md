@@ -78,3 +78,5 @@
 - 2026-10-26：家長要求移除起始精靈選擇，改為開場選水球或棒棒糖錘，流派由升級取得的流派卡形成。依指定初值製作 0.7 秒／120 度／70 世界單位／1.6 倍傷害、每第四下全周、持錘減傷 15% 的近戰初版，數值可由 Maker 調整；卡片對應、未適用的彈牆／分裂及待試玩手感見 `docs/survivor-weapon-picker-melee-validation.md`。家長另指示這張卡的真實 Chrome `--layout` 交 Grok，Codex 只跑一般測試、不重試。尚待 Grok 審查及 Erin 試玩，未核准上線。（來源：`coord/inbox/done/20261026T020911Z-parent-weapon-picker-melee.md`、`coord/inbox/done/20261026T021322Z-grok-weapon-picker-melee-no-layout.md`）
 
 - 2026-10-26：依家長要求製作從 Maker 進入的招式練習場，八招沿用目前作品與正式攻擊引擎，免傷走位、木頭假人、四種顏色時間軸與資料產生說明；調整滑桿後重建獨立場景。甜甜圈與跳跳糖仍沿用正式遊戲舊流程，時間軸明示零收招，未改玩法；老師招式與連躲挑戰屬可選，本次未加。測試全部通過，版面與觸控由 Grok 審查，Erin 尚未確認手感。來源：`coord/inbox/done/20261026T051137Z-parent-move-practice.md`；移植與驗證：`docs/survivor-move-practice-validation.md`。
+
+- 2026-10-26：依家長同意的統一拼圖第 4 步，將三武器普通攻擊、連段重招、蓄力、獨立特殊招及衝刺斬整理成五部分可收合積木；舊作品載入轉換，保留原初值與戰鬥接合。回饋參數編輯留第 7 步，敵人遷移留第 5 步。來源：`coord/inbox/done/20261026T094145Z-parent-weapon-blocks.md`；驗證及待上手項目見 `docs/survivor-weapon-blocks-validation.md`，尚待 Grok 審查與 Erin 試玩，未核准上線。

@@ -3,11 +3,12 @@
   const api = SurvivorData, loaded = api.load();
   let draft = loaded.data, tab = 'weapons', selected = {}, defaultsOpen = false, previewOpen = false, cardIndex = 0, moveIndex = 0, dirty = false;
   let content, previewPane, defaultsDetails;
+  const weaponBlocksOpen={};
   const editor = document.getElementById('editor'), status = document.getElementById('makerStatus');
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
   function message(text, error = false) { status.textContent = text; status.className = error ? 'error' : ''; }
-  function changed() { for(const e of draft.enemies) if(e.phaseAttack.timing) Object.assign(e.phaseAttack,e.phaseAttack.timing); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
+  function changed() { for(const w of draft.weapons) if(w.blocks) Object.assign(w,api.compileWeapon(w)); for(const e of draft.enemies) if(e.phaseAttack.timing) Object.assign(e.phaseAttack,e.phaseAttack.timing); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
   function panel(title) { const node = el('section', undefined, content); node.className = 'panel'; el('h2', title, node); return node; }
   function grid(parent) { const node = el('div', undefined, parent); node.className = 'grid'; return node; }
   function text(parent, label, object, key, maxLength = 24) { const row = el('label', label, parent), input = el('input', undefined, row); input.type = 'text'; input.maxLength = maxLength; input.value = object[key] || ''; input.addEventListener('input', () => { object[key] = input.value; changed(); }); }
@@ -252,26 +253,56 @@
   }
   function drawWeapons() {
     const weaponNames={interval:'揮擊間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
+    const specialNames={specialCooldown:'特殊招冷卻秒數',specialCount:'特殊招發射數量',specialSpread:'特殊招散射弧度',specialRange:'特殊招距離',specialDamage:'特殊招傷害倍率',specialLeapDistance:'跳躍距離',specialLeapSeconds:'跳躍秒數'};
     const attackNames={chargeStun:'蓄力暈眩秒數',splashSize:'大泡泡水花半徑倍率',splashDamage:'大泡泡水花傷害比例',comboEvery:'連段下數',comboReset:'停止攻擊幾秒重置',comboMultiplier:'最後一段傷害倍率',chargeSeconds:'站定聚氣秒數',chargeMultiplier:'蓄力傷害倍率',moveRetention:'開始移動保留聚氣比例（0 為重置）',chargeSize:'蓄力範圍倍率',comboSize:'最後一段範圍倍率',comboPush:'蓄力／重刺額外擊退',finisherRecovery:'最後一段額外收招秒',stepDistance:'重刺踏步距離',thrustWidth:'突刺半寬'};
     for(const w of draft.weapons.filter(w=>w.id===selected.weapons)) {
-      const fields=grid(panel(w.name+'連段與聚氣'));
-      drawTiming(fields,w.timing,api.TIMING_BOUNDS);
-      el('p','手動普攻放開後起手，生效時出招；衝刺可取消收招。自動攻擊沿用揮擊間隔。',fields);
-      select(fields,'攻擊方向',w,'direction',{nearest:'朝最近的敵人',facing:'朝移動面向'});
-      if(w.kind==='melee') for(const [key,label] of [['baseShape','普通招式'],['comboShape','最後一段招式'],['chargeShape','蓄力招式']]) select(fields,label,w,key,key==='comboShape'?{sector:'前方扇形',line:'前方直線',spin:'旋轉一圈'}:{sector:'前方扇形',line:'前方直線'});
-      if(w.kind==='melee') for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) if(key!=='spinEvery') range(fields,w,key,bounds,weaponNames[key]);
-      for(const [key,bounds] of Object.entries(api.ATTACK_BOUNDS)) {
-        if(w.kind!=='projectile' && ['splashSize','splashDamage'].includes(key)) continue;
-        if(w.kind==='projectile' && ['comboPush','finisherRecovery','stepDistance','thrustWidth','chargeStun'].includes(key) || w.id!=='candy-sword' && ['stepDistance','thrustWidth'].includes(key)) continue;
-        range(fields,w,key,bounds,attackNames[key]);
-      }
-      for(const [key,label] of [['comboEnabled','連段'],['chargeEnabled','自動聚氣'],['dashThrust','衝刺突刺']]) {
-        if(key==='dashThrust' && w.id!=='candy-sword') continue;
-        const toggle=button(fields,label+'：'+(w[key]?'開':'關'),()=>{w[key]=!w[key];changed();render();});
-        toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(w[key]));
+      if(!w.blocks) w.blocks=api.weaponStacks(w);
+      const host=panel(w.name+'招式積木');
+      el('p','由上往下拼招式；連段重招、蓄力和衝刺斬沿用普通攻擊的時間軸；特殊招有自己的冷卻。按旁邊的預覽或試玩看看！',host);
+      const partNames={trigger:'觸發',shape:'形狀',timing:'時機',effect:'效果',feedback:'回饋'};
+      const toggles={comboEnabled:'連段',chargeEnabled:'自動聚氣',dashThrust:'衝刺突刺'};
+      for(const [i,move] of w.blocks.moves.entries()) {
+        if(move.id==='dash' && w.id!=='candy-sword') continue;
+        const group=el('section',undefined,host); group.className='weapon-move';
+        el('h3',api.WEAPON_STACKS[i].label,group);
+        for(const part of Object.keys(partNames)) {
+          const box=el('details',undefined,group);box.className='weapon-block';
+          const key=w.id+'-'+move.id+'-'+part;box.open=weaponBlocksOpen[key]!==false;
+          box.addEventListener('toggle',()=>{weaponBlocksOpen[key]=box.open;});
+          el('summary',partNames[part]+'積木',box);
+          const fields=grid(box), values=move[part];
+          if(part==='feedback') {el('p',move.id==='special'?{leap:'跳躍落地刀光、頓幀與震動', 'sword-wave':'前方劍波與出招音效','water-fan':'扇形水球與出招音效'}[w.specialKind]:w.kind==='melee'?'命中刀光、頓幀與震動；出招音效':'水球與水花；出招音效',fields);el('small','沿用玩家的打擊回饋與聲音設定。',fields);continue;}
+          if(move.id==='primary' && part==='timing') drawTiming(fields,values.phases,api.TIMING_BOUNDS);
+          for(const field of api.WEAPON_STACKS[i][part]) {
+            if(values[field]===undefined) continue;
+            if(['specialLeapDistance','specialLeapSeconds'].includes(field) && w.specialKind!=='leap') continue;
+            if(field==='specialKind') {el('p',{leap:'跳躍落地扇形重擊','sword-wave':'前方穿透劍波','water-fan':'前方扇形水球'}[values[field]],fields);continue;}
+            if(field==='direction') {select(fields,'攻擊方向',values,field,{nearest:'朝最近的敵人',facing:'朝移動面向'});continue;}
+            if(toggles[field]) {
+              const label=toggles[field], toggle=button(fields,label+'：'+(values[field]?'開':'關'),()=>{values[field]=!values[field];changed();render();});
+              toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(values[field]));continue;
+            }
+            if(field.endsWith('Shape')) {
+              if(w.kind==='projectile') el('p','朝前方發射水球',fields);
+              else select(fields,field==='baseShape'?'普通招式':field==='comboShape'?'最後一段招式':'蓄力招式',values,field,field==='comboShape'?{sector:'前方扇形',line:'前方直線',spin:'旋轉一圈'}:{sector:'前方扇形',line:'前方直線'});
+              continue;
+            }
+            if(w.kind!=='projectile' && ['splashSize','splashDamage'].includes(field)) continue;
+            if(w.kind==='projectile' && ['comboPush','finisherRecovery','stepDistance','thrustWidth','chargeStun'].includes(field) || w.id!=='candy-sword' && ['stepDistance','thrustWidth'].includes(field)) continue;
+            range(fields,values,field,api.SPECIAL_BOUNDS[field]||api.ATTACK_BOUNDS[field]||api.WEAPON_BOUNDS[field],specialNames[field]||attackNames[field]||weaponNames[field]);
+          }
+          if(move.id==='dash' && part==='shape') el('p','朝前方直線突刺，沿用連段特殊招的大小與寬度。',fields);
+          if(move.id==='dash' && part==='effect') el('p','沿用連段特殊招的傷害、擊退與踏步。',fields);
+          if(move.id==='special' && part==='trigger') el('p','手動模式放開特殊招按鈕；冷卻到時可再用。',fields);
+          if(!['primary','special'].includes(move.id) && part==='timing') el('small','沿用普通攻擊時間軸；自動模式維持原節奏。',fields);
+          if(move.id==='primary' && part==='trigger') el('small','手動：放開攻擊鍵；自動：攻擊間隔到時。',fields);
+          if(move.id==='combo' && part==='trigger') el('small','第 N 下使用特殊招。',fields);
+          if(move.id==='charge' && part==='trigger') el('small','手動：按住再放開；自動：站定聚氣。只放大朝前方的形狀。',fields);
+        }
       }
     }
   }
+
   function drawNumbers() {
     const defaults=api.defaults();
     if(selected.rules==='neutral') {
