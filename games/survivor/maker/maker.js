@@ -233,7 +233,7 @@
       for(const part of Object.keys(api.BLOCK_PARTS)) {
         const fields=blockPanel(group,key+'-'+move.id+'-'+part,part),values=move[part];
         if(part==='feedback') {feedbackEditor(fields,move.feedback);continue;}
-        if(part==='trigger') el('p',move.id==='phase'?'距離內開始預警，方向與原點鎖定。':move.id==='legacy'?'達到等級且間隔到時；分階段攻擊啟用時不重複出招。':'到達老師階段後，依原有招式順序使用。',fields);
+        if(part==='trigger') el('p',move.id==='phase'?'距離內開始預警，方向與原點鎖定。':move.id==='legacy'?'達到等級且間隔到時；分階段攻擊啟用時不重複出招。':'到達老師階段後，依遠近選招；遠處或畫面外優先跳躍／狙擊。',fields);
         if(move.id==='phase' && part==='timing') {drawTiming(fields,values,api.PHASE_BOUNDS);continue;}
         for(const field of def[part]) {
           if(['enabled','radial'].includes(field)) {
@@ -243,7 +243,7 @@
           else if(field==='kind') select(fields,'招式形狀',values,field,api.KINDS);
           else {
             const legacy={interval:[1,15,.5],level:[2,20,1],damage:[0,30,1],speed:[50,200,5],radius:[10,100,1],count:[1,5,1],spread:[0,.6,.05]};
-            const bounds=move.id==='phase'?api.PHASE_BOUNDS[field]:move.id==='legacy'?legacy[field]:field==='minPhase'?[1,3,1]:field==='phaseCount'?[0,1,1]:api.BOUNDS[field];
+            const bounds=move.id==='phase'?api.PHASE_BOUNDS[field]:move.id==='legacy'?legacy[field]:field==='minPhase'?[1,3,1]:field==='phaseCount'?[0,1,1]:api.BOSS_MOVE_BOUNDS[field];
             range(fields,values,field,bounds,names[field]);
           }
         }
@@ -267,8 +267,11 @@
   }
   function drawBoss() {
     if(selected.boss==='phases') {
-    const p = panel('魔王與三個階段'), fields = grid(p); text(fields,'魔王名稱',draft.boss,'name'); range(fields,draft.boss,'hp',[500,5000,100]); range(fields,draft.boss,'speed',[0,100,5]); range(fields,draft.boss,'radius',[20,50,1],'身體大小');
-    draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
+    const p = panel('魔王與三個階段'), fields = grid(p); text(fields,'魔王名稱',draft.boss,'name'); range(fields,draft.boss,'hp',[500,5000,100]); range(fields,draft.boss,'speed',[0,200,5],'舊作品預設移速'); range(fields,draft.boss,'radius',[20,50,1],'身體大小');
+    draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'speed',[0,200,5],'階段移速'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
+    const labels={nearDistance:'近距離上限',farDistance:'遠距離起點',pursuitDistance:'快走追趕起點',pursuitMultiplier:'快走速度倍率',healthPerUpgrade:'每次升級增加老師血量',leapRecovery:'跳躍落地可反擊秒數',leapPush:'跳躍落地擊退距離',trackingSeconds:'點名跟隨秒數',lockSeconds:'點名鎖定秒數',phaseWordsSpeed:'第二階段起國字速度',phaseChalkSpeed:'第二階段起粉筆速度'};
+    const rules=grid(p);for(const [key,bounds] of Object.entries(api.BOSS_COMBAT_BOUNDS))range(rules,draft.boss.combat,key,bounds,labels[key]);
+    el('p','血量＝（基本血量＋已升級次數×加血量）×關卡倍率；目標 45～60 秒，請試玩調整。距離、速度、範圍皆為世界單位。',p);
     } else if(selected.boss==='zone') {
     const zone = panel('老師戰安全圈'), zf = grid(zone), z = draft.bossZone;
     const toggle = button(zf, '紫霧縮圈：' + (z.enabled ? '開' : '關'), () => { z.enabled = !z.enabled; changed(); render(); });
@@ -276,7 +279,8 @@
     range(zf,z,'steps',[0,3,1],'縮圈次數（每階段一次）');
     range(zf,z,'speed',[10,160,5],'縮圈速度（每秒距離）');
     range(zf,z,'damage',[0,4,.5],'紫霧每秒扣血');
-    el('p','每次提前 4 秒顯示下一圈。圈外速度剩 80%；最小圈直徑是 1.5 個螢幕寬。完整效果請按試玩，單招展示不縮圈。',zone);
+    range(zf,z,'initialRadius',[300,1200,10],'初始半徑（世界單位）');range(zf,z,'finalRadius',[100,300,10],'最終半徑（世界單位）');range(zf,z,'warning',[1,8,.5],'縮圈預告秒數');
+    el('p','每階段預告再收圈；圈外速度剩 80%。預設最後半徑 180（基準短邊 400 的 0.45 倍），裝置旋轉不改圈。完整效果請按試玩。',zone);
     } else {
     moveIndex=draft.boss.moves.findIndex(m=>m.id===selected.boss);
     const m=draft.boss.moves[moveIndex], box=panel(m.name);
@@ -284,7 +288,7 @@
     button(box,'試這隻',()=>trial({spec:{kind:'move',id:m.id}}));
     if(globalThis.SurvivorPreview){const host=el('div',undefined,previewPane);host.className='skill-preview-host';SurvivorPreview.mount(host,draft,{kind:'move',id:m.id});}
     drawAttackStacks(box,m,api.BOSS_STACKS,'boss-'+m.id);
-    el('p','老師在畫面外不出招；各招式只使用相關參數，沿用原本的預警與效果。',box);
+    el('p','老師在畫面外仍追擊；每招完整預警後才命中。連衝每次重新瞄準，最短預警 0.6 秒。黑板封路用範圍調牆長、距離調兩側間距；點名跟隨與鎖定時間在魔王階段頁調整。',box);
 
     }
   }

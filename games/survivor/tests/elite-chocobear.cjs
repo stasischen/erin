@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const createRun = require('./maker-support.cjs');
 const run = createRun();
 function fresh() {
-  run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;
+  run(`state.width=800;state.height=600;resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;
     GAME_DATA.elites.enabled=true;GAME_DATA.chocobear.enabled=true;Math.random=Object.getPrototypeOf(Math).random;`);
 }
 function elite(ability) {

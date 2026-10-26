@@ -3,7 +3,7 @@ module.exports = function traces(run, legacyBodies=false) {
   if(legacyBodies)run("GAME_DATA.bodySeparation.enabled=false;GAME_DATA.knockback.enabled=false");
   const rows=[];
   function seed() {run('globalThis.seed=42; Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296)');}
-  function fresh(){run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;settingsPanel.hidden=true;
+  function fresh(){run(`state.width=800;state.height=600;resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;settingsPanel.hidden=true;
     state.enemies=[70,110,155].map((offset,i)=>({typeId:'jaben',x:state.player.x+offset,y:state.player.y+i*20,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));`);seed();}
   function capture(){return JSON.parse(run(`JSON.stringify({health:state.player.health,damage:effectiveDamage(),interval:effectiveShotInterval(),hp:state.enemies.map(e=>e.hp),
       position:[state.player.x,state.player.y],shots:state.projectiles.map(s=>[s.x,s.y,s.vx,s.vy,s.r,s.damage,s.pierce]),fields:state.fields.map(f=>[f.school,f.x,f.y,f.radius,f.life]),

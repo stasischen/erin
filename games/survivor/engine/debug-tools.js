@@ -10,7 +10,7 @@ globalThis.SurvivorDebugTools = (()=>{
     if(trail.length>600)trail.splice(0,trail.length-600);
   }
   function draw() {
-    ctx.save();ctx.translate(-state.cameraX,-state.cameraY);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,state.width,state.height);ctx.clip();ctx.translate(-state.cameraX,-state.cameraY);
     const circle=(p,color)=>{ctx.strokeStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();};
     if(options.compare) {ctx.globalAlpha=.25;for(const p of before)circle(p,'#ffc271');for(const p of trail)circle(p,'#7effe1');ctx.globalAlpha=1;}
     if(options.bodies)for(const p of [state.player,...state.enemies])circle(p,'#7effe1');

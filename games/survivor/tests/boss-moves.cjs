@@ -97,13 +97,12 @@ for (const random of [0,0.99]) {
   orders.push(run('JSON.stringify(order)'));
 }
 assert.notEqual(...orders); run('Math.random=Object.getPrototypeOf(Math).random');
-// 畫面外取消招式與國字；回來必須重新預警，場上其他小兵國字仍保留。
-fresh(); run('beginBossMove("call"); state.bossRest=0; state.boss.x=state.cameraX-40; updateBoss(1);');
-assert.equal(run('state.player.health'),90); assert.equal(run('state.bossMoves.length'),0);
-run('state.boss.x=state.player.x-150; updateBoss(.5);');
-assert.ok(run('state.bossMoves.length>0 && state.bossMoves.every(m=>!m.active)'));
+// 老師離開鏡頭仍保留完整預警和攻擊，回來不會重新偷偷命中。
+fresh(); run('beginBossMove("call"); state.bossRest=0; state.boss.x=state.cameraX-40; updateBoss(.4);');
+assert.equal(run('state.player.health'),90); assert.equal(run('state.bossMoves.length'),1);
+assert.equal(run('state.bossMoves[0].active'),false);
 fresh(); run('beginBossMove("words");'); advance(.9);
-run('state.boss.x=state.cameraX-40; tick(0);'); assert.equal(run('state.enemyShots.length'),0);
+run('state.boss.x=state.cameraX-40; tick(0);'); assert.ok(run('state.enemyShots.length>0'));
 // 國字飛到鏡頭外後回收；無敵最後一幀、暫停／升級不流逝。
 fresh(); run('state.enemyShots.push({source:"teacher",life:4,x:state.cameraX-20,y:state.player.y,r:17,vx:0,vy:0,damage:12}); tick(0);');
 assert.equal(run('state.enemyShots.length'),0);

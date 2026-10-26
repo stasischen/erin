@@ -1,16 +1,26 @@
+// 純規則：世界距離與固定抽樣 → 可用招式；血量按本局已升級次數成長。
+function teacherHealth(base,stageScale,upgrades,perUpgrade) {return (base+Math.max(0,upgrades)*perUpgrade)*stageScale;}
+function teacherChoices(moves,phase,distance,visible,policy,previous=[]) {
+  const unlocked=moves.filter(m=>m.minPhase<=phase);
+  const kinds=!visible||distance>=policy.farDistance?['leap','sniper']:distance<=policy.nearDistance?['rain','call','ring','cage','leap','tracking']:['words','chalk','barriers','dash','combo','summon'];
+  const choices=unlocked.filter(m=>kinds.includes(m.kind));
+  const fresh=choices.filter(m=>!previous.includes(m.id));
+  return fresh.length?fresh:choices;
+}
 function summonTeacher() {
   // 老師只需身體與名字都在鏡頭外，不套小怪的額外 160 格安全距離。
   // 窄畫面若套用小怪距離，近邊候選會失敗，退到半張世界之外。
   const position = offscreenSpawn(60, undefined, state.player.r + GAME_DATA.boss.radius);
   if (!position) return;
   playSound("warning");
-  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };
+  const hp=teacherHealth(gameSettings.teacherHealth,currentStage().bossHealthScale,state.level-1,GAME_DATA.boss.combat.healthPerUpgrade);
+  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp, maxHp:hp, flash: 0, wobble: 0 };
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
   startBossZone();
   updateHud();
 }
 
-// 老師招式的預告、位置和命中都用世界座標；鏡頭外取消，重新看見時重新預告。
+// 老師招式的預告、位置和命中都用世界座標；離開鏡頭仍持續追擊。
 function clearBossMoves() {
   for (const move of state.bossMoves) state.bossMovePool.push(move);
   state.bossMoves = [];
@@ -19,7 +29,7 @@ function clearBossMoves() {
   }
 }
 function bossHurtPlayer(damage,feedback) {
-  if (!state.boss || !targetVisible(state.boss) || state.player.damageDisabled || state.player.invincible > 0) return;
+  if (!state.boss || state.player.damageDisabled || state.player.invincible > 0) return;
   feedbackImpact(feedback,false);
   state.player.health = Math.max(0, state.player.health - absorbSchoolHit(damage));
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
@@ -34,20 +44,24 @@ function beginBossMove(id) {
   const kind = definition.kind;
   const p = state.player;
   const b = state.boss && { ...state.boss, x: state.cameraX + state.width / 2 + deltaX(state.boss.x, state.cameraX + state.width / 2), y: state.cameraY + state.height / 2 + deltaY(state.boss.y, state.cameraY + state.height / 2) };
-  if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
+  if (!b || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
   if (["ring","cage"].includes(kind) && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
   feedbackSound(moveFeedback(definition,'move'),'warning');
   const angle = Math.atan2(deltaY(p.y, b.y), deltaX(p.x, b.x));
   const move = takeFromPool(state.bossMovePool, {
-    id, kind, x: b.x, y: b.y, angle, warning: definition.warning,
+    id, kind, x: b.x, y: b.y, angle, warning: kind==='tracking'?GAME_DATA.boss.combat.trackingSeconds+GAME_DATA.boss.combat.lockSeconds:Math.max(.6,definition.warning),
+    repeats:kind==='combo'?Math.min(3,definition.count+Math.max(0,state.bossPhase-2)):1, recovery:0,
     wallWidth: 0, wallHeight: 0, wallDuration: 0, dodged: false, active: false, pulse: 0, life: 0, points: [], radius: 0, endX: b.x, endY: b.y,
     count: Math.min(10, definition.count + definition.phaseCount * state.bossPhase)
   });
+  if(kind==='leap') {move.radius=definition.radius;move.endX=p.x;move.endY=p.y;move.points=[{x:p.x,y:p.y,r:definition.radius}];}
+  if(kind==='tracking') {move.radius=definition.radius;move.points=[{x:p.x,y:p.y,r:definition.radius}];move.x=p.x;move.y=p.y;}
+  if(kind==='barriers') {move.x=p.x;move.y=p.y;move.radius=definition.radius;move.wallWidth=definition.distance;}
   if (kind === "wall") { move.wallWidth = state.width - 24; move.wallHeight = state.height; move.x = state.cameraX + 12; move.y = state.cameraY; move.endY = state.cameraY + state.height; move.endX = state.cameraX + state.width - 12; move.wallDuration = Math.max(definition.duration,state.width / definition.speed + .1); }
-  if (kind === "dash") {
+  if (kind === "dash" || kind==='combo') {
     const length = Math.min(definition.distance, Math.hypot(deltaX(p.x, b.x), deltaY(p.y, b.y)) + 70);
-    move.endX = Math.max(state.cameraX + b.r, Math.min(state.cameraX + state.width - b.r, b.x + Math.cos(angle) * length));
-    move.endY = Math.max(state.cameraY + b.r, Math.min(state.cameraY + state.height - b.r, b.y + Math.sin(angle) * length));
+    move.endX = b.x + Math.cos(angle) * length;
+    move.endY = b.y + Math.sin(angle) * length;
   }
   if (kind === "rain" || kind === "call") {
     move.radius = definition.radius;
@@ -73,13 +87,14 @@ function beginBossMove(id) {
 }
 function fireBossFan(move) {
   const spread = bossDefinition(move).spread;
-  const speed = bossDefinition(move).speed;
+  const def=bossDefinition(move), policy=GAME_DATA.boss.combat;
+  const speed=state.bossPhase>=2 && ['words','chalk'].includes(def.kind)?(def.kind==='words'?policy.phaseWordsSpeed:policy.phaseChalkSpeed):def.speed;
   for (let i = 0; i < move.count; i++) {
     if (state.enemyShots.filter(shot => shot.source === "teacher").length >= UPGRADE_TUNING.teacherShotLimit) break;
     const a = move.angle + (i - (move.count - 1) / 2) * spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      dodged: false, phaseShot:false, source: "teacher", feedback:feedbackPayload(moveFeedback(bossDefinition(move),'move')), x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
-      r: bossKind(move) === "chalk" ? 10 : 17, text: bossKind(move) === "chalk" ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
+      dodged: false, phaseShot:false, remote:bossKind(move)==='sniper', source: "teacher", feedback:feedbackPayload(moveFeedback(bossDefinition(move),'move')), x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+      r: ["chalk","sniper"].includes(bossKind(move)) ? 10 : 17, text: ["chalk","sniper"].includes(bossKind(move)) ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
       damage: bossDefinition(move).damage, life: 4
     }));
   }
@@ -111,59 +126,85 @@ function updateBoss(dt) {
     state.bossShake = BOSS_TUNING.shakeSeconds;
   }
   if (state.bossPhasePause > 0) { state.bossPhasePause = countdown(state.bossPhasePause, dt); updateHud(); return; }
-  if (!targetVisible(b)) {
-    clearBossMoves(); state.bossRest = Math.max(state.bossRest, 0.5);
-  }
   // 預警時老師站定；衝撞只沿預告線走，不追蹤玩家。
   if (!state.bossMoves.length && !(b.stunTimer > 0)) {
     const dx = deltaX(state.player.x, b.x), dy = deltaY(state.player.y, b.y), length = Math.max(1, Math.hypot(dx, dy));
-    const speed = b.speed * (b.slowTimer > 0 ? (b.makerSlow || BUILD_TUNING.slowMultiplier) : 1);
+    b.pursuing=length>GAME_DATA.boss.combat.pursuitDistance;
+    const speed = (b.speed===0?0:GAME_DATA.boss.phases[state.bossPhase-1].speed) * (b.pursuing?GAME_DATA.boss.combat.pursuitMultiplier:1) * (b.slowTimer > 0 ? (b.makerSlow || BUILD_TUNING.slowMultiplier) : 1);
     b.x += dx / length * speed * dt; b.y += dy / length * speed * dt; clampToMap(b);
   }
-  if (!targetVisible(b) || b.stunTimer > 0) return;
+  if (b.stunTimer > 0) return;
   if (!state.bossMoves.length) {
     state.bossRest = countdown(state.bossRest, dt);
     if (state.bossRest > 0) return;
     if (state.bossRest <= 0) {
       const previousMoves = state.lastBossMoves;
-      const unlocked = BOSS_MOVES.filter(move => move.minPhase <= state.bossPhase && (!["ring","cage"].includes(bossKind(move)) || Math.min(state.width, state.height) >= 196));
-      const freshChoices = unlocked.filter(move => !state.lastBossMoves.includes(move.id));
-      const choices = freshChoices.length ? freshChoices : unlocked;
+      const choices=teacherChoices(BOSS_MOVES,state.bossPhase,Math.hypot(deltaX(state.player.x,b.x),deltaY(state.player.y,b.y)),targetVisible(b),GAME_DATA.boss.combat,state.lastBossMoves)
+        .filter(move=>!['ring','cage'].includes(move.kind)||Math.min(state.width,state.height)>=196);
       if (!choices.length) { state.bossRest = .5; return; }
       const id = choices[Math.floor(Math.random() * choices.length)].id;
       beginBossMove(id); state.lastBossMoves = [id];
       // 只搭配容易看懂的兩招，避開衝撞與收縮圈同時封路。
       if (state.bossPhase >= 2 && (["rain", "call"].includes(BOSS_MOVES.find(m => m.id === id).kind))) {
         const combo = GAME_DATA.boss.phases[state.bossPhase - 1].combo;
-        if (combo && combo !== id && !previousMoves.includes(combo)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
+        if (targetVisible(b) && combo && combo !== id && !previousMoves.includes(combo)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
       }
       return; // 開始預告的這幀不扣時間，保證完整預警。
     }
   }
   for (let i = state.bossMoves.length - 1; i >= 0; i--) {
     const move = state.bossMoves[i];
+    const kind=bossKind(move),definition=bossDefinition(move),policy=GAME_DATA.boss.combat;
+    if(move.recovery>0) {move.recovery=countdown(move.recovery,dt);if(move.recovery<=0)state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);continue;}
     if (!move.active) {
+      if(kind==='sniper')move.angle=Math.atan2(deltaY(state.player.y,move.y),deltaX(state.player.x,move.x));
+      if(kind==='tracking' && move.warning>policy.lockSeconds+1e-6) {
+        move.x=state.player.x;move.y=state.player.y;move.points=[{x:move.x,y:move.y,r:move.radius}];
+      }
       move.warning = countdown(move.warning, dt);
       if (move.warning > 0) continue;
-      move.active = true; move.life = bossKind(move) === "dash" ? Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed : (move.wallDuration || bossDefinition(move).duration);
-      if (bossKind(move) === "words" || bossKind(move) === "chalk") { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
+      move.active = true; move.life = ["dash","combo"].includes(kind) ? Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed : (move.wallDuration || bossDefinition(move).duration);
+      if (["words","chalk","sniper"].includes(kind)) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
       if (bossKind(move) === "summon") for (let n = 0; n < Math.min(10, bossDefinition(move).count + bossDefinition(move).phaseCount * state.bossPhase); n++) spawnEnemy();
       if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") bossFeedbackShake(move);
       continue; // 出手畫面至少呈現一幀，再開始範圍命中判斷。
     }
-    if (bossKind(move) === "wall") {
+    if(kind==='leap') {
+      const progress=Math.min(1,1-Math.max(0,move.life-dt)/definition.duration);
+      b.x=wrapCoordinate(move.x+deltaX(move.endX,move.x)*progress,state.worldWidth);
+      b.y=wrapCoordinate(move.y+deltaY(move.endY,move.y)*progress,state.worldHeight);
+      if(progress>=1) {
+        if(Math.hypot(deltaX(state.player.x,b.x),deltaY(state.player.y,b.y))<move.radius+state.player.r) {
+          const beforeHealth=state.player.health;
+          bossHurtPlayer(definition.damage,moveFeedback(definition,'move'));
+          if(state.player.health<beforeHealth) {
+            const angle=Math.atan2(deltaY(state.player.y,b.y),deltaX(state.player.x,b.x));
+            state.player.x+=Math.cos(angle)*policy.leapPush;state.player.y+=Math.sin(angle)*policy.leapPush;clampToMap(state.player);
+          }
+        }
+        move.recovery=policy.leapRecovery;bossFeedbackShake(move);continue;
+      }
+    } else if(kind==='barriers') {
+      // 兩側短牆；上下均有缺口。碰撞沿用位移修正，不造成隱形傷害。
+      for(const sign of [-1,1]) {
+        const dx=deltaX(state.player.x,move.x+sign*move.wallWidth),dy=deltaY(state.player.y,move.y);
+        if(Math.abs(dx)<state.player.r+8 && Math.abs(dy)<move.radius+state.player.r) {
+          state.player.x=wrapCoordinate(move.x+sign*move.wallWidth+(dx>=0?1:-1)*(state.player.r+8),state.worldWidth);
+        }
+      }
+    } else if (bossKind(move) === "wall") {
       if (Math.abs(deltaX(wallX(move),state.player.x)) < state.player.r + 10 && deltaY(state.player.y,move.y) >= 0 && deltaY(state.player.y,move.y) <= move.wallHeight) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "chalk") {
       move.pulse = countdown(move.pulse, dt);
       if (move.pulse <= 0) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
-    } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
+    } else if (["rain","call","tracking"].includes(kind)) {
       for (const point of move.points) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "cage") {
       const radius = move.radius * Math.max(0,move.life/bossDefinition(move).duration);
       if (Math.abs(Math.hypot(deltaX(state.player.x,move.x),deltaY(state.player.y,move.y))-radius) < state.player.r+10) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "ring") {
       for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
-    } else if (bossKind(move) === "dash") {
+    } else if (["dash","combo"].includes(kind)) {
       const dx = deltaX(move.endX, b.x), dy = deltaY(move.endY, b.y), length = Math.hypot(dx, dy);
       const step = Math.min(length, bossDefinition(move).speed * dt);
       if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; clampToMap(b); }
@@ -171,7 +212,10 @@ function updateBoss(dt) {
     }
     if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
     move.life = countdown(move.life, dt);
-    if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
+    if(move.life<=0 && kind==='combo' && move.repeats>1) {
+      const repeats=move.repeats-1;state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);
+      beginBossMove(move.id);const next=state.bossMoves[state.bossMoves.length-1];if(next){next.repeats=repeats;next.warning=Math.max(.6,definition.warning);}
+    } else if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
   }
   if (!state.bossMoves.length) state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;
   updateHud();
@@ -203,8 +247,8 @@ Object.defineProperties(globalThis.Survivor.engine.boss, {
 function startBossZone() {
   const config = GAME_DATA.bossZone;
   state.bossZone = !PREVIEW_MODE && config.enabled ? {
-    x: state.player.x, y: state.player.y, span: Math.max(state.width, state.height),
-    radius: Math.max(state.width, state.height) * 1.5, target: Math.max(state.width, state.height) * 1.5,
+    x: state.player.x, y: state.player.y, span: config.initialRadius,
+    radius: config.initialRadius, target: config.initialRadius,
     completed: 0, warning: 0, shrinking: false
   } : null;
 }
@@ -219,13 +263,10 @@ function updateBossZone(dt) {
   const z = state.bossZone, config = GAME_DATA.bossZone;
   if (!state.boss || !config.enabled || PREVIEW_MODE) { state.bossZone = null; return; }
   if (!z || state.mode !== "playing" || state.bossIntro > 0) return;
-  // 轉向、放大視窗也保留至少 1.5 個螢幕寬的直徑，不趁旋轉偷偷縮圈。
-  const span = Math.max(z.span, state.width, state.height);
-  if (span > z.span) { z.radius *= span / z.span; z.target *= span / z.span; z.span = span; }
   const due = Math.min(config.steps, state.bossPhase);
   if (!z.shrinking && z.warning <= 0 && z.radius <= z.target && z.completed < due) {
-    z.target = z.span * (1.5 - .75 * (z.completed + 1) / config.steps);
-    z.warning = 4; playSound("warning");
+    z.target = config.initialRadius+(config.finalRadius-config.initialRadius)*(z.completed+1)/config.steps;
+    z.warning = config.warning; playSound("warning");
   }
   // 完成每次預告才開始收圈；大傷害跨階段也按順序預告。
   if (z.warning > 0) z.warning = countdown(z.warning, dt);

@@ -17,7 +17,7 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
-run("resetGame(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;");
+run("state.width=800;state.height=600;resetGame(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;");
 assert.ok(run('state.worldWidth >= 4096*2.5 && state.worldHeight >= 4096*2.5'));
 const worldW=run('state.worldWidth'),worldH=run('state.worldHeight');
 assert.equal(run('state.player.x - state.cameraX'),400); assert.equal(run('state.player.y - state.cameraY'),300);
@@ -50,6 +50,6 @@ for (const [iw,ih,vw,vh,left,top,expectedW,expectedH] of [[390,844,390,664,0,45,
 run('elements.gameCanvas.clientWidth=900;elements.gameCanvas.clientHeight=400;resize();');
 assert.equal(run('state.worldWidth'),worldW); assert.equal(run('state.worldHeight'),worldH);
 assert.equal(run('state.player.x'),1200); assert.equal(run('state.player.y'),900);
-assert.equal(run('state.player.x-state.cameraX'),450);
+assert.equal(run('state.player.x-state.cameraX'),run('state.width/2'));
 run('resetGame();'); assert.equal(run('state.worldWidth'),worldW); assert.equal(run('state.worldHeight'),worldH);
 console.log('PASS: fixed map, centered camera, four centered seams, dash wrap, canonical spawn/knockback/boss, world shots, visible book shots, viewport offsets/rotation, resize/restart');

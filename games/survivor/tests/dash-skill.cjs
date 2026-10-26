@@ -104,8 +104,8 @@ saved('updateSettingValue("bombDamage", 150); gameSettings = loadSavedSettings()
 // 座標測試包含非零原點、90 度旋轉與縮放；拖曳要沿玩家看到的遊戲方向。
 fresh();
 run(`elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:820,width:800,height:600});`);
-assert.equal(run('canvasPoint({clientX:120,clientY:230}).x'), 100);
-assert.equal(run('canvasPoint({clientX:120,clientY:230}).y'), 200);
+assert.equal(run('canvasScreenPoint({clientX:120,clientY:230}).x'), 100);
+assert.equal(run('canvasScreenPoint({clientX:120,clientY:230}).y'), 200);
 run(`window.innerWidth = 600; window.innerHeight = 900;
   elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:620,width:600,height:800});
   elements.gameCanvas.listeners.pointerdown(pointer(31,420,130));
@@ -119,13 +119,13 @@ assert.equal(run('state.pointerId'), 31); assert.equal(run('state.dashCooldown')
 assert.equal(run('state.dashCharges'),1); assert.ok(run('state.bomb'));
 // 縮放後仍回到遊戲座標。
 run('elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:320,width:300,height:400});');
-assert.equal(run('canvasPoint({clientX:220,clientY:80}).x'), 100);
-assert.equal(run('canvasPoint({clientX:220,clientY:80}).y'), 200);
+assert.equal(run('canvasScreenPoint({clientX:220,clientY:80}).x'), 100);
+assert.equal(run('canvasScreenPoint({clientX:220,clientY:80}).y'), 200);
 // Canvas 使用未旋轉的內容尺寸；改版面釋放舊輸入、保留進度與冷卻。
 run(`elements.gameCanvas.clientWidth = 720; elements.gameCanvas.clientHeight = 320;
   state.elapsed = 42; state.player.x = 790; state.player.y = 590;
   state.keys.add('w'); resize();`);
-assert.equal(run('state.width'), 720); assert.equal(run('state.height'), 320);
+assert.equal(run('state.width'),run('worldViewport(720,320).width')); assert.equal(run('state.height'),run('worldViewport(720,320).height'));
 assert.equal(run('canvas.width'), 720); assert.equal(run('canvas.height'), 320);
 assert.equal(run('state.player.x'), 790); assert.equal(run('state.player.y'), 590);
 assert.equal(run('ctx.imageSmoothingEnabled'), false);
@@ -135,7 +135,7 @@ assert.equal(run('state.dashCooldown'), 1.2);
 assert.equal(run('state.dashCharges'),1);
 run(`showOverlay('paused'); window.innerWidth = 900; window.innerHeight = 600;
   elements.gameCanvas.clientWidth = 800; elements.gameCanvas.clientHeight = 500; resize();`);
-assert.equal(run('state.mode'), 'paused'); assert.equal(run('state.width'), 800);
+assert.equal(run('state.mode'), 'paused'); assert.equal(run('state.width'),run('worldViewport(800,500).width'));
 assert.equal(run('typeof maybeShowPortraitHint'), 'undefined');
 assert.equal(run('storage["erin-survivor-portrait-hint-v1"]'), undefined);
 console.log('PASS: landscape/rotated/scaled joystick, multipointer actions, canvas size, resize input reset/progress/pause, removed portrait hint');

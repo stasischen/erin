@@ -4,7 +4,7 @@
   const KEY = 'erin-survivor-maker-v1';
   const copy = value => JSON.parse(JSON.stringify(value));
   const TYPES = { projectile: '發射水球', aoe: '範圍傷害', chain: '連鎖閃電', 'dash-trail': '留下痕跡', slow: '緩速', stun: '暈眩', knockback: '擊退', summon: '召喚小幫手', 'ring-with-gap': '留缺口的圈' };
-  const KINDS = { words: '國字扇形', chalk: '粉筆連發', dash: '直線衝撞', rain: '多點範圍', call: '單點範圍', summon: '召喚', ring: '留缺口的圈', wall: '粉筆牆', cage: '衝刺縮圈' };
+  const KINDS = { words: '國字扇形', chalk: '粉筆連發', dash: '直線衝撞', rain: '多點範圍', call: '單點範圍', summon: '召喚', ring: '留缺口的圈', wall: '粉筆牆', cage: '衝刺縮圈', leap:'跳上講台',sniper:'粉筆狙擊',barriers:'黑板封路',combo:'黑板擦連衝',tracking:'點名追蹤' };
   const BOUNDS = { damage: [0, 300, 1], radius: [10, 180, 1], speed: [30, 450, 5], count: [1, 8, 1], spread: [0, 1, .05], duration: [.1, 5, .1], interval: [.4, 15, .1], multiplier: [.2, 1, .05], distance: [0, 300, 5], gap: [1.2, 3, .1], power: [1, 3, 1], warning: [.6, 3, .1], pulse: [.2, 2, .05], hp: [10, 500, 10], maxLevel: [1, 5, 1] };
   const TUNING_BOUNDS = {
     dashCharges:[1,4,1], dashInvincible:[.05,.5,.01], perfectWindow:[.05,.4,.01], perfectHeal:[0,10,1], perfectShield:[0,2,.05], perfectSlowSeconds:[0,1,.05], perfectSlowScale:[.2,1,.05], dashAttackSeconds:[.2,2,.1], dashAttackDamage:[1,3,.1], dashAttackSize:[1,2,.1], levelupRerolls:[0,9,1], playerSpeed:[80,320,5], playerHealth:[40,270,10], actionButtonSize:[72,104,4], waveSeconds:[60,300,10],
@@ -17,6 +17,8 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
+  const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5]};
+  const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
   const ATTACK_BOUNDS = {chargeStun:[0,2,.1],splashSize:[1,4,.1],splashDamage:[0,1,.05],comboEvery:[2,10,1],comboReset:[.3,5,.1],comboMultiplier:[1,5,.1],chargeSeconds:[.2,5,.1],chargeMultiplier:[1,5,.1],moveRetention:[0,1,.05],chargeSize:[1,3,.1],comboSize:[1,3,.1],comboPush:[0,100,1],finisherRecovery:[0,1,.05],stepDistance:[0,40,1],thrustWidth:[5,50,1]};
   const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
@@ -253,8 +255,9 @@
       if (input.bossZone !== undefined) {
         const z = input.bossZone;
         if (!z || typeof z.enabled !== 'boolean') fail('縮圈需要開或關');
-        data.bossZone = { enabled: z.enabled, steps: num(z.steps, 0, 3, '縮圈次數', true), speed: num(z.speed, 10, 160, '縮圈速度'), damage: num(z.damage, 0, 4, '紫霧每秒傷害') };
+        data.bossZone = { enabled: z.enabled, steps: num(z.steps, 0, 3, '縮圈次數', true), speed: num(z.speed, 10, 160, '縮圈速度'), damage: num(z.damage, 0, 4, '紫霧每秒傷害'),initialRadius:num(z.initialRadius===undefined?600:z.initialRadius,300,1200,'安全圈初始半徑'),finalRadius:num(z.finalRadius===undefined?180:z.finalRadius,100,300,'安全圈最終半徑'),warning:num(z.warning===undefined?4:z.warning,1,8,'縮圈預告秒數') };
       }
+      if(data.bossZone.finalRadius>=data.bossZone.initialRadius) fail('最終安全圈需小於初始半徑');
       for (const key of ['elites','chocobear']) {
         // 舊作品沒有此區塊時補預設；輸入值仍逐項驗證。
         if (input[key] === undefined) continue;
@@ -397,16 +400,21 @@
         return result;
       });
       const b = { ...input.boss };
-      data.boss.name = name(b.name, '魔王名稱', 24); data.boss.hp = num(b.hp, 500, 5000, '魔王血量'); data.boss.speed = num(b.speed, 0, 100, '魔王速度'); data.boss.radius = num(b.radius, 20, 50, '魔王大小');
+      data.boss.name = name(b.name, '魔王名稱', 24); data.boss.hp = num(b.hp, 500, 5000, '魔王血量'); data.boss.speed = num(b.speed, 0, 200, '魔王速度'); data.boss.radius = num(b.radius, 20, 50, '魔王大小');
+      for(const [key,bounds] of Object.entries(BOSS_COMBAT_BOUNDS)) data.boss.combat[key]=num(b.combat&&b.combat[key]!==undefined?b.combat[key]:data.boss.combat[key],bounds[0],bounds[1],key);
       if (!Array.isArray(b.phases) || b.phases.length !== 3) fail('需要三個魔王階段');
-      data.boss.phases = b.phases.map((p, i) => ({ threshold: num(p.threshold, i === 0 ? 1 : .05, i === 0 ? 1 : .95, '階段血量比例'), rest: num(p.rest, .4, 8, '招式休息'), combo: p.combo === null ? null : choice(p.combo, data.boss.moves.map(m => m.id), '合招') }));
+      data.boss.phases = b.phases.map((p, i) => ({ speed:num(p.speed===undefined?b.speed:p.speed,0,200,'階段移速'),threshold: num(p.threshold, i === 0 ? 1 : .05, i === 0 ? 1 : .95, '階段血量比例'), rest: num(p.rest, .4, 8, '招式休息'), combo: p.combo === null ? null : choice(p.combo, data.boss.moves.map(m => m.id), '合招') }));
       if (data.boss.phases.some((p, i, rows) => i && p.threshold >= rows[i - 1].threshold)) fail('魔王階段血量比例必須遞減');
-      if (Array.isArray(b.moves)) b.moves = b.moves.concat(data.boss.moves.filter(m => ['chalk-wall','shrinking-ring'].includes(m.id) && !b.moves.some(old => old.id === m.id)));
+      if (Array.isArray(b.moves)) {
+        const optional=['chalk-wall','shrinking-ring','podium-leap','chalk-snipe','board-barriers','eraser-combo','tracking-call'];
+        if(new Set(b.moves.map(m=>m.id)).size!==b.moves.length || b.moves.some(m=>!data.boss.moves.some(base=>base.id===m.id))) fail('招式識別碼不正確');
+        b.moves=data.boss.moves.map(base=>b.moves.find(m=>m.id===base.id) || (optional.includes(base.id)?base:null));
+      }
       if (!Array.isArray(b.moves) || b.moves.length !== data.boss.moves.length) fail('魔王招式數量不正確');
       data.boss.moves = data.boss.moves.map((base, i) => {
         const m = compileBossMove(b.moves[i]); if (!m || m.id !== base.id) fail('招式識別碼不正確');
         const result = { ...base, name: name(m.name, '招式名稱', 24), kind: choice(m.kind, Object.keys(KINDS), '招式積木'), minPhase: num(m.minPhase, 1, 3, '開始階段', true), phaseCount: num(m.phaseCount, 0, 1, '每階段增加數量', true) };
-        for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
+        for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOSS_MOVE_BOUNDS[key][0], BOSS_MOVE_BOUNDS[key][1], key, key === 'count');
         result.feedback=m.feedback;
         result.blocks=bossStacks(result);
         result.feedback=Object.fromEntries(result.blocks.moves.map(m=>[m.id,m.feedback]));
@@ -455,5 +463,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

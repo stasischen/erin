@@ -15,9 +15,9 @@ function updateCamera() {
   state.cameraY = state.player.y - state.height / 2;
 }
 function resetMap() {
-  // 預留最大螢幕邊長；每邊至少為可見範圍的 2.5 倍。
+  // 固定世界跨度，不依裝置螢幕大小決定。
   // 整張世界也是地磚的整數倍，跨過世界接縫時花紋不跳動。
-  const span = Math.max(4096, state.width, state.height, window.screen ? window.screen.width : 0, window.screen ? window.screen.height : 0) * MAP_SCREENS;
+  const span = 4096 * MAP_SCREENS;
   state.worldWidth = Math.ceil(span / 336) * 336;
   state.worldHeight = Math.ceil(span / 252) * 252;
 }
@@ -42,6 +42,22 @@ function fitVisibleViewport() {
   gameShell.style.top = `${viewport ? viewport.offsetTop : 0}px`;
   gameShell.style.transform = rotated ? "rotate(90deg) translateY(-100%)" : "none";
 }
+// 固定 320000 平方世界單位；向下取四分之一倍，剩餘 CSS 空間留邊。
+// 同樣面積保留裝置長寬比，不讓取整改變遊戲可見面積。
+function worldViewport(cssWidth, cssHeight) {
+  const raw=Math.sqrt(cssWidth*cssHeight/(800*400));
+  const zoom=Math.max(.25,Math.floor(raw*4)/4);
+  const width=cssWidth/raw,height=cssHeight/raw;
+  return {width,height,zoom,screenWidth:cssWidth,screenHeight:cssHeight,
+    viewLeft:(cssWidth-width*zoom)/2,viewTop:(cssHeight-height*zoom)/2};
+}
+function applyWorldViewport(cssWidth,cssHeight) {
+  Object.assign(state,worldViewport(cssWidth,cssHeight));
+  state.pixelRatio=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.round(cssWidth*state.pixelRatio);canvas.height=Math.round(cssHeight*state.pixelRatio);
+  ctx.setTransform(state.pixelRatio*state.zoom,0,0,state.pixelRatio*state.zoom,state.viewLeft*state.pixelRatio,state.viewTop*state.pixelRatio);
+  ctx.imageSmoothingEnabled=false;
+}
 function resize() {
   fitVisibleViewport();
   // 旋轉或工具列改變高度時，放開舊搖桿，避免沿舊座標繼續走。
@@ -49,17 +65,11 @@ function resize() {
   if (typeof cancelManualAttack === "function") cancelManualAttack();
   // client 尺寸不含外框，也不受整個容器旋轉影響。
   const rect = canvas.getBoundingClientRect();
-  const ratio = Math.min(window.devicePixelRatio || 1, 2);
-  state.width = Math.max(1, canvas.clientWidth || rect.width);
-  state.height = Math.max(1, canvas.clientHeight || rect.height);
-  canvas.width = Math.round(state.width * ratio);
-  canvas.height = Math.round(state.height * ratio);
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  ctx.imageSmoothingEnabled = false;
+  applyWorldViewport(Math.max(1,canvas.clientWidth||rect.width),Math.max(1,canvas.clientHeight||rect.height));
   if (!state.worldWidth) {
     resetMap(); state.player.x = state.width * MAP_SCREENS / 2; state.player.y = state.height * MAP_SCREENS / 2;
   }
-  if (state.width * 2.5 > state.worldWidth || state.height * 2.5 > state.worldHeight) resetMap();
+
   clampToMap(state.player); updateCamera();
 }
 
@@ -318,7 +328,7 @@ function tick(dt) {
     const shot = state.enemyShots[i];
     if(shot.phaseShot && (shot.life=countdown(shot.life,dt))<=0) {state.enemyShotPool.push(state.enemyShots.splice(i,1)[0]);continue;}
     shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);
-    if (shot.source === "teacher" && (!state.boss || !targetVisible(state.boss) || !targetVisible(shot) || (shot.life -= dt) <= 0)) {
+    if (shot.source === "teacher" && (!state.boss || (!targetVisible(shot) && !shot.remote) || (shot.life -= dt) <= 0)) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
     if (schoolWindWall() && cardBlockMatches(cardBlock('wind-eye','onEnemyShot').conditions[0],shot,state.player.x,state.player.y)) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
