@@ -142,8 +142,13 @@ function hitBuildTarget(target, damage) {
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
   } else if (target.alive) damageEnemy(target, damage);
 }
-function shiftTarget(target, x, y, distance) {
-  const dx = deltaX(target.x, x), dy = deltaY(target.y, y), length = Math.max(1, Math.hypot(dx, dy));
+function shiftTarget(target, x, y, distance, centerFallback = false) {
+  // 不讓推拉把尚未進場的怪帶進畫面；所有效果共用此入口。
+  if (!canAttackTarget(target)) return;
+  distance = targetDisplacement(target,distance);
+  let dx = deltaX(target.x, x), dy = deltaY(target.y, y);
+  if (centerFallback && Math.hypot(dx,dy)<.01) { dx=1;dy=0; }
+  const length = Math.max(1, Math.hypot(dx, dy));
   skillVisual("gust", target.x, target.y, { x2: target.x + dx / length * distance, y2: target.y + dy / length * distance, color: "#23815e" });
   target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
 }
@@ -407,10 +412,7 @@ function updateBomb(dt) {
     }
   }
   function pushAway(target) {
-    const dx = deltaX(target.x, bomb.x), dy = deltaY(target.y, bomb.y), length = Math.hypot(dx, dy);
-    skillVisual("gust", target.x, target.y, { x2: target.x + (length > .01 ? dx / length : 1) * 40, y2: target.y + (length > .01 ? dy / length : 0) * 40, color: "#23815e" });
-    target.x += (length > 0.01 ? dx / length : 1) * bomb.knockback;
-    target.y += (length > 0.01 ? dy / length : 0) * bomb.knockback; clampToMap(target);
+    shiftTarget(target,bomb.x,bomb.y,bomb.knockback,true);
   }
   for (const enemy of state.enemies) {
     if (!enemy.alive || !canAttackTarget(enemy) || Math.hypot(deltaX(enemy.x, bomb.x), deltaY(enemy.y, bomb.y)) > bomb.radius + enemy.r) continue;

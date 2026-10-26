@@ -166,6 +166,13 @@
       // 舊的兩種怪物作品以穩定 id 補新種類，原本的名稱、行為和攻擊都保留。
       if (!Array.isArray(input.enemies) || input.enemies.length < 2 || input.enemies.length > data.enemies.length || new Set(input.enemies.map(e=>e.id)).size !== input.enemies.length || input.enemies.some(e=>!data.enemies.some(b=>b.id===e.id)) || data.enemies.slice(0,2).some(b=>!input.enemies.some(e=>e.id===b.id))) fail('怪物種類數量不正確');
       input = {...input,enemies:data.enemies.map(b=>input.enemies.find(e=>e.id===b.id)||b)};
+      if(input.knockback !== undefined) {
+        const k=input.knockback;
+        if(!k || typeof k.enabled!=='boolean') fail('重量效果開關格式錯誤');
+        data.knockback={enabled:k.enabled,strength:num(k.strength,0,5,'重量影響'),
+          bossMass:num(k.bossMass,1,100,'老師重量'),minibossMass:num(k.minibossMass,1,100,'小頭目重量'),
+          bossMultiplier:num(k.bossMultiplier,0,1,'老師推拉倍率')};
+      }
       if(input.bodySeparation !== undefined) {
         const b=input.bodySeparation;
         if(!b || typeof b.enabled!=='boolean') fail('身體分離開關格式錯誤');
@@ -181,6 +188,7 @@
         const result = { ...base, name: name(e.name, '怪物名稱', 24), hp: num(e.hp, 10, 500, '血量'), speed: num(e.speed, 0, 170, '移速'), radius: num(e.radius, 10, 35, '大小'), damage: num(e.damage, 0, 40, '碰撞傷害'), behavior: choice(e.behavior, Object.keys(BEHAVIORS), '移動方式') };
         // 舊作品沒有造型欄位時，依原種類補上；保留名稱、能力與數值。
         result.spriteId = e.spriteId === undefined ? base.spriteId : choice(e.spriteId, root.SurvivorMonsters.ids, '怪物造型');
+        result.mass = e.mass === undefined ? (e.behavior==='tank'?8:1) : num(e.mass,1,100,'重量');
         result.shadowSize = e.shadowSize === undefined ? .9 : num(e.shadowSize, .3, 1.8, '影子寬度倍率');
         const a = e.attack;
         result.attack = { type: choice(a.type, ['none','projectile','aoe','summon'], '怪物攻擊'), interval: num(a.interval, 1, 15, '攻擊間隔'), speed: num(a.speed, 50, 200, '國字速度'), damage: num(a.damage, 0, 30, '攻擊傷害'), radius: num(a.radius, 10, 100, '攻擊大小'), count: num(a.count, 1, 5, '攻擊數量', true), spread: num(a.spread, 0, .6, '散射角度'), level: num(a.level, 2, 20, '開始攻擊等級', true) };

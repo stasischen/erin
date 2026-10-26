@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-weight-knockback",
+  "title": "怪物重量影響擊退與吸引",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-weight-knockback",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T050440Z-parent-weight-knockback.md",
+  "next": "請 Grok 審查 erin-watch 實質 SHA 並跑 --layout。版本 r，指定測試全通過；Godot §11 與試玩項目見 docs/survivor-weight-knockback-validation.md。無待決定事項；提交推送與 PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T05:08:44.457074Z",
+  "updatedBy": "codex"
+}

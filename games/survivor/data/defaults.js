@@ -1199,7 +1199,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "otsubon",
@@ -1239,7 +1240,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "pudding",
@@ -1279,7 +1281,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 8
     },
     {
       "id": "mushroom",
@@ -1319,7 +1322,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "donut",
@@ -1359,7 +1363,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "pop-candy",
@@ -1399,7 +1404,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "jelly",
@@ -1439,7 +1445,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "radial": false,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     },
     {
       "id": "fairy",
@@ -1479,7 +1486,8 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 8,
         "radial": true,
         "gapDegrees": 70
-      }
+      },
+      "mass": 1
     }
   ],
   "boss": {
@@ -1929,5 +1937,12 @@ globalThis.SURVIVOR_DEFAULTS = {
   "bodyContact": {
     "pushOnly": false,
     "damageScale": 0.25
+  },
+  "knockback": {
+    "enabled": true,
+    "strength": 1,
+    "bossMass": 40,
+    "minibossMass": 8,
+    "bossMultiplier": 0
   }
 };

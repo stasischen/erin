@@ -169,6 +169,13 @@
     range(body,draft.bodySeparation,'playerForce',[0,1,.05],'主角與怪物推力');
     range(body,draft.bodySeparation,'enemyForce',[0,1,.05],'怪物之間推力');
     el('p','衝刺及衝刺保護期間可以穿過怪物；大怪會擋路。分離逐幀推開，怪群推動主角有共同上限。',body);
+    const weight=grid(panel('擊退與吸引重量'));
+    toggle(weight,'重量影響推拉',draft.knockback,'enabled');
+    range(weight,draft.knockback,'strength',[0,5,.1],'重量影響（越大越難推動大怪）');
+    range(weight,draft.knockback,'minibossMass',[1,100,1],'小頭目重量');
+    range(weight,draft.knockback,'bossMass',[1,100,1],'老師重量');
+    range(weight,draft.knockback,'bossMultiplier',[0,1,.05],'老師推拉倍率（0 固定不動）');
+    el('p','一般怪重量 1；坦克預設 8。重量也用於身體分離；關閉重量效果會恢復原本推拉距離。',weight);
     const pacing = grid(panel('出怪節奏'));
     select(pacing,'波次型態',draft.pacing,'pattern',{alternating:'強弱交替',steady:'穩定出怪'});
     const names = {density:'出怪密度倍率',strongScale:'強波密度倍率',weakScale:'喘息波密度倍率',cycleSeconds:'強弱交替秒數',eventCount:'每次事件怪物數',eventSeconds:'事件進場秒數',warning:'招式預警秒數',chargeSpeed:'衝撞速度',chargeSeconds:'衝撞持續秒數',fuseSeconds:'跳跳糖引信（固定兩秒）',blastRadius:'自爆半徑',blastDamage:'自爆對主角傷害',blastEnemyDamage:'自爆對怪物傷害',shieldRadius:'仙子護盾範圍',shieldSeconds:'護盾施放間隔秒數',shieldHits:'護盾擋住幾下'};
@@ -180,7 +187,7 @@
     }
     drawEncounters('elites','精英怪'); drawEncounters('chocobear','巧克力大熊');
     draft.enemies.forEach(e => {
-      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
+      const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields,e,'mass',[1,100,1],'重量'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
       monsterPicker(fields, e);
       select(fields, '移動方式', e, 'behavior', api.BEHAVIORS);
       const phase=el('fieldset',undefined,p);el('legend','起手 → 生效 → 收招 → 冷卻',phase);
