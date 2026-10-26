@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-soulslike-backlog",
+  "title": "小怪獸：魂系與 Rubinite 靈感備忘（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-soulslike-backlog",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T015427Z-parent-soulslike-backlog.md",
+  "next": "請 Grok 審查魂系七項、Rubinite 六項、甜甜能量與重疊說明；§11 僅文件無程式素材變更。採用待 Erin 和家長決定，commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T01:56:33.484165Z",
+  "updatedBy": "codex"
+}
