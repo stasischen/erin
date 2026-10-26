@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261027c" />
-  <link rel="stylesheet" href="maker/style.css?v=20261027c" />
+  <link rel="stylesheet" href="style.css?v=20261027d" />
+  <link rel="stylesheet" href="maker/style.css?v=20261027d" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,6 +33,13 @@
         <button id="dashButton" aria-label="衝刺" class="action-button dash-button" type="button"><span aria-hidden="true"><span data-icon="dash" aria-hidden="true"></span></span></button>
       </div>
       <div id="overlay" class="overlay">
+        <section id="trialConfirm" class="trial-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="trialConfirmTitle">
+          <h2 id="trialConfirmTitle">離開這一局？</h2>
+          <div class="trial-confirm-actions">
+            <button id="trialConfirmYes" class="settings-action" type="button" aria-label="確定離開" title="確定離開"><span data-icon="confirm" aria-hidden="true"></span></button>
+            <button id="trialConfirmNo" class="settings-action" type="button" aria-label="取消，保留這一局" title="取消"><span data-icon="close" aria-hidden="true"></span></button>
+          </div>
+        </section>
         <section id="trialPanel" class="trial-panel" hidden aria-label="王的試煉選單">
           <h2 id="trialTitle">王的試煉</h2><div id="trialChoices" class="trial-choices"></div>
           <button id="trialBack" class="settings-action" type="button" aria-label="回開始畫面" title="回開始畫面"><span data-icon="home" aria-hidden="true"></span></button>
@@ -93,14 +100,14 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261027c"></script>
+  <script src="icons.js?v=20261027d"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261027c"></script>
-  <script src="data/schema.js?v=20261027c"></script>
-  <script src="preview.js?v=20261027c"></script>
-  <script src="manifest.js?v=20261027c"></script><script src="game.js?v=20261027c"></script>
-  <script src="practice-host.js?v=20261027c"></script>
-  <script src="maker/maker.js?v=20261027c"></script>
+  <script src="data/defaults.js?v=20261027d"></script>
+  <script src="data/schema.js?v=20261027d"></script>
+  <script src="preview.js?v=20261027d"></script>
+  <script src="manifest.js?v=20261027d"></script><script src="game.js?v=20261027d"></script>
+  <script src="practice-host.js?v=20261027d"></script>
+  <script src="maker/maker.js?v=20261027d"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

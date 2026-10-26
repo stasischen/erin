@@ -7,6 +7,8 @@ function updateHud() {
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
+  levelLabel.hidden=!!state.trial;statusEl.hidden=!!state.trial;
+  document.querySelector('.experience-wrap').hidden=!!state.trial;
   levelLabel.textContent = `${state.stageIndex + 1}關 · Lv.${state.level}`;
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {

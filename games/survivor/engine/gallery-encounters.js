@@ -48,7 +48,7 @@ function withTrialBody(body,action){
 }
 function initTrialEncounter(){
  const t=state.trial;if(t.definition.id==='gatekeeper')return;
- const make=(role,index)=>({...state.boss,x:t.arena.x+(index?130:-130),y:t.arena.y-t.arena.radius+70,posture:SurvivorPosture.initial(),role,trialActor:true,alive:true,actorId:role||'winged',artId:role==='fire'?'character/fire-twin':t.definition.artId,moves:[],phase:1,rest:index?.95:.4});
+ const make=(role,index)=>({...state.boss,...SurvivorTrialRules.entry(t.arena,state.boss.r,index,t.definition.id==='frostfire'?2:1),posture:SurvivorPosture.initial(),role,trialActor:true,alive:true,actorId:role||'winged',artId:role==='fire'?'character/fire-twin':t.definition.artId,moves:[],phase:1,rest:index?.95:.4});
  t.actors=t.definition.id==='frostfire'?[make('frost',0),make('fire',1)]:[make(null,0)];t.actors.forEach(b=>Object.assign(b,SurvivorTrialRules.boundary(b,t.arena).position));t.fields=[];state.boss=t.actors[0];state.bossMoves=state.boss.moves;
 }
 function trialBossDefeated(body){

@@ -23,6 +23,7 @@ vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !game
 startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
 pauseButton.addEventListener("click", () => { if (state.mode === "playing" || state.mode === "paused") togglePause(); });
 window.addEventListener("keydown", (event) => {
+  if(state.mode==='trial-confirm'){if(event.key==='Escape')confirmTrialMenu(false);return;}
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
   if (state.mode === "maker" || settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "e"].includes(key)) event.preventDefault();
@@ -122,6 +123,8 @@ Object.defineProperties(globalThis.Survivor.input, {
 });
 
 if(!PREVIEW_MODE) {
-  document.getElementById('trialEntry').onclick=()=>trialMenu();
+  document.getElementById('trialEntry').onclick=requestTrialMenu;
+  document.getElementById('trialConfirmYes').onclick=()=>confirmTrialMenu(true);
+  document.getElementById('trialConfirmNo').onclick=()=>confirmTrialMenu(false);
   document.getElementById('trialBack').onclick=closeTrialMenu;
 }

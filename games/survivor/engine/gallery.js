@@ -12,6 +12,15 @@ globalThis.SurvivorTrialRules=(()=>{
     const axis=(value,center,half)=>center+Math.max(-Math.max(0,arena.radius-half+48),Math.min(Math.max(0,arena.radius-half+48),value-center));
     return {x:axis(player.x,arena.x,width/2)-width/2,y:axis(player.y,arena.y,height/2)-height/2};
   }
+  function entry(arena,r,index=0,count=1) {
+    // 橫向入口留在固定面積視野中，雙子並排；預警圓也留在短邊內。
+    return boundary({x:arena.x+(count>1?(index?85:-85):-Math.min(240,arena.radius-r-30)),y:arena.y-(count>1?95:0),r:r+30},arena).position;
+  }
+  function pursue(body,target,speed,dt,stop=body.r+target.r+12) {
+    const dx=target.x-body.x,dy=target.y-body.y,d=Math.hypot(dx,dy);
+    const step=Math.min(Math.max(0,d-stop),Math.max(0,speed*dt));
+    return {x:body.x+(d?dx/d*step:0),y:body.y+(d?dy/d*step:0)};
+  }
   function phase(boss,hp) {return hp/boss.maxHp<boss.threshold?2:1;}
   function choose(definition,phase,distance,previous,sample) {
     const rules=definition.moves.map(m=>({...m.ai,moveId:m.id,weight:m.weight}));
@@ -33,7 +42,7 @@ globalThis.SurvivorTrialRules=(()=>{
   function summon(origin,count,existing,limit,radius) {
     return Array.from({length:Math.max(0,Math.min(count,limit-existing))},(_,i)=>({type:'summon',x:origin.x,y:origin.y,r:radius,emergeSeconds:.6,index:i}));
   }
-  return {boundary,rayLength,camera,phase,choose,contains,hazard,wallStun,summon};
+  return {boundary,rayLength,camera,entry,pursue,phase,choose,contains,hazard,wallStun,summon};
 })();
 Survivor.engine.gallery={rules:SurvivorTrialRules};
 SurvivorEffectBlocks.trial=SurvivorTrialRules;
@@ -53,7 +62,7 @@ function startTrial(id) {
   const arena={x:trialSettings().arenaRadius+200,y:trialSettings().arenaRadius+200,radius:trialSettings().arenaRadius};
   state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,previous:[],events:[]};
   state.player.x=arena.x;state.player.y=arena.y;
-  state.boss={x:arena.x,y:arena.y-arena.radius+definition.radius,r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
+  state.boss={...SurvivorTrialRules.entry(arena,definition.radius),r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
   initTrialEncounter();
   state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId='candy-sword';
   state.practiceHit=null;state.player.damageDisabled=false;
@@ -124,15 +133,16 @@ function updateTrial(dt) {
   if(!state.bossMoves.length) {
     state.bossRest=countdown(state.bossRest,dt);
     const dx=state.player.x-b.x,dy=state.player.y-b.y,d=Math.hypot(dx,dy);
-    if(d>125){const speed=t.definition.speed*factor*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1);b.x+=dx/Math.max(1,d)*speed*dt;b.y+=dy/Math.max(1,d)*speed*dt;clampToMap(b);}
+    Object.assign(b,SurvivorTrialRules.pursue(b,state.player,t.definition.speed*factor*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1),dt));clampToMap(b);
     if(state.bossRest>0)return;
-    const id=SurvivorTrialRules.choose(t.definition,state.bossPhase,d,t.previous,Math.random());if(!id){state.bossRest=.3;return;}
+    const id=SurvivorTrialRules.choose(t.definition,state.bossPhase,Math.hypot(state.player.x-b.x,state.player.y-b.y),t.previous,Math.random());if(!id){state.bossRest=.3;return;}
     const def=t.definition.moves.find(m=>m.id===id);
     const target=SurvivorTrialRules.boundary({...state.player,r:b.r},t.arena).position;
     const m={id,kind:id,ai:SurvivorBossAI.start(def.blocks.moves[0].timing),x:b.x,y:b.y,origin:{x:b.x,y:b.y},target,angle:Math.atan2(dy,dx),dodged:false,repeat:0};
     state.bossMoves.push(m);t.previous=[id];playSound('warning');return;
   }
   const m=state.bossMoves[0],def=t.definition.moves.find(d=>d.id===m.id),timing=def.blocks.moves[0].timing;
+  if(m.ai.phase==='cooldown'){Object.assign(b,SurvivorTrialRules.pursue(b,state.player,t.definition.speed*factor*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1),dt));clampToMap(b);}
   const oldPhase=m.ai.phase;
   m.warning=oldPhase==='windup'?m.ai.left:0;m.active=oldPhase==='active';m.recovery=oldPhase==='recovery'?m.ai.left:0;m.life=m.ai.left;
   b.recoveryLeft=m.recovery;
@@ -162,4 +172,18 @@ function updateTrial(dt) {
     m.warning=m.ai.phase==='windup'?m.ai.left:0;m.active=m.ai.phase==='active';
     m.recovery=m.ai.phase==='recovery'?m.ai.left:0;m.life=m.ai.left;b.recoveryLeft=m.recovery;
   }
+}
+
+// 離局確認只改平台介面；取消前不清除本局任何戰鬥資料。
+function requestTrialMenu() {
+  if(state.mode!=='paused'||state.trial){trialMenu();return;}
+  state.mode='trial-confirm';messageCard.hidden=true;
+  document.getElementById('trialConfirm').hidden=false;
+  document.getElementById('trialConfirmNo').focus?.();
+}
+function confirmTrialMenu(leave) {
+  if(state.mode!=='trial-confirm')return;
+  document.getElementById('trialConfirm').hidden=true;
+  if(leave)trialMenu();
+  else {showOverlay('paused');document.getElementById('trialEntry').focus?.();}
 }

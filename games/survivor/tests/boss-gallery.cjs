@@ -47,7 +47,7 @@ assert.equal(run('state.trial.entry'),2);
 run('tick(.05)');assert.equal(run('state.bossIntro>0'),true);assert.equal(run('state.enemies.length'),0);
 run('for(let i=0;i<45;i++)tick(.05)');assert.equal(run('state.bossIntro'),0);
 run('state.player.x=state.trial.arena.x+10000;clampToMap(state.player)');
-assert.equal(run('Math.round(state.player.x-state.trial.arena.x)'),602);
+assert.equal(run('Math.round(state.player.x-state.trial.arena.x)'),run('state.trial.arena.radius-state.player.r'));
 run('state.boss.hp=state.boss.maxHp*.49;updateTrial(.05)');assert.equal(run('state.bossPhase'),2);
 // 撞牆曝露弱點，衝鋒被取消，不在恢復後繼續傷害。
 run(`state.boss.x=state.trial.arena.x+state.trial.arena.radius-state.boss.r-1;state.boss.y=state.trial.arena.y;
