@@ -47,10 +47,10 @@ function fireAtNearest(command = null) {
   const count = cardBlock('multi-water','onShot').actions[0].count;
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const offset = (i - (count - 1) / 2) * cardBlock('multi-water','onShot').actions[0].angle;
-    const spread = command && autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
+    const spread = autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
     state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, vy: Math.sin(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + cardBlock('piercing-water','onShot').actions[0].count + (effectLevel('wind-blade') ? cardBlock('wind-blade','onShot').actions[0].count : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), feedback:feedbackPayload(weaponFeedback({charged:autoCharged,heavy:bigBubble})),rangeLeft: BUILD_TUNING.shotRange * cardBlock('wind-attack','onShot').actions[0].multiplier, hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
-  if (!(command && autoCharged)) prepareNeutralShots(angle);
+  if (!autoCharged) prepareNeutralShots(angle);
 }
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
@@ -153,14 +153,16 @@ function grantExperience(value) {
 function combatTargets() {
   return state.enemies.filter((enemy) => enemy.alive).concat(state.boss ? [state.boss] : []).filter(canAttackTarget);
 }
-function hitBuildTarget(target, damage) {
+function hitBuildTarget(target, damage, attack = {}) {
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
+    if(attack.charged)damage*=teacherBonuses().damage;
     playSound("hit");
     damageNumber(target, damage);
     target.meleeFlash=false;
     target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
+    else teacherRecoveryHit();
   } else if (target.alive) damageEnemy(target, damage);
 }
 function shiftTarget(target, x, y, distance, centerFallback = false) {
@@ -219,7 +221,7 @@ function executeMakerEffect(effect, x, y, level) {
   if (effect.type === "aoe" || effect.type === "ring-with-gap") skillVisual(effect.type === "aoe" ? "splash" : "maker-ring", x, y, { radius: effect.radius, gap: effect.gap });
   for (const target of targets) {
     if (effect.type === "slow") { target.slowTimer = effect.duration; target.makerSlow = effect.multiplier; }
-    else if (effect.type === "stun") target.stunTimer = effect.duration;
+    else if (effect.type === "stun") stunTarget(target,effect.duration);
     else if (effect.type === "knockback") shiftTarget(target, x, y, effect.distance);
     else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(deltaY(target.y, y),deltaX(target.x, x))) > effect.gap/2 && Math.hypot(deltaX(target.x, x),deltaY(target.y, y)) >= effect.radius * .65)) hitBuildTarget(target,damage);
     if (state.mode !== "playing") return;
@@ -375,25 +377,19 @@ function imminentDashThreat() {
     }
   }
   for (const shot of state.enemyShots) {
+    if(shot.source==="teacher")continue;
     const dx = deltaX(shot.x,p.x), dy = deltaY(shot.y,p.y);
     const speed2 = shot.vx ** 2 + shot.vy ** 2;
     const t = speed2 ? Math.max(0,Math.min(window,-(dx*shot.vx+dy*shot.vy)/speed2)) : 0;
     if (!shot.dodged && near(p.x+dx+shot.vx*t,p.y+dy+shot.vy*t,shot.r)) { shot.dodged = true; return true; }
   }
   for (const h of state.enemyHazards) if (!h.dodged && h.warning <= window && near(h.x,h.y,h.r)) { h.dodged = true; return true; }
-  for (const m of state.bossMoves) {
-    if (m.dodged || m.warning > window) continue;
-    const kind = bossKind(m);
-    const danger = (['call','rain','tracking','leap'].includes(kind)) && m.points.some(q=>near(q.x,q.y,q.r)) ||
-      ["ring","cage"].includes(kind) && ringPoints(m.active ? m : {...m,life:bossDefinition(m).duration}).some(q=>near(q.x,q.y,q.r)) ||
-      kind === "wall" && Math.abs(deltaX(wallX(m),p.x)) <= p.r + 12 + bossDefinition(m).speed * window;
-    if (danger) { m.dodged = true; return true; }
-  }
   return false;
 }
 function activateDash() {
   if (state.mode !== "playing" || state.dashTimer > 0 || state.dashCharges <= 0) return;
-  const perfect = imminentDashThreat();
+  const teacherThreat=teacherDodgeThreat();
+  const perfect = teacherThreat || imminentDashThreat();
   const input = movementInput(), length = Math.hypot(input.x, input.y);
   state.dashX = length > 0.01 ? input.x / length : state.faceX;
   state.dashY = length > 0.01 ? input.y / length : state.faceY;
@@ -408,6 +404,7 @@ function activateDash() {
   state.dashBodyPass = Math.max(gameSettings.dashSeconds, UPGRADE_TUNING.dashInvincible);
   state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
   if (perfect) {
+    teacherPerfectDodge(teacherThreat);
     state.player.health = Math.min(maxPlayerHealth(), state.player.health + UPGRADE_TUNING.perfectHeal);
     state.dashBodyPass = Math.max(state.dashBodyPass, UPGRADE_TUNING.perfectShield);
     state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.perfectShield);

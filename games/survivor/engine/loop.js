@@ -234,9 +234,10 @@ function tick(dt) {
   updateBomb(dt);
   if (state.mode !== "playing") return;
 
+  if(state.player.perfectFlash>0)state.player.perfectFlash=countdown(state.player.perfectFlash,dt);
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
-  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving);
+  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
@@ -313,7 +314,8 @@ function tick(dt) {
       const boss = state.boss;
       playSound("hit");
       schoolShotHit(shot, boss);
-      feedbackImpact(shot.feedback);boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
+      feedbackImpact(shot.feedback);boss.hp -= schoolDamage(boss, shot.damage*(shot.autoCharged?teacherBonuses().damage:1)); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
+      if(boss.hp>0)teacherRecoveryHit();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;
@@ -364,7 +366,7 @@ function tick(dt) {
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (!state.player.damageDisabled && state.player.invincible <= 0) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && (enemy.miniboss || !GAME_DATA.bodyContact.pushOnly) && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
-    const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
+    const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !(state.boss.posture&&state.boss.posture.stun>0) && !(state.boss.stunTimer>0) && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
       state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? bodyContactDamage(touchingEnemy) : UPGRADE_TUNING.enemyDamage));
       counterDischarge(); if (state.mode !== "playing") return;

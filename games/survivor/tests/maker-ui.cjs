@@ -311,3 +311,13 @@ console.log('PASS: wave block number/type edits, preview refresh, persistence, t
  assert.equal(failed.location.href,'');assert.ok(failed.ids.makerStatus.textContent.includes('無法儲存'));
 }
 console.log('PASS: footer play clicks for both stages and shared stage items, tab switches, invalid timing recovery and storage failure');
+
+// 家長要求：老師頁的每一個架勢參數都可編輯並經白名單保存／重讀。
+ui=setup();choose('boss','phases');
+const postureValues={window:['完美閃避時間窗（秒）',.15],maximum:['架勢滿條',120],dodgeGain:['完美閃避累積量',35],recoveryGain:['收招命中累積量',15],interruptGain:['打斷招式累積量',25],decay:['架勢每秒下降',8],stunSeconds:['滿架勢暈眩秒數',3],chargeBonus:['暈眩時聚氣加速比例',.7],damageMultiplier:['暈眩時蓄力傷害倍率',4],heal:['破架勢回血量',5]};
+for(const [label,value] of Object.values(postureValues))slider(label,value);
+ui.ids.save.fire('click');
+for(const [key,[,value]] of Object.entries(postureValues))assert.equal(saved().boss.posture[key],value,key);
+ui=setup({saved:ui.storage});choose('boss','phases');
+for(const [label,value] of Object.values(postureValues))assert.equal(Number(ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label).value),value,label);
+console.log('PASS: all ten teacher posture controls save and reload through schema');

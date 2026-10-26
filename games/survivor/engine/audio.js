@@ -3,6 +3,8 @@
 (function () {
   const tuning = { soundVolume: .35, musicVolume: .035, maxVoices: 8, perSound: 2 };
   const sounds = {
+    perfect: {cooldown:.1,params:[.35,0,1350,.001,.015,.22,0,1,0,0,350,.03]},
+    posture: {cooldown:.3,params:[.4,0,420,.005,.08,.25,1,1,3]},
     shoot: { cooldown: .09, params: [.35, 0, 620, .002, .015, .06, 1, 1, -8] },
     water: { cooldown: .12, params: [.3, .1, 380, .003, .02, .10, 0, 1, -5, 0, 0, 0, 0, .5] },
     hit: { cooldown: .07, params: [.25, .1, 180, .001, .01, .05, 4] },

@@ -14,7 +14,7 @@ function summonTeacher() {
   if (!position) return;
   playSound("warning");
   const hp=teacherHealth(gameSettings.teacherHealth,currentStage().bossHealthScale,state.level-1,GAME_DATA.boss.combat.healthPerUpgrade);
-  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp, maxHp:hp, flash: 0, wobble: 0 };
+  state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp, maxHp:hp, posture:SurvivorPosture.initial(), recoveryLeft:0, flash: 0, wobble: 0 };
   clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0.5; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0; state.bossIntro = 2.2;
   startBossZone();
   updateHud();
@@ -29,7 +29,7 @@ function clearBossMoves() {
   }
 }
 function bossHurtPlayer(damage,feedback) {
-  if (!state.boss || state.player.damageDisabled || state.player.invincible > 0) return;
+  if (!state.boss || state.boss.posture&&state.boss.posture.stun>0 || state.player.damageDisabled || state.player.invincible > 0) return;
   feedbackImpact(feedback,false);
   state.player.health = Math.max(0, state.player.health - absorbSchoolHit(damage));
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
@@ -40,7 +40,7 @@ function bossDefinition(move) { return BOSS_MOVES.find(row => row.id === move.id
 function bossKind(move) { return move.kind || (bossDefinition(move) || {}).kind; }
 function beginBossMove(id) {
   const definition = BOSS_MOVES.find(row => row.id === id);
-  if (!definition || definition.minPhase > state.bossPhase) return;
+  if (!definition || definition.minPhase > state.bossPhase || state.boss && ((state.boss.stunTimer||0)>0 || state.boss.posture&&state.boss.posture.stun>0)) return;
   const kind = definition.kind;
   const p = state.player;
   const b = state.boss && { ...state.boss, x: state.cameraX + state.width / 2 + deltaX(state.boss.x, state.cameraX + state.width / 2), y: state.cameraY + state.height / 2 + deltaY(state.boss.y, state.cameraY + state.height / 2) };
@@ -83,6 +83,7 @@ function beginBossMove(id) {
   const endX = move.endX, endY = move.endY;
   clampToMap(move);
   move.endX = wrapCoordinate(endX, state.worldWidth); move.endY = wrapCoordinate(endY, state.worldHeight);
+  state.boss.recoveryLeft=0;
   state.bossMoves.push(move);
 }
 function fireBossFan(move) {
@@ -115,8 +116,14 @@ function updateBoss(dt) {
   state.bossShake = countdown(state.bossShake, dt); state.bossShout = countdown(state.bossShout, dt);
   const b = state.boss;
   if (!b || state.bossIntro > 0) { clearBossMoves(); return; }
+  b.posture=SurvivorPosture.step(b.posture,null,GAME_DATA.boss.posture,dt).state;
+  b.recoveryLeft=countdown(b.recoveryLeft||0,dt);
   b.wobble += dt * 3; b.flash = Math.max(0, b.flash - dt);
   b.slowTimer = countdown(b.slowTimer || 0, dt); b.stunTimer = countdown(b.stunTimer || 0, dt);
+  if(b.posture.stun>0) {b.pursuing=false;clearBossMoves();updateHud();return;}
+  if(b.stunTimer>0 && state.bossMoves.length) {
+    const interrupt=state.bossMoves.some(m=>!(m.recovery>0));clearBossMoves();if(interrupt)teacherPostureEvent('onInterrupt');
+  }
   // 逐一跨過 66%、33%；一次大傷害跨兩條線也會依序演出兩次轉場。
   const nextPhase = GAME_DATA.boss.phases.reduce((phase, row, i) => b.hp / b.maxHp <= row.threshold ? i + 1 : phase, 1);
   if (nextPhase > state.bossPhase && state.bossPhasePause <= 0) {
@@ -211,13 +218,14 @@ function updateBoss(dt) {
       if (Math.hypot(deltaX(b.x, state.player.x), deltaY(b.y, state.player.y)) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     }
     if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
+    if(!state.bossMoves.includes(move)){updateHud();return;} // 反擊可能在命中接合層打斷本招。
     move.life = countdown(move.life, dt);
     if(move.life<=0 && kind==='combo' && move.repeats>1) {
       const repeats=move.repeats-1;state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);
       beginBossMove(move.id);const next=state.bossMoves[state.bossMoves.length-1];if(next){next.repeats=repeats;next.warning=Math.max(.6,definition.warning);}
     } else if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
   }
-  if (!state.bossMoves.length) state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;
+  if (!state.bossMoves.length) {state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;b.recoveryLeft=state.bossRest;}
   updateHud();
 }
 

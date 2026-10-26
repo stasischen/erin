@@ -5,7 +5,7 @@ globalThis.SurvivorWeapons = (() => {
     const sword=weapon.id==='candy-sword';
     const finisher=weapon.comboEnabled && number % weapon.comboEvery === 0;
     const charged=!!attack.charged;
-    const shape=charged ? weapon.chargeShape : attack.dash ? 'line' : finisher ? weapon.comboShape : weapon.baseShape;
+    const shape=charged ? (weapon.chargeShape==='spin'?'sector':weapon.chargeShape) : attack.dash ? 'line' : finisher ? weapon.comboShape : weapon.baseShape;
     const thrust=shape==='line', spin=shape==='spin';
     const scale=charged ? weapon.chargeSize : finisher || thrust ? weapon.comboSize : 1;
     return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size,
@@ -65,7 +65,7 @@ function swingAtNearest(dash = false, command = null) {
   const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
   skillVisual('hammer-swing',state.player.x,state.player.y,visual); feedbackSound(feedback,'shoot');
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
-  if (effectLevel('item-rear') && !event.spin && !(command && event.charged)) {
+  if (effectLevel('item-rear') && !event.spin && !event.charged) {
     const rear={...event,angle:event.angle+Math.PI};
     skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
     for(const t of targets) if(!hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,rear)) hits.push(t);
@@ -75,10 +75,10 @@ function swingAtNearest(dash = false, command = null) {
     const shot={x:t.x,y:t.y,vx:deltaX(t.x,state.player.x),vy:deltaY(t.y,state.player.y),damage:event.damage,push:0,charged:properties.charged,schools:effectLevel('water-attack')?['water']:[],hitList:hits,melee:true,pierce:0};
     schoolShotHit(shot,t);
     const hpBefore=t.hp;
-    hitBuildTarget(t,event.damage);
+    hitBuildTarget(t,event.damage,{charged:event.charged});
     if(t.hp<hpBefore) meleeImpact(t,feedbackEvent);
     if(state.mode!=='playing') return;
-    if(t.alive && event.stun) t.stunTimer=Math.max(t.stunTimer||0,event.stun);
+    if((t.alive || t===state.boss) && event.stun) stunTarget(t,Math.max(t.stunTimer||0,event.stun));
     if(t===state.boss || t.alive) shiftTarget(t,state.player.x,state.player.y,event.push);
     if(t.alive) waveNeutralHit(t,deltaX(t.x,state.player.x),deltaY(t.y,state.player.y));
     for(const school of ['water','thunder']) if(effectLevel(school+'-attack') || school==='water' && (effectLevel('water-skill')||effectLevel('fusion-puddle'))) {

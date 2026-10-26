@@ -182,6 +182,7 @@ function drawHero() {
   const sway = p.moving ? Math.sin(p.walkPhase) * 0.055 : 0;
   drawGroundShadow(p.x, p.y, p.r, hop);
   ctx.save(); ctx.translate(Math.round(p.x), Math.round(p.y));
+  if(p.perfectFlash>0) {ctx.fillStyle='#fff5a3';for(const [dx,dy] of [[-22,0],[22,0],[0,-24],[0,24]])ctx.fillRect(dx-3,dy-3,6,6);ctx.strokeStyle='#fff5a3';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,p.r+8,0,Math.PI*2);ctx.stroke();}
   if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
   ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
   const look = buildAppearance(), color = BUILD_TUNING[look.main].color;
@@ -447,6 +448,10 @@ function render() {
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
       drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
+      if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
+        const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
+        ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);
+      }
       ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {

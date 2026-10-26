@@ -250,3 +250,9 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 :where(.game-shell[data-short~="compact"]) .message-card > .start-button { display: inline-flex; width: auto; min-height: 42px; padding: 8px 16px; margin: 0; }
 :where(.game-shell[data-short~="compact"]) .settings-panel { padding: 10px; }
 :where(.game-shell[data-short~="compact"]) .settings-panel h2 { font-size: 22px; }
+
+/* 圓形分段架勢環：中心只顯示像素圖，說明保留在 title / aria-label。 */
+.posture-gauge { width: 34px; height: 34px; flex: 0 0 34px; border: 2px solid #efffff; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 2px 0 #162c43; }
+.posture-gauge > span { width: 24px; height: 24px; display: grid; place-items: center; background: #205b88; border-radius: 50%; }
+.posture-gauge .pixel-icon { width: 20px; height: 20px; }
+.posture-gauge[hidden] { display: none; }
