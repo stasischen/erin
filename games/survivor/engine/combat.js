@@ -94,6 +94,7 @@ function updateSkillVisuals(dt) {
   }
 }
 function burst(x, y, color, count = 8) {
+  if (gameSettings.lowEffects) count=Math.min(2,count);
   for (let i = 0; i < count && state.effects.length < 90; i++) {
     const angle = Math.random() * Math.PI * 2, speed = 45 + Math.random() * 110;
     state.effects.push(takeFromPool(state.effectPool, { kind: "spark", x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color, life: 0.42 + Math.random() * 0.22, maxLife: 0.64, text: "" }));

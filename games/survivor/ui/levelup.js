@@ -18,6 +18,9 @@ function cardRequirements(card) {
 
 function showOverlay(mode) {
   state.mode = mode;
+  const pauseBuild=document.getElementById("pauseBuild");
+  if(pauseBuild) pauseBuild.hidden=mode!=="paused";
+  if(mode==="paused") {updateHud();renderSkillTree(document.getElementById("settingsSkillTree"));}
   updateAttackModeButtons();
   Survivor.audio.sync();
   state.keys.clear(); state.pointerId = null; state.joy = null;

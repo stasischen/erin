@@ -14,19 +14,14 @@ document.addEventListener("click", event => { if (event.target && event.target.c
 settingsButton.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
 resetSettingsButton.addEventListener("click", () => {
-  gameSettings = { ...SETTING_DEFAULTS };
-  setAttackMode("manual");
-  saveSettings(); makeSettingsControls();
-  updateSettingValue("playerSpeed", gameSettings.playerSpeed);
-  ENEMY_TYPES[0].speed = gameSettings.enemySpeed; ENEMY_TYPES[0].hp = gameSettings.enemyHealth;
-  ENEMY_TYPES[1].speed = gameSettings.secondEnemySpeed; ENEMY_TYPES[1].hp = gameSettings.secondEnemyHealth;
-  if (state.mode !== "playing") { state.player.health = PLAYER_HEALTH; updateHud(); }
+  Object.assign(gameSettings,SurvivorData.playerDefaults(GAME_DATA));
+  applyPlayerSettings();setAttackMode(gameSettings.attackMode);saveSettings();makeSettingsControls();
 });
 soundToggle.addEventListener("click", () => { gameSettings.sound = !gameSettings.sound; saveSettings(); updateSettingsButtons(); if (gameSettings.sound) playSound("click"); });
 document.getElementById("musicToggle").addEventListener("click", () => { gameSettings.music = !gameSettings.music; saveSettings(); updateSettingsButtons(); });
 vibrationToggle.addEventListener("click", () => { gameSettings.vibration = !gameSettings.vibration; saveSettings(); updateSettingsButtons(); });
 startButton.addEventListener("click", () => { startAudio(); state.mode === "paused" ? togglePause() : startGame(); });
-pauseButton.addEventListener("click", () => { if (state.mode !== "levelup") openSettings(); });
+pauseButton.addEventListener("click", () => { if (state.mode === "playing" || state.mode === "paused") togglePause(); });
 window.addEventListener("keydown", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
   if (state.mode === "maker" || settingsPanel.hidden === false || (state.mode !== "playing" && event.target && event.target.tagName === "BUTTON") || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;

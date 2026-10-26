@@ -2,6 +2,7 @@
 // schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
+  "playerDefaults": {"attackMode": "manual", "attackModeChosen": false, "joystickFollow": true, "joystickRadius": 35, "joystickDeadZone": 4, "hitFeedback": true, "feedbackIntensity": 1, "vibration": true, "sound": true, "music": true, "soundVolume": 1, "musicVolume": 1, "lowEffects": false},
   "attackMode": "manual",
   "attackModeChosen": false,
   "joystick": {

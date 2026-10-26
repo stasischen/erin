@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const createRun = require('./maker-support.cjs');
-const key = 'erin-survivor-settings-v3';
+const key = 'erin-survivor-player-settings-v1';
+const legacyKey='erin-survivor-settings-v3';
 // A missing or unmarked legacy choice starts manual, preserving other settings.
 for (const saved of [{}, {attackMode:'auto', sound:false}, {attackMode:'auto',attackModeChosen:false}]) {
-  const run = createRun({saved:{[key]:JSON.stringify(saved)}});
+  const run = createRun({saved:{[legacyKey]:JSON.stringify(saved)}});
   assert.equal(run('GAME_DATA.attackMode'), 'manual');
   if (saved.sound === false) assert.equal(run('gameSettings.sound'), false);
 }
@@ -34,7 +35,7 @@ assert.equal(run.elements.specialButton.hidden, true);
 // Legacy Maker auto was a default; a new explicit choice must survive reload.
 const data = run('SurvivorData.defaults()');
 for (const chosen of [false, true]) {
-  const saved = {...data, attackMode:'auto',attackModeChosen:chosen};
+  const saved = {...data, attackMode:'auto',attackModeChosen:chosen}; delete saved.playerDefaults;
   const maker = createRun({maker:true,saved:{'erin-survivor-maker-v1':JSON.stringify(saved)}});
   assert.equal(maker('GAME_DATA.attackMode'), chosen ? 'auto' : 'manual');
   maker('SurvivorData.save(GAME_DATA)');

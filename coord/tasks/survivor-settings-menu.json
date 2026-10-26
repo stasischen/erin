@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-settings-menu",
+  "title": "玩家設定選單與 Maker 預設設定分離",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-settings-menu",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T080020Z-parent-settings-menu.md",
+  "next": "玩家設定獨立儲存／遷移、Maker 可收合預設面板、緊湊開始選單及普攻武器顯示已完成；版本 20261026aa。node games/survivor/tools/test.cjs 最終 exit 0；未跑 --layout 或瀏覽器。請 erin-watch 代辦指名檔案 commit、push、PR，再交 Grok 審查完整 SHA，於 1024×461、740×360 親手驗證首頁不捲動可開始、首頁／暫停齒輪、所有偏好生效與重開保留、三武器普攻欄、Maker 預設及舊存檔。驗證案例、儲存契約與 Godot §11 檢查／差距見 docs/survivor-settings-menu-validation.md；八步路線見 docs/survivor-skill-backlog.md。目前無待決定事項；Grok 通過後請 Erin 試玩及家長最後確認。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T08:25:06.372601Z",
+  "updatedBy": "codex"
+}

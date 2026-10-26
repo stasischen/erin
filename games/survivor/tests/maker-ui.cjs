@@ -102,11 +102,13 @@ ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().find(n=>n
 console.log('PASS: Maker melee cadence/range/spin/mitigation controls persist and reload');
 
 ui=setup();ui.tab('numbers');ui.click('搖桿跟隨：開');
-for(const [label,value] of [['搖桿半徑',50],['搖桿死區',7]]) {
+for(const [label,value] of [['搖桿大小',50],['搖桿死區',7]]) {
  const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider);slider.value=value;slider.fire('input');
 }
 ui.ids.save.fire('click');
-assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).joystick,{follow:false,radius:50,deadZone:7});
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.joystickFollow,false);
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.joystickRadius,50);
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.joystickDeadZone,7);
 ui=setup({saved:ui.storage});ui.tab('numbers');
 assert.ok(ui.nodes().some(n=>n._text==='搖桿跟隨：關'&&n.attrs['aria-checked']==='false'));
 console.log('PASS: Maker joystick switch/sliders save and reopen');
@@ -168,23 +170,20 @@ assert.deepEqual(attackData.weapons.map(w=>w.moveRetention),[0,.5,1]);assert.dee
 ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='站定聚氣秒數')[2].value,1.5);
 console.log('PASS: three independent weapon combo/charge controls, movement retention and switches save and reopen');
 
-ui=setup();ui.tab('enemies');ui.click('打擊回饋：開');
-const juiceSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='打擊強度（頓幀、震動、火花與壓扁）');
+ui=setup();ui.tab('numbers');ui.click('打擊回饋：開');
+const juiceSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='打擊回饋強度');
 assert.ok(juiceSlider);juiceSlider.value=1.6;juiceSlider.fire('input');ui.ids.save.fire('click');
-assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).hitJuice,{enabled:false,intensity:1.6});
-ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='打擊回饋：關'));
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.hitFeedback,false);
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.feedbackIntensity,1.6);
+ui=setup({saved:ui.storage});ui.tab('numbers');assert.ok(ui.nodes().some(n=>n._text==='打擊回饋：關'));
 console.log('PASS: Maker hit juice switch/intensity persist and reopen');
 
-// 攻擊切換位在數值頁頂端，明確選過自動才能跨載入保留。
-ui=setup();ui.tab('numbers');
-let attackMode=ui.nodes().find(n=>n.className==='attack-mode-toggle');
-assert.ok(attackMode);assert.equal(attackMode.attrs['aria-checked'],'true');
-attackMode.fire('click');ui.ids.save.fire('click');
+// 新玩家預設與玩家自己的偏好分開。
+ui=setup();ui.tab('numbers');ui.click('自動');ui.ids.save.fire('click');
 let attackSaved=JSON.parse(ui.storage['erin-survivor-maker-v1']);
-assert.equal(attackSaved.attackMode,'auto');assert.equal(attackSaved.attackModeChosen,true);
+assert.equal(attackSaved.playerDefaults.attackMode,'auto');assert.equal(attackSaved.playerDefaults.attackModeChosen,true);
 ui=setup({saved:ui.storage});ui.tab('numbers');
-attackMode=ui.nodes().find(n=>n.className==='attack-mode-toggle');
-assert.equal(attackMode.attrs['aria-checked'],'false');
-attackMode.fire('click');ui.ids.save.fire('click');
-assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).attackMode,'manual');
-console.log('PASS: Maker top-level attack switch, explicit auto selection/save/reopen and manual return');
+assert.ok(ui.nodes().some(n=>n.textContent.includes('預設攻擊模式')));
+ui.click('手動');ui.ids.save.fire('click');
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).playerDefaults.attackMode,'manual');
+console.log('PASS: Maker player defaults explicit mode selection/save/reopen/manual return');

@@ -221,3 +221,28 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .mode-pixel::after { content: ''; width: 10px; height: 10px; background: #69869d; box-shadow: 4px 0 #69869d, 0 4px #69869d, 4px 4px #69869d; transform: translate(-2px, -2px); }
 .attack-mode-toggle[aria-checked="true"] .mode-pixel::after { background: #9df6ff; box-shadow: 4px 0 #9df6ff, 0 4px #9df6ff, 4px 4px #9df6ff; }
 .attack-mode-toggle:focus-visible { outline: 3px solid #ffe891; outline-offset: 2px; }
+
+/* 玩家偏好與作品分開；固定橫向沿用 game-shell 的旋轉與尺寸旗標。 */
+.gear-button { width: 44px; height: 44px; min-height: 44px; padding: 8px; border-radius: 50%; display: inline-grid; place-items: center; }
+.message-card { position: relative; }
+.message-card > .gear-button { position: absolute; top: 8px; right: 8px; }
+.settings-controls { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.settings-controls fieldset { min-width: 0; margin: 0; padding: 8px; border: 1px solid #587a94; display: grid; gap: 6px; align-content: start; }
+.settings-controls legend { font-weight: 800; padding: 0 5px; }
+.settings-controls .attack-mode-toggle { margin: 0; }
+.settings-controls button { min-height: 38px; }
+.settings-controls .setting-row { display: grid; grid-template-columns: 1fr; }
+.settings-panel > .settings-actions { position: sticky; bottom: -10px; background: #142b40; padding: 8px 0 0; }
+.pause-build[hidden] { display: none; }
+.pause-build { text-align: left; }
+.pause-build h3 { font-size: 16px; }
+.pause-build .build-slots { position: static; display: grid; grid-template-columns: 1fr 1fr; height: auto; max-width: none; pointer-events: auto; }
+.pause-build .build-slots > span { white-space: normal; padding: 5px; }
+:where(.game-shell[data-short~="compact"]) .message-card { width: min(520px,100%); padding: 10px 58px 10px 18px; }
+:where(.game-shell[data-short~="compact"]) .message-card > .message-icon { display: none; }
+:where(.game-shell[data-short~="compact"]) .message-card h2 { font-size: 24px; margin: 2px 0; }
+:where(.game-shell[data-short~="compact"]) .message-card p { font-size: 14px; line-height: 1.3; margin: 5px 0 8px; }
+:where(.game-shell[data-short~="compact"]) .message-card > .menu-settings:not(.gear-button) { display: inline-flex; width: auto; min-height: 40px; margin: 0 6px 0 0; padding: 6px 10px; }
+:where(.game-shell[data-short~="compact"]) .message-card > .start-button { display: inline-flex; width: auto; min-height: 42px; padding: 8px 16px; margin: 0; }
+:where(.game-shell[data-short~="compact"]) .settings-panel { padding: 10px; }
+:where(.game-shell[data-short~="compact"]) .settings-panel h2 { font-size: 22px; }
