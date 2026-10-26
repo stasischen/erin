@@ -53,7 +53,7 @@ function updateSchoolCombat(dt) {
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
   if (!c) return;
   c.still = state.moveRate > .01 ? 0 : c.still + dt;
-  for (const target of state.enemies.concat(state.boss ? [state.boss] : [])) target.wetTimer = countdown(target.wetTimer || 0,dt);
+  for (const target of state.enemies.concat(state.trial?trialBodies():state.boss ? [state.boss] : [])) target.wetTimer = countdown(target.wetTimer || 0,dt);
   const pulse = (id, seconds, action) => {
     if (!effectLevel(id)) return;
     c.timers[id] = (c.timers[id] === undefined ? seconds : c.timers[id]) - dt;
@@ -75,11 +75,11 @@ function updateSchoolCombat(dt) {
   pulse('water-rain',rain.interval,() => {
     c.rain = rain.actions[0].duration;
     // 保留全場緩速與濕潤；不造成畫面外傷害。
-    for (const target of state.enemies.concat(state.boss ? [state.boss] : [])) applyCardTargetActions({actions:rain.actions.slice(1)},target);
+    for (const target of state.enemies.concat(state.trial?trialBodies():state.boss ? [state.boss] : [])) applyCardTargetActions({actions:rain.actions.slice(1)},target);
     skillVisual('splash',state.player.x,state.player.y,{radius:rain.actions[0].cueRadius,color:BUILD_TUNING.water.color,life:.8});
   });
   c.rain = countdown(c.rain || 0,dt);
-  if (c.rain > 0) for (const t of state.enemies.concat(state.boss ? [state.boss] : [])) {
+  if (c.rain > 0) for (const t of state.enemies.concat(state.trial?trialBodies():state.boss ? [state.boss] : [])) {
     const tick=cardBlock('water-rain','onRainTick',{dt});
     t.slowTimer=Math.max(t.slowTimer || 0,tick.actions[0].duration); t.makerSlow=tick.actions[0].multiplier;
     applyCardTargetActions({actions:tick.actions.slice(1)},t);

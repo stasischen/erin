@@ -480,7 +480,8 @@ function render() {
     for (const shot of state.enemyShots) {
       drawEnemyShotArt(shot);
     }
-    if (state.boss) {
+    if(state.trial&&state.trial.actors)drawTrialBodies();
+    if (state.boss && !(state.trial&&state.trial.actors)) {
       const b = state.boss, x = b.x, y = b.y;
       const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
@@ -573,6 +574,7 @@ function bossGuide() {
   return { x: state.width / 2 + dx * scale, y: state.height / 2 + dy * scale, angle: Math.atan2(dy, dx) };
 }
 function drawBossGuide() {
+  if(state.trial&&state.trial.actors){for(const body of trialBodies())withTrialBody(body,()=>SurvivorArt.paint('layer/draw-boss-guide',null,()=>drawBossGuidePlaceholder()));return;}
   return SurvivorArt.paint('layer/draw-boss-guide', null, () => drawBossGuidePlaceholder.apply(this, arguments));
 }
 function drawBossGuidePlaceholder() {

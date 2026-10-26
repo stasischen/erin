@@ -44,6 +44,7 @@ function teacherRecoveryHit() {
 }
 // 所有暈眩效果共用這個入口；打斷立即清除招式，不讓預警在暈完後突然生效。
 function stunTarget(target,seconds) {
+  if(target.trialActor&&target!==state.boss)return withTrialBody(target,()=>stunTarget(target,seconds));
   if(target!==state.boss){target.stunTimer=seconds;return;}
   if(!(seconds>0))return;
   if(target===state.boss && state.bossMoves.length && !(target.stunTimer>0) && !(target.posture&&target.posture.stun>0)) {
@@ -56,6 +57,7 @@ function stunTarget(target,seconds) {
 // 輸入層提供一次衝刺事件；只計算真正會碰到主角的老師招式，並記住已閃過的物件。
 function teacherDodgeThreat() {
   const p=state.player,b=state.boss,cfg=GAME_DATA.boss.posture;
+  if(state.trial&&state.trial.actors&&state.bossIntro<=0&&p.invincible<=0&&!p.damageDisabled)return encounterDodgeThreat();
   if(!b||state.bossIntro>0||state.bossPhasePause>0||p.invincible>0||p.damageDisabled||b.posture&&b.posture.stun>0)return null;
   const contact=(x,y,vx,vy,r)=>SurvivorPosture.contact(deltaX(x,p.x),deltaY(y,p.y),vx,vy,r+p.r);
   for(const shot of state.enemyShots)if(shot.source==='teacher'&&!shot.dodged&&shot.damage>0) {
@@ -97,6 +99,7 @@ function teacherDodgeThreat() {
   return null;
 }
 function teacherPerfectDodge(threat) {
+  if(threat&&threat.owner&&state.trial&&state.trial.actors){const body=trialBodies().find(b=>b.actorId===threat.owner);if(body&&body!==state.boss)return withTrialBody(body,()=>teacherPerfectDodge(threat));}
   if(!threat)return;
   threat.dodged=true;state.player.perfectFlash=.35;
   teacherPostureEvent('onPerfectDodge');playSound('perfect');

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-gallery-2",
+  "title": "王的試煉：雙子霜火與羽翼古神",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-gallery-2",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T170631Z-parent-boss-gallery-2.md",
+  "next": "請 Grok 審查 erin-watch 最終 SHA：AI 距離帶／小場地入口／休息與冷卻追近，並依交接文件做三尺寸實戰、架勢暈眩與 Maker 驗證；node games/survivor/tools/test.cjs 全過。Godot §11 對照及縮場地 hotfix 整合待驗見 docs/survivor-boss-gallery-2.md。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T17:36:50.606506Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-gallery-1",
+    "survivor-boss-ai",
+    "survivor-godot-art-prep"
+  ]
+}

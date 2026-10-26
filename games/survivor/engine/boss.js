@@ -24,6 +24,10 @@ function summonTeacher() {
 function clearBossMoves() {
   for (const move of state.bossMoves) state.bossMovePool.push(move);
   state.bossMoves = [];
+  if(state.trial&&state.boss&&state.boss.trialActor){
+    state.boss.moves=state.bossMoves;
+    if(state.boss.posture.stun>0&&state.trial.fields)state.trial.fields=state.trial.fields.filter(f=>f.owner!==state.boss.actorId);
+  }
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
     if (state.enemyShots[i].source === "teacher") state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }

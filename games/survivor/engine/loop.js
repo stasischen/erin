@@ -168,7 +168,7 @@ function tickImpacts(dt) {
     if(!GAME_DATA.hitJuice.enabled || !GAME_DATA.hitJuice.intensity) {state.hitStop=0;state.hitShake=0;}
     state.hitStop=countdown(state.hitStop||0,dt);
     state.trauma=SurvivorFeedback.trauma(state.trauma,0,dt);
-    for(const t of [state.player,...state.enemies,...(state.boss?[state.boss]:[])]) {
+    for(const t of [state.player,...state.enemies,...(state.trial?trialBodies():state.boss?[state.boss]:[])]) {
       if((t.hitStop||0)>0 && GAME_DATA.hitJuice.enabled && GAME_DATA.hitJuice.intensity>0) {t.feedbackFrozen=true;t.hitStop=countdown(t.hitStop,dt);}
       else {delete t.feedbackFrozen;delete t.hitStop;}
     }
@@ -185,7 +185,7 @@ function tickImpacts(dt) {
   }
   if (state.mode !== "playing") return;
   if (openEncounterReward()) return;
-  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])]) if(!target.feedbackFrozen)updateTargetSlide(target,dt);
+  for(const target of [state.player,...state.enemies.filter(e=>e.alive),...(state.trial?trialBodies():state.boss?[state.boss]:[])]) if(!target.feedbackFrozen)updateTargetSlide(target,dt);
   if(state.mode!=="playing") return;
   updateCamera();
   updateSkillVisuals(dt);
@@ -330,7 +330,16 @@ function tickImpacts(dt) {
         if (!shot.alive) break;
       }
     }
-    if (shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(deltaX(state.boss.x, shot.x), deltaY(state.boss.y, shot.y)) < state.boss.r + shot.r) {
+    if(state.trial&&state.trial.actors)for(const body of trialBodies()) {
+      if(!shot.alive||!canAttackTarget(body)||shot.hitList.includes(body)||Math.hypot(body.x-shot.x,body.y-shot.y)>=body.r+shot.r)continue;
+      withTrialBody(body,()=>{
+        shot.hitList.push(body);schoolShotHit(shot,body);feedbackImpact(shot.feedback,true,shot,body);
+        hitBuildTarget(body,shot.damage,{charged:shot.autoCharged});
+        if(state.mode==='playing'){for(const school of shot.schools||[])schoolEffect(school,body,body.x,body.y,shot.damage,shot.hitList);resolveWaterHit(shot);}
+      });
+      if(state.mode!=='playing')return;
+    }
+    if (!(state.trial&&state.trial.actors) && shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(deltaX(state.boss.x, shot.x), deltaY(state.boss.y, shot.y)) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
       damageHitSound();
@@ -348,7 +357,7 @@ function tickImpacts(dt) {
   }
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   updateBookShooting(dt);
-  if(!state.boss || !state.boss.feedbackFrozen)updateBoss(dt);
+  if(state.trial&&state.trial.actors||!state.boss || !state.boss.feedbackFrozen)updateBoss(dt);
   updateBossZone(dt);
   if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {

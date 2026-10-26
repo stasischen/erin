@@ -14,7 +14,7 @@ globalThis.SurvivorTrialRules=(()=>{
   }
   function phase(boss,hp) {return hp/boss.maxHp<boss.threshold?2:1;}
   function choose(definition,phase,distance,previous,sample) {
-    const rules=definition.moves.map(m=>({moveId:m.id,weight:m.weight,minDistance:0,maxDistance:10000,angleWeight:0,phaseWeight:0,offscreen:true}));
+    const rules=definition.moves.map(m=>({...m.ai,moveId:m.id,weight:m.weight}));
     return SurvivorBossAI.choose(SurvivorBossAI.scores(definition.moves,rules,{phase,distance,previous,visible:true,angle:0}),sample);
   }
   function contains(shape,origin,angle,target) {
@@ -54,6 +54,7 @@ function startTrial(id) {
   state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,previous:[],events:[]};
   state.player.x=arena.x;state.player.y=arena.y;
   state.boss={x:arena.x,y:arena.y-arena.radius+definition.radius,r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
+  initTrialEncounter();
   state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId='candy-sword';
   state.practiceHit=null;state.player.damageDisabled=false;
   overlay.classList.add('hidden');document.getElementById('trialPanel').hidden=true;
@@ -80,6 +81,7 @@ function trialMenu(message='王的試煉',data=null) {
 window.openSurvivorTrials=data=>trialMenu('王的試煉',data);
 function closeTrialMenu() {document.getElementById('trialPanel').hidden=true;resetGame();trialDraft=null;if(trialReturnToMaker&&window.openSurvivorMaker){trialReturnToMaker=false;window.openSurvivorMaker();}else showOverlay('ready');}
 function trialDodgeThreat() {
+  if(state.trial.actors)return encounterDodgeThreat();
   const p=state.player,b=state.boss;
   for(const m of state.bossMoves) {
     if(m.dodged||['recovery','cooldown'].includes(m.ai.phase))continue;
@@ -107,6 +109,7 @@ function summonTrialMinions(count,typeId=ENEMY_TYPES[0].id) {
   }).filter(Boolean);
 }
 function updateTrial(dt) {
+  if(state.trial&&state.trial.actors){updateTrialEncounter(dt);return;}
   const t=state.trial,b=state.boss;if(!t||!b)return;
   t.events=[];t.slow=1;
   t.hazards=t.hazards.flatMap(field=>{const r=SurvivorTrialRules.hazard(field,state.player,dt);t.slow=Math.min(t.slow,r.slow);for(const event of r.events)bossHurtPlayer(event.damage);return r.state.life>0?[r.state]:[];});

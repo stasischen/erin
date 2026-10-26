@@ -210,3 +210,10 @@ globalThis.SurvivorArtManifest = {
     "move/gatekeeper-charge": {"sheet":null,"frameSize":[16,16],"pivot":[0.5,0.5],"hitboxAnchor":[0.5,0.5],"mode":"procedural","animations":{"idle":{"frames":[0],"fps":0,"loop":true},"run":{"frames":[0],"fps":0,"loop":true},"windup":{"frames":[0],"fps":0,"loop":false},"active":{"frames":[0],"fps":0,"loop":false},"recovery":{"frames":[0],"fps":0,"loop":false},"hurt":{"frames":[0],"fps":0,"loop":false},"stun":{"frames":[0],"fps":0,"loop":false}}}
   }
 };
+
+// 可換圖的第二批試煉美術；不影響世界碰撞或數值。
+(()=>{
+ const template=SurvivorArtManifest.assets['character/gatekeeper'];
+ for(const [id,color] of [['frost-twin','#65cfff'],['fire-twin','#fa9157'],['winged','#b09ae3']])SurvivorArtManifest.assets['character/'+id]={...JSON.parse(JSON.stringify(template)),sheet:'art/characters/'+id+'.png',placeholder:{body:color,outline:'#333044',eyes:'#ffdd80'}};
+ for(const id of ['frost-dash','nova','cross','icefall','meteor','dive','feathers','spiral','tornado','ice','feather'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(template)),sheet:null,mode:'procedural'};
+})();
