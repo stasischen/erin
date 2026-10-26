@@ -1,4 +1,11 @@
 verdict: changes
+c4a3fa0f020c2e3f14afc3bfa821143847918c72
+
+## Re-check of c4a3fa0 (2026-10-26)
+c4a3fa0 only touches coord/inbox, the card JSON and docs/survivor-settings-menu-validation.md (Codex handled the parent nudge). No game or test files changed versus 1a306bf, so the earlier findings stand unchanged: games/survivor/tests/levelup-layout.cjs line 88 still calls openSettings() before tapping #buildSlots button, which now lives in the pause card, so --layout fails 0/9. Fix: openSettings() -> togglePause(). The feedback record coord/inbox/20261026T084500Z-grok-feedback-settings-menu.md is still pending, so no new inbox record was added. Tests not re-run (identical code; previous box run: 0/9 as-is, 85 PASS with the one-line fix). Hands-on result from 1a306bf still applies (1024x461 and 740x360 OK).
+
+## Earlier review of 1a306bf
+verdict: changes
 1a306bfd73572856fec0b2766ed91edb16ac31c8
 
 # Grok review: survivor-settings-menu (PR #78)
