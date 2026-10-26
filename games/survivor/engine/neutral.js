@@ -14,7 +14,7 @@ globalThis.SurvivorNeutral = (() => {
     return {next, events};
   }
   function damage(gems, powers, rules) {
-    return (1 + (powers.bank ? Math.min(rules.bankCap, Math.floor(gems/rules.bankEvery)*rules.bankStep) : 0)) * (1 + (powers.crown ? rules.crownDamage : 0));
+    return SurvivorEffectBlocks.modify('neutralDamageMultiplier', 1 + (powers.bank ? Math.min(rules.bankCap, Math.floor(gems/rules.bankEvery)*rules.bankStep) : 0), {'item-crown':powers.crown}, {neutralRules:rules});
   }
   // 掃過的圓形路徑：固定輸入 → 第一個撞到的索引；使用相對世界座標。
   function collision(dx,dy,radius,targets) {

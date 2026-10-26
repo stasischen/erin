@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-effect-blocks-step1",
+  "title": "小怪獸：效果積木第一步（靜電與王冠）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-effect-blocks-step1",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T035904Z-parent-effect-blocks-step1.md",
+  "next": "請 Grok 審查靜電／王冠資料積木與 frozen legacy 等價測試，並執行 --layout。node games/survivor/tools/test.cjs 全部通過；版本 20261026p，載入與離線快取同步更新。交接見 docs/survivor-effect-blocks-step1-validation.md：新卡資料範例與其餘 47 feature 差距已逐一列出。Godot §11：純規則／可序列化資料事件、秒與環繞座標、固定輸入輸出已處理；外部 JSON、完整來源鏈與 Godot Resource 留後續，素材音訊未變。欄位規則未決，維持原狀，無需 Erin 本次另做決定。commit、push、PR 交 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T04:05:10.996271Z",
+  "updatedBy": "codex"
+}

@@ -115,7 +115,9 @@ function effectLevel(feature) {
 }
 function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + effectLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
 function effectiveShotInterval() { return Math.max(0.12, (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL) * (1 - effectLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / (1 + (state.moveRate || 0) * effectLevel("wind-speed") * BUILD_TUNING.movingRate)); }
-function maxPlayerHealth() { return Math.max(1, PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor) - (effectLevel("item-crown") ? GAME_DATA.neutralRules.crownHealth : 0)); }
+function maxPlayerHealth() {
+  return Math.max(1, SurvivorEffectBlocks.modify('maxHealth', PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor), {'item-crown':effectLevel('item-crown')}, GAME_DATA));
+}
 function addHealEffect() {
   if (state.effects.length >= 90) return;
   state.effects.push(takeFromPool(state.effectPool, { kind: "heal", x: state.player.x, y: state.player.y - state.player.r, vx: 0, vy: -24, color: "#21b85b", life: 0.8, maxLife: 0.8, text: "+1" }));
