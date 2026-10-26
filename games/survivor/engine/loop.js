@@ -4,13 +4,19 @@ function wrapDelta(to, from, size) {
   const diff = to - from;
   return size > 0 && Math.abs(diff) >= size / 2 ? wrapCoordinate(diff + size / 2, size) - size / 2 : diff;
 }
-function deltaX(to, from) { return wrapDelta(to, from, state.worldWidth); }
-function deltaY(to, from) { return wrapDelta(to, from, state.worldHeight); }
+function deltaX(to, from) { if(state.trial)return to-from; return wrapDelta(to, from, state.worldWidth); }
+function deltaY(to, from) { if(state.trial)return to-from; return wrapDelta(to, from, state.worldHeight); }
 function clampToMap(body) {
+  if(state.trial) {
+    const result=SurvivorTrialRules.boundary(body,state.trial.arena);
+    Object.assign(body,result.position);if(result.hit){body.wallHit=true;if(body.rangeLeft!==undefined)body.alive=false;if(body.vx!==undefined)body.life=0;}
+    return;
+  }
   body.x = wrapCoordinate(body.x, state.worldWidth);
   body.y = wrapCoordinate(body.y, state.worldHeight);
 }
 function updateCamera() {
+  if(state.trial) {const camera=SurvivorTrialRules.camera(state.player,state.trial.arena,state.width,state.height);state.cameraX=camera.x;state.cameraY=camera.y;return;}
   state.cameraX = state.player.x - state.width / 2;
   state.cameraY = state.player.y - state.height / 2;
 }
@@ -73,6 +79,7 @@ function resize() {
 }
 
 function resetGame() {
+  state.trial=null;
   if (typeof cancelManualAttack === "function") cancelManualAttack();
   state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
   state.trauma=0; state.inputBuffer=null; state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
@@ -132,6 +139,7 @@ function startGame() {
 }
 
 function finishRun(won) {
+  if(state.trial) {trialMenu(won?"挑戰成功！":"再試一次！");return;}
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
     const progress = { weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
@@ -184,7 +192,7 @@ function tickImpacts(dt) {
   updateMakerEffects(dt);
   if (state.mode !== "playing") return;
   state.elapsed += dt; state.stageElapsed += dt;
-  startBookShooting();
+  if(!state.trial)startBookShooting();
   state.bookNoticeTimer = Math.max(0, state.bookNoticeTimer - dt);
   enemyNotice.hidden = state.bookNoticeTimer <= 0;
   const healLevel = effectLevel("auto-heal");
@@ -207,7 +215,7 @@ function tickImpacts(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(playerDt, state.dashTimer);
-  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
+  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed() * (state.trial ? state.trial.slow : 1);
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (playerDt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (playerDt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -254,11 +262,10 @@ function tickImpacts(dt) {
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
 
-  updatePacing(dt);
-  updateEncounters(dt);
+  if(!state.trial) {updatePacing(dt);updateEncounters(dt);}
   state.spawnTimer -= dt;
-  if (!state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
-  if (!state.boss) {
+  if (!state.trial && !state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.trial && !state.boss) {
     let wave = currentWaves()[0];
     for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
     const spawnEvery = wave.every / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
@@ -270,7 +277,7 @@ function tickImpacts(dt) {
     }
   }
   if (state.bossIntro > 0) {
-    state.bossIntro -= dt;
+    if(!state.trial)state.bossIntro -= dt;
     for (const enemy of state.enemies) { if (enemy.miniboss) continue; enemy.x += (deltaX(state.boss.x, enemy.x)) * Math.min(1, dt * 3); enemy.y += (deltaY(state.boss.y, enemy.y)) * Math.min(1, dt * 3); }
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
@@ -279,6 +286,7 @@ function tickImpacts(dt) {
   if (!state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
     if (!enemy.alive || enemy.feedbackFrozen) continue;
+    if(state.trial && enemy.emergeTimer>0) {enemy.emergeTimer=countdown(enemy.emergeTimer,dt);continue;}
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     if(!targetVisible(enemy)) enemy.phaseAttack=null;
@@ -303,6 +311,7 @@ function tickImpacts(dt) {
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
     if (shot.rangeLeft <= 0) { if(shot.bigBubble) resolveWaterHit(shot); if(state.mode!=="playing")return; shot.alive = false; continue; }
     clampToMap(shot);
+    if(!shot.alive)continue;
     for (const enemy of state.enemies) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
@@ -347,6 +356,7 @@ function tickImpacts(dt) {
     if(dt>0 && (shot.hitStop||0)>0){shot.hitStop=countdown(shot.hitStop,dt);continue;}
     if(shot.phaseShot && (shot.life=countdown(shot.life,dt))<=0) {state.enemyShotPool.push(state.enemyShots.splice(i,1)[0]);continue;}
     shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);
+    if(state.trial&&shot.wallHit){state.enemyShotPool.push(state.enemyShots.splice(i,1)[0]);continue;}
     if (shot.source === "teacher" && (!state.boss || (!targetVisible(shot) && !shot.remote) || (shot.life -= dt) <= 0)) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
@@ -379,7 +389,7 @@ function tickImpacts(dt) {
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (!state.player.damageDisabled && state.player.invincible <= 0) {
     const touchingEnemy = state.enemies.find((enemy) => enemy.alive && (enemy.miniboss || !GAME_DATA.bodyContact.pushOnly) && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
-    const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !(state.boss.posture&&state.boss.posture.stun>0) && !(state.boss.stunTimer>0) && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
+    const touchingBoss = !state.trial && state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !(state.boss.posture&&state.boss.posture.stun>0) && !(state.boss.stunTimer>0) && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
       tierImpact('small',touchingEnemy||state.boss,state.player);
       state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? bodyContactDamage(touchingEnemy) : UPGRADE_TUNING.enemyDamage));

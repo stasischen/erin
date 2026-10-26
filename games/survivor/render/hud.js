@@ -1,7 +1,7 @@
 let lastSlotMarkup = "";
 function updateHud() {
   const shownBoss = state.miniboss || state.boss;
-  document.getElementById("bossName").textContent = state.miniboss ? GAME_DATA.chocobear.name + (state.miniboss.armor > 0 ? ' · 糖衣盔甲' : '') : GAME_DATA.boss.name;
+  document.getElementById("bossName").textContent = state.miniboss ? GAME_DATA.chocobear.name + (state.miniboss.armor > 0 ? ' · 糖衣盔甲' : '') : state.trial ? state.trial.definition.name : GAME_DATA.boss.name;
   const maxHealth = maxPlayerHealth();
   const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;

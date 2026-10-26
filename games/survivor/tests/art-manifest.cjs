@@ -5,7 +5,8 @@ assert.equal(run('SurvivorArt.validate(SurvivorArtManifest)'),true);
 assert.equal(run("SurvivorArt.lookup('__proto__')"),null);
 const data=plain('SurvivorArtManifest');
 for(const [id,a] of Object.entries(data.assets)) {
-  assert.equal(a.sheet,null);
+  if(id==='character/gatekeeper') {assert.equal(a.sheet,'art/characters/gatekeeper.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
+  else assert.equal(a.sheet,null);
   const d=plain(`SurvivorArt.lookup(${JSON.stringify(id)},'run',99)`);
   assert.equal(d.frame,0);assert.deepEqual(d.frameSize,a.frameSize);
 }

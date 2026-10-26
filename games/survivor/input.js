@@ -120,3 +120,8 @@ Object.defineProperties(globalThis.Survivor.input, {
   joystickBounds: { enumerable: true, get: () => joystickBounds },
   endPointer: { enumerable: true, get: () => endPointer }
 });
+
+if(!PREVIEW_MODE) {
+  document.getElementById('trialEntry').onclick=()=>trialMenu();
+  document.getElementById('trialBack').onclick=closeTrialMenu;
+}

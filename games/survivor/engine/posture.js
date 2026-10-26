@@ -62,6 +62,7 @@ function teacherDodgeThreat() {
     const time=contact(shot.x,shot.y,shot.vx,shot.vy,shot.r);
     if(time<=shot.life&&SurvivorPosture.perfect(time,cfg.window))return shot;
   }
+  if(state.trial)return trialDodgeThreat();
   for(const m of state.bossMoves) {
     const def=bossDefinition(m),kind=bossKind(m);
     if(m.dodged||m.recovery>0||!(def.damage>0))continue;

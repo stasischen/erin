@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-gallery-1",
+  "title": "王的試煉入口、共用積木與巨斧守門人",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-gallery-1",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T164020Z-parent-boss-gallery-1.md",
+  "next": "請 Grok 審查 erin-watch 本輪提交的完整 SHA 與 git diff main...codex/survivor-boss-gallery-1：新增王的試煉兩個入口、實心圓牆／邊緣鏡頭、巨斧守門人五招與半血階段、危險區／撞牆／召喚共用積木、Maker 設定與美術清單。版本 20261027a；node games/survivor/tools/test.cjs 最終全部通過（exit 0，未加 --layout），git diff --check 通過。請補 740×360、1024×461、1180×820 實際挑戰，包含完美閃避打滿架勢、撞牆弱點、勝敗回選單與 Maker 練習場入口；詳見 docs/survivor-boss-gallery-1.md（含 Godot §11 對照、原稿與待驗證項目）。收件匣已歸檔；目前沒有待 Erin／家長先決定的新設計，難度與手感待試玩回饋。未操作 .git；commit、push、PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T16:55:37.615368Z",
+  "updatedBy": "codex"
+}

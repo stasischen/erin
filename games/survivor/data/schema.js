@@ -486,6 +486,26 @@
         result.phaseAttack.feedback=result.feedback.phase;
         return result;
       });
+      if(input.gallery !== undefined) {
+        const g=input.gallery, base=data.gallery;
+        if(!g || g.schemaVersion!==1 || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
+        const result={schemaVersion:1};
+        for(const [k,lo,hi] of [['arenaRadius',420,1200],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
+        const h=g.hazard;if(!h)fail('地面危險區資料缺少');
+        result.hazard={kind:choice(h.kind,['poison','ice','fire'],'危險區種類')};
+        for(const [k,lo,hi] of [['radius',20,200],['duration',.1,15],['interval',.1,3],['damage',0,40],['slow',.2,1]])result.hazard[k]=num(h[k],lo,hi,k);
+        result.bosses=g.bosses.map((b,i)=>{
+          const original=base.bosses[i];if(!b || b.id!==original.id || b.artId!==original.artId || !Array.isArray(b.moves) || b.moves.length!==original.moves.length || !Array.isArray(b.phases) || b.phases.length!==2)fail('試煉魔王識別錯誤');
+          const boss={id:b.id,artId:b.artId,name:name(b.name,'試煉魔王',24),hp:num(b.hp,500,5000,'試煉血量'),radius:num(b.radius,20,50,'試煉大小'),speed:num(b.speed,0,200,'試煉移速')};
+          boss.phases=b.phases.map((p,i)=>({threshold:num(p.threshold,i===0?1:.05,i===0?1:.95,'階段門檻'),speed:num(p.speed,.5,2,'階段加速')}));
+          boss.moves=b.moves.map((m,j)=>{
+            const originalMove=original.moves[j],s=m.blocks && m.blocks.moves && m.blocks.moves[0];
+            if(m.id!==originalMove.id || !s || m.blocks.version!==1 || m.blocks.moves.length!==1 || s.id!=='move' || !s.trigger || s.trigger.event!=='onSelect' || s.shape.type!==originalMove.blocks.moves[0].shape.type || !s.feedback || s.feedback.pose!==m.id || s.feedback.warning!=='ground' || s.feedback.level!=='medium' || !s.effect)fail('試煉招式積木錯誤');
+            const timing={};for(const [k,lo,hi] of [['windup',.6,3],['active',.1,4],['recovery',.2,3],['cooldown',.1,8]])timing[k]=num(s.timing[k],lo,hi,k);
+            return {id:m.id,name:name(m.name,'試煉招式',24),minPhase:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度')},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度')},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
+          });return boss;
+        });data.gallery=result;
+      }
       const b = { ...input.boss };
       for(const [key,bounds] of Object.entries(POSTURE_BOUNDS)) data.boss.posture[key]=num(b.posture&&b.posture[key]!==undefined?b.posture[key]:data.boss.posture[key],bounds[0],bounds[1],key);
       data.boss.name = name(b.name, '魔王名稱', 24); data.boss.hp = num(b.hp, 500, 5000, '魔王血量'); data.boss.speed = num(b.speed, 0, 200, '魔王速度'); data.boss.radius = num(b.radius, 20, 50, '魔王大小');

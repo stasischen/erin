@@ -5,6 +5,7 @@ function targetVisible(target) {
   return Math.abs(x) + r <= state.width / 2 && Math.abs(y) + r <= state.height / 2;
 }
 function canAttackTarget(target) {
+  if(state.trial&&target.emergeTimer>0)return false;
   return targetVisible(target) && Math.hypot(deltaX(target.x, state.player.x), deltaY(target.y, state.player.y)) <= BUILD_TUNING.attackRadius &&
     (target !== state.boss || state.bossIntro <= 0);
 }
