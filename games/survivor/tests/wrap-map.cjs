@@ -10,7 +10,7 @@ assert.equal(run('wrapCoordinate(-301,100)'),99);
 assert.equal(run('wrapCoordinate(400,100)'),0);
 assert.equal(run('Survivor.engine.loop.wrapDelta === wrapDelta'),true);
 function fresh(x,y) {
-  run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;state.player.damageDisabled=true;
+  run(`state.width=800;state.height=600;state.zoom=null;resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;state.player.damageDisabled=true;
     state.player.x=${x};state.player.y=${y};updateCamera();`);
 }
 const W = run('state.worldWidth'), H = run('state.worldHeight');

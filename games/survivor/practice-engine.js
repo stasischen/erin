@@ -45,7 +45,7 @@ drawBlob=function(x,y,r,color,wobble,flash,id,...rest) {
 };
 // 固定鏡頭讓主角可走位；世界規則仍為遊戲單位。
 updateCamera=function(){state.cameraX=practiceHome?practiceHome.x-state.width/2:0;state.cameraY=practiceHome?practiceHome.y-state.height/2:0;};
-canvasPoint=function(event){const r=canvas.getBoundingClientRect();return {x:(event.clientX-r.left)*state.width/r.width,y:(event.clientY-r.top)*state.height/r.height};};
+canvasScreenPoint=function(event){const r=canvas.getBoundingClientRect();return {x:(event.clientX-r.left)*(state.screenWidth||state.width)/r.width,y:(event.clientY-r.top)*(state.screenHeight||state.height)/r.height};};
 updateEnemyBehavior=function(e,dt) {
   if(e!==practiceEnemy) return practiceOriginalBehavior(e,dt);
   const old={x:e.x,y:e.y}, charging=e.action&&e.action.kind==='charge'&&e.action.warning<=dt;
@@ -73,9 +73,7 @@ drawPacingWarnings=function() {
   ctx.restore();
 };
 function practiceSize() {
-  const r=canvas.getBoundingClientRect();state.width=practiceMini?800:r.width;state.height=state.width*r.height/Math.max(1,r.width);
-  const scale=Math.min(window.devicePixelRatio||1,2);
-  canvas.width=Math.round(state.width*scale);canvas.height=Math.round(state.height*scale);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=false;
+  const r=canvas.getBoundingClientRect();applyWorldViewport(Math.max(1,r.width),Math.max(1,r.height));
   state.pointerId=null;state.joy=null;state.keys.clear();
 }
 function practiceButtons() {

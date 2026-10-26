@@ -15,6 +15,7 @@ const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':game
 const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []), previewMove && ['ring','cage'].includes(previewMove.kind) ? previewMove.radius : 0);
 let previewOrigin = {x:0,y:0};
 function sizePreview() {
+  state.zoom=null;state.screenWidth=null;state.screenHeight=null;
   const width = document.documentElement ? document.documentElement.clientWidth : 640;
   const height = document.documentElement ? document.documentElement.clientHeight : 360;
   const ratio = Math.max(.5, width / Math.max(1,height));

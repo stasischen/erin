@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-view-teacher",
+  "title": "小怪獸：固定面積視野與老師追擊戰",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-view-teacher",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T120256Z-parent-view-teacher.md",
+  "next": "請 Grok 審查 erin-watch 提交的實質 SHA，並依 docs/survivor-view-teacher-validation.md 在 1024×461、740×360、約 1180×820 實際操作視野／留邊、手動瞄準、練習場、老師風箏追擊與五種新招；再由 Erin 試玩戰鬥手感與 45～60 秒目標。指定 node games/survivor/tools/test.cjs 最後完整一輪全部通過（exit 0），未跑 --layout；git diff --check 通過。版本 20261026al。連衝依最低預警限制採 0.6 秒。Godot §11：純視野／血量／選招、世界單位、白名單五積木與固定輸入輸出已對照；全面 JSON 化、事件系統及素材匯出留後續。無阻擋設計決定；commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T12:18:45.159498Z",
+  "updatedBy": "codex"
+}

@@ -40,14 +40,18 @@ window.addEventListener("blur", () => { state.keys.clear(); cancelManualAttack()
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); Survivor.audio.sync(); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());
 // CSS 直拿時順時針轉 90 度；把螢幕位置轉回遊戲位置（包含縮放）。
-function canvasPoint(event) {
+function canvasScreenPoint(event) {
   const rect = canvas.getBoundingClientRect();
   if (window.innerHeight > window.innerWidth) {
-    return { x: (event.clientY - rect.top) * state.width / rect.height,
-      y: (rect.right - event.clientX) * state.height / rect.width };
+    return { x: (event.clientY - rect.top) * (state.screenWidth||state.width) / rect.height,
+      y: (rect.right - event.clientX) * (state.screenHeight||state.height) / rect.width };
   }
-  return { x: (event.clientX - rect.left) * state.width / rect.width,
-    y: (event.clientY - rect.top) * state.height / rect.height };
+  return { x: (event.clientX - rect.left) * (state.screenWidth||state.width) / rect.width,
+    y: (event.clientY - rect.top) * (state.screenHeight||state.height) / rect.height };
+}
+function canvasPoint(event) {
+  const p=canvasScreenPoint(event),zoom=state.zoom||1;
+  return {x:(p.x-(state.viewLeft||0))/zoom,y:(p.y-(state.viewTop||0))/zoom};
 }
 // 純計算：底座沿原拖曳方向移動，碰到界線即停止，避免斜向貼邊時方向歪掉。
 // 外圈與搖桿頭皆留在左半畫面；極小視窗時縮小顯示。
@@ -80,16 +84,16 @@ function calculateJoystick(joy, point, config, bounds) {
 canvas.addEventListener("pointerdown", (event) => {
   if (state.mode !== "playing" || event.target.closest("button")) return;
   if (state.pointerId !== null) return;
-  const point = canvasPoint(event);
-  if (point.x < 0 || point.x > state.width / 2 || point.y < 0 || point.y > state.height) return;
+  const point = canvasScreenPoint(event);
+  if (point.x < 0 || point.x > (state.screenWidth||state.width) / 2 || point.y < 0 || point.y > (state.screenHeight||state.height)) return;
   event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
-  state.joy = { ...clampJoystickBase(point, joystickBounds(state.width, state.height, GAME_DATA.joystick.radius)), x: 0, y: 0 };
+  state.joy = { ...clampJoystickBase(point, joystickBounds(state.screenWidth||state.width, state.screenHeight||state.height, GAME_DATA.joystick.radius)), x: 0, y: 0 };
 });
 canvas.addEventListener("pointermove", (event) => {
   if (event.pointerId !== state.pointerId || !state.joy) return;
   event.preventDefault();
-  state.joy = calculateJoystick(state.joy, canvasPoint(event), GAME_DATA.joystick,
-    joystickBounds(state.width, state.height, GAME_DATA.joystick.radius));
+  state.joy = calculateJoystick(state.joy, canvasScreenPoint(event), GAME_DATA.joystick,
+    joystickBounds(state.screenWidth||state.width, state.screenHeight||state.height, GAME_DATA.joystick.radius));
 });
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);

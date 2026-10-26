@@ -14,7 +14,9 @@ function drawLandingShadow(x, y, r, progress, drawingContext = ctx) {
   drawGroundShadow(x, y - r * .85, r, remainingHeight, .9, drawingContext);
 }
 function bossAirHeight() {
-  const move = state.bossMoves.find(m => bossKind(m) === "dash" && m.active);
+  const leap=state.bossMoves.find(m=>bossKind(m)==='leap' && m.active && !m.recovery);
+  if(leap)return Math.sin(Math.PI*Math.max(0,Math.min(1,1-leap.life/bossDefinition(leap).duration)))*100;
+  const move = state.bossMoves.find(m => ['dash','combo'].includes(bossKind(m)) && m.active);
   if (!move) return 0;
   const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
   return Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - move.life / Math.max(.001, duration)))) * 28;
@@ -24,12 +26,21 @@ function drawBossMoves() {
   for (const move of state.bossMoves) {
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
     if(!move.active)warningFeedback(moveFeedback(bossDefinition(move),'move'),move.warning);
-    if (bossKind(move) === "wall") {
+    if(bossKind(move)==='leap' || bossKind(move)==='tracking') {
+      const point=move.points[0],x=move.x+deltaX(point.x,move.x),y=move.y+deltaY(point.y,move.y);
+      ctx.beginPath();ctx.arc(x,y,point.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+      if(move.recovery) {ctx.fillStyle='#ffcf49';ctx.font='bold 25px system-ui';ctx.fillText('★ ★',state.boss.x-25,state.boss.y-65);}
+    } else if(bossKind(move)==='sniper') {
+      ctx.lineWidth=2;ctx.strokeStyle='#e3394e';ctx.beginPath();ctx.moveTo(move.x,move.y);ctx.lineTo(move.x+Math.cos(move.angle)*1400,move.y+Math.sin(move.angle)*1400);ctx.stroke();
+    } else if(bossKind(move)==='barriers') {
+      ctx.lineWidth=16;ctx.strokeStyle=move.active?'#31595a':'#e35c6d';
+      for(const sign of [-1,1]) {ctx.beginPath();ctx.moveTo(move.x+sign*move.wallWidth,move.y-move.radius);ctx.lineTo(move.x+sign*move.wallWidth,move.y+move.radius);ctx.stroke();}
+    } else if (bossKind(move) === "wall") {
       const x = wallX(move); ctx.lineWidth = 20;
       ctx.strokeStyle = move.active ? "#fff5dd" : "rgba(235,83,101,.55)";
       ctx.beginPath(); ctx.moveTo(x,move.y);ctx.lineTo(x,move.y+move.wallHeight);ctx.stroke();
       ctx.lineWidth = 2; ctx.strokeStyle = "#d64c65";ctx.strokeRect(move.x,move.y,move.wallWidth,move.wallHeight);
-    } else if (bossKind(move) === "dash") {
+    } else if (["dash","combo"].includes(bossKind(move))) {
       const endX = move.x + deltaX(move.endX, move.x), endY = move.y + deltaY(move.endY, move.y);
       const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
       drawLandingShadow(endX, endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
@@ -360,6 +371,13 @@ function drawOneUltimate(v) {
 
 function render() {
   updateCamera();
+  ctx.save();
+  if(state.zoom) {
+    ctx.setTransform(state.pixelRatio,0,0,state.pixelRatio,0,0);
+    ctx.fillStyle='#142331';ctx.fillRect(0,0,state.screenWidth,state.screenHeight);
+    ctx.setTransform(state.pixelRatio*state.zoom,0,0,state.pixelRatio*state.zoom,state.viewLeft*state.pixelRatio,state.viewTop*state.pixelRatio);
+    ctx.beginPath();ctx.rect(0,0,state.width,state.height);ctx.clip();
+  }
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   const shake = gameSettings.vibration ? Math.max(state.bossShake>0?BOSS_TUNING.shakePixels:0,state.hitShake>0?state.hitShakePixels:0) : 0;
@@ -428,10 +446,11 @@ function render() {
     if (state.boss) {
       const b = state.boss, x = b.x, y = b.y;
       const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
+      if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
       drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
-      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
+      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {
       if (hazard.owner) { ctx.fillStyle='rgba(74,46,39,.22)'; ctx.beginPath(); ctx.arc(hazard.x,hazard.y,hazard.r,0,Math.PI*2); ctx.fill(); }
@@ -498,12 +517,16 @@ function render() {
     ctx.fillStyle = "#fff3cc"; ctx.font = "bold 28px system-ui"; ctx.textAlign = "center";
     ctx.fillText(`第${state.stageIndex + 1}關：${currentStage().name}`, state.width/2, state.height/2);
   }
+  ctx.restore();
+  ctx.save();
+  if(state.zoom)ctx.setTransform(state.pixelRatio,0,0,state.pixelRatio,0,0);
   if (state.joy) {
     const radius = GAME_DATA.joystick.radius;
-    const inset = joystickBounds(state.width, state.height, radius).minX;
+    const inset = joystickBounds(state.screenWidth||state.width, state.screenHeight||state.height, radius).minX;
     const scale = Math.min(1, inset / (radius + 19));
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, (radius + 11) * scale, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * radius * scale, state.joy.baseY + state.joy.y * radius * scale, 19 * scale, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }
+  ctx.restore();
   for(const e of combatTargets()) e.impactFlash=0;
 }
 
@@ -512,7 +535,7 @@ function bossGuide() {
   if (!state.boss || targetVisible(state.boss)) return null;
   const dx = deltaX(state.boss.x, state.cameraX + state.width / 2);
   const dy = deltaY(state.boss.y, state.cameraY + state.height / 2);
-  const halfW = Math.max(1, state.width / 2 - 30), halfH = Math.max(1, state.height / 2 - 30);
+  const halfW = Math.max(1, state.width / 2 - 30/(state.zoom||1)), halfH = Math.max(1, state.height / 2 - 30/(state.zoom||1));
   const scale = 1 / Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH, 1);
   return { x: state.width / 2 + dx * scale, y: state.height / 2 + dy * scale, angle: Math.atan2(dy, dx) };
 }
@@ -520,18 +543,19 @@ function drawBossGuide() {
   if (state.mode !== "playing" && state.mode !== "paused" && state.mode !== "levelup") return;
   const guide = bossGuide();
   if (guide) {
-    ctx.save(); ctx.translate(guide.x, guide.y);
+    ctx.save(); ctx.translate(guide.x, guide.y);ctx.scale(1/(state.zoom||1),1/(state.zoom||1));
     ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#713809"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     SurvivorIcons.draw(ctx, "boss", -16, -16, 32);
     ctx.rotate(guide.angle); ctx.fillStyle = "#713809";
     ctx.beginPath(); ctx.moveTo(29, 0); ctx.lineTo(20, -7); ctx.lineTo(20, 7); ctx.closePath(); ctx.fill();
+    if(state.boss.pursuing) {ctx.rotate(-guide.angle);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('快走追上',0,40);}
     ctx.restore();
   }
   if (state.boss && state.bossIntro > 0) {
-    ctx.save(); ctx.font = "bold 24px system-ui"; ctx.textAlign = "center";
-    ctx.strokeStyle = "#fff3cc"; ctx.lineWidth = 6; ctx.strokeText(GAME_DATA.boss.name + "來了！", state.width / 2, state.height / 2 - 50);
-    ctx.fillStyle = "#713809"; ctx.fillText(GAME_DATA.boss.name + "來了！", state.width / 2, state.height / 2 - 50); ctx.restore();
+    ctx.save();ctx.translate(state.width/2,state.height/2-50/(state.zoom||1));ctx.scale(1/(state.zoom||1),1/(state.zoom||1)); ctx.font = "bold 24px system-ui"; ctx.textAlign = "center";
+    ctx.strokeStyle = "#fff3cc"; ctx.lineWidth = 6; ctx.strokeText(GAME_DATA.boss.name + "來了！", 0, 0);
+    ctx.fillStyle = "#713809"; ctx.fillText(GAME_DATA.boss.name + "來了！", 0, 0); ctx.restore();
   }
 }
 
@@ -590,7 +614,7 @@ function bossZoneGuide() {
   const dx = deltaX(z.x, state.player.x), dy = deltaY(z.y, state.player.y), length = Math.max(1, Math.hypot(dx,dy));
   // 指示放在靠近紫霧的那側邊緣，箭頭朝內。
   const ux = -dx / length, uy = -dy / length;
-  const distance = Math.min((state.width/2-58)/Math.max(.001,Math.abs(ux)), (state.height/2-58)/Math.max(.001,Math.abs(uy)));
+  const distance = Math.min((state.width/2-58/(state.zoom||1))/Math.max(.001,Math.abs(ux)), (state.height/2-58/(state.zoom||1))/Math.max(.001,Math.abs(uy)));
   return { x: state.width/2 + ux * distance, y: state.height/2 + uy * distance, angle: Math.atan2(dy,dx) };
 }
 function drawBossZoneGuide() {
@@ -598,7 +622,7 @@ function drawBossZoneGuide() {
   const z = state.bossZone, guide = bossZoneGuide();
   ctx.save();
   if (guide) {
-    ctx.translate(guide.x,guide.y); ctx.fillStyle = "#fff6d6"; ctx.strokeStyle = "#77419c"; ctx.lineWidth = 3;
+    ctx.translate(guide.x,guide.y);ctx.scale(1/(state.zoom||1),1/(state.zoom||1)); ctx.fillStyle = "#fff6d6"; ctx.strokeStyle = "#77419c"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.fill(); ctx.stroke();
     ctx.rotate(guide.angle); ctx.fillStyle = "#77419c";
     ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-8,-11); ctx.lineTo(-3,0); ctx.lineTo(-8,11); ctx.closePath(); ctx.fill();
@@ -606,9 +630,9 @@ function drawBossZoneGuide() {
   ctx.restore();
   const text = z.warning > 0 ? `安全圈 ${Math.ceil(z.warning)} 秒後縮小！` : outsideBossZone() ? "回安全圈！紫霧會慢慢扣血" : z.shrinking ? "安全圈縮小中" : "";
   if (text) {
-    ctx.save(); ctx.font = "bold 18px system-ui"; ctx.textAlign = "center";
-    ctx.lineWidth = 5; ctx.strokeStyle = "#fff6e8"; ctx.strokeText(text,state.width/2,110);
-    ctx.fillStyle = "#77419c"; ctx.fillText(text,state.width/2,110); ctx.restore();
+    ctx.save();ctx.translate(state.width/2,(110-(state.viewTop||0))/(state.zoom||1));ctx.scale(1/(state.zoom||1),1/(state.zoom||1)); ctx.font = "bold 18px system-ui"; ctx.textAlign = "center";
+    ctx.lineWidth = 5; ctx.strokeStyle = "#fff6e8"; ctx.strokeText(text,0,0);
+    ctx.fillStyle = "#77419c"; ctx.fillText(text,0,0); ctx.restore();
   }
 }
 

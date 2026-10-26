@@ -2,7 +2,21 @@
 // schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
-  "playerDefaults": {"attackMode": "manual", "attackModeChosen": false, "joystickFollow": true, "joystickRadius": 35, "joystickDeadZone": 4, "hitFeedback": true, "feedbackIntensity": 1, "vibration": true, "sound": true, "music": true, "soundVolume": 1, "musicVolume": 1, "lowEffects": false},
+  "playerDefaults": {
+    "attackMode": "manual",
+    "attackModeChosen": false,
+    "joystickFollow": true,
+    "joystickRadius": 35,
+    "joystickDeadZone": 4,
+    "hitFeedback": true,
+    "feedbackIntensity": 1,
+    "vibration": true,
+    "sound": true,
+    "music": true,
+    "soundVolume": 1,
+    "musicVolume": 1,
+    "lowEffects": false
+  },
   "attackMode": "manual",
   "attackModeChosen": false,
   "joystick": {
@@ -275,7 +289,10 @@ globalThis.SURVIVOR_DEFAULTS = {
     "enabled": true,
     "steps": 3,
     "speed": 40,
-    "damage": 2
+    "damage": 4,
+    "initialRadius": 600,
+    "finalRadius": 180,
+    "warning": 4
   },
   "bossTuning": {
     "warningSeconds": 0.9,
@@ -1625,23 +1642,26 @@ globalThis.SURVIVOR_DEFAULTS = {
   "boss": {
     "name": "老師",
     "hp": 2000,
-    "speed": 24,
+    "speed": 70,
     "radius": 32,
     "phases": [
       {
         "threshold": 1,
         "rest": 1.7,
-        "combo": null
+        "combo": null,
+        "speed": 70
       },
       {
         "threshold": 0.66,
         "rest": 1.2,
-        "combo": "words"
+        "combo": "words",
+        "speed": 90
       },
       {
         "threshold": 0.33,
-        "rest": 0.8,
-        "combo": "chalk"
+        "rest": 0.6,
+        "combo": "chalk",
+        "speed": 110
       }
     ],
     "moves": [
@@ -1694,7 +1714,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         "duration": 0.3,
         "pulse": 0.24,
         "gap": 1.8,
-        "distance": 300
+        "distance": 450
       },
       {
         "id": "rain",
@@ -1797,8 +1817,106 @@ globalThis.SURVIVOR_DEFAULTS = {
         "pulse": 0.24,
         "gap": 1.8,
         "distance": 300
+      },
+      {
+        "id": "podium-leap",
+        "name": "跳上講台",
+        "kind": "leap",
+        "warning": 1,
+        "minPhase": 1,
+        "damage": 12,
+        "speed": 135,
+        "count": 1,
+        "phaseCount": 0,
+        "spread": 0.28,
+        "radius": 90,
+        "duration": 0.7,
+        "pulse": 0.24,
+        "gap": 1.8,
+        "distance": 300
+      },
+      {
+        "id": "chalk-snipe",
+        "name": "粉筆狙擊",
+        "kind": "sniper",
+        "warning": 0.8,
+        "minPhase": 1,
+        "damage": 12,
+        "speed": 420,
+        "count": 1,
+        "phaseCount": 0,
+        "spread": 0,
+        "radius": 145,
+        "duration": 0.1,
+        "pulse": 0.24,
+        "gap": 1.8,
+        "distance": 300
+      },
+      {
+        "id": "board-barriers",
+        "name": "黑板封路",
+        "kind": "barriers",
+        "warning": 1,
+        "minPhase": 1,
+        "damage": 12,
+        "speed": 135,
+        "count": 1,
+        "phaseCount": 0,
+        "spread": 0.28,
+        "radius": 100,
+        "duration": 3,
+        "pulse": 0.24,
+        "gap": 1.8,
+        "distance": 110
+      },
+      {
+        "id": "eraser-combo",
+        "name": "黑板擦連衝",
+        "kind": "combo",
+        "warning": 0.6,
+        "minPhase": 2,
+        "damage": 12,
+        "speed": 420,
+        "count": 2,
+        "phaseCount": 0,
+        "spread": 0.28,
+        "radius": 145,
+        "duration": 0.3,
+        "pulse": 0.24,
+        "gap": 1.8,
+        "distance": 450
+      },
+      {
+        "id": "tracking-call",
+        "name": "點名追蹤",
+        "kind": "tracking",
+        "warning": 1.5,
+        "minPhase": 3,
+        "damage": 12,
+        "speed": 135,
+        "count": 1,
+        "phaseCount": 0,
+        "spread": 0.28,
+        "radius": 48,
+        "duration": 0.3,
+        "pulse": 0.24,
+        "gap": 1.8,
+        "distance": 300
       }
-    ]
+    ],
+    "combat": {
+      "nearDistance": 200,
+      "farDistance": 600,
+      "pursuitDistance": 800,
+      "pursuitMultiplier": 2,
+      "healthPerUpgrade": 350,
+      "leapRecovery": 0.8,
+      "leapPush": 60,
+      "trackingSeconds": 1,
+      "lockSeconds": 0.5,
+      "phaseWordsSpeed": 200,
+      "phaseChalkSpeed": 240
+    }
   },
   "waves": [
     {
@@ -2066,7 +2184,10 @@ globalThis.SURVIVOR_DEFAULTS = {
     "playerForce": 1,
     "enemyForce": 0.25
   },
-  "hitJuice": { "enabled": true, "intensity": 1 },
+  "hitJuice": {
+    "enabled": true,
+    "intensity": 1
+  },
   "bodyContact": {
     "pushOnly": false,
     "damageScale": 0.25

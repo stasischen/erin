@@ -78,7 +78,7 @@
     if (spec.kind === 'move') {
       const m = data.boss.moves.find(m => m.id === spec.id);
       const count=Math.min(10,m.count+m.phaseCount*3);
-      const words = {wall:'一整道粉筆牆橫掃過來，用衝刺穿過',cage:'放出沒有缺口的縮圈，用衝刺穿過',words:`扇形射出 ${count} 個國字`,chalk:`每 ${m.pulse} 秒連發 ${count} 根粉筆`,dash:`沿預告線衝 ${m.distance} 格`,rain:`落下 ${count} 個 ${m.radius} 格大的考卷圈`,call:`在 ${count} 個位置點名，圈有 ${m.radius} 格大`,summon:`叫出 ${count} 隻小怪`,ring:`放出 ${m.radius} 格大的圈，留 ${Math.round(m.gap*180/Math.PI)} 度出口`};
+      const words = {leap:`跳到紅圈落點，落地後轉星星可反擊`,sniper:`紅線瞄準後射出速度 ${m.speed} 的一根粉筆`,barriers:`兩側出現短牆 ${m.duration} 秒，上下有缺口`,combo:`連衝 2～3 次，每次重新預告方向`,tracking:`圈跟隨 ${data.boss.combat.trackingSeconds} 秒，再鎖定 ${data.boss.combat.lockSeconds} 秒命中`,wall:'一整道粉筆牆橫掃過來，用衝刺穿過',cage:'放出沒有缺口的縮圈，用衝刺穿過',words:`扇形射出 ${count} 個國字`,chalk:`每 ${m.pulse} 秒連發 ${count} 根粉筆`,dash:`沿預告線衝 ${m.distance} 格`,rain:`落下 ${count} 個 ${m.radius} 格大的考卷圈`,call:`在 ${count} 個位置點名，圈有 ${m.radius} 格大`,summon:`叫出 ${count} 隻小怪`,ring:`放出 ${m.radius} 格大的圈，留 ${Math.round(m.gap*180/Math.PI)} 度出口`};
       return `老師第 3 階段：先亮提示 ${m.warning} 秒，再${words[m.kind]}。`;
     }
     if (spec.id === 'heal') return `補回 ${Math.ceil(data.tuning.playerHealth/data.build.shieldHealthDivisor)} 滴血。`;
@@ -108,7 +108,7 @@
     const remembered=debugMemory[JSON.stringify(spec)]||{};
     frame._debugOptions=remembered.options || debugOptions;frame._debugBefore=remembered.before || debugBefore;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261026ak', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261026al', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

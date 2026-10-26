@@ -15,7 +15,7 @@ assert.equal(run('state.elapsed'),150);
 run('tick(1);tick(.05)');assert.equal(run('state.mode'),'playing');assert.equal(run('state.boss'),null);
 assert.equal(run('state.stageElapsed'),.05);
 run('Math.random=()=>.99;spawnEnemy();');assert.equal(run('state.enemies[0].maxHp'),120*1.12);assert.equal(run('state.enemies[0].speed'),75*1.06);
-run('state.stageElapsed=gameSettings.waveSeconds;tick(0);');assert.ok(run('state.boss'));assert.equal(run('state.boss.maxHp'),2000*1.12);
+run('state.stageElapsed=gameSettings.waveSeconds;tick(0);');assert.ok(run('state.boss'));assert.equal(run('state.boss.maxHp'),(2000+7*run('GAME_DATA.boss.combat.healthPerUpgrade'))*1.12);
 run('state.bossIntro=0;state.boss.x=state.player.x+50;state.boss.y=state.player.y;state.boss.hp=1;hitBuildTarget(state.boss,10);');assert.equal(run('state.mode'),'won');
 run('resetGame();render();');assert.equal(run('currentStage().background'),'candy-forest');
 assert.equal(run('Object.keys(BACKGROUND_TILES).sort().join(",")'),'candy-forest,cookie-forest');

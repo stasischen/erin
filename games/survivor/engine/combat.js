@@ -384,7 +384,7 @@ function imminentDashThreat() {
   for (const m of state.bossMoves) {
     if (m.dodged || m.warning > window) continue;
     const kind = bossKind(m);
-    const danger = (kind === "call" || kind === "rain") && m.points.some(q=>near(q.x,q.y,q.r)) ||
+    const danger = (['call','rain','tracking','leap'].includes(kind)) && m.points.some(q=>near(q.x,q.y,q.r)) ||
       ["ring","cage"].includes(kind) && ringPoints(m.active ? m : {...m,life:bossDefinition(m).duration}).some(q=>near(q.x,q.y,q.r)) ||
       kind === "wall" && Math.abs(deltaX(wallX(m),p.x)) <= p.r + 12 + bossDefinition(m).speed * window;
     if (danger) { m.dodged = true; return true; }
