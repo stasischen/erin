@@ -16,8 +16,8 @@ globalThis.SurvivorPracticeRules = (() => {
     if(move.kind==='weapon') {
       const w=data.weapons.find(w=>w.id===(id==='item-wall'?'water-ball':id));
       const interval=w.kind==='melee'?w.interval:t.shotInterval;
-      // 普攻沒有預警或收招無敵窗；時間軸紅段代表本次發射／揮擊的間隔。
-      return {...move,enabled:true,windup:0,active:interval,recovery:0,cooldown:0,
+      // 手動普攻顯示共用時機；自動模式紅段仍代表攻擊間隔。
+      return {...move,enabled:true,windup:0,active:interval,recovery:0,cooldown:0,...(data.attackMode==='manual'?w.timing:{}),
         damage:t.projectileDamage*(w.damageMultiplier||1),shape:w.kind==='melee'?(w.baseShape==='line'?'line':'sector'):'projectiles',
         chargeShape:w.chargeShape,chargeStun:w.chargeStun,direction:w.direction,comboEvery:w.comboEvery,chargeSeconds:w.chargeSeconds,comboReset:w.comboReset,comboMultiplier:w.comboMultiplier,chargeMultiplier:w.chargeMultiplier,radius:w.radius,angle:w.arcDegrees,spinEvery:w.id==='candy-hammer' && w.comboEnabled?w.comboEvery:0,interval,
         speed:t.projectileSpeed,length:data.build.shotRange,push:w.push||0,
@@ -25,7 +25,7 @@ globalThis.SurvivorPracticeRules = (() => {
         waveDamage:id==='item-wall'?data.neutralRules.waveDamage:0};
     }
     const e=data.enemies.find(e=>e.id===id);
-    if(e.phaseAttack.enabled) return {...move,...e.phaseAttack,legacy:false};
+    if(e.phaseAttack.enabled) return {...move,...e.phaseAttack,...e.phaseAttack.timing,legacy:false};
     // 這兩招在正式遊戲仍為舊招式：不捏造收招時間；冷卻照引擎原值。
     if(e.behavior==='charger') return {...move,enabled:true,legacy:true,windup:p.warning,active:p.chargeSeconds,recovery:0,cooldown:3,shape:'charge',length:p.chargeSpeed*p.chargeSeconds,radius:e.radius,speed:p.chargeSpeed,damage:data.bodyContact.pushOnly?0:e.damage*data.bodyContact.damageScale};
     if(e.behavior==='bomber') return {...move,enabled:true,legacy:true,windup:p.fuseSeconds,active:0,recovery:0,cooldown:0,shape:'blast',radius:p.blastRadius,damage:p.blastDamage};

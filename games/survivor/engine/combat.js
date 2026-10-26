@@ -406,6 +406,7 @@ function activateDash() {
     burst(state.player.x, state.player.y, "#fff5a3", 14); updateHud();
   }
   if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.dashInvincible);
+  cancelManualRecovery();
   state.manualDashUsed=false; playSound("dash"); updateActionControls();
 }
 function activateSkill() {

@@ -2079,3 +2079,6 @@ globalThis.SURVIVOR_DEFAULTS = {
     "bossMultiplier": 0
   }
 };
+
+// ✏️ Erin 可以改：手動普攻的起手、生效、收招、冷卻（秒）；自動模式沿用原間隔。
+SURVIVOR_DEFAULTS.weapons.forEach(w => { w.timing={windup:.1,active:.05,recovery:.12,cooldown:0}; });

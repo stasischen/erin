@@ -440,7 +440,7 @@ function render() {
     for (const enemy of state.enemies) {
       const a=enemy.phaseAttack,phase=a&&a.phase;
       const windup=phase==='windup' || !!(enemy.action && enemy.action.warning>0) || enemy.shotWarning>0, recovery=phase==='recovery';
-      const progress=phase==='windup'?1-a.left/Math.max(.001,a.config.windup):windup?1-(enemy.shotWarning || enemy.action.warning)/Math.max(.001,enemy.action&&enemy.action.kind==='blast'?GAME_DATA.pacing.fuseSeconds:GAME_DATA.pacing.warning):0;
+      const progress=phase==='windup'?1-a.left/Math.max(.001,SurvivorTiming.segments(a.config)[0].seconds):windup?1-(enemy.shotWarning || enemy.action.warning)/Math.max(.001,enemy.action&&enemy.action.kind==='blast'?GAME_DATA.pacing.fuseSeconds:GAME_DATA.pacing.warning):0;
       const squash=enemy.impactSquash>0?Math.min(.3,enemy.impactSquash*2):windup?.18*progress:0;
       const jitter=windup?Math.sin(state.elapsed*85)*2*progress:0;
       const tint=enemy.impactFlash?'#ffffff':phase==='active'&&a.entered?'#ffffff':windup?'#ef8890':recovery?'#939da7':undefined;
@@ -642,7 +642,7 @@ function drawPhasedAttacks() {
   for(const e of state.enemies) {
     const a=e.phaseAttack;
     if(!e.alive || !a || !['windup','active'].includes(a.phase)) continue;
-    const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,c.windup))):1;
+    const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,SurvivorTiming.segments(c)[0].seconds))):1;
     ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle);
     ctx.strokeStyle='#ed7e89';ctx.fillStyle=warning?'rgba(240,65,85,.32)':'rgba(245,87,93,.72)';ctx.lineWidth=2;
     if(c.shape==='projectiles') {

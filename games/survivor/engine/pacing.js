@@ -20,10 +20,7 @@
   function density(config,seconds) { return config.density * ((config.pattern==='steady' || Math.floor(seconds/config.cycleSeconds)%2) ? config.strongScale : config.weakScale); }
   // 純狀態轉換：每次最多換一階段，避免掉幀跳過玩家應看到的預警／生效。
   function advanceAttack(a,c,dt) {
-    const left=Math.max(0,a.left-dt);
-    if(left>1e-6) return {...a,left,entered:false};
-    const next={windup:'active',active:'recovery',recovery:'cooldown',cooldown:'ready'}[a.phase];
-    return {...a,phase:next,left:c[next]||0,entered:true};
+    return SurvivorTiming.advance(a,c,dt);
   }
   function attackAngles(c,angle) {
     if(!c.radial || c.count===1) return [angle];
@@ -157,7 +154,7 @@ function updatePhasedAttack(e,dt) {
   let a=e.phaseAttack;
   if(!a || a.phase==='ready') {
     if(encounterDistance(e,state.player)>config.triggerDistance) return false;
-    a={phase:'windup',left:config.windup,x:e.x,y:e.y,
+    a={...SurvivorTiming.start(config),x:e.x,y:e.y,
       angle:Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x)),config:{...config},hit:false};
     e.phaseAttack=a;playSound('warning');return true;
   }
@@ -169,7 +166,7 @@ function updatePhasedAttack(e,dt) {
         if(state.enemyShots.filter(s=>s.source==='book').length>=UPGRADE_TUNING.enemyShotLimit) break;
         state.enemyShots.push(takeFromPool(state.enemyShotPool,{source:'book',phaseShot:true,dodged:false,
           x:a.x,y:a.y,vx:Math.cos(angle)*c.speed,vy:Math.sin(angle)*c.speed,
-          r:c.radius,damage:c.damage,candy:c.radial,text:'●',life:Math.min(c.active,c.length/c.speed)}));
+          r:c.radius,damage:c.damage,candy:c.radial,text:'●',life:Math.min(SurvivorTiming.segments(c)[1].seconds,c.length/c.speed)}));
       }
     } else if(c.shape!=='projectiles' && !a.hit) {
       const dx=deltaX(state.player.x,a.x),dy=deltaY(state.player.y,a.y);
