@@ -69,7 +69,15 @@
     }
     return {player,bodies,checks};
   }
-  root.SurvivorBodies={solve};
+  // 純資料輸入；boss/miniboss 旗標優先於沿用的小怪 typeId。
+  function mass(target,config) {
+    return target.boss ? config.bossMass : target.miniboss ? config.minibossMass : target.mass ?? (target.behavior==='tank'?8:1);
+  }
+  // 有號世界距離（或速度）；multiplier 是未來精英霸體的 hook，0 表示免疫。
+  function displacement(distance,mass,config,multiplier=1) {
+    return distance * multiplier * (config.enabled ? 1/(1+(mass-1)*config.strength) : 1);
+  }
+  root.SurvivorBodies={solve,mass,displacement};
 })(globalThis);
 
 function separateEnemyBodies(dt,previous,passThrough) {
@@ -80,10 +88,22 @@ function separateEnemyBodies(dt,previous,passThrough) {
     world:{width:state.worldWidth,height:state.worldHeight},
     view:{x:state.player.x,y:state.player.y,width:state.width,height:state.height},
     previous,passThrough,player:{x:state.player.x,y:state.player.y,r:state.player.r},
-    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss,mass:e===state.boss?40:e.miniboss||e.behavior==='tank'?8:1}))});
+    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss,mass:targetMass(e)}))});
   state.player.x=result.player.x;state.player.y=result.player.y;
   result.bodies.forEach((b,i)=>{refs[i].x=b.x;refs[i].y=b.y;});
   updateCamera();
 }
 
 Survivor.engine["body-separation"]={rules:SurvivorBodies,separateEnemyBodies};
+
+function targetMass(target) {
+  const type=ENEMY_TYPES.find(e=>e.id===target.typeId);
+  return SurvivorBodies.mass({boss:target===state.boss,miniboss:target.miniboss,
+    mass:target.mass ?? (type && type.mass),behavior:target.behavior},GAME_DATA.knockback);
+}
+function targetDisplacement(target,distance) {
+  const c=GAME_DATA.knockback;
+  const armor=target.displacementMultiplier ?? 1;
+  return SurvivorBodies.displacement(distance,targetMass(target),c,
+    armor*(c.enabled && target===state.boss ? c.bossMultiplier : 1));
+}

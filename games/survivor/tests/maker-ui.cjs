@@ -133,3 +133,23 @@ assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).bodySeparation
 ui=setup({saved:ui.storage});ui.tab('enemies');
 assert.ok(ui.nodes().some(n=>n._text==='身體柔性分離：關'&&n.attrs['aria-checked']==='false'));
 console.log('PASS: Maker body separation toggle, radius and two forces persist and reload');
+
+// Weight controls persist and reopen alongside individual enemy mass.
+function weightField(label,value) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);
+ assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+ui=setup();ui.tab('enemies');
+ui.click('重量影響推拉：開');
+weightField('重量影響（越大越難推動大怪）',2);
+weightField('小頭目重量',10);weightField('老師重量',50);
+weightField('老師推拉倍率（0 固定不動）',.2);weightField('重量',5);
+ui.ids.save.fire('click');
+const weightData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.deepEqual(weightData.knockback,{enabled:false,strength:2,minibossMass:10,bossMass:50,bossMultiplier:.2});
+assert.equal(weightData.enemies[0].mass,5);
+ui=setup({saved:ui.storage});ui.tab('enemies');
+assert.ok(ui.nodes().some(n=>n._text==='重量影響推拉：關'));
+const massSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='重量');
+assert.equal(Number(massSlider.value),5);
+console.log('PASS: Maker weight toggle, strength, boss/miniboss mass, boss multiplier and per-enemy mass save/reopen');

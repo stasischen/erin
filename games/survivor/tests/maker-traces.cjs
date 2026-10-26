@@ -1,6 +1,6 @@
 // 與重構前來源產生的固定亂數快照比較；只記錄玩法，略過新增的資料欄位。
 module.exports = function traces(run, legacyBodies=false) {
-  if(legacyBodies)run("GAME_DATA.bodySeparation.enabled=false");
+  if(legacyBodies)run("GAME_DATA.bodySeparation.enabled=false;GAME_DATA.knockback.enabled=false");
   const rows=[];
   function seed() {run('globalThis.seed=42; Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296)');}
   function fresh(){run(`resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;settingsPanel.hidden=true;

@@ -247,7 +247,7 @@ function tick(dt) {
     const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
     enemy.x += (vx-vy*curve)/distance * speed * dt;
     enemy.y += (vy+vx*curve)/distance * speed * dt;
-    if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
+    if (enemy.knockback > 0) { const k = canAttackTarget(enemy) ? targetDisplacement(enemy,Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt) : 0; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
     enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
