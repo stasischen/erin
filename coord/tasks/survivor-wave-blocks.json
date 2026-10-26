@@ -8,12 +8,12 @@
   "branch": "codex/survivor-wave-blocks",
   "pr": null,
   "brief": "coord/inbox/done/20261026T122905Z-parent-wave-blocks.md",
-  "next": "請 Grok 審查 erin-watch 提交的最後實質 SHA，並在 1024×461、740×360 親手修改波次／事件／精英／大熊積木、展開預覽及試玩兩關。指定 node games/survivor/tools/test.cjs 最後完整一輪全部通過（exit 0），未跑 --layout；含兩關四組固定亂數各 120 秒舊新出怪等效比較，以及 Maker 改種類／數量、預覽、儲存重載、指定關卡試玩、錯誤時間恢復。版本 20261026am，交接見 docs/survivor-wave-blocks-validation.md。Godot §11：白名單可序列化資料、純編譯、秒／世界座標與固定輸入輸出已對照；外部 JSON、完整事件匯流排及素材匯出留後續。無待決定的設計阻擋，操作與節奏待 Erin 試玩。commit、push、PR 由 erin-watch 代辦。",
+  "next": "Grok 請審查 erin-watch 提交的最後實質 SHA：已修底部 #play 的未定義 item，與標題試玩共用選關導頁；積木格線直接按鈕 align-self:start，避免進場提示被拉高。版本 20261026an；node games/survivor/tools/test.cjs 完整通過（exit 0），含真正點底部試玩的兩關／共用項目／跨分頁／錯誤恢復／儲存失敗案例。未跑 --layout，請 Grok 複驗 732×310 及 1024×461、740×360 實機操作。可選事件提示名稱仍沿用原事件名稱。詳 docs/survivor-wave-blocks-validation.md。Godot §11：本輪僅介面與平台導頁，資料／純編譯／秒與世界座標不變，無新素材；外部 JSON 與完整事件匯流排留後續。無待決定阻擋；commit、push、PR 由 erin-watch 代辦。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T12:39:28.948968Z",
+  "updated": "2026-10-26T12:50:37.406954Z",
   "updatedBy": "codex"
 }

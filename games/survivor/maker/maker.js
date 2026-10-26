@@ -459,6 +459,9 @@
     if(tab==='stages') return [{id:'pacing',name:'出怪節奏',icon:'monster',draw:drawPacing},...draft.stages.map(stage=>({id:stage.id,name:stage.name,icon:'play',draw:()=>drawStage(stage)})),{id:'elites',name:'精英怪',icon:'monster',draw:()=>drawEncounters('elites','精英怪')},{id:'chocobear',name:'巧克力大熊',icon:'boss',draw:()=>drawEncounters('chocobear','巧克力大熊')}];
     return [{id:'defaults',name:'預設設定',draw:drawDefaults},{id:'body',name:'碰撞與重量',draw:drawBodyRules},{id:'neutral',name:'中立道具',draw:drawNumbers},{id:'schoolRules',name:'流派數值',draw:drawNumbers},{id:'tuning',name:'基本玩法',draw:drawNumbers},{id:'build',name:'流派共用',draw:drawNumbers},{id:'bossTuning',name:'魔王共用',draw:drawNumbers}].map(x=>({icon:'numbers',...x}));
   }
+  function playGame(itemId) {
+    if(save()) location.href='?maker=1&play=1'+(tab==='stages' && draft.stages.some(s=>s.id===itemId)?'&stage='+itemId:'');
+  }
   function trial(item) {
     if(!api.validate(draft).valid) {message('請先修正作品中的錯誤再試玩。',true);return;}
     if(item.practice && globalThis.SurvivorPractice) {SurvivorPractice.open(draft,editor,null,item.practice);return;}
@@ -468,7 +471,7 @@
       button(dock,'返回編輯',()=>{SurvivorPreview.stop();dock.remove();render();});
       const host=el('div',undefined,dock);host.className='skill-preview-host';SurvivorPreview.mount(host,draft,item.spec);return;
     }
-    if(save()) location.href='?maker=1&play=1'+(tab==='stages' && draft.stages.some(s=>s.id===item.id)?'&stage='+item.id:'');
+    playGame(item.id);
   }
   function render() {
     syncWaveDraft();wavePreview=null;
@@ -502,7 +505,7 @@
   }));
   function save() { const result=api.save(draft); if(result.valid){dirty=false;message('作品已儲存在這台裝置！');}else message(result.errors.join('；'),true);return result.valid; }
   document.getElementById('save').addEventListener('click',save);
-  document.getElementById('play').addEventListener('click',()=>{if(save()) location.href='?maker=1&play=1'+(tab==='stages' && draft.stages.some(s=>s.id===item.id)?'&stage='+item.id:'');});
+  document.getElementById('play').addEventListener('click',()=>playGame(selected[tab]));
   document.getElementById('reset').addEventListener('click',()=>{draft=api.defaults();if(globalThis.SurvivorPractice) SurvivorPractice.refresh(draft);if(save()){render();message('已恢復預設作品。');}});
   window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
   const room = document.getElementById('makerPanel');

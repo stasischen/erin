@@ -116,3 +116,6 @@
 .weapon-block { border-left: 4px solid #659fc2; border-radius: 6px; background: #f3f8fc; margin: 8px 0; padding: 8px; }
 .weapon-block > summary { cursor: pointer; font-weight: bold; min-height: 32px; }
 .weapon-block > .grid { margin-top: 8px; }
+
+/* 開啟旁邊的選單時，積木切換按鈕維持原本高度。 */
+.weapon-block > .grid > button { align-self: start; }

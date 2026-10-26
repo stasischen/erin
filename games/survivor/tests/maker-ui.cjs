@@ -285,3 +285,29 @@ console.log('PASS: ten neutral card stacks, folding/preview, shared bounded edit
  assert.equal(JSON.parse(reload.storage['erin-survivor-maker-v1']).pacing.eventTimes[0],30);
 }
 console.log('PASS: wave block number/type edits, preview refresh, persistence, targeted stage trial and invalid timing recovery');
+
+// The footer play button uses the current selection, including after switching tabs.
+{
+ const ui=setup();ui.tab('stages');
+ for(const id of ['classroom','playground','pacing','elites','chocobear']) {
+  ui.item(id);ui.location.href='';ui.ids.play.fire('click');
+  const stage=['classroom','playground'].includes(id)?'&stage='+id:'';
+  assert.equal(ui.location.href,'?maker=1&play=1'+stage,'footer trial: '+id);
+  assert.ok(ui.storage['erin-survivor-maker-v1'],'footer saves before trial');
+ }
+ ui.item('playground');ui.tab('rules');ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1','other tab ignores the previously selected stage');
+ ui.tab('stages');ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1&stage=playground','stage selection survives tab switches');
+ ui.item('pacing');
+ const first=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='第一個事件秒數');
+ first.value=100;first.fire('input');
+ const before=ui.storage['erin-survivor-maker-v1'];ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'');assert.equal(ui.storage['erin-survivor-maker-v1'],before);
+ assert.ok(ui.ids.makerStatus.textContent.includes('事件時間需遞增'));
+ first.value=30;first.fire('input');ui.item('classroom');ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1&stage=classroom');
+ const failed=setup({fails:true});failed.tab('stages');failed.item('playground');failed.ids.play.fire('click');
+ assert.equal(failed.location.href,'');assert.ok(failed.ids.makerStatus.textContent.includes('無法儲存'));
+}
+console.log('PASS: footer play clicks for both stages and shared stage items, tab switches, invalid timing recovery and storage failure');
