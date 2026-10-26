@@ -156,3 +156,29 @@ console.log('PASS: shared five-part enemy/teacher editors, folded state, canonic
   assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：靜電'));
 }
 console.log('PASS: ten thunder card stacks, fold/preview persistence, shared numeric edit and old-work reload');
+
+// Water stacks reuse the same editor, refs and old-work storage.
+{
+  const m=setup();m.tab('cards');
+  const ids=['water-attack','water-skill','water-dash','water-ultimate','fusion-puddle','water-drop','water-fountain','water-bubble','water-wet','water-rain'];
+  for(const id of ids) {
+    m.item(id);
+    const stacks=m.nodes().filter(n=>n.className==='card-block-stack');
+    assert.ok(stacks.length,id);assert.equal(stacks[0].open,false);
+    stacks[0].open=true;stacks[0].fire('toggle');
+    assert.ok(!stacks.some(n=>n.textContent.includes('undefined')),id);
+    assert.ok(stacks[0].textContent.includes('動作 →'),id);
+    m.click('看這個積木的效果');assert.equal(m.calls[m.calls.length-1].spec.id,id);
+    assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
+  }
+  m.ids.save.fire('click');const beforePush=JSON.parse(m.storage['erin-survivor-maker-v1']).schoolRules.fountainPush;
+  m.item('water-fountain');
+  const row=m.nodes().find(n=>n.className==='maker-number'&&n.textContent.startsWith('噴泉擊退距離'));
+  assert.ok(row);row.children[1].children.find(n=>n.tag==='button'&&n._text==='＋').fire('click');
+  m.ids.save.fire('click');const saved=JSON.parse(m.storage['erin-survivor-maker-v1']);
+  assert.equal(saved.schoolRules.fountainPush,beforePush+1);
+  const reloaded=setup({saved:m.storage});reloaded.tab('cards');reloaded.item('water-fountain');
+  assert.ok(reloaded.nodes().find(n=>n.className==='card-block-stack'));
+  assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：噴泉'));
+}
+console.log('PASS: ten water card stacks, fold/preview persistence, shared edit and old-work reload');

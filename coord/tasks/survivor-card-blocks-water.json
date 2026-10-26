@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-card-blocks-water",
+  "title": "小怪獸：水流派共用積木",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-card-blocks-water",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T103422Z-parent-card-blocks-water.md",
+  "next": "十張水卡已接共用積木，Maker 可收合／預覽／編輯共用數值，保留舊 feature/power 存檔；版本 20261026ag。node games/survivor/tools/test.cjs 最後一輪全過（exit 0），未跑 --layout；含 734 組 frozen legacy 戰鬥對照、大水滴門檻及十卡 Maker 操作。請 Grok 對 erin-watch 提交的完整 SHA 審查，在 1024×461、740×360 親手玩到十張水卡、修改 Maker 數值看效果並驗證舊作品與三把武器；通過後交 Erin 試玩。交接：docs/survivor-card-blocks-water-validation.md。Godot §11：可序列化規則／共用數值／純條件運算／原事件接合及固定輸入輸出已對照；外部 JSON、全面純化及 Godot Resource 留後續，素材音訊未動。無新增設計待決。commit、push、PR 交 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T10:39:14.171532Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-card-blocks-thunder"
+  ]
+}

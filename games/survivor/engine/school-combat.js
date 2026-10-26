@@ -8,12 +8,17 @@ function handleSchoolEvents(events) {
     if (state.effects.length < 90) state.effects.push(takeFromPool(state.effectPool,{kind:'number',x:state.player.x,y:state.player.y-50,vx:0,vy:-15,text:event.type === 'transformed' ? GAME_DATA.schools.find(s => s.id === event.schoolId).form : '終極卡解鎖',color:BUILD_TUNING[event.schoolId].color,life:1.5,maxLife:1.5}));
   }
 }
-function schoolDamage(target, damage) { return damage * neutralDamageMultiplier() * (target.wetTimer > 0 && effectLevel('water-wet') ? 1 + GAME_DATA.schoolRules.wetDamage : 1); }
+function schoolDamage(target, damage) {
+  const block=effectLevel('water-wet') ? cardBlock('water-wet','onDamage') : null;
+  const wet=block && block.conditions.every(c=>SurvivorEffectBlocks.matches(c,{wetTimer:target.wetTimer}));
+  return damage * neutralDamageMultiplier() * (wet ? block.actions[0].multiplier : 1);
+}
 function absorbSchoolHit(damage) {
-  if (damage > 0 && state.schoolCombat && state.schoolCombat.bubble) {
-    state.schoolCombat.bubble = false;
+  const block=cardBlock('water-bubble','onHurt');
+  if (state.schoolCombat && block.conditions.every(c=>SurvivorEffectBlocks.matches(c,{damage,bubble:state.schoolCombat.bubble}))) {
+    state.schoolCombat.bubble = block.actions[0].active;
     skillVisual('splash',state.player.x,state.player.y,{radius:50,color:BUILD_TUNING.water.color});
-    return 0;
+    return block.actions[0].damage;
   }
   return SurvivorWeapons.receivedDamage(damage, activeWeapon());
 }
@@ -21,7 +26,7 @@ function schoolWindWall() { return state.schoolCombat && effectLevel('wind-eye')
 function schoolDashEnded() {
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
   if (!c) return;
-  if (effectLevel('water-bubble')) c.bubble = true;
+  if (effectLevel('water-bubble')) c.bubble = cardBlock('water-bubble','onDashEnd').actions[0].active;
   if (effectLevel('wind-refund')) {
     // 半格是回充進度，不能用半格再發動一次完整衝刺。
     state.dashCooldown = Math.max(0, state.dashCooldown - gameSettings.dashCooldown * r.refundCharge);
@@ -30,7 +35,7 @@ function schoolDashEnded() {
 }
 function schoolShotHit(shot, target) {
   const r = GAME_DATA.schoolRules;
-  if ((shot.schools || []).includes('water') || effectLevel('water-skill')) target.wetTimer = r.wetSeconds;
+  if ((shot.schools || []).includes('water') || effectLevel('water-skill')) applyCardTargetActions(cardBlock('water-skill','onShotHit'),target);
   if (!shot.melee) waveNeutralHit(target,shot.vx,shot.vy);
   if (shot.push) shiftTarget(target, shot.x - shot.vx, shot.y - shot.vy, shot.push);
   if (shot.charged) { lightning(state.player.x,state.player.y,target.x,target.y); schoolEffect('thunder',target,target.x,target.y,shot.damage,shot.hitList); }
@@ -58,16 +63,25 @@ function updateSchoolCombat(dt) {
     skillVisual('discharge',state.player.x,state.player.y,{radius,color,life:.4});
     for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,state.player.x),deltaY(target.y,state.player.y)) <= radius) shiftTarget(target,state.player.x,state.player.y,distance);
   };
-  pulse('water-fountain',r.fountainSeconds,() => { push(r.fountainRadius,r.fountainPush,BUILD_TUNING.water.color); for (const t of combatTargets()) if (Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y)) <= r.fountainRadius) t.wetTimer=r.wetSeconds; });
+  const fountain=cardBlock('water-fountain','onPulse');
+  pulse('water-fountain',fountain.interval,() => {
+    push(fountain.conditions[0].radius,fountain.actions[0].distance,BUILD_TUNING.water.color);
+    for (const t of combatTargets()) if (cardBlockMatches(fountain.conditions[0],t,state.player.x,state.player.y)) applyCardTargetActions({actions:fountain.actions.slice(1)},t);
+  });
   pulse('wind-gust',r.gustSeconds,() => push(r.gustRadius,r.gustPush,BUILD_TUNING.wind.color));
-  pulse('water-rain',r.rainSeconds,() => {
-    c.rain = r.rainDuration;
-    // 下雨是全場緩速，不造成畫面外傷害。
-    for (const target of state.enemies.concat(state.boss ? [state.boss] : [])) { target.slowTimer=r.rainDuration; target.makerSlow=0; target.wetTimer=r.wetSeconds; }
-    skillVisual('splash',state.player.x,state.player.y,{radius:r.fountainRadius,color:BUILD_TUNING.water.color,life:.8});
+  const rain=cardBlock('water-rain','onPulse');
+  pulse('water-rain',rain.interval,() => {
+    c.rain = rain.actions[0].duration;
+    // 保留全場緩速與濕潤；不造成畫面外傷害。
+    for (const target of state.enemies.concat(state.boss ? [state.boss] : [])) applyCardTargetActions({actions:rain.actions.slice(1)},target);
+    skillVisual('splash',state.player.x,state.player.y,{radius:rain.actions[0].cueRadius,color:BUILD_TUNING.water.color,life:.8});
   });
   c.rain = countdown(c.rain || 0,dt);
-  if (c.rain > 0) for (const t of state.enemies.concat(state.boss ? [state.boss] : [])) { t.slowTimer=Math.max(t.slowTimer || 0,dt*2); t.makerSlow=0; t.wetTimer=r.wetSeconds; }
+  if (c.rain > 0) for (const t of state.enemies.concat(state.boss ? [state.boss] : [])) {
+    const tick=cardBlock('water-rain','onRainTick',{dt});
+    t.slowTimer=Math.max(t.slowTimer || 0,tick.actions[0].duration); t.makerSlow=tick.actions[0].multiplier;
+    applyCardTargetActions({actions:tick.actions.slice(1)},t);
+  }
   const summon=cardBlock('thunder-rod','onSummonTimer'), rodBlock=summon.actions[0];
   pulse('thunder-rod',summon.interval,() => { if (c.rods.length < rodBlock.limit) c.rods.push({x:state.player.x,y:state.player.y,life:rodBlock.seconds,timer:0}); });
   for (const rod of c.rods) {
@@ -128,7 +142,9 @@ function cardBlockMatches(condition,target,x,y,end) {
 
 function applyCardTargetActions(rule,target) {
   for(const action of rule.actions) {
-    if(action.type==='stun') target.stunTimer=action.duration;
+    if(action.type==='wet') target.wetTimer=action.duration;
+    else if(action.type==='slow') {target.slowTimer=action.duration;target.makerSlow=action.multiplier;}
+    else if(action.type==='stun') target.stunTimer=action.duration;
     else if(action.type==='damage') { hitBuildTarget(target,action.amount); if(state.mode!=='playing')return; }
     else throw new Error('Unsupported target action');
   }

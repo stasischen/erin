@@ -249,9 +249,10 @@ function updateMakerEffects(dt) {
 function schoolEffect(school, target, x, y, damage, excluded = []) {
   if (school === "water") {
     const level = effectLevel("water-attack");
-    if (level) skillVisual("splash", x, y, { radius: UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel });
-    if (level) for (const other of combatTargets()) if (other !== target && Math.hypot(deltaX(other.x, x), deltaY(other.y, y)) < UPGRADE_TUNING.splashBaseRadius + level * UPGRADE_TUNING.splashPerLevel) hitBuildTarget(other, damage * (BUILD_TUNING.splashDamageBase + level * BUILD_TUNING.splashDamageGrowth));
-    if ((effectLevel("water-skill") || effectLevel("fusion-puddle"))) addField("water", x, y);
+    const block=cardBlock('water-attack','onWaterHit',{damage});
+    if (level) skillVisual('splash',x,y,{radius:block.conditions[0].radius});
+    if (level) for (const other of combatTargets()) if (other !== target && cardBlockMatches(block.conditions[0],other,x,y)) applyCardTargetActions(block,other);
+    if (effectLevel('water-skill') || effectLevel('fusion-puddle')) addField('water',x,y);
   }
   if (school === "wind") return; // 入門只提升水球速度；擊退由旋風處理。
   if (school === "thunder") {
@@ -270,7 +271,7 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
   }
 }
 function addField(school, x, y, radius) {
-  const block=school === "thunder" ? cardBlock("fusion-dash","onDashTrail").actions[0] : null;
+  const block=school === "water" ? cardBlock("water-skill","onWaterHit").actions[0] : school === "thunder" ? cardBlock("fusion-dash","onDashTrail").actions[0] : null;
   if(radius===undefined) radius=block?block.radius:BUILD_TUNING.fieldRadius;
   if (state.fields.length >= (block?block.limit:BUILD_TUNING.fieldLimit)) state.fieldPool.push(state.fields.shift());
   state.fields.push(takeFromPool(state.fieldPool, { school, x, y, radius: radius * (1 + Math.max(0, effectLevel(school === "water" ? "water-skill" : "wind-dash") - 1) * (block?block.radiusGrowth:BUILD_TUNING.fieldRadiusGrowth)), life: block?block.seconds:BUILD_TUNING.fieldSeconds, timer: 0 }));
@@ -280,16 +281,17 @@ function updateFields(dt) {
     const field = state.fields[i]; field.life -= dt; field.timer -= dt;
     if (field.life <= 0) { state.fieldPool.push(state.fields.splice(i, 1)[0]); continue; }
     if (field.timer > 0) continue;
-    const block=field.school === "thunder" ? cardBlock("fusion-dash","onDashTrail").actions[0] : null;
+    const block=field.school === "water" ? cardBlock("water-skill","onWaterHit").actions[0] : field.school === "thunder" ? cardBlock("fusion-dash","onDashTrail").actions[0] : null;
     field.timer += block?block.interval:BUILD_TUNING.fieldInterval;
     for (const target of combatTargets()) {
       if (Math.hypot(deltaX(target.x, field.x), deltaY(target.y, field.y)) > field.radius + target.r) continue;
       const level = field.school === "water" ? Math.max(effectLevel("water-skill"), effectLevel("water-dash"), effectLevel("fusion-storm")) : field.school === "wind" ? effectLevel("wind-dash") : effectLevel("fusion-dash");
-      hitBuildTarget(target, block?block.damage:BUILD_TUNING.fieldDamage * Math.max(1, level));
+      if (field.school === 'water') hitBuildTarget(target,cardBlock('water-skill','onFieldTick',{level}).actions[0].amount);
+      else hitBuildTarget(target, block?block.damage:BUILD_TUNING.fieldDamage * Math.max(1, level));
       if (field.school === "water") {
-        target.wetTimer = GAME_DATA.schoolRules.wetSeconds;
-        target.slowTimer = BUILD_TUNING.slowSeconds; target.makerSlow = 0;
-        if (effectLevel("fusion-puddle")) { lightning(field.x, field.y, target.x, target.y); hitBuildTarget(target, BUILD_TUNING.fieldDamage * effectLevel("fusion-puddle")); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
+        const tick=cardBlock('water-skill','onFieldTick',{level});
+        applyCardTargetActions({actions:tick.actions.slice(1)},target);
+        if (effectLevel("fusion-puddle")) { lightning(field.x, field.y, target.x, target.y); applyCardTargetActions(cardBlock('fusion-puddle','onFieldTick'),target); burst(target.x, target.y, BUILD_TUNING.thunder.color, 3); }
       }
       if (field.school === "wind") shiftTarget(target, field.x, field.y, BUILD_TUNING.pushDistance * Math.max(1, level));
       if (field.school === "thunder") schoolEffect("thunder", target, target.x, target.y, block.damage);
@@ -299,7 +301,7 @@ function updateFields(dt) {
 }
 function leaveDashTrail(x, y, distance, fromX = x, fromY = y) {
   // 沿走過的路每隔一小段留痕跡，速度變快時也不會留下大空洞。
-  const spacing = Math.max(1, effectLevel("fusion-dash") ? cardBlock("fusion-dash","onDashTrail").actions[0].spacing : BUILD_TUNING.trailSpacing);
+  const spacing = Math.max(1, effectLevel("fusion-dash") ? cardBlock("fusion-dash","onDashTrail").actions[0].spacing : cardBlock("water-dash","onDashTrail").actions[0].spacing);
   let next = Math.max(0, spacing - state.trailDistance);
   while (next <= distance) {
     const fraction = distance > 0 ? next / distance : 0;
@@ -350,15 +352,15 @@ function updateOneUltimate(dt, selectedSchool) {
     }
     return;
   }
-  const thunderBlock=card.school === "thunder" ? cardBlock(card.id,"onUltimate") : null;
-  const level = effectLevel(card.id), damage = thunderBlock ? thunderBlock.actions[0].amount : BUILD_TUNING.ultimateDamage * (1 + (level - 1) * BUILD_TUNING.ultimateGrowth);
+  const ultimateBlock=card.school !== "wind" ? cardBlock(card.id,"onUltimate") : null;
+  const level = effectLevel(card.id), damage = ultimateBlock ? ultimateBlock.actions[0].amount : BUILD_TUNING.ultimateDamage * (1 + (level - 1) * BUILD_TUNING.ultimateGrowth);
   let targets = combatTargets();
   const x = state.player.x + Math.cos(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
   const y = state.player.y + Math.sin(state.elapsed * BUILD_TUNING.tornadoSpeed) * BUILD_TUNING.tornadoRadius;
-  if (card.school === "thunder") targets = SurvivorEffectBlocks.select(thunderBlock,targets,targets.length?Math.random():0);
+  if (card.school === "thunder") targets = SurvivorEffectBlocks.select(ultimateBlock,targets,targets.length?Math.random():0);
   if (card.school === "wind") targets = targets.filter(target => Math.hypot(deltaX(target.x, x), deltaY(target.y, y)) < BUILD_TUNING.fieldRadius + target.r);
   state.ultimateVisual = { worldWidth: state.worldWidth, worldHeight: state.worldHeight, school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: card.school === "water" ? 1.2 : .5 };
-  state.ultimateTimer = card.school === "water" ? BUILD_TUNING.ultimateSeconds : card.school === "wind" ? BUILD_TUNING.tornadoTick : thunderBlock.interval;
+  state.ultimateTimer = card.school === "wind" ? BUILD_TUNING.tornadoTick : ultimateBlock.interval;
   for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }
 function imminentDashThreat() {

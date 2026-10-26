@@ -62,10 +62,10 @@ globalThis.SurvivorSchools = (() => {
     return { main, colors, bodyColors: fusion || ranked.some(id => owned[id]) ? colors : [], forms: ids.filter(id => (owned[id] || 0) >= rules.transformCards) };
   }
   function shot(number, kills, chargedUsed, powers, rules) {
-    const big = powers.drop && number % rules.bigDropEvery === 0;
+    const drop = SurvivorEffectBlocks.drop(number,powers.drop,{schoolRules:rules});
     const charge = SurvivorEffectBlocks.charge(kills,chargedUsed,powers.charge,{schoolRules:rules});
     const charged = charge.charged;
-    return { size: big ? rules.bigDropSize : 1, damage: (big ? rules.bigDropDamage : 1) * charge.multiplier, push: big ? rules.bigDropPush : 0, charged: !!charged };
+    return { size: drop.size, damage: drop.damage * charge.multiplier, push: drop.push, charged: !!charged };
   }
   function segmentDistance(x,y,endX,endY) {
     const length2 = endX*endX+endY*endY;
