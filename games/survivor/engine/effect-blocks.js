@@ -11,16 +11,84 @@ globalThis.SurvivorEffectBlocks = (() => {
       {stat:'maxHealth', op:'subtract', value:{ref:'neutralRules.crownHealth'}}
     ]}
   ];
+  const ref = name => ({ref:name}), arg = name => ({input:name});
+  const op = (name,...args) => ({op:name,args});
+  // 共用拼圖：保留 feature id 作舊作品的穩定連結，所有數值在作品內共用。
+  recipes.push(
+    {feature:'thunder-attack',rules:[{trigger:'onChain',actions:[{type:'chain',
+      radius:op('multiply',ref('build.chainRadius'),op('add',1,op('multiply',arg('transformed'),ref('schoolRules.thunderFormRange')))),
+      count:1, multiplier:op('multiply',ref('build.chainDamage'),op('add',1,op('multiply',op('max',0,op('subtract',arg('level'),1)),ref('build.chainGrowth'))))}]}]},
+    {feature:'thunder-super',rules:[{trigger:'onChain',actions:[{type:'chain-modifier',extra:ref('schoolRules.superconductorJumps'),multiplier:1}]}]},
+    {feature:'thunder-skill',rules:[{trigger:'onSkillBlast',conditions:[{type:'radius',radius:arg('radius'),includeTargetRadius:true}],actions:[
+      {type:'stun',duration:op('multiply',ref('build.stunSeconds'),arg('level'))},
+      {type:'damage',amount:op('multiply',arg('damage'),ref('build.skillDamageMultiplier'),arg('level'))}]}]},
+    {feature:'thunder-counter',rules:[{trigger:'onHurt',conditions:[{type:'radius',radius:ref('build.counterRadius'),strict:true}],actions:[
+      {type:'damage',amount:op('multiply',arg('level'),ref('build.counterDamage'))}]}]},
+    {feature:'thunder-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.cloudSeconds'),conditions:[{type:'randomTarget',count:1}],actions:[
+      {type:'damage',amount:op('multiply',ref('build.ultimateDamage'),op('add',1,op('multiply',op('subtract',arg('level'),1),ref('build.ultimateGrowth'))))}]}]},
+    {feature:'fusion-dash',rules:[{trigger:'onDashTrail',actions:[{type:'field',school:'thunder',spacing:ref('build.trailSpacing'),radius:ref('build.fieldRadius'),
+      radiusGrowth:ref('build.fieldRadiusGrowth'),seconds:ref('build.fieldSeconds'),interval:ref('build.fieldInterval'),limit:ref('build.fieldLimit'),
+      damage:op('multiply',ref('build.fieldDamage'),op('max',1,arg('level')))}]}]},
+    {feature:'thunder-charge',rules:[{trigger:'onShot',conditions:[{type:'killThreshold',every:ref('schoolRules.chargeKills')}],actions:[
+      {type:'charged',multiplier:ref('schoolRules.chargeDamage')}]}]},
+    {feature:'thunder-rod',rules:[{trigger:'onSummonTimer',interval:ref('schoolRules.rodSeconds'),actions:[{type:'summon',limit:3,seconds:ref('schoolRules.rodDuration'),
+      interval:ref('schoolRules.rodTick'),radius:ref('schoolRules.rodRadius'),damage:ref('schoolRules.rodDamage')}]}]},
+    {feature:'thunder-step',rules:[{trigger:'onDashCross',conditions:[{type:'segmentTouching'}],actions:[{type:'stun',duration:ref('schoolRules.thunderStepStun')}]}]}
+  );
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
-  function value(expression, data) {
+  function collect(node) {
+    if (!node || typeof node!=='object') return;
+    if(node.ref) refs.add(node.ref);
+    Object.values(node).forEach(collect);
+  }
+  recipes.forEach(collect);
+  const inputs=new Set(['level','transformed','radius','damage']);
+  function value(expression, data, context={}) {
     if (typeof expression === 'number' && Number.isFinite(expression)) return expression;
     if (expression && refs.has(expression.ref)) {
       const [group,key] = expression.ref.split('.');
       const result = data[group][key];
       if (typeof result === 'number' && Number.isFinite(result)) return result;
     }
-    if (expression && expression.op === 'add' && Array.isArray(expression.args)) return expression.args.reduce((n,arg)=>n+value(arg,data),0);
+    if(expression && inputs.has(expression.input) && Number.isFinite(context[expression.input])) return context[expression.input];
+    if(expression && Array.isArray(expression.args)) {
+      const args=expression.args.map(a=>value(a,data,context));
+      if(expression.op==='add') return args.reduce((a,b)=>a+b,0);
+      if(expression.op==='multiply') return args.reduce((a,b)=>a*b,1);
+      if(expression.op==='subtract') return args[0]-args[1];
+      if(expression.op==='max') return Math.max(...args);
+    }
     throw new Error('Unsupported effect expression');
+  }
+  function resolve(node,data,context) {
+    if(!node || typeof node!=='object') return node;
+    if(node.ref || node.input || node.op) return value(node,data,context);
+    if(Array.isArray(node)) return node.map(n=>resolve(n,data,context));
+    return Object.fromEntries(Object.entries(node).map(([k,v])=>[k,resolve(v,data,context)]));
+  }
+  // 呼叫端提供本次事件的數值、等級與外部亂數；回傳不含實體物件的規則。
+  function event(feature,trigger,data,context={},definitions=recipes) {
+    const recipe=definitions.find(r=>r.feature===feature);
+    const rule=recipe && (recipe.rules||[]).find(r=>r.trigger===trigger);
+    return rule ? resolve(rule,data,context) : null;
+  }
+  function matches(condition,target,player={r:0},end={x:0,y:0}) {
+    if(condition.type==='radius') return condition.strict ? Math.hypot(target.dx,target.dy)<condition.radius : Math.hypot(target.dx,target.dy)<=condition.radius+(condition.includeTargetRadius?target.r:0);
+    if(condition.type==='segmentTouching') {
+      const length=end.x*end.x+end.y*end.y;
+      const t=length?Math.max(0,Math.min(1,(target.dx*end.x+target.dy*end.y)/length)):0;
+      return Math.hypot(target.dx-t*end.x,target.dy-t*end.y)<=target.r+player.r;
+    }
+    throw new Error('Unsupported effect condition');
+  }
+  function select(rule,targets,draw) {
+    const random=(rule.conditions||[]).find(c=>c.type==='randomTarget');
+    return random ? (targets.length ? [targets[Math.floor(draw*targets.length)]] : []) : targets.slice();
+  }
+  function charge(kills,used,owned,data) {
+    const rule=event('thunder-charge','onShot',data);
+    const charged=!!owned && Math.floor(kills/rule.conditions[0].every)>used;
+    return {charged,multiplier:charged?rule.actions[0].multiplier:1};
   }
   // levels 已由 effectLevel 合併及封頂；存在才掛一次，不按等級重複掛載。
   function modify(stat, base, levels, data, definitions=recipes) {
@@ -39,7 +107,10 @@ globalThis.SurvivorEffectBlocks = (() => {
   function step(input, definitions=recipes) {
     const timers={...input.timers}, events=[];
     for (const recipe of definitions) if (input.levels[recipe.feature]) for (const rule of recipe.rules || []) {
-      if (rule.trigger !== 'onTimer') throw new Error('Unsupported effect trigger');
+      if (rule.trigger !== 'onTimer') {
+        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross'].includes(rule.trigger)) continue;
+        throw new Error('Unsupported effect trigger');
+      }
       const seconds=value(rule.interval,input.data);
       timers[rule.id]=(timers[rule.id] === undefined ? seconds : timers[rule.id])-input.dt;
       if (timers[rule.id]>0) continue;
@@ -73,5 +144,5 @@ globalThis.SurvivorEffectBlocks = (() => {
     return {state:{...p,number,idle:0,charge:charged?0:p.charge},
       event:{type:'weapon-attack',weaponId:weapon.id,number,finisher:weapon.comboEnabled && number===weapon.comboEvery,charged}};
   }
-  return {version:1,recipes,modify,step,attackTick,attack};
+  return {version:2,recipes,modify,step,attackTick,attack,event,matches,charge,select};
 })();

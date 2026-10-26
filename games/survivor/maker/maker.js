@@ -3,7 +3,7 @@
   const api = SurvivorData, loaded = api.load();
   let draft = loaded.data, tab = 'weapons', selected = {}, defaultsOpen = false, previewOpen = false, cardIndex = 0, moveIndex = 0, dirty = false;
   let content, previewPane, defaultsDetails;
-  const weaponBlocksOpen={};
+  const weaponBlocksOpen={}, cardBlocksOpen={};
   const editor = document.getElementById('editor'), status = document.getElementById('makerStatus');
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
@@ -86,17 +86,48 @@
     c.effects.forEach((effect, index) => drawEffect(edit, c, effect, index));
     if (c.effects.length < 3) { const add = el('button', '＋ 加一個積木', edit); add.type = 'button'; add.addEventListener('click', () => { c.effects.push({type:'aoe',trigger:'skill',...api.PARAMS}); changed(); render(); }); }
   }
+  function cardRecipe(id) {
+    return globalThis.SurvivorEffectBlocks && SurvivorEffectBlocks.recipes.find(r=>r.feature===id && (id.startsWith('thunder-') || id==='fusion-dash'));
+  }
+  const CARD_TRIGGERS={onChain:'跳電命中時',onSkillBlast:'泡泡炸開時',onHurt:'受傷時',onUltimate:'雷雲準備好時',onDashTrail:'衝刺沿路留下痕跡',onShot:'發動普攻時',onSummonTimer:'每隔一段時間',onDashCross:'衝刺穿過怪物時',onTimer:'每隔一段時間'};
+  const CARD_CONDITIONS={radius:'範圍內的怪物',randomTarget:'隨機一隻可攻擊的怪物',killThreshold:'擊倒數達到門檻，且這次蓄電還沒用過',segmentTouching:'碰到衝刺路線的怪物',touching:'碰到主角的怪物'};
+  const CARD_ACTIONS={chain:'連鎖閃電（每跳選最近的怪物，不重複命中）','chain-modifier':'增加跳電次數，每跳保留完整傷害',stun:'讓怪物暈眩',damage:'造成傷害',field:'留下會跳電的痕跡',charged:'強化這次普攻，命中後跳電',summon:'放下避雷針，定時攻擊附近怪物',cue:'閃電提示'};
+  function drawCardBlocks(parent,card,effect,index) {
+    range(parent,effect,'power',undefined,'每級效果強度');
+    el('p','數值與其他使用同一規則的卡片共用；修改後可按預覽看看。',parent);
+    const refs=new Set();
+    function collect(node) { if(!node || typeof node!=='object')return; if(node.ref)refs.add(node.ref);Object.values(node).forEach(collect); }
+    const recipe=cardRecipe(effect.feature);
+    for(const [i,rule] of recipe.rules.entries()) {
+      const box=el('details',undefined,parent);box.className='card-block-stack';
+      const key=card.id+':'+index+':'+i;box.open=cardBlocksOpen[key]===true;
+      box.addEventListener('toggle',()=>{cardBlocksOpen[key]=box.open;});
+      el('summary','積木堆：'+CARD_TRIGGERS[rule.trigger],box);
+      el('p','觸發 → '+CARD_TRIGGERS[rule.trigger],box);
+      for(const condition of rule.conditions || []) el('p','條件 → '+CARD_CONDITIONS[condition.type],box);
+      for(const action of rule.actions) el('p','動作 → '+CARD_ACTIONS[action.type],box);
+      collect(rule);
+    }
+    const fields=el('details',undefined,parent);el('summary','調整這堆積木的共用數值',fields);
+    const defaults=api.defaults();
+    for(const ref of refs) {
+      const [group,key]=ref.split('.'), base=defaults[group][key];
+      const bounds=group==='schoolRules'?api.SCHOOL_BOUNDS[key]:api.TUNING_BOUNDS[key] || (key==='fieldLimit'?[1,18,1]:[base===0?0:Math.min(.01,base),Math.max(5,base*3),base>=5?1:.01]);
+      range(fields,draft[group],key,bounds,(SCHOOL_NAMES[key]||NUMBER_NAMES[key]));
+    }
+  }
   function drawEffect(parent, card, effect, index) {
     const box = el('fieldset', undefined, parent); const legend = el('legend', '積木 ' + (index + 1), box); legend.innerHTML = SurvivorIcons.html(effect.type) + legend.innerHTML;
     if (globalThis.SurvivorPreview) button(box,'看這個積木的效果',()=>{ previewOpen=true;render();const host=previewPane.querySelector('.skill-preview-host'); SurvivorPreview.mount(host,draft,{kind:'effect',id:card.id,index}); });
     const holder = { recipe: effect.feature ? 'recipe:' + effect.feature : effect.type };
-    const recipes = Object.fromEntries(api.defaults().cards.map(c => ['recipe:' + c.id, '原本組合：' + c.name]));
+    const recipes = Object.fromEntries(api.defaults().cards.map(c => ['recipe:' + c.id, (cardRecipe(c.id) ? '積木堆：' : '原本組合：') + c.name]));
     select(box, '選擇效果', holder, 'recipe', { ...api.TYPES, ...recipes }, () => {
       if (holder.recipe.startsWith('recipe:')) { const base = api.defaults().cards.find(c => c.id === holder.recipe.slice(7)); card.effects[index] = api.copy(base.effects[0]); }
       else card.effects[index] = { type: holder.recipe, trigger: card.slot === 'dash' ? 'dash' : card.slot === 'skill' ? 'skill' : card.slot === 'passive' ? 'interval' : 'hit', ...api.PARAMS };
       changed(); render();
     });
-    if (effect.feature) { el('p', '使用這張原本卡片的效果組合；數值可到「規則」調整。最多合計 5 級的效果。', box); range(box, effect, 'power'); }
+    if (cardRecipe(effect.feature)) drawCardBlocks(box,card,effect,index);
+    else if (effect.feature) { el('p', '使用這張原本卡片的效果組合；數值可到「規則」調整。最多合計 5 級的效果。', box); range(box, effect, 'power'); }
     else {
       if(effect.trigger==='combo') {if(effect.comboStep===undefined)effect.comboStep=3;range(box,effect,'comboStep',[1,10,1],'第幾下');}
       select(box, '什麼時候發動？', effect, 'trigger', {combo:'第 N 下攻擊時',hit:'武器命中時',skill:'按技能時',dash:'按衝刺時',interval:'每隔一段時間'});

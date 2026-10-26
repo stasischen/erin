@@ -68,13 +68,14 @@ function updateSchoolCombat(dt) {
   });
   c.rain = countdown(c.rain || 0,dt);
   if (c.rain > 0) for (const t of state.enemies.concat(state.boss ? [state.boss] : [])) { t.slowTimer=Math.max(t.slowTimer || 0,dt*2); t.makerSlow=0; t.wetTimer=r.wetSeconds; }
-  pulse('thunder-rod',r.rodSeconds,() => { if (c.rods.length < 3) c.rods.push({x:state.player.x,y:state.player.y,life:r.rodDuration,timer:0}); });
+  const summon=cardBlock('thunder-rod','onSummonTimer'), rodBlock=summon.actions[0];
+  pulse('thunder-rod',summon.interval,() => { if (c.rods.length < rodBlock.limit) c.rods.push({x:state.player.x,y:state.player.y,life:rodBlock.seconds,timer:0}); });
   for (const rod of c.rods) {
     rod.life -= dt; rod.timer -= dt;
     if (rod.timer <= 0) {
-      rod.timer += r.rodTick;
+      rod.timer += rodBlock.interval;
       skillVisual('sparkle',rod.x,rod.y,{radius:20,color:BUILD_TUNING.thunder.color,life:.5});
-      for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,rod.x),deltaY(target.y,rod.y)) <= r.rodRadius) { lightning(rod.x,rod.y,target.x,target.y); hitBuildTarget(target,r.rodDamage); if(state.mode!=='playing') return; }
+      for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,rod.x),deltaY(target.y,rod.y)) <= rodBlock.radius) { lightning(rod.x,rod.y,target.x,target.y); hitBuildTarget(target,rodBlock.damage); if(state.mode!=='playing') return; }
     }
   }
   c.rods = c.rods.filter(rod => rod.life > 0);
@@ -85,9 +86,10 @@ function updateSchoolCombat(dt) {
 
 function schoolDashCrossed(fromX,fromY,toX,toY) {
   if (!effectLevel('thunder-step')) return;
+  const block=cardBlock('thunder-step','onDashCross');
   for (const target of combatTargets()) {
-    if (SurvivorSchools.segmentDistance(deltaX(target.x,fromX),deltaY(target.y,fromY),deltaX(toX,fromX),deltaY(toY,fromY)) <= target.r + state.player.r) {
-      target.stunTimer = GAME_DATA.schoolRules.thunderStepStun;
+    if (cardBlockMatches(block.conditions[0],target,fromX,fromY,{x:deltaX(toX,fromX),y:deltaY(toY,fromY)})) {
+      applyCardTargetActions(block,target);
       lightning(fromX,fromY,target.x,target.y);
     }
   }
@@ -113,5 +115,21 @@ function applyEffectBlockTimer(dt) {
     const target=byId.get(event.targetId);
     if (event.type==='cue') lightning(state.player.x,state.player.y,target.x,target.y);
     if (event.type==='damage') {hitBuildTarget(target,event.amount);if(state.mode!=='playing') return;}
+  }
+}
+
+// 舊 feature 存檔只提供擁有等級；運算與條件由同一份積木資料解讀。
+function cardBlock(feature,trigger,context={}) {
+  return SurvivorEffectBlocks.event(feature,trigger,GAME_DATA,{level:effectLevel(feature),transformed:transformed('thunder')?1:0,...context});
+}
+function cardBlockMatches(condition,target,x,y,end) {
+  return SurvivorEffectBlocks.matches(condition,{dx:deltaX(target.x,x),dy:deltaY(target.y,y),r:target.r},state.player,end);
+}
+
+function applyCardTargetActions(rule,target) {
+  for(const action of rule.actions) {
+    if(action.type==='stun') target.stunTimer=action.duration;
+    else if(action.type==='damage') { hitBuildTarget(target,action.amount); if(state.mode!=='playing')return; }
+    else throw new Error('Unsupported target action');
   }
 }

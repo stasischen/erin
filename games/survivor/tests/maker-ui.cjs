@@ -3,6 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 class Node {
   constructor(tag='div'){this.tag=tag;this.children=[];this.listeners={};this.dataset={};this.attrs={};this.value='';this._text='';this.hidden=true;this.style={setProperty(){}};this.classList={add(){},remove(){}};}
   appendChild(n){this.children.push(n);return n;}
+  querySelector(selector){const all=node=>node.children.flatMap(c=>[c,...all(c)]);return all(this).find(n=>selector[0]==='.' && (n.className||'').split(' ').includes(selector.slice(1)))||null;}
   set textContent(s){this._text=s;this.children=[];}get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}
   addEventListener(k,fn){this.listeners[k]=fn;}setAttribute(k,v){this.attrs[k]=v;}
   focus(){this.focused=true;} scrollIntoView(){} getContext(){return {fillRect(){},drawImage(){}};}
@@ -14,7 +15,7 @@ function setup(options={}){
   const location={href:'',search:options.search||''}, state={keys:new Set(),mode:'ready'},window={addEventListener(){}};
   const calls=[];
   const context=vm.createContext({SurvivorPreview:{stop(){},refresh(){},mount(host,data,spec){calls.push({kind:'preview',data,spec});}},SurvivorPractice:{close(){},refresh(){},mount(){},unmount(){},open(data,container,onClose,id){calls.push({kind:'practice',data,id});}},console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
-  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','engine/timing.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   function nodes(node=ids.editor){return node.children.flatMap(c=>[c,...nodes(c)]);}
   function tab(name){tabs.find(n=>n.dataset.tab===name).fire('click');}
   function click(text,exact=true){const n=nodes().find(n=>n.tag==='button'&&(exact?n._text===text:n._text.includes(text)));assert.ok(n,text);n.fire('click');}
@@ -129,3 +130,29 @@ assert.equal(blockData.boss.moves[0].blocks.moves[0].effect.damage,26);
 assert.equal(blockData.boss.moves[0].damage,26);
 ui=setup({saved:ui.storage});ui.ids.save.fire('click');assert.deepEqual(saved(),blockData);
 console.log('PASS: shared five-part enemy/teacher editors, folded state, canonical phase/legacy/boss edits, trial current draft, save/reload');
+
+// Ten migrated thunder cards show folded trigger/condition/action stacks, edit shared refs, preview and save old works.
+{
+  const m=setup();m.tab('cards');
+  const ids=['thunder-attack','thunder-skill','thunder-counter','thunder-ultimate','fusion-dash','thunder-charge','thunder-rod','thunder-step','thunder-static','thunder-super'];
+  for(const id of ids) {
+    m.item(id);
+    const stacks=m.nodes().filter(n=>n.attrs && n.className==='card-block-stack');
+    assert.ok(stacks.length,id);assert.equal(stacks[0].open,false);
+    stacks[0].open=true;stacks[0].fire('toggle');
+    assert.ok(stacks[0].textContent.includes('動作 →'),id);
+    m.click('看這個積木的效果');
+    assert.equal(m.calls[m.calls.length-1].spec.id,id);
+    assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
+  }
+  m.item('thunder-static');
+  const row=m.nodes().find(n=>n.className==='maker-number'&&n.textContent.startsWith('靜電傷害'));
+  assert.ok(row);row.children[1].children.find(n=>n.tag==='button'&&n._text==='＋').fire('click');
+  m.ids.save.fire('click');
+  const saved=JSON.parse(m.storage['erin-survivor-maker-v1']);
+  assert.equal(saved.schoolRules.staticDamage,21);
+  const reloaded=setup({saved:m.storage});reloaded.tab('cards');reloaded.item('thunder-static');
+  assert.ok(reloaded.nodes().find(n=>n.className==='card-block-stack'));
+  assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：靜電'));
+}
+console.log('PASS: ten thunder card stacks, fold/preview persistence, shared numeric edit and old-work reload');

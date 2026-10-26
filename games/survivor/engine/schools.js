@@ -63,8 +63,9 @@ globalThis.SurvivorSchools = (() => {
   }
   function shot(number, kills, chargedUsed, powers, rules) {
     const big = powers.drop && number % rules.bigDropEvery === 0;
-    const charged = powers.charge && Math.floor(kills / rules.chargeKills) > chargedUsed;
-    return { size: big ? rules.bigDropSize : 1, damage: (big ? rules.bigDropDamage : 1) * (charged ? rules.chargeDamage : 1), push: big ? rules.bigDropPush : 0, charged: !!charged };
+    const charge = SurvivorEffectBlocks.charge(kills,chargedUsed,powers.charge,{schoolRules:rules});
+    const charged = charge.charged;
+    return { size: big ? rules.bigDropSize : 1, damage: (big ? rules.bigDropDamage : 1) * charge.multiplier, push: big ? rules.bigDropPush : 0, charged: !!charged };
   }
   function segmentDistance(x,y,endX,endY) {
     const length2 = endX*endX+endY*endY;

@@ -29,6 +29,11 @@
         'thunder-ultimate': () => `每 ${b.cloudSeconds} 秒雷雲劈一隻怪。`,
         'fusion-puddle': () => `水窪讓怪變慢，也會跳電打旁邊的怪。`,
         'fusion-storm': () => `衝刺同時留下旋風和水窪，推開怪也讓牠變慢。`,
+        'thunder-charge': () => `每擊倒 ${data.schoolRules.chargeKills} 隻怪蓄電，下一次普攻傷害變成 ${data.schoolRules.chargeDamage} 倍並跳電。`,
+        'thunder-rod': () => `每 ${data.schoolRules.rodSeconds} 秒放下避雷針，在 ${data.schoolRules.rodRadius} 格內每 ${data.schoolRules.rodTick} 秒打 ${data.schoolRules.rodDamage} 滴血。`,
+        'thunder-step': () => `衝刺路線碰到怪物，讓牠暈 ${data.schoolRules.thunderStepStun} 秒。`,
+        'thunder-static': () => `每 ${data.schoolRules.staticSeconds} 秒電到碰到主角的怪物，打 ${data.schoolRules.staticDamage} 滴血。`,
+        'thunder-super': () => `跳電多 ${data.schoolRules.superconductorJumps} 跳，每跳保留完整傷害。`,
         'fusion-dash': () => `衝刺留下電痕，在 ${b.chainRadius} 格內跳電。`
       };
       return recipes[e.feature] ? recipes[e.feature]() : '使用原本的卡片組合。';
@@ -76,7 +81,7 @@
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261026ae', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261026af', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {
