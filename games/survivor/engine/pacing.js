@@ -141,6 +141,7 @@ function splitJelly(e) {
 }
 
 function pacingHurtPlayer(damage) {
+  if (state.practiceHit) { if(state.dashTimer<=0 && state.player.invincible<=0) state.practiceHit(); return; }
   if(state.player.damageDisabled || state.dashTimer>0 || state.player.invincible>0) return;
   state.player.health=Math.max(0,state.player.health-absorbSchoolHit(damage));
   state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;

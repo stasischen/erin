@@ -307,6 +307,7 @@ function tick(dt) {
     }
     if (schoolWindWall() && Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < GAME_DATA.schoolRules.eyeRadius + shot.r) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
+      if (state.practiceHit) pacingHurtPlayer(shot.damage || 0);
       if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (!shot.phaseShot && shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);

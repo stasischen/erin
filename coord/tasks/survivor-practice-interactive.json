@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-practice-interactive",
+  "title": "可操作全螢幕練習場與 Maker 即時預覽",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-practice-interactive",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T054927Z-parent-practice-interactive.md",
+  "next": "已處理 Grok 4d2d45d 審查回饋：九尺寸改用各自獨立的 Chrome target/session，finally 關閉；載入事件核對 session，補 E keyUp，保留全部九尺寸斷言及 45 秒上限。僅修改測試與文件，未改遊戲。node --check 與 node games/survivor/tools/test.cjs 全部通過；依要求未跑 --layout，尚待 Grok 對 erin-watch 新提交的完整 SHA 重跑確認 9/9。詳見 docs/survivor-practice-interactive-validation.md 回饋修正段（Godot §11.6/11.7 平台測試適用；其餘遊戲與移植差距未變）。無待 Erin 或家長決定事項；commit、push、PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T06:30:50.146437Z",
+  "updatedBy": "codex"
+}
