@@ -59,9 +59,8 @@ function updatePacing(dt) {
     const kind=run.events[run.eventIndex++];
     run.queue=Array.from({length:cfg.eventCount},(_,i)=>({kind,index:i}));
     run.warning=cfg.warning; run.timer=0;
-    state.bookNoticeTimer=4;
-    enemyNotice.textContent={ring:'小怪包圍！找空隙衝出去',tide:'蒲公英湧潮！', 'elite-squad':'精英小隊靠近了！','candy-rain':'跳跳糖來了！'}[kind];
-    enemyNotice.hidden=false; playSound('warning');
+    // 波次改用畫面邊緣脈動預告；不改動其他事件的必要文字。
+    playSound('warning');
   }
   if(run.warning>0) {run.warning=countdown(run.warning,dt);return;}
   run.timer=countdown(run.timer||0,dt);

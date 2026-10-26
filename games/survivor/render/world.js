@@ -507,6 +507,7 @@ function render() {
   ctx.restore();
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
+  drawWaveEventWarning();
   drawBossGuide();
   drawBossZoneGuide();
   if (state.mode === "transition") {
@@ -693,4 +694,26 @@ function drawPhasedAttacks() {
     }
     ctx.restore();
   }
+}
+
+// 螢幕座標的非文字預警，與出怪共用倒數；不跟著鏡頭捲走。
+function drawWaveEventWarning() {
+  const run=state.pacing;
+  if(PREVIEW_MODE || state.boss || state.bossIntro>0 || !run || !(run.warning>0)) return;
+  const kind=run.queue.length && run.queue[0].kind;
+  const effect=GAME_DATA.waveEvents && GAME_DATA.waveEvents[kind];
+  const position=effect ? effect.position : kind==='tide' ? 'left' : 'sides';
+  const side=SurvivorPacing.side(position);
+  const sides=side===undefined || position==='sides' ? [0,1,2,3] : [side];
+  const edge=12/(state.zoom||1), w=state.width, h=state.height;
+  ctx.save();
+  ctx.fillStyle='#ed7e89';
+  ctx.globalAlpha=.25+.4*(.5+.5*Math.cos(run.warning*Math.PI*4));
+  for(const s of sides) {
+    if(s===0) ctx.fillRect(0,0,edge,h);
+    if(s===1) ctx.fillRect(w-edge,0,edge,h);
+    if(s===2) ctx.fillRect(0,0,w,edge);
+    if(s===3) ctx.fillRect(0,h-edge,w,edge);
+  }
+  ctx.restore();
 }
