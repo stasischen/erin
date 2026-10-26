@@ -8,12 +8,12 @@
   "branch": "codex/survivor-move-practice",
   "pr": null,
   "brief": "coord/inbox/done/20261026T051137Z-parent-move-practice.md",
-  "next": "請 Grok 獨立審查 erin-watch 提交的最後實質 SHA 並跑 --layout，特別確認直向旋轉、小螢幕分欄、iframe 搖桿與連續調整滑桿。已完成八招真實引擎練習場、木頭假人、免傷走位、資料產生的說明與時間軸、即時重載與離線快取，版本 20261026s；node games/survivor/tools/test.cjs 全部通過，未跑 --layout。甜甜圈／跳跳糖沿用正式遊戲舊流程，明示零收招；沒有改其玩法。老師招式與連躲挑戰屬可選，本次未加。Godot §11 對照、測試與限制見 docs/survivor-move-practice-validation.md。無須先決定的設計事項；請 Erin 待審查後試玩預警、旋轉與浪花。commit、push、PR 由 erin-watch 代勞，未核准上線。",
+  "next": "已修正 Grok 退回的敵人 Canvas 全域樣式外溢：舞台限定 selector、按鈕圖示固定 26px 並正常排列。新增真實 iframe 六尺寸回歸檢查（八招子元素範圍、按鈕 hit test／選取、說明與圖例三點遮擋檢查及關閉），請 Grok 審查 erin-watch 提交的新 SHA 並跑 --layout。本輪標準 test.cjs 全部通過，新增版面測試通過語法檢查但未執行。版本 20261026t；Godot §11.4／11.6／11.7 對照與詳細交接見 docs/survivor-move-practice-validation.md。無須家長或 Erin 先決定的事項；待 Grok 通過再請 Erin 試玩。commit、push、PR 由 erin-watch 代勞，未核准上線。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T05:21:06.258306Z",
+  "updated": "2026-10-26T05:26:01.430467Z",
   "updatedBy": "codex"
 }

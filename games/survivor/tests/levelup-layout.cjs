@@ -86,7 +86,41 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await evaluate("showOverlay('paused');openSurvivorMaker();true");await touch('[data-tab="cards"]');
   assert.equal(await evaluate(`(()=>{for(const selector of ['.maker-tree','#makerCardEdit','.maker-footer','#play']){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(r.width<40||r.height<40||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('Maker '+selector+' 不完整');}const list=document.querySelector('.maker-tree'),edit=document.querySelector('#makerCardEdit');const a=list.getBoundingClientRect(),b=edit.getBoundingClientRect(),rotated=innerHeight>innerWidth;const listEnd=rotated?a.bottom:a.right,editStart=rotated?b.top:b.left;if(listEnd>editStart+1)throw Error('Maker 兩欄重疊或未依 shell 橫向排列');return true;})()`),true);
   await touch('.maker-tree button');assert.equal(await evaluate("document.querySelector('.maker-tree button').getAttribute('aria-pressed')==='true' && !!document.querySelector('#makerCardEdit input')"),true);
-  console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker清單與編輯`);
+  // 真實練習 iframe：敵人 canvas 必須留在按鈕內，不能遮住其他招式或說明。
+  await touch('#practiceOpen');
+  assert.equal(await evaluate(`(async()=>{
+    const frame=document.querySelector('.practice-dock iframe');
+    for(let i=0;i<150;i++) {
+      if(frame.contentDocument && frame.contentDocument.querySelectorAll('#practiceMoves button').length===8)break;
+      await new Promise(resolve=>setTimeout(resolve,20));
+    }
+    const d=frame.contentDocument,buttons=[...d.querySelectorAll('#practiceMoves button')];
+    if(buttons.length!==8)throw Error('練習招式未載入');
+    for(let index=0;index<buttons.length;index++) {
+      const button=d.querySelectorAll('#practiceMoves button')[index];
+      button.scrollIntoView({block:'nearest'});
+      const r=button.getBoundingClientRect();
+      for(const child of button.querySelectorAll('*')) {
+        const c=child.getBoundingClientRect();
+        if(c.left<r.left-.5||c.right>r.right+.5||c.top<r.top-.5||c.bottom>r.bottom+.5)throw Error('招式圖示超出按鈕 '+button.title);
+      }
+      const hit=d.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+      if(!button.contains(hit))throw Error('招式按鈕被遮住 '+button.title);
+      button.click();
+      if(d.querySelectorAll('#practiceMoves button')[index].getAttribute('aria-pressed')!=='true')throw Error('無法選取招式 '+button.title);
+      for(const selector of ['#practiceDescription','#practiceLegend']) {
+        const n=d.querySelector(selector),r=n.getBoundingClientRect();
+        if(!n.textContent.trim()||r.width<=0||r.height<=0||r.left<0||r.right>frame.contentWindow.innerWidth+1||r.top<0||r.bottom>frame.contentWindow.innerHeight+1)throw Error(selector+' 不完整');
+        for(const fraction of [.1,.5,.9]) {
+          if(!n.contains(d.elementFromPoint(r.left+r.width*fraction,r.top+r.height/2)))throw Error(selector+' 被遮住');
+        }
+      }
+    }
+    return true;
+  })()`),true);
+  await touch('.practice-close');
+  assert.equal(await evaluate("!document.querySelector('.practice-dock')"),true);
+  console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker清單與編輯／練習圖示範圍與說明遮擋`);
  }
  await send('Browser.close');
 })().catch(error=>{console.error('FAIL:',error.message);process.exitCode=1;}).finally(async()=>{clearTimeout(timeout);if(child.exitCode===null&&child.signalCode===null)child.kill();await exited;fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:100});});

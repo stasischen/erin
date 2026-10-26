@@ -18,7 +18,7 @@ globalThis.SurvivorPractice = (()=>{
     host=document.createElement('section');host.className='practice-dock';host.setAttribute('aria-label','招式練習場');
     const closeButton=document.createElement('button');closeButton.type='button';closeButton.className='practice-close';closeButton.innerHTML=SurvivorIcons.html('close');closeButton.setAttribute('aria-label','關閉練習場');closeButton.title='關閉練習場';closeButton.addEventListener('click',close);
     frame=document.createElement('iframe');frame.title='招式練習場';refresh(data);
-    frame.src=new URL('practice.html?v=20261026s',SurvivorPreview.base).href;
+    frame.src=new URL('practice.html?v=20261026t',SurvivorPreview.base).href;
     host.append(closeButton,frame);room.appendChild(host);
   }
   return {open,close,refresh};
