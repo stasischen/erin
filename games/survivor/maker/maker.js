@@ -195,6 +195,12 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
+    const jp=panel('左搖桿'), jf=grid(jp), j=draft.joystick;
+    const follow=button(jf,'搖桿跟隨：'+(j.follow?'開':'關'),()=>{j.follow=!j.follow;changed();render();});
+    follow.setAttribute('role','switch'); follow.setAttribute('aria-checked',String(j.follow));
+    range(jf,j,'radius',[20,70,1],'搖桿半徑');
+    range(jf,j,'deadZone',[0,10,1],'搖桿死區');
+    el('p','手指拖遠時底座跟著走；關閉則固定在第一次碰的位置。死區越大，越不容易因手抖而移動。',jp);
     const wf=grid(panel('棒棒糖錘數值'));
     const weaponNames={interval:'揮錘間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
     for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) range(wf,draft.weapons.find(w=>w.kind==='melee'),key,bounds,weaponNames[key]);

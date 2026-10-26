@@ -51,15 +51,48 @@ function canvasPoint(event) {
   return { x: (event.clientX - rect.left) * state.width / rect.width,
     y: (event.clientY - rect.top) * state.height / rect.height };
 }
+// 純計算：底座沿原拖曳方向移動，碰到界線即停止，避免斜向貼邊時方向歪掉。
+// 外圈與搖桿頭皆留在左半畫面；極小視窗時縮小顯示。
+function joystickBounds(width, height, radius) {
+  const inset = Math.max(0, Math.min(radius + 19, width / 4, height / 2));
+  return { minX: inset, maxX: width / 2 - inset, minY: inset, maxY: height - inset };
+}
+function clampJoystickBase(point, bounds) {
+  return { baseX: Math.max(bounds.minX, Math.min(bounds.maxX, point.x)),
+    baseY: Math.max(bounds.minY, Math.min(bounds.maxY, point.y)) };
+}
+function calculateJoystick(joy, point, config, bounds) {
+  let { baseX, baseY } = joy;
+  const dx = point.x - baseX, dy = point.y - baseY, distance = Math.hypot(dx, dy);
+  if (!distance) return { baseX, baseY, x: 0, y: 0 };
+  const ux = dx / distance, uy = dy / distance;
+  if (config.follow && distance > config.radius) {
+    let travel = distance - config.radius;
+    if (ux > 0) travel = Math.min(travel, (bounds.maxX - baseX) / ux);
+    if (ux < 0) travel = Math.min(travel, (bounds.minX - baseX) / ux);
+    if (uy > 0) travel = Math.min(travel, (bounds.maxY - baseY) / uy);
+    if (uy < 0) travel = Math.min(travel, (bounds.minY - baseY) / uy);
+    travel = Math.max(0, travel);
+    baseX += ux * travel; baseY += uy * travel;
+  }
+  const remaining = Math.hypot(point.x - baseX, point.y - baseY);
+  const amount = Math.max(0, Math.min(1, (remaining - config.deadZone) / (config.radius - config.deadZone)));
+  return { baseX, baseY, x: ux * amount, y: uy * amount };
+}
 canvas.addEventListener("pointerdown", (event) => {
   if (state.mode !== "playing" || event.target.closest("button")) return;
   if (state.pointerId !== null) return;
-  const { x: baseX, y: baseY } = canvasPoint(event);
-  if (baseX > state.width / 2) return;
+  const point = canvasPoint(event);
+  if (point.x < 0 || point.x > state.width / 2 || point.y < 0 || point.y > state.height) return;
   event.preventDefault(); state.pointerId = event.pointerId; canvas.setPointerCapture(event.pointerId);
-  state.joy = { baseX, baseY, x: 0, y: 0 };
+  state.joy = { ...clampJoystickBase(point, joystickBounds(state.width, state.height, GAME_DATA.joystick.radius)), x: 0, y: 0 };
 });
-canvas.addEventListener("pointermove", (event) => { if (event.pointerId !== state.pointerId || !state.joy) return; event.preventDefault(); const point = canvasPoint(event); const dx = point.x - state.joy.baseX, dy = point.y - state.joy.baseY; const distance = Math.max(1, Math.hypot(dx, dy)); const amount = Math.min(1, distance / 35); state.joy.x = dx / distance * amount; state.joy.y = dy / distance * amount; });
+canvas.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== state.pointerId || !state.joy) return;
+  event.preventDefault();
+  state.joy = calculateJoystick(state.joy, canvasPoint(event), GAME_DATA.joystick,
+    joystickBounds(state.width, state.height, GAME_DATA.joystick.radius));
+});
 function endPointer(event) { if (event.pointerId !== state.pointerId) return; state.pointerId = null; state.joy = null; }
 canvas.addEventListener("pointerup", endPointer); canvas.addEventListener("pointercancel", endPointer); canvas.addEventListener("lostpointercapture", endPointer);
 window.addEventListener("resize", () => { if (!PREVIEW_MODE) resize(); });
@@ -81,5 +114,7 @@ globalThis.Survivor.input = globalThis.Survivor.input || {};
 Object.defineProperties(globalThis.Survivor.input, {
   movementInput: { enumerable: true, get: () => movementInput },
   canvasPoint: { enumerable: true, get: () => canvasPoint },
+  calculateJoystick: { enumerable: true, get: () => calculateJoystick },
+  joystickBounds: { enumerable: true, get: () => joystickBounds },
   endPointer: { enumerable: true, get: () => endPointer }
 });

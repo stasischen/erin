@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-follow-joystick",
+  "title": "會跟著手指移動的左搖桿",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-follow-joystick",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T030704Z-parent-follow-joystick.md",
+  "next": "請 Grok 審查 erin-watch 提交的實質 SHA，並執行 --layout 與觸控試玩；一般測試已通過。Godot §11 對照及手感檢查見 docs/survivor-follow-joystick-validation.md。提交、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T03:12:01.735954Z",
+  "updatedBy": "codex"
+}

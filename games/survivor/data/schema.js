@@ -57,6 +57,12 @@
           if (weapon.kind === 'melee') for (const [field,bounds] of Object.entries(WEAPON_BOUNDS)) weapon[field] = num(source[field],bounds[0],bounds[1],field,field === 'spinEvery');
         }
       }
+      // 舊作品缺省補齊；半徑與死區使用遊戲畫面單位。
+      if (input.joystick !== undefined) {
+        const j = input.joystick;
+        if (!j || typeof j.follow !== 'boolean') fail('搖桿跟隨需要開或關');
+        data.joystick = { follow: j.follow, radius: num(j.radius, 20, 70, '搖桿半徑'), deadZone: num(j.deadZone, 0, 10, '搖桿死區') };
+      }
       if (input.visuals !== undefined) {
         if (!input.visuals || typeof input.visuals.spriteOutline !== 'boolean') fail('角色外框需要開或關');
         data.visuals.spriteOutline = input.visuals.spriteOutline;

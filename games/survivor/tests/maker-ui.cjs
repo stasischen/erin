@@ -100,3 +100,13 @@ ui.ids.save.fire('click');const weapons=JSON.parse(ui.storage['erin-survivor-mak
 assert.equal(weapons[1].interval,1);assert.equal(weapons[1].radius,100);assert.equal(weapons[1].spinEvery,3);assert.equal(weapons[1].damageReduction,.2);
 ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='揮擊距離').value,100);
 console.log('PASS: Maker melee cadence/range/spin/mitigation controls persist and reload');
+
+ui=setup();ui.tab('numbers');ui.click('搖桿跟隨：開');
+for(const [label,value] of [['搖桿半徑',50],['搖桿死區',7]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider);slider.value=value;slider.fire('input');
+}
+ui.ids.save.fire('click');
+assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).joystick,{follow:false,radius:50,deadZone:7});
+ui=setup({saved:ui.storage});ui.tab('numbers');
+assert.ok(ui.nodes().some(n=>n._text==='搖桿跟隨：關'&&n.attrs['aria-checked']==='false'));
+console.log('PASS: Maker joystick switch/sliders save and reopen');
