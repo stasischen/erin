@@ -328,6 +328,7 @@
         for(const m of b.moves) {
           const field=el('fieldset',undefined,box);el('legend',m.name,field);const s=m.blocks.moves[0];
           range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');
+          range(field,m.ai,'minDistance',[0,10000,10],'AI 最近距離');range(field,m.ai,'maxDistance',[0,10000,10],'AI 最遠距離');
           range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(['sector','ring'].includes(s.shape.type))range(field,s.shape,'angle',[0,360,5],s.shape.type==='ring'?'安全缺口角度':'扇形角度');
           for(const [key,bounds,label] of [['windup',[.6,3,.05],'預警'],['active',[.1,4,.05],'出手'],['recovery',[.2,3,.05],'收招'],['cooldown',[.1,8,.1],'冷卻']])range(field,s.timing,key,bounds,label+'秒數');
           range(field,s.effect,'damage',[0,40,1],'傷害');range(field,s.effect,'speed',[0,600,10],'招式移速');

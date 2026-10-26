@@ -14,7 +14,7 @@ globalThis.SurvivorTrialRules=(()=>{
   }
   function phase(boss,hp) {return hp/boss.maxHp<boss.threshold?2:1;}
   function choose(definition,phase,distance,previous,sample) {
-    const rules=definition.moves.map(m=>({moveId:m.id,weight:m.weight,minDistance:0,maxDistance:10000,angleWeight:0,phaseWeight:0,offscreen:true}));
+    const rules=definition.moves.map(m=>({...m.ai,moveId:m.id,weight:m.weight}));
     return SurvivorBossAI.choose(SurvivorBossAI.scores(definition.moves,rules,{phase,distance,previous,visible:true,angle:0}),sample);
   }
   function contains(shape,origin,angle,target) {

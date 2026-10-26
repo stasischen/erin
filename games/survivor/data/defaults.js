@@ -2583,3 +2583,9 @@ SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
  {id:'winged',name:'羽翼古神',artId:'character/winged',hp:2200,radius:35,speed:75,phases:[{threshold:1,speed:1},{threshold:.5,speed:1.2}],moves:[
  move('dive','俯衝轟炸','circle',110,0,.65,0),move('feathers','羽毛扇形噴射','sector',180,90,.3,200),move('tornado','追蹤龍捲風','circle',36,0,.3,65),move('spiral','螺旋羽毛彈幕','ring',180,65,3.2,160,2)]});
 })();
+
+// ✏️ Erin 可以改：每招的 AI 距離帶（世界單位），不依賴競技場大小。
+SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
+  const ranged=['charge','leap','frost-dash','dive','feathers','spiral','tornado','icefall','meteor'].includes(m.id);
+  m.ai={minDistance:0,maxDistance:ranged?480:200,angleWeight:0,phaseWeight:0,offscreen:true};
+}));

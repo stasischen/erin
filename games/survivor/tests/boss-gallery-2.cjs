@@ -126,3 +126,50 @@ assert.equal(run('threat.owner'),'fire');assert.equal(run('b.posture.value>0'),t
 run('state.trial.fields=[{kind:"feather",owner:"fire",x:0,y:0}];b.posture.value=GAME_DATA.boss.posture.maximum-1;teacherPerfectDodge({owner:"fire"})');
 assert.equal(run('b.moves.length'),0);assert.equal(run('state.trial.fields.length'),0);
 console.log('PASS: both projectile / bomb targets, phase interrupt once, warned locked impacts, secondary perfect dodge during primary stun and owned-field cleanup');
+// AI 距離由作品提供：最近／最遠界線、全停用與舊作品遷移。
+run("globalThis.def=SurvivorData.defaults().gallery.bosses[2];def.moves.forEach(m=>{m.ai.minDistance=80;m.ai.maxDistance=200})");
+assert.equal(run('g.choose(def,null,1,[],.5,79)'),null);
+assert.ok(run('g.choose(def,null,1,[],.5,80)'));
+assert.ok(run('g.choose(def,null,1,[],.5,200)'));
+assert.equal(run('g.choose(def,null,1,[],.5,201)'),null);
+run('work=SurvivorData.defaults();work.gallery.bosses.forEach(b=>b.moves.forEach(m=>delete m.ai))');
+assert.equal(run('SurvivorData.validate(work).valid'),true);
+assert.deepEqual(json('SurvivorData.validate(work).data.gallery.bosses[2].moves[0].ai'),json('GAME_DATA.gallery.bosses[2].moves[0].ai'));
+run('work=SurvivorData.defaults();work.gallery.bosses[2].moves[0].ai.minDistance=90;work.gallery.bosses[2].moves[0].ai.maxDistance=190');
+assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[2].moves[0].ai.minDistance'),90);
+assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[2].moves[0].ai.maxDistance'),190);
+run('work.gallery.bosses[2].moves[0].ai.minDistance=191');
+assert.equal(run('SurvivorData.validate(work).valid'),false);
+// 模擬下一卡的小場地：直徑 400／600，不改正式場地或 Maker 半徑下限。
+for(const radius of [200,300])for(const boss of ['frostfire','winged'])for(const [w,h] of [[740,360],[1024,461],[1180,820]]){
+ run(`globalThis.savedRadius=GAME_DATA.gallery.arenaRadius;GAME_DATA.gallery.arenaRadius=${radius};startTrial('${boss}');GAME_DATA.gallery.arenaRadius=savedRadius;
+  globalThis.view=worldViewport(${w},${h});state.width=view.width;state.height=view.height;state.player.damageDisabled=true;updateCamera()`);
+ assert.equal(run('trialBodies().every(b=>Math.hypot(b.x-state.trial.arena.x,b.y-state.trial.arena.y)<=state.trial.arena.radius-b.r+.01)'),true,'entry inside small arena');
+ run('for(let i=0;i<650;i++){tick(.05);if(i%25===0)render()}');
+ assert.equal(run('trialBodies().every(b=>Math.hypot(b.x-state.trial.arena.x,b.y-state.trial.arena.y)<=state.trial.arena.radius-b.r+.01)'),true);
+ assert.equal(run('state.enemies.length'),0);
+ // 每一招在小場地也能結束，目標與預警中心留在牆內。
+ for(const id of json('state.trial.definition.moves.map(m=>m.id)')){
+  run(`globalThis.actor=state.trial.actors[0];actor.hp=actor.maxHp*.4;actor.phase=2;actor.posture.stun=0;
+   actor.x=state.trial.arena.x-80;actor.y=state.trial.arena.y;state.player.x=state.trial.arena.x+80;state.player.y=actor.y;
+   globalThis.s=state.trial.definition.moves.find(m=>m.id==='${id}').blocks.moves[0];
+   actor.moves=[{id:'${id}',kind:'${id}',owner:actor.actorId,ai:SurvivorBossAI.start(s.timing),angle:0,origin:{x:actor.x,y:actor.y},target:t.boundary({...state.player,r:actor.r},state.trial.arena).position,duration:s.timing.active,elapsed:0,pulse:0}];
+   state.boss=actor;state.bossMoves=actor.moves;state.bossPhase=2;updateCamera();render();
+   for(let i=0;i<240&&actor.moves.length;i++){withTrialBody(actor,()=>updateTrialActor(.05));if(i%10===0)render()}`);
+  assert.equal(run('actor.moves.length'),0,id+' completes in small arena');
+  assert.equal(run('Math.hypot(actor.x-state.trial.arena.x,actor.y-state.trial.arena.y)<=state.trial.arena.radius-actor.r+.01'),true);
+ }
+}
+// 休息與狀態機冷卻期間追近；超出 AI 距離帶時等待而不出招。
+for(const cooldown of [false,true]){
+ run(`startTrial('winged');state.trial.entry=0;state.bossIntro=0;globalThis.actor=state.trial.actors[0];actor.x=state.player.x-300;actor.y=state.player.y;
+  actor.rest=2;state.bossRest=2;
+  actor.moves=${cooldown?"[{id:'feathers',ai:{phase:'cooldown',left:2},angle:0,duration:.3}]":"[]"};state.bossMoves=actor.moves;
+  globalThis.beforeDistance=Math.hypot(actor.x-state.player.x,actor.y-state.player.y);withTrialBody(actor,()=>updateTrialActor(.05))`);
+ assert.equal(run('Math.hypot(actor.x-state.player.x,actor.y-state.player.y)<beforeDistance'),true);
+}
+run(`actor.moves=[];state.bossMoves=actor.moves;actor.rest=0;state.bossRest=0;
+ state.trial.definition=JSON.parse(JSON.stringify(state.trial.definition));state.trial.definition.moves.forEach(m=>m.ai.maxDistance=20);
+ withTrialBody(actor,()=>updateTrialActor(.05))`);
+assert.equal(run('actor.moves.length'),0);
+console.log('PASS: data-driven trial AI distance bounds / migration, 400–600 diameter arenas at three viewports, every move completes, idle / cooldown pursuit');

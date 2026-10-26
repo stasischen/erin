@@ -3,7 +3,7 @@ globalThis.SurvivorGalleryRules=(()=>{
  const tau=Math.PI*2,wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
  function stage(hp,maxHp,threshold,partnerDown=false){return partnerDown||hp/maxHp<threshold?2:1;}
  function roster(def,role){return {...def,moves:def.moves.filter(m=>!role||(role==='frost'?!['nova','meteor'].includes(m.id):!['frost-dash','icefall'].includes(m.id)))};}
- function choose(def,role,phase,previous,sample){return SurvivorTrialRules.choose(roster(def,role),phase,0,previous,sample);}
+ function choose(def,role,phase,previous,sample,distance=0){return SurvivorTrialRules.choose(roster(def,role),phase,distance,previous,sample);}
  function geometry(id,shape,progress,angle){
    if(id==='nova')return {...shape,radius:shape.radius*progress,thickness:shape.thickness||12,gap:shape.angle*Math.PI/180,angle};
    if(id==='cross')return {...shape,angle:angle+progress*(shape.rotation===undefined?Math.PI/2:shape.rotation),thickness:shape.thickness||12};
@@ -49,7 +49,7 @@ function withTrialBody(body,action){
 function initTrialEncounter(){
  const t=state.trial;if(t.definition.id==='gatekeeper')return;
  const make=(role,index)=>({...state.boss,x:t.arena.x+(index?130:-130),y:t.arena.y-t.arena.radius+70,posture:SurvivorPosture.initial(),role,trialActor:true,alive:true,actorId:role||'winged',artId:role==='fire'?'character/fire-twin':t.definition.artId,moves:[],phase:1,rest:index?.95:.4});
- t.actors=t.definition.id==='frostfire'?[make('frost',0),make('fire',1)]:[make(null,0)];t.fields=[];state.boss=t.actors[0];state.bossMoves=state.boss.moves;
+ t.actors=t.definition.id==='frostfire'?[make('frost',0),make('fire',1)]:[make(null,0)];t.actors.forEach(b=>Object.assign(b,SurvivorTrialRules.boundary(b,t.arena).position));t.fields=[];state.boss=t.actors[0];state.bossMoves=state.boss.moves;
 }
 function trialBossDefeated(body){
  const t=state.trial;if(!t||!t.actors){state.boss=null;finishRun(true);return;}
@@ -111,11 +111,12 @@ function updateTrialActor(dt){
    const dx=state.player.x-b.x,dy=state.player.y-b.y,d=Math.max(1,Math.hypot(dx,dy));
    if(d>140){const speed=def.speed*def.phases[state.bossPhase-1].speed*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1);b.x+=dx/d*speed*dt;b.y+=dy/d*speed*dt;clampToMap(b);}
    if(state.bossRest>0)return;
-   const id=SurvivorGalleryRules.choose(def,b.role,state.bossPhase,b.previous||[],Math.random());if(!id){state.bossRest=.3;return;}
+   const id=SurvivorGalleryRules.choose(def,b.role,state.bossPhase,b.previous||[],Math.random(),d);if(!id){state.bossRest=.3;return;}
    const s=def.moves.find(m=>m.id===id).blocks.moves[0];
    state.bossMoves.push({id,kind:id,owner:b.actorId,ai:SurvivorBossAI.start(s.timing),angle:Math.atan2(dy,dx),origin:{x:b.x,y:b.y},target:SurvivorTrialRules.boundary({...state.player,r:b.r},t.arena).position,duration:s.timing.active,elapsed:0,pulse:0,dodged:false});b.previous=[id];playSound('warning');return;
  }
  const m=state.bossMoves[0],s=def.moves.find(d=>d.id===m.id).blocks.moves[0];
+ if(m.ai.phase==='cooldown'){const dx=state.player.x-b.x,dy=state.player.y-b.y,d=Math.hypot(dx,dy);if(d>140){const speed=def.speed*def.phases[state.bossPhase-1].speed*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1);b.x+=dx/d*Math.min(d-140,speed*dt);b.y+=dy/d*Math.min(d-140,speed*dt);clampToMap(b);}}
  m.warning=m.ai.phase==='windup'?m.ai.left:0;m.active=m.ai.phase==='active';m.recovery=m.ai.phase==='recovery'?m.ai.left:0;b.recoveryLeft=m.recovery;
  if(m.active){
    const before=m.elapsed;m.elapsed+=dt;m.pulse-=dt;
