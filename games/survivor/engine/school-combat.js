@@ -31,6 +31,7 @@ function schoolDashEnded() {
 function schoolShotHit(shot, target) {
   const r = GAME_DATA.schoolRules;
   if ((shot.schools || []).includes('water') || effectLevel('water-skill')) target.wetTimer = r.wetSeconds;
+  if (!shot.melee) waveNeutralHit(target,shot.vx,shot.vy);
   if (shot.push) shiftTarget(target, shot.x - shot.vx, shot.y - shot.vy, shot.push);
   if (shot.charged) { lightning(state.player.x,state.player.y,target.x,target.y); schoolEffect('thunder',target,target.x,target.y,shot.damage,shot.hitList); }
   if (!shot.melee && effectLevel('wind-blade') && shot.pierce > 0 && !shot.blade) {

@@ -16,14 +16,19 @@ globalThis.SurvivorNeutral = (() => {
   function damage(gems, powers, rules) {
     return (1 + (powers.bank ? Math.min(rules.bankCap, Math.floor(gems/rules.bankEvery)*rules.bankStep) : 0)) * (1 + (powers.crown ? rules.crownDamage : 0));
   }
-  // 螢幕矩形使用相對鏡頭的遊戲座標；角落算一次反彈，並保留原有射程。
-  function bounce(x,y,vx,vy,r,width,height,remaining) {
-    if (!remaining) return {x,y,vx,vy,remaining,bounced:false};
-    const hitX = x-r <= -width/2 && vx<0 || x+r >= width/2 && vx>0;
-    const hitY = y-r <= -height/2 && vy<0 || y+r >= height/2 && vy>0;
-    return {x:hitX?Math.max(-width/2+r,Math.min(width/2-r,x)):x,y:hitY?Math.max(-height/2+r,Math.min(height/2-r,y)):y,vx:hitX?-vx:vx,vy:hitY?-vy:vy,remaining:remaining-(hitX||hitY?1:0),bounced:!!(hitX||hitY)};
+  // 掃過的圓形路徑：固定輸入 → 第一個撞到的索引；使用相對世界座標。
+  function collision(dx,dy,radius,targets) {
+    const length=Math.hypot(dx,dy);
+    if (!length) return -1;
+    let first=-1, nearest=Infinity;
+    targets.forEach((t,i)=>{
+      const along=(t.x*dx+t.y*dy)/length;
+      if (along<=0 || along>length+radius+t.r) return;
+      if (SurvivorSchools.segmentDistance(t.x,t.y,dx,dy)<=radius+t.r && along<nearest) {first=i;nearest=along;}
+    });
+    return first;
   }
-  return {reward,damage,bounce};
+  return {reward,damage,collision};
 })();
 function neutralPowers() {
   return Object.fromEntries(['cookie','candy','bank','crown'].map(id=>[id,!!effectLevel('item-'+id)]));
@@ -43,19 +48,28 @@ function neutralEvent(type,x,y,cardId) {
 function neutralCopyShot(source,angle,damage,fragment) {
   if (state.projectiles.length>=PROJECTILE_LIMIT) return;
   const speed = Math.hypot(source.vx,source.vy);
-  state.projectiles.push(takeFromPool(state.projectilePool,{...source,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,hitList:source.hitList.slice(),alive:true,fragment,bounces:effectLevel('item-wall')?1:0}));
+  state.projectiles.push(takeFromPool(state.projectilePool,{...source,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,hitList:source.hitList.slice(),alive:true,fragment}));
 }
 function prepareNeutralShots(angle) {
   const volley=state.projectiles.filter(s=>s.alive && !s.maker && s.x===state.player.x && s.y===state.player.y);
-  volley.forEach(s=>s.bounces=effectLevel('item-wall')?1:0);
   if (effectLevel('item-rear') && volley.length) neutralCopyShot(volley[0],angle+Math.PI,volley[0].damage,false);
 }
-function bounceNeutralShot(shot) {
-  const cx=state.cameraX+state.width/2,cy=state.cameraY+state.height/2;
-  const result=SurvivorNeutral.bounce(deltaX(shot.x,cx),deltaY(shot.y,cy),shot.vx,shot.vy,shot.r,state.width,state.height,shot.bounces||0);
-  if (!result.bounced) return;
-  Object.assign(shot,{x:cx+result.x,y:cy+result.y,vx:result.vx,vy:result.vy,bounces:result.remaining});
-  skillVisual('sparkle',shot.x,shot.y,{radius:14,color:'#ffdfa2',life:.25});
+// 碰撞不遞迴、不跳電；兩隻共用短冷卻。死亡仍由正式傷害入口結算。
+function waveNeutralHit(target,vx,vy) {
+  if (!effectLevel('item-wall') || (target!==state.boss && !target.alive) || !canAttackTarget(target)) return;
+  const r=GAME_DATA.neutralRules, length=Math.hypot(vx,vy);
+  if (!length) return;
+  const x=target.x,y=target.y;
+  shiftTarget(target,x-vx,y-vy,r.wavePush);
+  skillVisual('splash',target.x,target.y,{radius:24,color:'#71d9f2',life:.3});
+  if (target===state.boss || (target.waveReady||0)>state.elapsed) return;
+  const others=combatTargets().filter(t=>t!==target && t!==state.boss && (t.waveReady||0)<=state.elapsed);
+  const index=SurvivorNeutral.collision(deltaX(target.x,x),deltaY(target.y,y),target.r,others.map(t=>({x:deltaX(t.x,x),y:deltaY(t.y,y),r:t.r})));
+  if(index<0) return;
+  const other=others[index];
+  target.waveReady=other.waveReady=state.elapsed+r.waveCooldown;
+  hitBuildTarget(target,r.waveDamage);hitBuildTarget(other,r.waveDamage);
+  skillVisual('splash',other.x,other.y,{radius:32,color:'#71d9f2',life:.4});
 }
 function splitNeutralShot(shot) {
   if (!effectLevel('item-split') || shot.fragment || shot.maker) return;

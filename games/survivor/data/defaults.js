@@ -198,6 +198,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "big-water",
       "name": "水球加大",
       "description": "水球更大、傷害更高",
+      "descriptionMelee": "揮擊範圍變大、傷害更高。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -215,6 +216,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "rapid-water",
       "name": "連發水球",
       "description": "發射速度提升",
+      "descriptionMelee": "揮錘更快。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -232,6 +234,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "multi-water",
       "name": "多重水球",
       "description": "每次多發一顆",
+      "descriptionMelee": "揮擊角度變大。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -249,6 +252,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "onion-dash",
       "name": "洋蔥衝刺",
       "description": "移動速度提升",
+      "descriptionMelee": "移動速度提升",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -266,6 +270,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "bubble-shield",
       "name": "泡泡護盾",
       "description": "血條變長一點，並回一點血",
+      "descriptionMelee": "血條變長一點，並回一點血",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -283,6 +288,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "gem-magnet",
       "name": "寶石磁鐵",
       "description": "撿取範圍提升",
+      "descriptionMelee": "撿取範圍提升",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -300,6 +306,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "piercing-water",
       "name": "穿透水球",
       "description": "水球多穿透一隻敵人",
+      "descriptionMelee": "揮擊距離每級增加 10%。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -317,6 +324,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "splash-water",
       "name": "水花四濺",
       "description": "命中時造成小範圍傷害",
+      "descriptionMelee": "命中時造成小範圍傷害",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -334,6 +342,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "auto-heal",
       "name": "自動補血",
       "description": "慢慢恢復血條",
+      "descriptionMelee": "慢慢恢復血條",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -353,6 +362,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-attack",
       "name": "濺水花",
       "description": "水球命中濺水花，升級擴大水花",
+      "descriptionMelee": "揮錘命中濺水花，升級擴大水花。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -372,6 +382,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-skill",
       "name": "水窪",
       "description": "水球落點與泡泡留下緩速水窪",
+      "descriptionMelee": "揮錘命中和泡泡留下緩速水窪。",
       "maxLevel": 5,
       "effects": [
         {
@@ -390,6 +401,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-dash",
       "name": "水痕",
       "description": "衝刺沿路留下緩速水痕",
+      "descriptionMelee": "衝刺沿路留下緩速水痕",
       "maxLevel": 5,
       "effects": [
         {
@@ -409,6 +421,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-ultimate",
       "name": "大海嘯",
       "description": "每 10 秒一道巨浪掃過全場",
+      "descriptionMelee": "每 10 秒一道巨浪掃過全場",
       "maxLevel": 5,
       "effects": [
         {
@@ -427,6 +440,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-attack",
       "name": "疾風",
       "description": "水球飛得更快、更遠",
+      "descriptionMelee": "揮擊距離增加。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -446,6 +460,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-dash",
       "name": "旋風",
       "description": "技能產生旋風，衝刺也會留下旋風",
+      "descriptionMelee": "技能產生旋風，衝刺也會留下旋風",
       "maxLevel": 5,
       "effects": [
         {
@@ -464,6 +479,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-speed",
       "name": "疾行",
       "description": "衝刺與移動時加快水球發射",
+      "descriptionMelee": "衝刺和移動時揮錘更快。",
       "maxLevel": 5,
       "effects": [
         {
@@ -483,6 +499,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-ultimate",
       "name": "環繞龍捲風",
       "description": "龍捲風繞主角旋轉，碰到就傷害",
+      "descriptionMelee": "龍捲風繞主角旋轉，碰到就傷害",
       "maxLevel": 5,
       "effects": [
         {
@@ -501,6 +518,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-attack",
       "name": "跳電",
       "description": "水球跳電到附近另一隻，升級更痛",
+      "descriptionMelee": "揮錘命中會跳電到附近另一隻，升級更痛。",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -520,6 +538,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-skill",
       "name": "電泡泡",
       "description": "泡泡帶電，炸中讓敵人暈眩",
+      "descriptionMelee": "泡泡帶電，炸中讓敵人暈眩",
       "maxLevel": 5,
       "effects": [
         {
@@ -538,6 +557,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-counter",
       "name": "放電反擊",
       "description": "每次受傷放電反擊附近敵人",
+      "descriptionMelee": "每次受傷放電反擊附近敵人",
       "maxLevel": 5,
       "effects": [
         {
@@ -557,6 +577,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-ultimate",
       "name": "雷雲",
       "description": "雷雲定期隨機劈中一隻敵人",
+      "descriptionMelee": "雷雲定期隨機劈中一隻敵人",
       "maxLevel": 5,
       "effects": [
         {
@@ -576,6 +597,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "fusion-puddle",
       "name": "導電水窪",
       "description": "水窪額外放電，升級增加電傷害",
+      "descriptionMelee": "水窪額外放電，升級增加電傷害",
       "maxLevel": 5,
       "effects": [
         {
@@ -599,6 +621,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "fusion-storm",
       "name": "暴風雨",
       "description": "旋風衝刺同時灑下傷敵水窪",
+      "descriptionMelee": "旋風衝刺同時灑下傷敵水窪",
       "maxLevel": 5,
       "effects": [
         {
@@ -622,6 +645,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "fusion-dash",
       "name": "閃電衝刺",
       "description": "衝刺留下會跳電的電痕",
+      "descriptionMelee": "衝刺留下會跳電的電痕",
       "maxLevel": 5,
       "effects": [
         {
@@ -644,6 +668,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-drop",
       "name": "大水滴",
       "description": "每第 5 發射出大水滴，附擊退",
+      "descriptionMelee": "每第 5 下揮擊變大、變痛，還會推開怪物。",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -662,6 +687,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-fountain",
       "name": "噴泉",
       "description": "每 6 秒噴泉把附近怪物彈飛",
+      "descriptionMelee": "每 6 秒噴泉把附近怪物彈飛",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -680,6 +706,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-bubble",
       "name": "泡泡盾",
       "description": "衝刺結束產生泡泡，擋下一次攻擊",
+      "descriptionMelee": "衝刺結束產生泡泡，擋下一次攻擊",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -698,6 +725,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-wet",
       "name": "濕答答",
       "description": "被弄濕的怪物多受 15% 傷害",
+      "descriptionMelee": "被弄濕的怪物多受 15% 傷害",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -716,6 +744,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "water-rain",
       "name": "下雨天",
       "description": "定期下雨，讓所有怪物變慢",
+      "descriptionMelee": "定期下雨，讓所有怪物變慢",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -734,6 +763,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-blade",
       "name": "風刃",
       "description": "水球多穿一隻，穿透後產生小風刃",
+      "descriptionMelee": "揮擊後追加一次近距離追斬。",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -752,6 +782,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-gust",
       "name": "吹飛",
       "description": "每 8 秒把附近所有怪物推開",
+      "descriptionMelee": "每 8 秒把附近所有怪物推開",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -770,6 +801,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-refund",
       "name": "順風",
       "description": "衝刺後退回半格衝刺次數",
+      "descriptionMelee": "衝刺後退回半格衝刺次數",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -788,6 +820,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-light",
       "name": "輕飄飄",
       "description": "移速 +10%，撿經驗範圍變大",
+      "descriptionMelee": "移速 +10%，撿經驗範圍變大",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -806,6 +839,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "wind-eye",
       "name": "風之眼",
       "description": "站著不動時產生保護風牆",
+      "descriptionMelee": "站著不動時產生保護風牆",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -824,6 +858,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-charge",
       "name": "蓄電",
       "description": "每打倒 10 隻，下一發變大閃電",
+      "descriptionMelee": "每打倒 10 隻，下一次揮擊蓄電。",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -842,6 +877,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-rod",
       "name": "避雷針",
       "description": "插在地上的避雷針會電附近怪物",
+      "descriptionMelee": "插在地上的避雷針會電附近怪物",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -860,6 +896,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-step",
       "name": "雷步",
       "description": "衝刺穿過的怪物短暫暈眩",
+      "descriptionMelee": "衝刺穿過的怪物短暫暈眩",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -878,6 +915,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-static",
       "name": "靜電",
       "description": "碰到主角的怪物會被電",
+      "descriptionMelee": "碰到主角的怪物會被電",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -896,6 +934,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "icon": "thunder-super",
       "name": "超導體",
       "description": "每次連鎖多跳一隻，而且傷害不衰減",
+      "descriptionMelee": "每次連鎖多跳一隻，而且傷害不衰減",
       "maxLevel": 1,
       "requires": [],
       "effects": [
@@ -908,8 +947,9 @@ globalThis.SURVIVOR_DEFAULTS = {
     },
     {
       "id": "item-wall",
-      "name": "彈牆水球",
-      "description": "水球碰到畫面邊緣反彈一次。",
+      "name": "浪花水球",
+      "description": "水球推開怪物，撞到別隻怪物時兩隻都受傷。",
+      "descriptionMelee": "揮錘推得更遠，撞到別隻怪物時兩隻都受傷。",
       "icon": "item-wall",
       "maxLevel": 1,
       "slot": "attack",
@@ -928,6 +968,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-candy",
       "name": "爆爆糖",
       "description": "打倒怪物有 10% 機率掉小炸彈。",
+      "descriptionMelee": "打倒怪物有 10% 機率掉小炸彈。",
       "icon": "item-candy",
       "maxLevel": 1,
       "slot": "passive",
@@ -946,6 +987,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-bird",
       "name": "小鳥跟班",
       "description": "小鳥繞著你飛，啄附近的怪物。",
+      "descriptionMelee": "小鳥繞著你飛，啄附近的怪物。",
       "icon": "item-bird",
       "maxLevel": 1,
       "slot": "passive",
@@ -964,6 +1006,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-bank",
       "name": "小金庫",
       "description": "每撿 10 顆經驗球傷害 +1%，最多 +30%。",
+      "descriptionMelee": "每撿 10 顆經驗球傷害 +1%，最多 +30%。",
       "icon": "item-bank",
       "maxLevel": 1,
       "slot": "passive",
@@ -982,6 +1025,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-split",
       "name": "分裂水球",
       "description": "水球打倒怪物時分裂成兩發；碎片不再分裂。",
+      "descriptionMelee": "只改變飛行水球；棒棒糖錘本體不會分裂。",
       "icon": "item-split",
       "maxLevel": 1,
       "slot": "attack",
@@ -1000,6 +1044,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-magnet",
       "name": "磁鐵",
       "description": "拾取範圍變成 2.5 倍。",
+      "descriptionMelee": "拾取範圍變成 2.5 倍。",
       "icon": "item-magnet",
       "maxLevel": 1,
       "slot": "passive",
@@ -1018,6 +1063,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-crown",
       "name": "王冠",
       "description": "詛咒：傷害 +30%，最大血量 -1。",
+      "descriptionMelee": "詛咒：傷害 +30%，最大血量 -1。",
       "icon": "item-crown",
       "maxLevel": 1,
       "slot": "passive",
@@ -1036,6 +1082,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-clover",
       "name": "幸運草",
       "description": "立即多一次重抽，稀有卡更容易出現。",
+      "descriptionMelee": "立即多一次重抽，稀有卡更容易出現。",
       "icon": "item-clover",
       "maxLevel": 1,
       "slot": "passive",
@@ -1054,6 +1101,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-rear",
       "name": "後射",
       "description": "每次普攻同時向後方多射一發。",
+      "descriptionMelee": "每次揮錘也向後揮擊。",
       "icon": "item-rear",
       "maxLevel": 1,
       "slot": "attack",
@@ -1072,6 +1120,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "id": "item-cookie",
       "name": "回力餅乾",
       "description": "持有時每打倒 20 隻，回 1 點血。",
+      "descriptionMelee": "持有時每打倒 20 隻，回 1 點血。",
       "icon": "item-cookie",
       "maxLevel": 1,
       "slot": "passive",
@@ -1645,6 +1694,9 @@ globalThis.SURVIVOR_DEFAULTS = {
     "thunderFormRange": 0.4
   },
   "neutralRules": {
+    "wavePush": 55,
+    "waveDamage": 18,
+    "waveCooldown": 0.6,
     "itemsPerRun": 5,
     "bombChance": 0.1,
     "bombDelay": 0.6,

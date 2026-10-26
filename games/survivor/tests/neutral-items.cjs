@@ -13,11 +13,8 @@ run('globalThis.r=GAME_DATA.neutralRules');
 assert.deepEqual(val(`SurvivorNeutral.reward({kills:19,gems:9},'death',{cookie:true,candy:true},r,.099).events`),[{type:'heal',amount:1},{type:'bomb-dropped'}]);
 assert.deepEqual(val(`SurvivorNeutral.reward({kills:0,gems:0},'death',{candy:true},r,.1).events`),[]);
 assert.equal(run('SurvivorNeutral.damage(9999,{bank:true,crown:true},r)'),1.3*1.3);
-assert.deepEqual(val('SurvivorNeutral.bounce(399,299,100,100,5,800,600,1)'),{x:395,y:295,vx:-100,vy:-100,remaining:0,bounced:true});
-assert.equal(run('SurvivorNeutral.bounce(399,299,100,100,5,800,600,0).bounced'),false);
-// Fresh volley + rear inherits school appearance and bounded bounce state.
-fresh(['wall','rear']);run('fireAtNearest();');assert.equal(run('state.projectiles.length'),2);assert.ok(run('state.projectiles[0].vx*state.projectiles[1].vx<0'));assert.equal(run('state.projectiles.every(s=>s.bounces===1)'),true);
-run('globalThis.shot=state.projectiles[0];shot.x=state.cameraX+state.width-shot.r;globalThis.range=shot.rangeLeft;bounceNeutralShot(shot);');assert.equal(run('shot.bounces'),0);assert.ok(run('shot.vx<0'));assert.equal(run('shot.rangeLeft'),run('range'));
+// Rear shot keeps the same appearance; the replaced item never bounces at screen edges.
+fresh(['wall','rear']);run('fireAtNearest();');assert.equal(run('state.projectiles.length'),2);assert.ok(run('state.projectiles[0].vx*state.projectiles[1].vx<0'));
 // Actual projectile kill splits two children once, including a penetrating parent.
 fresh(['split']);run('state.enemies=[book(35,1)];fireAtNearest();tick(.05);');assert.equal(run('state.projectiles.filter(s=>s.alive).length'),2);assert.equal(run('state.projectiles.every(s=>s.fragment)'),true);run('splitNeutralShot(state.projectiles[0]);');assert.equal(run('state.projectiles.length'),2);
 fresh(['wall','rear','split']);run('for(let i=0;i<200;i++)fireAtNearest();');assert.ok(run('state.projectiles.length<=PROJECTILE_LIMIT'));
@@ -45,4 +42,4 @@ for(const id of ['wall','candy','bird','bank','split','magnet','crown','clover',
  const preview=require('./maker-support.cjs')({preview:{data,spec:{kind:'card',id:'item-'+id,level:1}}});
  preview('for(let i=0;i<130;i++)stepPreview(.05);');assert.ok(preview('drawCalls.length>0'),id);
 }
-console.log('PASS: ten neutral items, fixed sampled pool, pure reward/bounce/damage rules, all live effects, limits, stages/pause/reset, Maker migration/bounds, ten real previews');
+console.log('PASS: ten neutral items, fixed sampled pool, pure reward/damage rules, all live effects, limits, stages/pause/reset, Maker migration/bounds, ten real previews');

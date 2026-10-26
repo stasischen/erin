@@ -20,7 +20,7 @@
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
   const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
   const BEHAVIORS = {chase:'追趕',fast:'弧線快跑',tank:'擋住其他怪',shooter:'射擊後退',charger:'預警衝撞',bomber:'兩秒自爆',splitter:'分裂兩隻',support:'護盾輔助',still:'站在原地',retreat:'靠近後退'};
-  const NEUTRAL_BOUNDS = {"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
+  const NEUTRAL_BOUNDS = {wavePush:[0,120,1],waveDamage:[0,100,1],waveCooldown:[.1,2,.1],"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
   const SCHOOL_BOUNDS = {
     schoolsPerRun:[1,3,1], cardsPerSchool:[3,8,1], transformCards:[2,5,1], ultimateCards:[3,8,1], fusionCards:[1,4,1],
     legendaryChance:[0,.1,.005],rareWeight:[.1,1,.05],ownedWeight:[0,2,.05],starterWeight:[0,4,.1],
@@ -106,7 +106,7 @@
         }
       }
       if (input.neutralRules !== undefined) {
-        for (const [field, bounds] of Object.entries(NEUTRAL_BOUNDS)) data.neutralRules[field] = num(input.neutralRules[field], bounds[0], bounds[1], field, ['itemsPerRun','bankEvery','cookieKills','crownHealth'].includes(field));
+        for (const [field, bounds] of Object.entries(NEUTRAL_BOUNDS)) data.neutralRules[field] = num(input.neutralRules[field] === undefined && field.startsWith('wave') ? data.neutralRules[field] : input.neutralRules[field], bounds[0], bounds[1], field, ['itemsPerRun','bankEvery','cookieKills','crownHealth'].includes(field));
       }
       if (input.schools !== undefined && JSON.stringify(input.schools) !== JSON.stringify(data.schools)) fail('流派登錄表請由資料檔擴充');
       // 物件數量上限固定，避免作品讓裝置卡住；整數欄位不得帶小數。
@@ -123,6 +123,8 @@
         const c = input.cards[i];
         if (!c || c.id !== base.id) fail('卡片識別碼不正確');
         const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: root.SurvivorIcons.normalize(c.icon, base.icon), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
+        if (c.descriptionMelee !== undefined) result.descriptionMelee = name(c.descriptionMelee, '近戰說明', 120);
+        if (base.id === 'item-wall' && c.name === '彈牆水球') { result.name=base.name; result.description=base.description; result.descriptionMelee=base.descriptionMelee; }
         if (base.neutral && (c.school || c.tier || c.requires.length)) fail('中立道具不能有流派或前置卡');
         result.school = c.school ? choice(c.school, data.schools.map(s => s.id), '流派') : undefined;
         result.rarity = c.rarity === undefined ? base.rarity : choice(c.rarity, ['common','rare','legendary'], '品質');
