@@ -6,7 +6,7 @@
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
   function message(text, error = false) { status.textContent = text; status.className = error ? 'error' : ''; }
-  function changed() { if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
+  function changed() { if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
   function panel(title) { const node = el('section', undefined, editor); node.className = 'panel'; el('h2', title, node); return node; }
   function grid(parent) { const node = el('div', undefined, parent); node.className = 'grid'; return node; }
   function text(parent, label, object, key, maxLength = 24) { const row = el('label', label, parent), input = el('input', undefined, row); input.type = 'text'; input.maxLength = maxLength; input.value = object[key] || ''; input.addEventListener('input', () => { object[key] = input.value; changed(); }); }
@@ -254,9 +254,10 @@
   function render() { if(globalThis.SurvivorPreview) SurvivorPreview.stop(); const scroll = editor.scrollTop; editor.textContent=''; document.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tab===tab))); ({schools:drawSchools,cards:drawCards,enemies:drawEnemies,boss:drawBoss,numbers:drawNumbers})[tab](); editor.scrollTop = scroll; }
   document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{tab=button.dataset.tab;render();}));
   function save() { const result=api.save(draft); if(result.valid){dirty=false;message('作品已儲存在這台裝置！');}else message(result.errors.join('；'),true);return result.valid; }
+  document.getElementById('practiceOpen').addEventListener('click',()=>SurvivorPractice.open(draft));
   document.getElementById('save').addEventListener('click',save);
   document.getElementById('play').addEventListener('click',()=>{if(save()) location.href='?maker=1&play=1';});
-  document.getElementById('reset').addEventListener('click',()=>{draft=api.defaults();if(save()){render();message('已恢復預設作品。');}});
+  document.getElementById('reset').addEventListener('click',()=>{draft=api.defaults();if(globalThis.SurvivorPractice) SurvivorPractice.refresh(draft);if(save()){render();message('已恢復預設作品。');}});
   window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
   const room = document.getElementById('makerPanel');
   function openMaker(result) {
@@ -267,6 +268,7 @@
   window.openSurvivorMaker = openMaker;
   document.getElementById('makerLink').addEventListener('click', () => openMaker());
   document.getElementById('makerClose').addEventListener('click', () => {
+    if(globalThis.SurvivorPractice) SurvivorPractice.close();
     if(globalThis.SurvivorPreview) SurvivorPreview.stop();
     if (MAKER_MODE) { if (dirty && !save()) return; location.href = './'; }
     else { if (dirty && !save()) return; room.hidden = true; showOverlay('ready'); document.getElementById('makerLink').focus(); }

@@ -76,3 +76,5 @@
 - 2026-10-26：家長要求「先這樣做一版 之後再看會不會太密」，授權實作八種小怪行為、120 秒節奏、每關主題加隨機兩種與兩次抽選事件，數值由 Codex 先訂並可在 Maker 調整；明確允許果凍子體出現在死亡位置。初版範圍、工程初值、移植對照與待試玩事項見 `docs/survivor-enemy-pacing-build-validation.md`；不視為 Erin 已確認平衡或家長已核准上線。來源：`coord/inbox/done/20261026T014019Z-parent-enemy-pacing-build.md`。
 
 - 2026-10-26：家長要求移除起始精靈選擇，改為開場選水球或棒棒糖錘，流派由升級取得的流派卡形成。依指定初值製作 0.7 秒／120 度／70 世界單位／1.6 倍傷害、每第四下全周、持錘減傷 15% 的近戰初版，數值可由 Maker 調整；卡片對應、未適用的彈牆／分裂及待試玩手感見 `docs/survivor-weapon-picker-melee-validation.md`。家長另指示這張卡的真實 Chrome `--layout` 交 Grok，Codex 只跑一般測試、不重試。尚待 Grok 審查及 Erin 試玩，未核准上線。（來源：`coord/inbox/done/20261026T020911Z-parent-weapon-picker-melee.md`、`coord/inbox/done/20261026T021322Z-grok-weapon-picker-melee-no-layout.md`）
+
+- 2026-10-26：依家長要求製作從 Maker 進入的招式練習場，八招沿用目前作品與正式攻擊引擎，免傷走位、木頭假人、四種顏色時間軸與資料產生說明；調整滑桿後重建獨立場景。甜甜圈與跳跳糖仍沿用正式遊戲舊流程，時間軸明示零收招，未改玩法；老師招式與連躲挑戰屬可選，本次未加。測試全部通過，版面與觸控由 Grok 審查，Erin 尚未確認手感。來源：`coord/inbox/done/20261026T051137Z-parent-move-practice.md`；移植與驗證：`docs/survivor-move-practice-validation.md`。

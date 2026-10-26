@@ -13,7 +13,7 @@ for (const file of files) {
   assert.ok(fs.existsSync(path.join(root, file)), `missing ${file}`);
 }
 const writing = process.argv.includes('--write');
-for (const file of ['index.html', 'preview.html', 'preview.js']) {
+for (const file of ['index.html', 'preview.html', 'preview.js', 'practice.html', 'practice-host.js']) {
   const target = path.join(root, file), before = fs.readFileSync(target, 'utf8');
   const after = before.replace(/\?v=[a-zA-Z0-9-]+/g, `?v=${version}`);
   if (writing) fs.writeFileSync(target, after);
@@ -23,7 +23,7 @@ const swPath = path.join(repo, 'sw.js');
 let sw = fs.readFileSync(swPath, 'utf8');
 if (writing) {
   sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = 'erin-games-${version}';`);
-  const dependencies = ['manifest.js', ...files].map(file => `games/survivor/${file}`);
+  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files].map(file => `games/survivor/${file}`);
   for (const file of dependencies) if (!sw.includes(`'${file}'`)) {
     sw = sw.replace('const PRECACHE_URLS = [', `const PRECACHE_URLS = [\n  '${file}',`);
   }
@@ -32,14 +32,14 @@ if (writing) {
 const cacheContext = vm.createContext({self: {addEventListener() {}}});
 vm.runInContext(sw + '\nglobalThis.cacheName = CACHE_NAME; globalThis.urls = PRECACHE_URLS;', cacheContext);
 assert.equal(cacheContext.cacheName, `erin-games-${version}`, 'CACHE_NAME differs from version.json');
-for (const file of ['manifest.js', 'game.js', ...files]) {
+for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files]) {
   assert.ok(cacheContext.urls.includes(`/erin/games/survivor/${file}`), `not precached: ${file}`);
 }
 for (const url of cacheContext.urls) {
   const target = path.join(repo, url.replace(/^\/erin\//, ''));
   assert.ok(fs.existsSync(target), `precache file missing: ${url}`);
 }
-for (const page of ['index.html', 'preview.html']) {
+for (const page of ['index.html', 'preview.html', 'practice.html']) {
   const html = fs.readFileSync(path.join(root, page), 'utf8');
   const manifestIndex = html.indexOf(`manifest.js?v=${version}`), gameIndex = html.indexOf(`game.js?v=${version}`);
   assert.ok(manifestIndex >= 0 && gameIndex > manifestIndex, `${page}: manifest must load first`);

@@ -74,3 +74,6 @@
 
 .maker-encounters .encounter-toggle { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
 .maker-encounters .encounter-toggle button, .maker-encounters .encounter-adjust { border-radius: 50%; width: 48px; height: 48px; min-height: 48px; padding: 8px; }
+/* 沿用 game-shell 的固定橫向座標；左側滑桿可邊改邊看。 */
+.maker-room.with-practice{padding-right:62%}.practice-dock{position:absolute;inset:0 0 0 38%;background:#142331;border-left:3px solid #8bb4bc;z-index:4;padding-top:44px}.practice-dock iframe{width:100%;height:100%;border:0;display:block}.practice-close{position:absolute;right:8px;top:2px;width:40px;height:40px;border-radius:50%;padding:8px;display:grid;place-items:center}.maker-room.with-practice .maker-toolbar{overflow-x:auto}.maker-room.with-practice .maker-toolbar strong{display:none}.maker-room.with-practice .maker-toolbar button{flex-shrink:0}.maker-room.with-practice .maker-toolbar button:not(:first-of-type){font-size:12px}.maker-room.with-practice .maker-tabs{overflow:auto}.maker-room.with-practice .grid{grid-template-columns:1fr}
+#save{width:44px;flex-shrink:0;padding:0;border-radius:50%}.maker-room.with-practice .maker-tabs button{flex:0 0 44px;width:44px;padding:8px;font-size:0;border-radius:50%}.maker-room.with-practice .maker-tabs .pixel-icon{width:24px;height:24px}.maker-room .practice-close{width:44px;height:44px;padding:8px}
