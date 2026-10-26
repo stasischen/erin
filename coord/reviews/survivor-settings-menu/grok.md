@@ -1,3 +1,14 @@
+verdict: approve
+93c4638e6ac156608e90caa1f4a1b6009b5a2a02
+
+## Round 3 review of 93c4638 (2026-10-26)
+Files checked: git diff main...codex/survivor-settings-menu; since hands-on-checked 1a306bf the only code change is games/survivor/tests/levelup-layout.cjs line 88 (openSettings() -> togglePause(), comment updated), exactly the requested fix. Other changes are coord/inbox (moved to done), card JSON, docs/survivor-settings-menu-validation.md. No game, data or asset changes, so the earlier hands-on result (1024x461 and 740x360, all OK) still applies.
+
+Tests ran on: Grok's cloud box (/workspace/erin-ci/run-review-tests.sh 93c4638..., Chrome 156, node 24): RESULT PASS, 85 PASS lines, full --layout passed at all sizes.
+
+Remaining minor notes (not blocking): sticky 重設/關閉 bar can cover the bottom-most control until scrolled further; Maker 預設設定 <details> collapses after each switch tap.
+
+## Previous rounds
 verdict: changes
 c4a3fa0f020c2e3f14afc3bfa821143847918c72
 
