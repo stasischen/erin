@@ -46,8 +46,8 @@ function swingAtNearest(dash = false, command = null) {
   const boosted = state.dashAttack > 0 && state.dashTimer <= 0;
   const look = buildAppearance();
   const event = SurvivorWeapons.swing(weapon,number,command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY),{
-    extraArc:effectLevel('multi-water') * UPGRADE_TUNING.extraShotAngle,
-    size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * (1+effectLevel('big-water')*UPGRADE_TUNING.waterSizePerLevel) * cardBlock('wind-attack','onShot').actions[0].multiplier * (1+effectLevel('piercing-water')*.1) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
+    extraArc:cardBlock('multi-water','onShot').actions[0].extraArc,
+    size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * cardBlock('wind-attack','onShot').actions[0].multiplier * cardBlock('piercing-water','onShot').actions[0].size * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
     damage:effectiveDamage()*properties.damage*(boosted ? UPGRADE_TUNING.dashAttackDamage : 1),push:properties.push
   },{...sequence.event,dash});
   const targets = combatTargets();
@@ -84,9 +84,9 @@ function swingAtNearest(dash = false, command = null) {
       if(state.mode!=='playing') return;
     }
     if(effectLevel('splash-water')) {
-      const radius=UPGRADE_TUNING.splashBaseRadius+effectLevel('splash-water')*UPGRADE_TUNING.splashPerLevel;
+      const splash=cardBlock('splash-water','onShotHit',{damage:event.damage}), radius=splash.conditions[0].radius;
       skillVisual('splash',t.x,t.y,{radius});
-      for(const other of combatTargets()) if(other!==t && !hits.includes(other) && Math.hypot(deltaX(other.x,t.x),deltaY(other.y,t.y))<radius) {hitBuildTarget(other,event.damage*BUILD_TUNING.supportSplashDamage);if(state.mode!=='playing')return;}
+      for(const other of combatTargets()) if(other!==t && !hits.includes(other) && cardBlockMatches(splash.conditions[0],other,t.x,t.y)) {hitBuildTarget(other,splash.actions[0].amount);if(state.mode!=='playing')return;}
     }
     triggerMakerEffects('hit',t.x,t.y);
     if(state.mode!=='playing') return;

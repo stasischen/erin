@@ -44,11 +44,11 @@ function fireAtNearest(command = null) {
   const look = buildAppearance();
   const angle = command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
   playSound("shoot");
-  const count = 1 + effectLevel("multi-water");
+  const count = cardBlock('multi-water','onShot').actions[0].count;
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
-    const offset = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle;
+    const offset = (i - (count - 1) / 2) * cardBlock('multi-water','onShot').actions[0].angle;
     const spread = command && autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, vy: Math.sin(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + effectLevel("piercing-water") + (effectLevel('wind-blade') ? cardBlock('wind-blade','onShot').actions[0].count : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * cardBlock('wind-attack','onShot').actions[0].multiplier, hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, vy: Math.sin(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + cardBlock('piercing-water','onShot').actions[0].count + (effectLevel('wind-blade') ? cardBlock('wind-blade','onShot').actions[0].count : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * cardBlock('wind-attack','onShot').actions[0].multiplier, hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
   if (!(command && autoCharged)) prepareNeutralShots(angle);
 }
@@ -133,10 +133,10 @@ function upgradeLevel(id) { return state.upgrades[id] || 0; }
 function effectLevel(feature) {
   return Math.min(5, UPGRADES.reduce((total, card) => total + upgradeLevel(card.id) * card.effects.reduce((n, effect) => n + (effect.feature === feature ? effect.power : 0), 0), 0));
 }
-function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + effectLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
-function effectiveShotInterval() { return Math.max(0.12, (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL) * (1 - effectLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
+function effectiveDamage() { return PROJECTILE_DAMAGE * cardBlock('big-water','onShot').actions[1].multiplier; }
+function effectiveShotInterval() { return Math.max(0.12, (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL) * cardBlock('rapid-water','onShot').actions[0].multiplier / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
 function maxPlayerHealth() {
-  return Math.max(1, SurvivorEffectBlocks.modify('maxHealth', PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor), {'item-crown':effectLevel('item-crown')}, GAME_DATA));
+  return Math.max(1, SurvivorEffectBlocks.modify('maxHealth', PLAYER_HEALTH + cardBlock('bubble-shield','onHealth').actions[0].amount, {'item-crown':effectLevel('item-crown')}, GAME_DATA));
 }
 function addHealEffect() {
   if (state.effects.length >= 90) return;

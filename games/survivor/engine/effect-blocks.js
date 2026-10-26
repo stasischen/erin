@@ -94,6 +94,21 @@ globalThis.SurvivorEffectBlocks = (() => {
       {trigger:'onWallTick',conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('schoolRules.eyeRadius')}],actions:[{type:'push',distance:op('multiply',ref('schoolRules.eyePush'),arg('dt'))}]},
       {trigger:'onEnemyShot',conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('schoolRules.eyeRadius')}],actions:[{type:'block-shot'}]}]}
   );
+  // 支援卡沿用原事件順序，等級由舊 feature/power 合併封頂後傳入。
+  recipes.push(
+    {feature:'big-water',rules:[{trigger:'onShot',actions:[
+      {type:'size-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.waterSizePerLevel')))},
+      {type:'damage-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.damagePerLevel')))}]}]},
+    {feature:'rapid-water',rules:[{trigger:'onShot',actions:[{type:'interval-multiplier',multiplier:op('subtract',1,op('multiply',arg('level'),ref('tuning.fireRateReduction')))}]}]},
+    {feature:'multi-water',rules:[{trigger:'onShot',actions:[{type:'spread',count:op('add',1,arg('level')),angle:ref('tuning.extraShotAngle'),extraArc:op('multiply',arg('level'),ref('tuning.extraShotAngle'))}]}]},
+    {feature:'onion-dash',rules:[{trigger:'onMove',actions:[{type:'move-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.moveSpeedPerLevel')))}]}]},
+    {feature:'bubble-shield',rules:[{trigger:'onHealth',actions:[{type:'health',amount:op('multiply',arg('level'),op('ceil',op('divide',ref('tuning.playerHealth'),ref('build.shieldHealthDivisor'))))}]},
+      {trigger:'onUpgrade',actions:[{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),ref('build.shieldHealthDivisor')))}]}]},
+    {feature:'gem-magnet',rules:[{trigger:'onPickup',actions:[{type:'pickup-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.magnetPerLevel')))}]}]},
+    {feature:'piercing-water',rules:[{trigger:'onShot',actions:[{type:'pierce',count:arg('level'),size:op('add',1,op('multiply',arg('level'),.1))}]}]},
+    {feature:'splash-water',rules:[{trigger:'onShotHit',conditions:[{type:'radius',strict:true,radius:op('add',ref('tuning.splashBaseRadius'),op('multiply',arg('level'),ref('tuning.splashPerLevel')))}],actions:[{type:'damage',amount:op('multiply',arg('damage'),ref('build.supportSplashDamage'))}]}]},
+    {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:1}]}]}
+  );
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
   function collect(node) {
     if (!node || typeof node!=='object') return;
@@ -115,6 +130,9 @@ globalThis.SurvivorEffectBlocks = (() => {
       if(expression.op==='add') return args.reduce((a,b)=>a+b,0);
       if(expression.op==='multiply') return args.reduce((a,b)=>a*b,1);
       if(expression.op==='subtract') return args[0]-args[1];
+      if(expression.op==='ceil') return Math.ceil(args[0]);
+      if(expression.op==='divide') return args[0]/args[1];
+      if(expression.op==='power') return Math.pow(args[0],args[1]);
       if(expression.op==='max') return Math.max(...args);
     }
     throw new Error('Unsupported effect expression');
@@ -132,6 +150,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     return rule ? resolve(rule,data,context) : null;
   }
   function matches(condition,target,player={r:0},end={x:0,y:0}) {
+    if(condition.type==='healthMissing') return target.health<target.maxHealth;
     if(condition.type==='still') return target.seconds>=condition.seconds;
     if(condition.type==='bladeEligible') return !target.melee && target.pierce>0 && !target.blade;
     if(condition.type==='positiveDamage') return target.damage>0;
@@ -177,7 +196,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     const timers={...input.timers}, events=[];
     for (const recipe of definitions) if (input.levels[recipe.feature]) for (const rule of recipe.rules || []) {
       if (rule.trigger !== 'onTimer') {
-        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick','onMeleeHit','onMove','onPickup','onStill','onWallTick','onEnemyShot'].includes(rule.trigger)) continue;
+        if (['onHealth','onUpgrade','onHealTick','onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick','onMeleeHit','onMove','onPickup','onStill','onWallTick','onEnemyShot'].includes(rule.trigger)) continue;
         throw new Error('Unsupported effect trigger');
       }
       const seconds=value(rule.interval,input.data);

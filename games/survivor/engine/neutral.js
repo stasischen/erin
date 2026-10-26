@@ -106,7 +106,7 @@ function drawNeutralItems() {
   if (effectLevel('item-bird')) {const pos=neutralBirdPosition();SurvivorIcons.draw(ctx,'item-bird',pos.x-12,pos.y-12,24);}
   for(const bomb of state.neutral.bombs) SurvivorIcons.draw(ctx,'item-candy',bomb.x-12,bomb.y-12,24+Math.sin(bomb.timer*20)*2);
   if (effectLevel('item-magnet')) {
-    const radius=GEM_PULL_RADIUS*GAME_DATA.neutralRules.magnetMultiplier*cardBlock('wind-light','onPickup').actions[0].multiplier*(1+effectLevel('gem-magnet')*UPGRADE_TUNING.magnetPerLevel);
+    const radius=GEM_PULL_RADIUS*GAME_DATA.neutralRules.magnetMultiplier*cardBlock('wind-light','onPickup').actions[0].multiplier*cardBlock('gem-magnet','onPickup').actions[0].multiplier;
     ctx.save();ctx.globalAlpha=.25;ctx.strokeStyle='#e5c77d';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
   ['crown','bank','clover','cookie'].filter(id=>effectLevel('item-'+id)).forEach((id,i)=>{

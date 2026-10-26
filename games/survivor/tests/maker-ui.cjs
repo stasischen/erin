@@ -208,3 +208,29 @@ console.log('PASS: ten water card stacks, fold/preview persistence, shared edit 
   assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：吹飛'));
 }
 console.log('PASS: ten wind card stacks, fold/preview persistence, shared edit and old-work reload');
+
+// Support stacks reuse the same editor, refs and old-work storage.
+{
+  const m=setup();m.tab('cards');
+  const ids=["big-water", "rapid-water", "multi-water", "onion-dash", "bubble-shield", "gem-magnet", "piercing-water", "splash-water", "auto-heal"];
+  for(const id of ids) {
+    m.item(id);
+    const stacks=m.nodes().filter(n=>n.className==='card-block-stack');
+    assert.ok(stacks.length,id);assert.equal(stacks[0].open,false);
+    stacks[0].open=true;stacks[0].fire('toggle');
+    assert.ok(!stacks.some(n=>n.textContent.includes('undefined')),id);
+    assert.ok(stacks[0].textContent.includes('動作 →'),id);
+    m.click('看這個積木的效果');assert.equal(m.calls[m.calls.length-1].spec.id,id);
+    assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
+  }
+  m.ids.save.fire('click');const beforePush=JSON.parse(m.storage['erin-survivor-maker-v1']).tuning.waterSizePerLevel;
+  m.item('big-water');
+  const row=m.nodes().find(n=>n.className==='maker-number'&&n.textContent.startsWith('每級水球大小加成'));
+  assert.ok(row);row.children[1].children.find(n=>n.tag==='button'&&n._text==='＋').fire('click');
+  m.ids.save.fire('click');const saved=JSON.parse(m.storage['erin-survivor-maker-v1']);
+  assert.ok(Math.abs(saved.tuning.waterSizePerLevel-(beforePush+.01))<1e-12);
+  const reloaded=setup({saved:m.storage});reloaded.tab('cards');reloaded.item('big-water');
+  assert.ok(reloaded.nodes().find(n=>n.className==='card-block-stack'));
+  assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：水球加大'));
+}
+console.log('PASS: nine support card stacks, fold/preview persistence, shared edit and old-work reload');

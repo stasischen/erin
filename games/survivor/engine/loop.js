@@ -171,11 +171,11 @@ function tick(dt) {
   const healLevel = effectLevel("auto-heal");
   if (healLevel > 0) {
     state.healTimer += dt;
-    const healInterval = UPGRADE_TUNING.autoHealSeconds * Math.pow(BUILD_TUNING.healIntervalMultiplier, healLevel - 1);
+    const healInterval = cardBlock('auto-heal','onHealTick').interval;
     while (state.healTimer >= healInterval) {
       state.healTimer -= healInterval;
-      if (state.player.health < maxPlayerHealth()) {
-        state.player.health = Math.min(maxPlayerHealth(), state.player.health + 1);
+      if (SurvivorEffectBlocks.matches(cardBlock('auto-heal','onHealTick').conditions[0],{health:state.player.health,maxHealth:maxPlayerHealth()})) {
+        state.player.health = Math.min(maxPlayerHealth(), state.player.health + cardBlock('auto-heal','onHealTick').actions[0].amount);
         addHealEffect();
         updateHud();
       }
@@ -187,7 +187,7 @@ function tick(dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(dt, state.dashTimer);
-  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * (1 + effectLevel("onion-dash") * UPGRADE_TUNING.moveSpeedPerLevel) * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
+  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed();
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (dt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (dt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -285,9 +285,9 @@ function tick(dt) {
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
         if (state.mode !== "playing") return;
         if (effectLevel("splash-water") > 0) {
-          const radius = UPGRADE_TUNING.splashBaseRadius + effectLevel("splash-water") * UPGRADE_TUNING.splashPerLevel;
+          const splash=cardBlock('splash-water','onShotHit',{damage:shot.damage}), radius=splash.conditions[0].radius;
           skillVisual("splash", enemy.x, enemy.y, { radius });
-          for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && canAttackTarget(nearby) && !shot.hitList.includes(nearby) && Math.hypot(deltaX(nearby.x, enemy.x), deltaY(nearby.y, enemy.y)) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * BUILD_TUNING.supportSplashDamage); }
+          for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && canAttackTarget(nearby) && !shot.hitList.includes(nearby) && cardBlockMatches(splash.conditions[0],nearby,enemy.x,enemy.y)) { shot.hitList.push(nearby); damageEnemy(nearby, splash.actions[0].amount); }
         }
         resolveWaterHit(shot);
         if (state.mode !== "playing") return;
@@ -333,7 +333,7 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = deltaX(state.player.x, gem.x), dy = deltaY(state.player.y, gem.y), distance = Math.hypot(dx, dy);
-    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * cardBlock('wind-light','onPickup').actions[0].multiplier * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
+    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * cardBlock('wind-light','onPickup').actions[0].multiplier * cardBlock('gem-magnet','onPickup').actions[0].multiplier;
     if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     clampToMap(gem);
     if (distance < state.player.r + gem.r + 3) { gem.alive = false; neutralEvent("pickup", gem.x, gem.y); grantExperience(gem.value); if (state.mode === "levelup") break; }
