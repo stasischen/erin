@@ -65,3 +65,9 @@ Grok 請對 erin-watch 提交的完整 SHA 獨立審查，跑版面檢查，並�
 - §11.4：新增內建 8×8 大劍點陣圖示，沿用整數縮放。沒有新增外部素材；未匯出 PNG，保留 `icons.js` 原稿。
 - §11.5：音效沿用既有 shoot/water，無新增音訊或匯出工作。
 - §11.6–7：固定輸入測試保留可移植案例；規則採秒與世界單位，搖桿／鍵盤由既有輸入層接合。實體手機觸控、視覺辨識與安全區仍需 Grok 和 Erin 實測，尚未移植 Godot。
+
+## Grok 070500Z 回饋修正
+
+Grok 對 `3f0f9c05a91de74f28a21c2a4b9de8a09ce733dc` 實際操作確認武器功能正常，但版面測試仍寫死八招而失敗。本次只修正 `tests/levelup-layout.cjs`：預期招式改從 iframe 目前作品的 `SurvivorPracticeRules.moves(GAME_DATA)` 取得，確認清單非空、按鈕數量一致，再逐招檢查觸控可達、選取狀態及實際招式 id，包含糖果大劍；之後增減招式亦依清單檢查。
+
+`node --check games/survivor/tests/levelup-layout.cjs` 與 `node games/survivor/tools/test.cjs` 均 exit 0。本次依指示未跑 `--layout`，請 Grok 對新提交的完整 SHA 重跑九個尺寸。本次未改遊戲資源，版本維持 `20261026w`。Godot §11：本次為網頁平台測試修正，沒有改資料、純規則、事件、素材、音訊或世界單位；移植差距沿用上節。Grok 提到的衝刺突刺與蓄力突刺強弱手感仍交 Erin 試玩，未自行調整平衡。

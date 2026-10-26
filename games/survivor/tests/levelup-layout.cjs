@@ -168,11 +168,13 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     }
     d.querySelector('#practiceMenu').click();
     if(w.eval('state.mode')!=='paused')throw Error('招式選單沒有暫停');
-    const buttons=[...d.querySelectorAll('#practiceMoves button')];if(buttons.length!==8)throw Error('缺少八招');
-    for(let index=0;index<8;index++){
+    const moves=w.eval('SurvivorPracticeRules.moves(GAME_DATA)');
+    const buttons=[...d.querySelectorAll('#practiceMoves button')];
+    if(!moves.length||buttons.length!==moves.length)throw Error('練習招式數量與清單不符');
+    for(let index=0;index<moves.length;index++){
       d.querySelector('#practiceMenu').click();const b=d.querySelectorAll('#practiceMoves button')[index];b.scrollIntoView({block:'nearest'});
       const r=b.getBoundingClientRect();if(!b.contains(d.elementFromPoint(r.x+r.width/2,r.y+r.height/2)))throw Error('招式按鈕被遮住');
-      b.click();if(d.querySelectorAll('#practiceMoves button')[index].getAttribute('aria-pressed')!=='true')throw Error('選取失敗');
+      b.click();if(d.querySelectorAll('#practiceMoves button')[index].getAttribute('aria-pressed')!=='true'||w.eval('practiceId')!==moves[index].id)throw Error('選取失敗：'+moves[index].id);
     }
     d.querySelector('#practiceMenu').click();
     const card=d.querySelector('.practice-card');card.scrollTop=card.scrollHeight;

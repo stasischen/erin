@@ -8,12 +8,12 @@
   "branch": "codex/survivor-sword-combo-charge",
   "pr": null,
   "brief": "coord/inbox/done/20261026T063539Z-parent-sword-combo-charge.md",
-  "next": "糖果大劍、三武器連段／自動聚氣、Maker／練習場／卡片說明已完成，並採納 064215Z 蓄力修訂：大劍前方直線穿透突刺；錘子前方扇形重擊＋暈眩，禁止蓄力圓圈。node games/survivor/tools/test.cjs 全部通過（exit 0），未跑 --layout。請 erin-watch 代辦指定檔案 commit、push、PR，再由 Grok 對完整 SHA 獨立審查並跑版面及手機尺寸實際操作，之後交 Erin 試玩手感。Godot §11.1–3/6/7 資料／純規則／事件／可移植測試與世界單位已對照；§11.4–5 沿用程式點陣及音訊，未做 PNG 或音檔匯出。細節與待測項目見 docs/survivor-sword-combo-charge-validation.md。無待家長或 Erin 決定事項；不操作 main 或 .git。",
+  "next": "已處理 Grok 070500Z 唯一阻擋：版面測試依 SurvivorPracticeRules.moves(GAME_DATA) 逐招檢查數量、觸控可達、選取狀態與實際 id，不再寫死八招。node --check 及 node games/survivor/tools/test.cjs 均 exit 0；依指示未跑 --layout。請 erin-watch 代辦指定檔案 commit、push 及 PR，再交 Grok 對新完整 SHA 重跑九尺寸版面檢查。Godot §11：本輪僅網頁平台測試修正，無資料／規則／事件／素材／音訊／世界單位變更，既有差距見 docs/survivor-sword-combo-charge-validation.md。無待決定的阻擋事項；突刺強弱手感留給 Erin 試玩。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T06:47:29.635103Z",
+  "updated": "2026-10-26T06:56:46.275605Z",
   "updatedBy": "codex"
 }
