@@ -38,8 +38,15 @@ assert.equal(saved().cards[0].name,'我的新招');assert.equal(saved().cards[0]
 // 各武器的相同名稱欄位分別儲存，不會改到另一把武器。
 for(const [i,w] of defaults.weapons.entries()) {choose('weapons',w.id);slider('站定聚氣秒數',[.8,1.2,1.5][i]);slider('最後一段傷害倍率',[1.8,2,3][i]);slider('開始移動保留聚氣比例（0 為重置）',[0,.5,1][i]);assert.equal(ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='站定聚氣秒數').length,1);}
 ui.click('自動聚氣：開');ui.ids.save.fire('click');assert.deepEqual(saved().weapons.map(w=>w.chargeSeconds),[.8,1.2,1.5]);assert.deepEqual(saved().weapons.map(w=>w.chargeEnabled),[true,true,false]);
-choose('weapons','candy-hammer');slider('起手預警秒數',.25);
+choose('weapons','candy-hammer');
+assert.equal(ui.nodes().filter(n=>n.className==='weapon-block').length,20,'四招各五種可收合積木');
+const folded=ui.nodes().find(n=>n.className==='weapon-block');folded.open=false;folded.fire('toggle');
+ui.click('自動聚氣：開');
+assert.equal(ui.nodes().find(n=>n.className==='weapon-block').open,false,'切換招式選項保留收合狀態');
+ui.click('自動聚氣：關');
+slider('起手預警秒數',.25);
 assert.ok(ui.nodes().some(n=>n.className==='timing-timeline'&&n.textContent.includes('起手 0.25秒')));
+slider('特殊招冷卻秒數',4);slider('特殊招傷害倍率',2.5);
 slider('揮擊距離',100);slider('受到傷害減少比例',.2);
 // 八種怪物逐一可編輯，畫面只建立選中的造型與攻擊。
 for(const [i,e] of defaults.enemies.entries()) {choose('enemies',e.id);assert.equal(ui.nodes().filter(n=>n.tag==='canvas'&&n.attrs['aria-label']&&n.attrs['aria-label'].endsWith('角色預覽')).length,1);slider('移動速度',60+i);}
@@ -62,6 +69,11 @@ ui.click('自動');assert.equal(ui.nodes().find(n=>n.tag==='details').open,true)
 ui.ids.save.fire('click');const data=saved();
 assert.equal(data.weapons[1].timing.windup,.25);assert.equal(data.weapons[0].timing.windup,.1);
 assert.equal(data.enemies[0].phaseAttack.timing.windup,1.5);
+assert.equal(data.weapons[1].blocks.moves[3].timing.specialCooldown,4);
+assert.equal(data.weapons[1].specialDamage,2.5);
+assert.equal(data.weapons[1].blocks.moves[0].shape.radius,100);
+assert.equal(data.weapons[1].blocks.moves[0].timing.phases.windup,.25);
+assert.equal(data.weapons[0].blocks.moves[2].trigger.chargeSeconds,.8);
 assert.equal(data.weapons[1].radius,100);assert.equal(data.weapons[1].damageReduction,.2);
 assert.deepEqual(data.enemies.map(e=>e.speed),defaults.enemies.map((e,i)=>60+i));
 assert.equal(data.enemies[0].spriteId,'mushroom-hopper');assert.equal(data.enemies[0].mass,5);assert.equal(data.enemies[0].phaseAttack.enabled,true);assert.equal(data.enemies[0].phaseAttack.windup,1.5);

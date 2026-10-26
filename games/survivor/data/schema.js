@@ -62,6 +62,54 @@
     result.attackMode = input.attackModeChosen===true && ['auto','manual'].includes(input.attackMode) ? input.attackMode : 'manual';
     return result;
   }
+  // 武器招式 v1：五種積木的白名單。編輯積木，載入時編譯成既有戰鬥接合欄位。
+  // 連段重招就是原有特殊招；衝刺斬沿用重招倍率，不另創數值。
+  const SPECIAL_BOUNDS={specialCooldown:[.5,15,.1],specialCount:[1,8,1],specialSpread:[0,1,.01],specialRange:[40,600,5],specialDamage:[.5,5,.1],specialLeapDistance:[0,150,5],specialLeapSeconds:[.1,1,.05]};
+  const WEAPON_STACKS = [
+    {id:'primary',label:'普通攻擊',trigger:['direction'],shape:['baseShape','arcDegrees','radius','thrustWidth'],timing:['interval'],effect:['damageMultiplier','push','damageReduction']},
+    {id:'combo',label:'連段重招',trigger:['comboEnabled','comboEvery','comboReset'],shape:['comboShape','comboSize'],timing:['finisherRecovery'],effect:['comboMultiplier','comboPush','stepDistance','splashSize','splashDamage']},
+    {id:'charge',label:'蓄力攻擊',trigger:['chargeEnabled','chargeSeconds','moveRetention'],shape:['chargeShape','chargeSize'],timing:[],effect:['chargeMultiplier','chargeStun']},
+    {id:'special',label:'特殊招',trigger:[],shape:['specialKind','specialCount','specialSpread','specialRange'],timing:['specialCooldown','specialLeapSeconds'],effect:['specialDamage','specialLeapDistance']},
+    {id:'dash',label:'衝刺斬',trigger:['dashThrust'],shape:[],timing:[],effect:[]}
+  ];
+  const WEAPON_TRIGGERS={primary:'attackReleaseOrTimer',combo:'attackNumber',charge:'chargeReady',special:'specialRelease',dash:'dashAttack'};
+  function weaponCue(weapon,id) {return id==='special'?weapon.specialKind:weapon.kind==='melee'?'hammer-swing':'projectile';}
+  function weaponStacks(weapon) {
+    return {version:1, moves:WEAPON_STACKS.map(def=>{
+      const move={id:def.id};
+      for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].filter(k=>weapon[k]!==undefined).map(k=>[k,copy(weapon[k])]));
+      move.trigger.event=WEAPON_TRIGGERS[def.id];
+      if(def.id==='primary') move.timing.phases=copy(weapon.timing);
+      move.feedback={cue:weaponCue(weapon,def.id),sound:'shoot'};
+      return move;
+    })};
+  }
+  function compileWeapon(weapon) {
+    if(weapon.blocks===undefined) return {...weapon};
+    const blocks=weapon.blocks;
+    if(!blocks || Object.keys(blocks).some(k=>!['version','moves'].includes(k)) || blocks.version!==1 || !Array.isArray(blocks.moves) || blocks.moves.length!==WEAPON_STACKS.length) throw new Error('武器積木版本或招式數量不正確');
+    const result={...weapon};
+    blocks.moves.forEach((move,i)=>{
+      const def=WEAPON_STACKS[i];
+      if(!move || move.id!==def.id || Object.keys(move).some(k=>!['id','trigger','shape','timing','effect','feedback'].includes(k))) throw new Error('武器招式積木不正確');
+      for(const part of ['trigger','shape','timing','effect']) {
+        const values=move[part], allowed=def[part].concat(part==='trigger'?['event']:def.id==='primary'&&part==='timing'?['phases']:[]);
+        if(!values || typeof values!=='object' || Array.isArray(values) || Object.keys(values).some(k=>!allowed.includes(k))) throw new Error('武器'+part+'積木不正確');
+        for(const key of def[part]) {
+          if(weapon[key]!==undefined && values[key]===undefined) throw new Error('武器積木缺少 '+key);
+          if(values[key]!==undefined) result[key]=values[key];
+        }
+      }
+      if(move.trigger.event!==WEAPON_TRIGGERS[def.id]) throw new Error('武器觸發積木不支援');
+      if(def.id==='primary') {
+        if(!move.timing.phases) throw new Error('武器缺少時機積木');
+        result.timing=move.timing.phases;
+      }
+      const feedback=move.feedback;
+      if(!feedback || Object.keys(feedback).length!==2 || feedback.cue!==weaponCue(weapon,def.id) || feedback.sound!=='shoot') throw new Error('武器回饋積木不支援');
+    });
+    return result;
+  }
   function defaults() { return copy(root.SURVIVOR_DEFAULTS); }
   function validate(input) {
     const data = defaults(), errors = [];
@@ -95,9 +143,10 @@
       if (input.weapons !== undefined) {
         if (!Array.isArray(input.weapons) || input.weapons.length < 2 || input.weapons.length > data.weapons.length || new Set(input.weapons.map(w=>w && w.id)).size !== input.weapons.length || input.weapons.some(w=>!w || !data.weapons.some(b=>b.id===w.id))) fail('武器清單不正確');
         for (const weapon of data.weapons) {
-          const source = input.weapons.find(w => w.id === weapon.id);
+          let source = input.weapons.find(w => w.id === weapon.id);
           if (!source && weapon.id === 'candy-sword') continue;
           if (!source || source.kind !== weapon.kind) fail('武器種類不正確');
+          source=source.blocks===undefined ? source : compileWeapon({...weapon,...source});
           if(source.timing !== undefined) weapon.timing=timing(source.timing);
           if (weapon.kind === 'melee') for (const [field,bounds] of Object.entries(WEAPON_BOUNDS)) weapon[field] = num(source[field],bounds[0],bounds[1],field,field === 'spinEvery');
           for (const [field,bounds] of Object.entries(ATTACK_BOUNDS)) if(source[field] !== undefined) weapon[field]=num(source[field],bounds[0],bounds[1],field,field==='comboEvery');
@@ -109,6 +158,15 @@
             weapon[field]=source[field];
           }
         }
+      }
+      for(const weapon of data.weapons) {
+        const source=input.weapons && input.weapons.find(w=>w.id===weapon.id);
+        if(source) {
+          const compiled=compileWeapon({...weapon,...source});
+          for(const [key,b] of Object.entries(SPECIAL_BOUNDS)) if(compiled[key]!==undefined) weapon[key]=num(compiled[key],b[0],b[1],key,key==='specialCount');
+          if(compiled.specialKind!==undefined) weapon.specialKind=choice(compiled.specialKind,[weapon.specialKind],'特殊招種類');
+        }
+        weapon.blocks=weaponStacks(weapon);
       }
       // 舊作品缺省補齊；半徑與死區使用遊戲畫面單位。
       if (input.joystick !== undefined) {
@@ -306,7 +364,7 @@
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return { valid: true, data: defaults(), errors: [] };
+      if (!raw) return validate(defaults());
       if (raw.length > 150000) throw new Error('作品資料太大');
       const saved = JSON.parse(raw);
       // 舊版 auto 是預設，沒有選擇紀錄時改用手動；不改動其他作品內容。
@@ -319,5 +377,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

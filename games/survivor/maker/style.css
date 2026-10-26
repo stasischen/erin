@@ -109,3 +109,9 @@
 .timing-timeline span { flex-basis:64px; padding:8px 4px; text-align:center; color:#102638; border-radius:6px; }
 .timing-windup { background:#ffe299; }.timing-active { background:#ffacaa; }
 .timing-recovery { background:#aee5ff; }.timing-cooldown { background:#d6c4fa; }
+
+/* 五種積木分組，收合狀態依武器與招式保留。 */
+.weapon-move { border-top: 2px solid #adcde3; margin-top: 14px; padding-top: 8px; }
+.weapon-block { border-left: 4px solid #659fc2; border-radius: 6px; background: #f3f8fc; margin: 8px 0; padding: 8px; }
+.weapon-block > summary { cursor: pointer; font-weight: bold; min-height: 32px; }
+.weapon-block > .grid { margin-top: 8px; }

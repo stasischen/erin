@@ -10,12 +10,12 @@ globalThis.SurvivorAttackInput = {
     return {type:'attack-released',kind,weaponId:weapon.id,heldSeconds,angle,
       charged:kind==='attack'&&weapon.chargeEnabled&&heldSeconds>=weapon.chargeSeconds,dash:!!dash};
   },
-  // 特殊招保留為獨立招式事件；效果積木可日後接同一個事件。
-  special(weaponId, angle) {
-    return {type:'weapon-special',weaponId,angle,cooldown:6,
-      kind:weaponId==='candy-hammer'?'leap':weaponId==='candy-sword'?'sword-wave':'water-fan',
-      count:weaponId==='water-ball'?5:1,spread:weaponId==='water-ball'?.18:0,
-      range:weaponId==='candy-hammer'?110:420,damageMultiplier:2,leapDistance:80,leapSeconds:.25};
+  // 特殊招也由武器積木編譯出的資料驅動；保留事件與戰鬥接合邊界。
+  special(weaponId, angle, weapon = SURVIVOR_DEFAULTS.weapons.find(w=>w.id===weaponId)) {
+    return {type:'weapon-special',weaponId,angle,cooldown:weapon.specialCooldown,
+      kind:weapon.specialKind,count:weapon.specialCount,spread:weapon.specialSpread,
+      range:weapon.specialRange,damageMultiplier:weapon.specialDamage,
+      leapDistance:weapon.specialLeapDistance,leapSeconds:weapon.specialLeapSeconds};
   }
 };
 const manualHolds={attack:null,special:null};
@@ -46,7 +46,7 @@ function releaseManualAttack(kind) {
   state.lastAttackInput=event;
   if(kind==='special') {
     if(state.specialCooldown>0||state.manualLeap)return;
-    const special=SurvivorAttackInput.special(state.weaponId,event.angle);
+    const special=SurvivorAttackInput.special(state.weaponId,event.angle,activeWeapon());
     state.specialCooldown=special.cooldown;state.lastSpecialEvent=special;
     if(special.kind==='leap') {
       state.manualLeap={...special,left:special.leapSeconds};

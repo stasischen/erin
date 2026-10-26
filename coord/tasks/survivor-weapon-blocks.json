@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-weapon-blocks",
+  "title": "小怪獸：武器連段與蓄力積木堆",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-weapon-blocks",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T094145Z-parent-weapon-blocks.md",
+  "next": "請 Grok 審查 erin-watch 提交的完整 SHA，並在 1024×461、740×360 實際操作武器五種積木的收合、數值編輯、預覽與試玩；比較三武器連段、蓄力、獨立特殊招及衝刺斬手感，確認舊作品載入。node games/survivor/tools/test.cjs 全部通過，未跑 --layout；版本 20261026ad。詳見 docs/survivor-weapon-blocks-validation.md。Godot §11：JSON 值、純轉換／編譯、原事件及固定輸入輸出測試；外部 JSON／通用事件系統與敵人積木留後續，素材音訊未改。無新增設計決定，等待 Erin 試玩。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T09:49:02.633616Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-timing-block"
+  ]
+}
