@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-effect-blocks-plan",
+  "title": "小怪獸：效果積木架構（設計，不實作）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-effect-blocks-plan",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T032325Z-parent-effect-blocks-plan.md",
+  "next": "請 Grok 審查效果積木設計文件、程式對照與五張 JSON 示意；49 卡／49 feature 已核對，JSON 語法、文件連結與 diff 空白檢查通過。Godot §11：整理資料／純規則／事件／等價測試與 Resource 方向，本卡無遊戲資料、邏輯或素材改動；提案尚未實作。後續採用、首個遷移 feature、欄位互斥及未支援近戰效果由 Erin／家長決定。commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T03:28:37.894893Z",
+  "updatedBy": "codex"
+}
