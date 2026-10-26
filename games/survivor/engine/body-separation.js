@@ -164,9 +164,8 @@ function slideObstacles(target) {
   const circles=refs.map(t=>({x:deltaX(t.x,target.x),y:deltaY(t.y,target.y),r:t.r}));
   const walls=[];
   for(const m of state.bossMoves) if(m.active && bossKind(m)==='barriers') for(const sign of [-1,1]) walls.push({x:deltaX(m.x+sign*m.wallWidth,target.x)-8,y:deltaY(m.y,target.y)-m.radius,width:16,height:m.radius*2});
-  const z=state.bossZone;
-  const bounds=z?{left:-Infinity,right:Infinity,top:-Infinity,bottom:Infinity,zone:{x:deltaX(z.x,target.x),y:deltaY(z.y,target.y),r:z.radius}}:null;
-  return {refs,circles,walls,bounds};
+  // 紫霧安全圈是可以穿越的傷害區，不是實體競技場邊界。
+  return {refs,circles,walls,bounds:null};
 }
 function slidePrediction(target) {
   const m=target.slide;if(!m)return {dx:0,dy:0};

@@ -19,7 +19,16 @@ run('state.hitStop=.05;tick(.05)');near(run('e.x-x'),0);run('tick(.05)');near(ru
 run('state.mode="paused";tick(1)');near(run('e.x-x'),35);run('state.mode="playing";tick(.05);tick(.05);tick(.05)');near(run('e.x-x'),80);
 fresh();run('shiftTarget(e,state.player.x,state.player.y,80);resetGame()');assert.equal(run('state.player.slide||null'),null);
 fresh();run('globalThis.b=spawnEnemy({typeId:"jaben"});b.x=e.x+60;b.y=e.y;b.speed=0;b.hp=10000;shiftTarget(e,state.player.x,state.player.y,100);globalThis.end=slidePrediction(e).dx;updateTargetSlide(e,1)');near(run('e.x-x'),run('end'));assert.equal(run('e.slide'),null);
+// 紫霧圈內、圈外，以及老師跳躍推主角，都可以越過傷害圈。
+for(const offset of [170,190]) {
+ fresh();run(`state.bossZone={x:state.player.x,y:state.player.y,radius:180};e.x=state.player.x+${offset};x=e.x;shiftTarget(e,e.x-10,e.y,45);`);
+ near(run('slidePrediction(e).dx'),45);run('updateTargetSlide(e,1)');near(run('e.x-x'),45);
+}
+fresh();run(`state.bossZone={x:state.player.x-190,y:state.player.y,radius:180};x=state.player.x;shiftTarget(state.player,state.player.x-10,state.player.y,45);updateTargetSlide(state.player,1)`);near(run('state.player.x-x'),45);
+// 真正的老師障壁仍擋住滑動，箭頭終點與落點一致。
+fresh();run(`state.bossMoves=[{kind:'barriers',active:true,x:e.x+80,y:e.y,wallWidth:30,radius:100}];shiftTarget(e,e.x-10,e.y,100);globalThis.end=slidePrediction(e).dx;updateTargetSlide(e,1)`);
+near(run('e.x-x'),run('end'));assert.ok(run('end>0 && end<100'));
 // Maker persistence, legacy migration, and rejecting invalid seconds.
 for(const expression of ['d.knockback.slideSeconds=.14','d.knockback.slideSeconds=Infinity',"d.cards[0].effects=[{...SurvivorData.PARAMS,type:'knockback',trigger:'skill',slideSeconds:.3}]"])assert.equal(run(`(()=>{const d=SurvivorData.defaults();${expression};return SurvivorData.validate(d).valid})()`),false);
 near(run('(()=>{const d=SurvivorData.defaults();delete d.knockback.slideSeconds;return SurvivorData.validate(d).data.knockback.slideSeconds})()'),.2);
-console.log('PASS: exact ease-out distance at five dt values, capped stacking, swept body/wall/arena stop, arrow endpoint, hitstop/pause/reset, Maker migration/bounds');
+console.log('PASS: exact ease-out distance at five dt values, capped stacking, swept body/wall/arena stop, fog crossing, real barrier/arrow endpoint, hitstop/pause/reset, Maker migration/bounds');
