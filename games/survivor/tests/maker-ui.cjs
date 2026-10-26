@@ -261,3 +261,53 @@ console.log('PASS: nine support card stacks, fold/preview persistence, shared ed
  reload.ids.save.fire('click');assert.deepEqual(JSON.parse(reload.storage['erin-survivor-maker-v1']).neutralRules,data.neutralRules);
 }
 console.log('PASS: ten neutral card stacks, folding/preview, shared bounded edits and old-work reload');
+// Wave stacks are editable through the same folding shells; targeted trial keeps stage selection.
+{
+ const ui=setup();ui.tab('stages');ui.item('playground');
+ assert.ok(ui.ids.editor.textContent.includes('觸發積木'));
+ assert.ok(ui.ids.editor.textContent.includes('生出哪種怪'));
+ const number=(label,value)=>{const n=ui.nodes().find(n=>n.tag==='input'&&n.type==='range'&&n.attrs['aria-label']===label);assert.ok(n,label);n.value=value;n.fire('input');};
+ number('每批怪物數',4);
+ ui.click('布丁');
+ ui.click('預覽');assert.ok(ui.ids.editor.textContent.includes('×4'));
+ ui.ids.save.fire('click');
+ const data=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+ assert.equal(data.stages[1].waves[0].count,4);
+ assert.equal(data.stages[1].waves[0].typeId,'pudding');
+ ui.click('試玩');assert.equal(ui.location.href,'?maker=1&play=1&stage=playground');
+ const reload=setup({saved:ui.storage});reload.tab('stages');reload.item('playground');
+ assert.ok(reload.ids.editor.textContent.includes('生出哪種怪：布丁'));
+ reload.item('pacing');
+ const first=reload.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='第一個事件秒數');first.value=100;first.fire('input');
+ assert.ok(reload.ids.makerStatus.textContent.includes('事件時間需遞增'));
+ reload.click('試玩');assert.equal(reload.location.href,'');
+ first.value=30;first.fire('input');reload.ids.save.fire('click');
+ assert.equal(JSON.parse(reload.storage['erin-survivor-maker-v1']).pacing.eventTimes[0],30);
+}
+console.log('PASS: wave block number/type edits, preview refresh, persistence, targeted stage trial and invalid timing recovery');
+
+// The footer play button uses the current selection, including after switching tabs.
+{
+ const ui=setup();ui.tab('stages');
+ for(const id of ['classroom','playground','pacing','elites','chocobear']) {
+  ui.item(id);ui.location.href='';ui.ids.play.fire('click');
+  const stage=['classroom','playground'].includes(id)?'&stage='+id:'';
+  assert.equal(ui.location.href,'?maker=1&play=1'+stage,'footer trial: '+id);
+  assert.ok(ui.storage['erin-survivor-maker-v1'],'footer saves before trial');
+ }
+ ui.item('playground');ui.tab('rules');ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1','other tab ignores the previously selected stage');
+ ui.tab('stages');ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1&stage=playground','stage selection survives tab switches');
+ ui.item('pacing');
+ const first=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='第一個事件秒數');
+ first.value=100;first.fire('input');
+ const before=ui.storage['erin-survivor-maker-v1'];ui.location.href='';ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'');assert.equal(ui.storage['erin-survivor-maker-v1'],before);
+ assert.ok(ui.ids.makerStatus.textContent.includes('事件時間需遞增'));
+ first.value=30;first.fire('input');ui.item('classroom');ui.ids.play.fire('click');
+ assert.equal(ui.location.href,'?maker=1&play=1&stage=classroom');
+ const failed=setup({fails:true});failed.tab('stages');failed.item('playground');failed.ids.play.fire('click');
+ assert.equal(failed.location.href,'');assert.ok(failed.ids.makerStatus.textContent.includes('無法儲存'));
+}
+console.log('PASS: footer play clicks for both stages and shared stage items, tab switches, invalid timing recovery and storage failure');

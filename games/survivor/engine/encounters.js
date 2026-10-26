@@ -22,7 +22,7 @@ function makeElite(enemy) {
 }
 function spawnChocobear() {
   if (state.enemies.length >= ENEMY_LIMIT) return false;
-  const b = GAME_DATA.chocobear, position = offscreenSpawn(b.radius + 16);
+  const b = GAME_DATA.chocobear, position = b.position==='zone'?bossZoneSpawn(b.radius+16):offscreenSpawn(b.radius + 16,SurvivorPacing.side(b.position));
   if (!position) return false;
   const hp = b.hp * currentStage().enemyHealthScale;
   const bear = { ...position, miniboss:true, typeId:ENEMY_TYPES[0].id, spriteId:'chocolate-bear',
@@ -30,7 +30,7 @@ function spawnChocobear() {
     maxArmor:b.armor, alive:true, flash:0, wobble:0, shadowSize:1.1,
     shotCooldown:Infinity, slamTimer:b.slamInterval, behavior:'chase' };
   state.enemies.push(bear); state.miniboss = bear; state.bearSpawned = true;
-  playSound('warning'); updateHud(); return true;
+  if(b.sound!=='none') playSound('warning');if(b.hint) {enemyNotice.textContent=b.name+'來了！';enemyNotice.hidden=false;state.bookNoticeTimer=4;} updateHud(); return true;
 }
 // 回傳 true 代表這下被護盾／盔甲擋住；破甲這下不穿透到本體。
 function encounterShield(enemy, damage) {
@@ -71,7 +71,7 @@ function updateEncounters(dt) {
     state.eliteTimer = countdown(state.eliteTimer,dt);
     if (!state.eliteTimer) {
       state.eliteTimer = c.interval;
-      if (state.enemies.filter(e => e.alive && e.elite).length < c.limit && Math.random() < c.chance) spawnEnemy({elite:true});
+      if (state.enemies.filter(e => e.alive && e.elite).length < c.limit && Math.random() < c.chance) {for(let i=0;i<(c.count||1);i++) spawnEnemy({elite:true,typeId:c.typeId==='pacing'?undefined:c.typeId,side:SurvivorPacing.side(c.position,i),offscreen:c.position==='random'});if(c.sound==='warning') playSound('warning');if(c.hint) {enemyNotice.textContent='精英怪靠近了！';enemyNotice.hidden=false;state.bookNoticeTimer=2;}}
     }
   }
   // 分裂的小怪也在畫面外進場；滿額／無安全位置時保留佇列。

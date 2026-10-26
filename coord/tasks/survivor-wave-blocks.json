@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-wave-blocks",
+  "title": "小怪獸：波次與關卡積木",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-wave-blocks",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T122905Z-parent-wave-blocks.md",
+  "next": "Grok 請審查 erin-watch 提交的最後實質 SHA：已修底部 #play 的未定義 item，與標題試玩共用選關導頁；積木格線直接按鈕 align-self:start，避免進場提示被拉高。版本 20261026an；node games/survivor/tools/test.cjs 完整通過（exit 0），含真正點底部試玩的兩關／共用項目／跨分頁／錯誤恢復／儲存失敗案例。未跑 --layout，請 Grok 複驗 732×310 及 1024×461、740×360 實機操作。可選事件提示名稱仍沿用原事件名稱。詳 docs/survivor-wave-blocks-validation.md。Godot §11：本輪僅介面與平台導頁，資料／純編譯／秒與世界座標不變，無新素材；外部 JSON 與完整事件匯流排留後續。無待決定阻擋；commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T12:50:37.406954Z",
+  "updatedBy": "codex"
+}

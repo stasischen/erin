@@ -36,7 +36,8 @@
     if(c.shape==='ring') return d<=c.radius && d>=c.innerRadius;
     return false;
   }
-  root.SurvivorPacing={plan,candidates,density,pick,advanceAttack,attackAngles,inShape};
+  function side(position,index=0) {return position==='sides'?index%4:({left:0,right:1,top:2,bottom:3})[position];}
+  root.SurvivorPacing={side,plan,candidates,density,pick,advanceAttack,attackAngles,inShape};
 })(globalThis);
 
 function resetPacing() { state.pacing=null; }
@@ -53,7 +54,7 @@ function pacingType() {
 function updatePacing(dt) {
   if(PREVIEW_MODE || state.boss || state.bossIntro>0) return;
   const run=ensurePacing(), cfg=GAME_DATA.pacing;
-  const times=[45,90];
+  const times=cfg.eventTimes || [45,90];
   if(run.eventIndex<2 && state.stageElapsed>=times[run.eventIndex]) {
     const kind=run.events[run.eventIndex++];
     run.queue=Array.from({length:cfg.eventCount},(_,i)=>({kind,index:i}));
@@ -66,11 +67,11 @@ function updatePacing(dt) {
   run.timer=countdown(run.timer||0,dt);
   if(run.queue.length && !run.timer) {
     const entry=run.queue[0], kind=entry.kind;
-    const side=kind==='ring' ? entry.index%4 : kind==='tide' ? 0 : undefined;
-    const enemy=spawnEnemy({typeId:kind==='tide'?'otsubon':kind==='candy-rain'?'pop-candy':'jaben',elite:kind==='elite-squad',side});
+    const effect=GAME_DATA.waveEvents && GAME_DATA.waveEvents[kind] || {typeId:kind==='tide'?'otsubon':kind==='candy-rain'?'pop-candy':'jaben',elite:kind==='elite-squad',position:kind==='ring'?'sides':kind==='tide'?'left':'zone'};
+    const enemy=spawnEnemy({typeId:effect.typeId==='pacing'?undefined:effect.typeId,elite:effect.elite,side:SurvivorPacing.side(effect.position,entry.index),offscreen:effect.position==='random'});
     if(enemy) run.queue.shift();
     // 精英仍遵守同時上限，滿額跳過，不能堵住事件佇列。
-    else if(kind==='elite-squad' && state.enemies.filter(e=>e.alive&&e.elite).length>=GAME_DATA.elites.limit) run.queue.shift();
+    else if(effect.elite && state.enemies.filter(e=>e.alive&&e.elite).length>=GAME_DATA.elites.limit) run.queue.shift();
     run.timer=cfg.eventSeconds/cfg.eventCount;
   }
 }

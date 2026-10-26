@@ -77,7 +77,7 @@ function resetGame() {
   if (typeof cancelManualAttack === "function") cancelManualAttack();
   state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
   state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
-  state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
+  state.stageIndex = MAKER_MODE && typeof location!=='undefined' ? Math.max(0,STAGES.findIndex(s=>s.id===new URLSearchParams(location.search).get('stage'))) : 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
@@ -250,7 +250,12 @@ function tick(dt) {
     let wave = currentWaves()[0];
     for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
     const spawnEvery = wave.every / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
-    while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
+    while (state.spawnTimer <= 0) {
+      for(let i=0;i<(wave.count||1);i++) spawnEnemy({typeId:wave.typeId==='pacing'?undefined:wave.typeId,side:SurvivorPacing.side(wave.position,i),offscreen:wave.position==='random'});
+      if(wave.sound==='warning') playSound('warning');
+      if(wave.hint) {enemyNotice.textContent='新一批怪物進場了！';enemyNotice.hidden=false;state.bookNoticeTimer=2;}
+      state.spawnTimer += spawnEvery;
+    }
   }
   if (state.bossIntro > 0) {
     state.bossIntro -= dt;
