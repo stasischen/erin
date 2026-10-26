@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-maker-phone-fix",
+  "title": "Maker 手機捲動修正與練習場分頁",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-maker-phone-fix",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T053537Z-parent-maker-phone-fix.md",
+  "next": "請 Grok 獨立審查 erin-watch 提交的新 SHA 並跑 test.cjs --layout，確認 1024×461、740×360 及直拿旋轉等九尺寸：全分頁／技能樹雙欄末端、名字欄位與練習場八招／說明／返回；另需 Android 真機捲動與輸入鍵盤驗證。一般 node games/survivor/tools/test.cjs 全部通過，依要求未跑版面測試。版本 20261026u；Godot §11.6／11.7 與詳細交接見 docs/survivor-move-practice-validation.md 手機版面修正段落。無需家長或 Erin 先決定的事項。commit、push、PR 由 erin-watch 代勞，待審查及試玩後由家長決定上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T05:40:29.941890Z",
+  "updatedBy": "codex"
+}

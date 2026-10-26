@@ -10,16 +10,16 @@ globalThis.SurvivorPractice = (()=>{
   }
   function close() {
     if(host) host.remove();host=null;frame=null;
-    document.getElementById('makerPanel').classList.remove('with-practice');
   }
-  function open(data) {
+  function open(data, container, onClose) {
     close();
-    const room=document.getElementById('makerPanel');room.classList.add('with-practice');
     host=document.createElement('section');host.className='practice-dock';host.setAttribute('aria-label','招式練習場');
-    const closeButton=document.createElement('button');closeButton.type='button';closeButton.className='practice-close';closeButton.innerHTML=SurvivorIcons.html('close');closeButton.setAttribute('aria-label','關閉練習場');closeButton.title='關閉練習場';closeButton.addEventListener('click',close);
+    const heading=document.createElement('header');
+    const title=document.createElement('strong');title.textContent='招式練習場';
+    const closeButton=document.createElement('button');closeButton.type='button';closeButton.className='practice-close';closeButton.innerHTML=SurvivorIcons.html('close');closeButton.setAttribute('aria-label','關閉練習場');closeButton.title='關閉練習場';closeButton.addEventListener('click',()=>{close();if(onClose)onClose();});
     frame=document.createElement('iframe');frame.title='招式練習場';refresh(data);
-    frame.src=new URL('practice.html?v=20261026t',SurvivorPreview.base).href;
-    host.append(closeButton,frame);room.appendChild(host);
+    frame.src=new URL('practice.html?v=20261026u',SurvivorPreview.base).href;
+    heading.append(title,closeButton);host.append(heading,frame);container.appendChild(host);
   }
   return {open,close,refresh};
 })();

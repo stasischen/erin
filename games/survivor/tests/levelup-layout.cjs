@@ -38,7 +38,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   if(devicePixelRatio!==3||!matchMedia('(pointer: coarse)').matches)throw Error('缺少DPR3或觸控模擬');
   return {blank,share};
  })()`;
- for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768]]){
+ for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[461,1024]]){
   await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:3,mobile:true});
   await call('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});
   await call('Page.enable');
@@ -86,8 +86,40 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await evaluate("showOverlay('paused');openSurvivorMaker();true");await touch('[data-tab="cards"]');
   assert.equal(await evaluate(`(()=>{for(const selector of ['.maker-tree','#makerCardEdit','.maker-footer','#play']){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(r.width<40||r.height<40||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('Maker '+selector+' 不完整');}const list=document.querySelector('.maker-tree'),edit=document.querySelector('#makerCardEdit');const a=list.getBoundingClientRect(),b=edit.getBoundingClientRect(),rotated=innerHeight>innerWidth;const listEnd=rotated?a.bottom:a.right,editStart=rotated?b.top:b.left;if(listEnd>editStart+1)throw Error('Maker 兩欄重疊或未依 shell 橫向排列');return true;})()`),true);
   await touch('.maker-tree button');assert.equal(await evaluate("document.querySelector('.maker-tree button').getAttribute('aria-pressed')==='true' && !!document.querySelector('#makerCardEdit input')"),true);
+  // 每個分頁與技能樹的兩個內層捲動區都要能到達最後一項。
+  for (const tab of ['schools','cards','enemies','boss','numbers']) {
+    await evaluate(`document.querySelector('[data-tab="${tab}"]').scrollIntoView({block:'nearest'});true`);
+    await touch(`[data-tab="${tab}"]`);
+    assert.equal(await evaluate(`(async()=>{
+      const editor=document.querySelector('#editor');
+      if(editor.clientHeight<80||editor.scrollWidth>editor.clientWidth+2)throw Error('內容區太小或橫向溢出');
+      if(getComputedStyle(editor).touchAction==='none')throw Error('內容區禁止觸控捲動');
+      const scrollAreas=document.querySelector('.maker-card-workspace') ? [...editor.querySelectorAll('.maker-tree,.maker-card-edit')] : [editor];
+      for(const area of scrollAreas) {
+        if(!['auto','scroll'].includes(getComputedStyle(area).overflowY))throw Error('內容沒有開放手動捲動');
+        area.scrollTop=area.scrollHeight;
+        await new Promise(resolve=>requestAnimationFrame(resolve));
+        if(area.scrollTop+area.clientHeight<area.scrollHeight-2)throw Error('內容末端無法到達');
+        const controls=[...area.querySelectorAll('input,button,summary')].filter(n=>n.getClientRects().length);
+        const last=controls[controls.length-1];
+        if(!last)throw Error('缺少內容控制項');
+        last.scrollIntoView({block:'nearest',inline:'nearest'});
+        const r=last.getBoundingClientRect(),a=area.getBoundingClientRect();
+        if(r.left<a.left-1||r.right>a.right+1||r.top<a.top-1||r.bottom>a.bottom+1||!last.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)))throw Error('最後控制項被裁切或遮擋');
+      }
+      for(const input of editor.querySelectorAll('input[type="text"]')) {
+        input.scrollIntoView({block:'nearest',inline:'nearest'});
+        const r=input.getBoundingClientRect();
+        if(!input.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)))throw Error('名稱列無法到達或被遮住');
+        if(input.offsetWidth>input.parentElement.clientWidth+1||input.offsetWidth>450)throw Error('名稱欄位過寬');
+      }
+      return true;
+    })()`),true,`Maker ${tab} 可捲到底`);
+  }
+  await evaluate("document.querySelector('#practiceOpen').scrollIntoView({block:'nearest'});true");
   // 真實練習 iframe：敵人 canvas 必須留在按鈕內，不能遮住其他招式或說明。
   await touch('#practiceOpen');
+  assert.equal(await evaluate("document.querySelector('#practiceOpen').textContent.includes('練習場') && document.querySelector('#practiceOpen .pixel-icon')!==null && document.querySelector('#practiceOpen').getAttribute('aria-pressed')==='true'"),true);
   assert.equal(await evaluate(`(async()=>{
     const frame=document.querySelector('.practice-dock iframe');
     for(let i=0;i<150;i++) {
@@ -109,18 +141,20 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
       button.click();
       if(d.querySelectorAll('#practiceMoves button')[index].getAttribute('aria-pressed')!=='true')throw Error('無法選取招式 '+button.title);
       for(const selector of ['#practiceDescription','#practiceLegend']) {
-        const n=d.querySelector(selector),r=n.getBoundingClientRect();
+        const n=d.querySelector(selector);n.scrollIntoView({block:'nearest'});const r=n.getBoundingClientRect();
         if(!n.textContent.trim()||r.width<=0||r.height<=0||r.left<0||r.right>frame.contentWindow.innerWidth+1||r.top<0||r.bottom>frame.contentWindow.innerHeight+1)throw Error(selector+' 不完整');
         for(const fraction of [.1,.5,.9]) {
           if(!n.contains(d.elementFromPoint(r.left+r.width*fraction,r.top+r.height/2)))throw Error(selector+' 被遮住');
         }
       }
     }
+    const main=d.querySelector('main');main.scrollTop=main.scrollHeight;
+    if(main.scrollTop+main.clientHeight<main.scrollHeight-2||main.scrollWidth>main.clientWidth+2)throw Error('練習內容無法捲到底或橫向裁切');
     return true;
   })()`),true);
   await touch('.practice-close');
-  assert.equal(await evaluate("!document.querySelector('.practice-dock')"),true);
-  console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker清單與編輯／練習圖示範圍與說明遮擋`);
+  assert.equal(await evaluate("!document.querySelector('.practice-dock') && document.querySelector('[data-tab=numbers]').getAttribute('aria-pressed')==='true'"),true);
+  console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker全分頁末端與名稱欄／練習場分頁與末端／練習圖示範圍與說明遮擋`);
  }
  await send('Browser.close');
 })().catch(error=>{console.error('FAIL:',error.message);process.exitCode=1;}).finally(async()=>{clearTimeout(timeout);if(child.exitCode===null&&child.signalCode===null)child.kill();await exited;fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:100});});
