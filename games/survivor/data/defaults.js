@@ -1640,6 +1640,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     }
   ],
   "boss": {
+    "posture": {"window":0.2,"maximum":100,"dodgeGain":30,"recoveryGain":12,"interruptGain":22,"decay":6,"stunSeconds":2.5,"chargeBonus":0.5,"damageMultiplier":3,"heal":4},
     "name": "老師",
     "hp": 2000,
     "speed": 70,

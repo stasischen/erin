@@ -134,6 +134,13 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'item-rear',rules:[{trigger:'onShot',conditions:[{type:'volleyPresent'}],actions:[{type:'rear-shot',count:1,angle:Math.PI,multiplier:1}]}]},
     {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:1}]}]}
   );
+  // 主角與敵人共用 trigger / conditions / actions；接合層只提供事件。
+  recipes.push({feature:'posture',rules:[
+    {trigger:'onPerfectDodge',conditions:[],actions:[{type:'posture',amount:ref('boss.posture.dodgeGain')}]},
+    {trigger:'onRecoveryHit',conditions:[],actions:[{type:'posture',amount:ref('boss.posture.recoveryGain')}]},
+    {trigger:'onInterrupt',conditions:[],actions:[{type:'posture',amount:ref('boss.posture.interruptGain')}]},
+    {trigger:'onPostureBreak',conditions:[],actions:[{type:'stun',duration:ref('boss.posture.stunSeconds')},{type:'heal',amount:ref('boss.posture.heal')}]}
+  ]});
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
   function collect(node) {
     if (!node || typeof node!=='object') return;
@@ -145,8 +152,7 @@ globalThis.SurvivorEffectBlocks = (() => {
   function value(expression, data, context={}) {
     if (typeof expression === 'number' && Number.isFinite(expression)) return expression;
     if (expression && refs.has(expression.ref)) {
-      const [group,key] = expression.ref.split('.');
-      const result = data[group][key];
+      const result = expression.ref.split('.').reduce((node,key)=>node&&node[key],data);
       if (typeof result === 'number' && Number.isFinite(result)) return result;
     }
     if(expression && inputs.has(expression.input) && Number.isFinite(context[expression.input])) return context[expression.input];
@@ -250,12 +256,12 @@ globalThis.SurvivorEffectBlocks = (() => {
     }
     return {timers,events};
   }
-  function attackTick(previous, weapon, dt, moving) {
+  function attackTick(previous, weapon, dt, moving, chargeRate=1) {
     const p=previous || {number:0,idle:0,charge:0,moving:false};
     const idle=p.idle+dt;
     let charge=weapon.chargeEnabled ? p.charge : 0;
     if (moving && !p.moving) charge*=weapon.moveRetention;
-    if (!moving && weapon.chargeEnabled) charge=Math.min(weapon.chargeSeconds,charge+dt);
+    if (!moving && weapon.chargeEnabled) charge=Math.min(weapon.chargeSeconds,charge+dt*chargeRate);
     return {number:idle>=weapon.comboReset?0:p.number,idle,charge,moving};
   }
   function attack(previous, weapon, fallbackNumber=0) {

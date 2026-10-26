@@ -317,6 +317,9 @@
     draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'speed',[0,200,5],'階段移速'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
     const labels={nearDistance:'近距離上限',farDistance:'遠距離起點',pursuitDistance:'快走追趕起點',pursuitMultiplier:'快走速度倍率',healthPerUpgrade:'每次升級增加老師血量',leapRecovery:'跳躍落地可反擊秒數',leapPush:'跳躍落地擊退距離',trackingSeconds:'點名跟隨秒數',lockSeconds:'點名鎖定秒數',phaseWordsSpeed:'第二階段起國字速度',phaseChalkSpeed:'第二階段起粉筆速度'};
     const rules=grid(p);for(const [key,bounds] of Object.entries(api.BOSS_COMBAT_BOUNDS))range(rules,draft.boss.combat,key,bounds,labels[key]);
+    const posture=panel('架勢與完美閃避'), pf=grid(posture), pl={window:'完美閃避時間窗（秒）',maximum:'架勢滿條',dodgeGain:'完美閃避累積量',recoveryGain:'收招命中累積量',interruptGain:'打斷招式累積量',decay:'架勢每秒下降',stunSeconds:'滿架勢暈眩秒數',chargeBonus:'暈眩時聚氣加速比例',damageMultiplier:'暈眩時蓄力傷害倍率',heal:'破架勢回血量'};
+    for(const [key,bounds] of Object.entries(api.POSTURE_BOUNDS))range(pf,draft.boss.posture,key,bounds,pl[key]);
+    el('p','閃過即將命中的招式、收招時打中、用暈眩打斷都能累積。滿條亮出弱點，抓住機會朝前方蓄力重擊！',posture);
     el('p','血量＝（基本血量＋已升級次數×加血量）×關卡倍率；目標 45～60 秒，請試玩調整。距離、速度、範圍皆為世界單位。',p);
     } else if(selected.boss==='zone') {
     const zone = panel('老師戰安全圈'), zf = grid(zone), z = draft.bossZone;

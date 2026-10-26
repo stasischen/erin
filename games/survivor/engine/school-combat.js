@@ -147,7 +147,7 @@ function applyCardTargetActions(rule,target) {
   for(const action of rule.actions) {
     if(action.type==='wet') target.wetTimer=action.duration;
     else if(action.type==='slow') {target.slowTimer=action.duration;target.makerSlow=action.multiplier;}
-    else if(action.type==='stun') target.stunTimer=action.duration;
+    else if(action.type==='stun') stunTarget(target,action.duration);
     else if(action.type==='damage') { hitBuildTarget(target,action.amount); if(state.mode!=='playing')return; }
     else throw new Error('Unsupported target action');
   }

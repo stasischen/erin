@@ -24,6 +24,20 @@ function updateHud() {
       slots.appendChild(button);
     });
   }
+  const gauge=document.getElementById('postureGauge');
+  if(gauge) {
+    gauge.hidden=!state.boss;
+    const posture=state.boss&&state.boss.posture, config=GAME_DATA.boss.posture;
+    const stunned=posture&&posture.stun>0, progress=posture?(stunned?posture.stun/config.stunSeconds:posture.value/config.maximum):0;
+    const color=stunned?'#fff0a5':progress>=.75?'#ffb95c':'#9df6ff';
+    const stops=[];for(let i=0;i<20;i++)stops.push(`${i/20<progress?color:'#375776'} ${i*18}deg ${i*18+14}deg`,`#162c43 ${i*18+14}deg ${(i+1)*18}deg`);
+    gauge.style.background=`conic-gradient(${stops.join(',')})`;
+    gauge.setAttribute('aria-valuenow',String(Math.round(progress*100)));
+    gauge.setAttribute('aria-label',stunned?'老師暈眩，蓄力重擊':'老師架勢');
+    gauge.title=stunned?'弱點！聚氣加快，蓄力重擊':progress>=.75?'架勢快滿了！準備蓄力':'完美閃避、收招命中或打斷可累積架勢';
+    const icon=stunned?'weakpoint':'posture';
+    if(gauge.dataset.icon!==icon){gauge.dataset.icon=icon;gauge.innerHTML='<span aria-hidden="true">'+SurvivorIcons.html(icon)+'</span>';}
+  }
   bossHud.hidden = !shownBoss;
   if (shownBoss) bossHealthFill.style.width = `${Math.max(0, (shownBoss.hp + (shownBoss.armor || 0)) / (shownBoss.maxHp + (shownBoss.maxArmor || 0))) * 100}%`;
 }

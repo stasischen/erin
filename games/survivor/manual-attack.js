@@ -1,10 +1,10 @@
 // 純輸入規則：只接收秒數、世界方向和武器設定，不讀 DOM。
 globalThis.SurvivorAttackInput = {
-  step(previous, weapon, dt, holding) {
+  step(previous, weapon, dt, holding, chargeRate=1) {
     const p=previous||{number:0,idle:0,charge:0};
     const idle=p.idle+dt;
     return {...p,number:idle>=weapon.comboReset?0:p.number,idle,
-      charge:holding&&weapon.chargeEnabled?Math.min(weapon.chargeSeconds,p.charge+dt):0};
+      charge:holding&&weapon.chargeEnabled?Math.min(weapon.chargeSeconds,p.charge+dt*chargeRate):0};
   },
   release(kind, heldSeconds, angle, weapon, dash) {
     return {type:'attack-released',kind,weaponId:weapon.id,heldSeconds,angle,
@@ -71,7 +71,7 @@ function executeManualSpecial(event) {
       const hp=t.hp;hitBuildTarget(t,swing.damage);
       if(t.hp<hp)meleeImpact(t,{...swing,feedbackId:'special'});
       if(state.mode!=='playing')return;
-      if(t.alive||t===state.boss){shiftTarget(t,state.player.x,state.player.y,swing.push);t.stunTimer=Math.max(t.stunTimer||0,.8);}
+      if(t.alive||t===state.boss){shiftTarget(t,state.player.x,state.player.y,swing.push);stunTarget(t,Math.max(t.stunTimer||0,.8));}
     }
   } else {
     for(let i=0;i<event.count&&state.projectiles.length<PROJECTILE_LIMIT;i++) {
@@ -110,8 +110,9 @@ function tickManualAttack(dt) {
   if(!manualMode())return;
   advanceManualTiming(dt);
   state.specialCooldown=countdown(state.specialCooldown||0,dt);
-  for(const hold of Object.values(manualHolds))if(hold)hold.seconds+=dt;
-  state.weaponAttack=SurvivorAttackInput.step(state.weaponAttack,activeWeapon(),dt,!!manualHolds.attack);
+  const chargeDt=dt*teacherBonuses().charge;
+  for(const [kind,hold] of Object.entries(manualHolds))if(hold)hold.seconds+=kind==='attack'?chargeDt:dt;
+  state.weaponAttack=SurvivorAttackInput.step(state.weaponAttack,activeWeapon(),dt,!!manualHolds.attack,teacherBonuses().charge);
   if(state.manualLeap) {
     const leap=state.manualLeap,step=Math.min(dt,leap.left)/leap.leapSeconds*leap.leapDistance;
     state.player.x+=Math.cos(leap.angle)*step;state.player.y+=Math.sin(leap.angle)*step;

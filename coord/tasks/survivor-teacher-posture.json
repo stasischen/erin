@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-teacher-posture",
+  "title": "小怪獸：老師架勢與完美閃避",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-teacher-posture",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T132742Z-parent-teacher-posture.md",
+  "next": "請 Grok 審查 erin-watch 提交的實質 SHA 與 git diff main...codex/survivor-teacher-posture，並依 docs/survivor-teacher-posture-validation.md 在 740×360、1024×461、1180×820 實際操作完美閃避、累積架勢、暈眩蓄力重擊與 Maker 數值；再由 Erin 試玩手感。指定 node games/survivor/tools/test.cjs 最後完整一輪全部通過（exit 0），未加 --layout；git diff --check 通過。版本 20261026aq。Godot §11：共用事件／架勢／暈眩積木、純秒數與世界距離規則、可序列化事件、固定輸入輸出測試與資料白名單已對照；完整 JSON 化、素材音訊匯出及全面事件系統留後續。無待決阻擋；commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T13:38:42.059505Z",
+  "updatedBy": "codex"
+}
