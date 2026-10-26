@@ -334,3 +334,12 @@ assert.equal(saved().weapons[2].feedback.primary.level,'custom');
 assert.equal(saved().weapons[2].feedback.primary.flash,.4);
 assert.equal(saved().weapons[2].feedback.primary.particles,7);
 console.log('PASS: feedback tier selection, individual override, custom mode, buffer edit and storage reload');
+
+// 共用 AI 規則：觸控編輯、招式清單與時機積木一同存回資料。
+ui=setup();choose('boss','ai');slider('權重（0 停用）',7);slider('朝向加權',2);slider('第 2 階段血量門檻',.5);
+ui.ids.save.fire('click');assert.equal(saved().boss.ai.rules[0].weight,7);assert.equal(saved().boss.ai.rules[0].angleWeight,2);assert.equal(saved().boss.phases[1].threshold,.5);
+ui.click('移出招式清單');ui.ids.save.fire('click');assert.ok(!saved().boss.ai.rules.some(r=>r.moveId==='words'));
+ui.click('加入 '+defaults.boss.moves[0].name);ui.ids.save.fire('click');assert.ok(saved().boss.ai.rules.some(r=>r.moveId==='words'));
+choose('boss','words');slider('收招停頓秒數',.7);slider('招後冷卻秒數（至少階段休息）',3);ui.ids.save.fire('click');
+assert.equal(saved().boss.moves[0].recovery,.7);assert.equal(saved().boss.moves[0].cooldown,3);
+console.log('PASS: Maker AI weights/angle/phase threshold, remove/add move rules and per-move recovery/cooldown persisted');

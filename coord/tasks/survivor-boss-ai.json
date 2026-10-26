@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-ai",
+  "title": "共用 Boss AI 狀態機與 Maker AI 規則",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-boss-ai",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T151356Z-parent-boss-ai.md",
+  "next": "請 Grok 審查 erin-watch 提交的新完整 SHA：共用 Boss AI 純規則、老師接合、Maker AI 規則與收招／冷卻時機積木。版本 20261026av；node games/survivor/tools/test.cjs 全部通過（exit 0，未加 --layout），含既有老師／新舊積木等價與新增 AI／Maker 操作測試；git diff --check 通過。請補 740×360、1024×461、1180×820 實際操作與 layout。Godot §11 對照、欄位／相容規則與待查項目見 docs/survivor-boss-ai-validation.md。兩份收件匣已移到 done；目前無待 Erin 或家長決定的新設計。commit、push、PR 由 erin-watch 代勞；本卡應先於 survivor-boss-gallery-1 合併。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T15:38:11.259053Z",
+  "updatedBy": "codex"
+}
