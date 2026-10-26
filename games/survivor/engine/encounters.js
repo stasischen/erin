@@ -132,6 +132,9 @@ function openEncounterReward() {
   return false;
 }
 function drawEncounterGround() {
+  return SurvivorArt.paint('layer/draw-encounter-ground', null, () => drawEncounterGroundPlaceholder.apply(this, arguments));
+}
+function drawEncounterGroundPlaceholder() {
   for (const s of state.syrup) {
     ctx.fillStyle = s.warning > 0 ? 'rgba(192,134,62,.15)' : 'rgba(167,103,49,.48)';
     ctx.strokeStyle = '#bc843e'; ctx.lineWidth = 2;
@@ -156,6 +159,9 @@ function drawEncounterGround() {
   }
 }
 function drawEncounterArmor(e) {
+  return SurvivorArt.paint('layer/draw-encounter-armor', null, () => drawEncounterArmorPlaceholder.apply(this, arguments));
+}
+function drawEncounterArmorPlaceholder(e) {
   if (!(e.shield > 0 || e.armor > 0 || e.fairyShield > 0)) return;
   ctx.strokeStyle = '#d7f9ff'; ctx.lineWidth = e.miniboss ? 5 : 3;
   ctx.beginPath(); ctx.arc(e.x,e.y,e.r+3,0,Math.PI*2); ctx.stroke();

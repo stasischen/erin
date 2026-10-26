@@ -147,6 +147,9 @@ function updateManualControls() {
   if(state.mode!=='playing')cancelManualAttack();
 }
 function drawManualAim() {
+  return SurvivorArt.paint('layer/draw-manual-aim', null, () => drawManualAimPlaceholder.apply(this, arguments));
+}
+function drawManualAimPlaceholder() {
   if(!manualMode())return;
   const hold=manualHolds.special||manualHolds.attack;
   if(!hold||hold.angle===null)return;

@@ -288,11 +288,13 @@
   const urls = {};
   function html(id) {
     id = normalize(id);
+    const art = root.SurvivorArt && root.SurvivorArt.iconHtml('icon/'+id);
+    if (art) return art;
     if (!urls[id]) { let rects = ''; rectangles(id,(x,y,c) => {rects += `<rect x="${x}" y="${y}" width="2" height="2" fill="${c}"/>`;}); urls[id] = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects}</svg>`); }
-    return `<img class="pixel-icon" src="${urls[id]}" alt="" aria-hidden="true" draggable="false">`;
+    return `<img class="pixel-icon" data-survivor-art="icon/${id}" src="${urls[id]}" alt="" aria-hidden="true" draggable="false">`;
   }
   function set(node,id) { node.innerHTML = html(id); }
-  function draw(ctx,id,x,y,size=24) { ctx.save(); const step = size/16; rectangles(id,(px,py,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x+px*step),Math.round(y+py*step),Math.ceil(step*2),Math.ceil(step*2));}); ctx.restore(); }
+  function draw(ctx,id,x,y,size=24) { if(root.SurvivorArt && root.SurvivorArt.draw('icon/'+normalize(id),{context:ctx,x,y,width:size,height:size})) return; ctx.save(); const step = size/16; rectangles(id,(px,py,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x+px*step),Math.round(y+py*step),Math.ceil(step*2),Math.ceil(step*2));}); ctx.restore(); }
   function clean(text) { return typeof text === 'string' ? text.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D\u20E3]/gu, '').trim() : text; }
   root.SurvivorIcons = { ids, labels: Object.fromEntries(ids.map(id=>[id,patterns[id][0]])), normalize, html, set, draw, pixels, clean };
 })(globalThis);

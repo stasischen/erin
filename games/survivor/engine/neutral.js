@@ -98,6 +98,9 @@ function updateNeutralItems(dt) {
   }
 }
 function drawNeutralItems() {
+  return SurvivorArt.paint('layer/draw-neutral-items', null, () => drawNeutralItemsPlaceholder.apply(this, arguments));
+}
+function drawNeutralItemsPlaceholder() {
   if (!state.neutral) return;
   const p=state.player;
   if (effectLevel('item-bird')) {const pos=neutralBirdPosition();SurvivorIcons.draw(ctx,'item-bird',pos.x-12,pos.y-12,24);}
