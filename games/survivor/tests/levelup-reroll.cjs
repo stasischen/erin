@@ -24,7 +24,8 @@ run.elements.confirmUpgrade.onclick();
 assert.equal(run(`upgradeLevel(${JSON.stringify(chosen)})`), 1);
 assert.equal(run('state.mode'), 'playing');
 run('chooseUpgradeCards();');
-assert.equal(run('state.rerollsRemaining'), 0, '下次升級不補次數');
+// 幸運草取得時本來就送一次重抽；與升級本身是否補次數分開驗證。
+assert.equal(run('state.rerollsRemaining'), chosen === 'item-clover' ? 1 : 0, '下次升級不額外補次數（保留幸運草獎勵）');
 run(`resetGame(); state.mode='paused'; globalThis.before=JSON.stringify(state.pendingChoices);rerollUpgradeCards();`);
 assert.equal(run('state.rerollsRemaining'), 2);
 assert.equal(run('JSON.stringify(state.pendingChoices)===before'), true, '非升級中不重抽');

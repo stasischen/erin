@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-card-blocks-thunder",
+  "title": "小怪獸：雷流派共用積木",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-card-blocks-thunder",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T101616Z-parent-card-blocks-thunder.md",
+  "next": "十張雷卡已接共用積木，Maker 可收合／預覽／編輯共用數值，舊作品格式保留；版本 20261026af。node games/survivor/tools/test.cjs 全過（exit 0），未跑 --layout；含 142 組 frozen legacy 戰鬥對照與蓄電門檻、十卡 Maker 操作。請 Grok 對 erin-watch 提交的完整 SHA 審查，在 1024×461、740×360 親手玩到這些卡並修改 Maker 數值驗證；通過後交 Erin 試玩。交接：docs/survivor-card-blocks-thunder-validation.md。Godot §11：可序列化規則／純運算條件／外部抽樣／原事件接合與固定輸入輸出已處理；外部 JSON、全面純化及 Godot Resource 留後續，素材音訊未動。無新增設計待決。commit、push、PR 交 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T10:24:57.986229Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-enemy-attack-blocks"
+  ]
+}
