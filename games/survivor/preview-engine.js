@@ -87,9 +87,7 @@ function stepPreview(dt) {
       if (previewCard && previewCard.neutral) {
         fireAtNearest();
         if(features.includes('item-cookie')) { state.enemies[0].hp=1;damageEnemy(state.enemies[0],2); }
-        if(features.includes('item-wall')) {
-          const shot=state.projectiles[0];if(shot) { shot.x=state.cameraX+state.width-shot.r;shot.vx=Math.abs(shot.vx); }
-        }
+
       }
       // 導電水窪也示範普攻命中，讓前置水技能在假怪腳下留下會放電的水窪。
       if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle','water-drop','wind-blade','thunder-charge','water-wet','thunder-super'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
@@ -133,8 +131,9 @@ function spacePreviewTargets() {
   const p = state.player;
   state.enemies.forEach(e=>{
     const dx=e.x-p.x, dy=e.y-p.y, distance=Math.hypot(dx,dy);
-    if(distance < PREVIEW_COMPOSITION.minDistance) {
-      const scale=PREVIEW_COMPOSITION.minDistance/Math.max(.001,distance);
+    const minimum=previewFeatures.includes('item-wall') && activeWeapon().kind==='melee' ? 40 : PREVIEW_COMPOSITION.minDistance;
+    if(distance < minimum) {
+      const scale=minimum/Math.max(.001,distance);
       e.x=p.x+(distance ? dx*scale : PREVIEW_COMPOSITION.minDistance); e.y=p.y+dy*scale;
     }
   });

@@ -259,7 +259,6 @@ function tick(dt) {
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
     if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
-    bounceNeutralShot(shot);
     clampToMap(shot);
     for (const enemy of state.enemies) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {

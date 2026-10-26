@@ -17,18 +17,8 @@ globalThis.SurvivorWeapons = (() => {
     return SurvivorSchools.segmentDistance(dx,dy,Math.cos(edge)*event.radius,Math.sin(edge)*event.radius) <= radius;
   }
   function cardNote(card, weapon) {
-    if (weapon.kind !== 'melee') return '';
-    const notes = {
-      'big-water':'揮擊範圍變大、傷害提升。', 'rapid-water':'揮錘間隔縮短。',
-      'multi-water':'揮擊扇形角度變大。', 'piercing-water':'揮擊距離每級增加 10%。',
-      'wind-attack':'揮擊距離增加。', 'wind-speed':'移動時揮錘更快。',
-      'wind-blade':'揮擊後追加一次近距離追斬。', 'water-drop':'每隔幾次揮擊變大、變痛、加強擊退。',
-      'thunder-charge':'擊倒累積後，下一次揮擊蓄電。', 'item-rear':'同時向後揮擊。',
-      'item-wall':'只改變飛行水球；棒棒糖錘本體不會彈牆。',
-      'item-split':'只改變飛行水球；棒棒糖錘本體不會分裂。',
-      'dash-boost':'衝刺後強化下一次揮擊。'
-    };
-    return card.effects.map(e=>notes[e.feature] || '').filter(Boolean).join(' ');
+    if (weapon.kind !== 'melee') return card.description;
+    return card.descriptionMelee || card.description;
   }
   return { swing, intersects, receivedDamage, cardNote };
 })();
@@ -70,6 +60,7 @@ function swingAtNearest() {
     hitBuildTarget(t,event.damage);
     if(state.mode!=='playing') return;
     if(t===state.boss || t.alive) shiftTarget(t,state.player.x,state.player.y,event.push);
+    if(t.alive) waveNeutralHit(t,deltaX(t.x,state.player.x),deltaY(t.y,state.player.y));
     for(const school of ['water','thunder']) if(effectLevel(school+'-attack') || school==='water' && (effectLevel('water-skill')||effectLevel('fusion-puddle'))) {
       schoolEffect(school,t,t.x,t.y,event.damage,hits);
       if(state.mode!=='playing') return;

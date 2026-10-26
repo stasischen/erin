@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-wave-ball-weapon-text",
+  "title": "小怪獸：浪花水球與雙武器卡片說明",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-wave-ball-weapon-text",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T025130Z-parent-wave-ball-weapon-text.md",
+  "next": "請 Grok 審查並跑 --layout；一般測試全過。Godot §11 與初版數值見同名 validation 文件；erin-watch 代辦提交與 PR，之後請 Erin 試玩。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T02:55:19.023702Z",
+  "updatedBy": "codex"
+}
