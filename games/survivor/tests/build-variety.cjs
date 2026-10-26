@@ -55,14 +55,14 @@ assert.ok(run('Math.hypot(state.projectiles[0].vx,state.projectiles[0].vy)')>390
 select('wind-speed'); const normal=run('effectiveShotInterval()');
 run('state.keys.add("d"); tick(.05);'); assert.ok(run('effectiveShotInterval()')<normal);
 run('state.keys.clear(); tick(.05);'); close(run('effectiveShotInterval()'),normal);
-select('wind-dash'); run('state.enemies=[book(420,310)]; activateDash(); tick(.05);');
+select('wind-dash'); run('state.enemies=[book(420,310)]; activateDash(); tick(.05);updateTargetSlide(state.enemies[0],.2);');
 assert.ok(run('state.enemies[0].y')>310);
 // 雷跳一次到鄰近敵人；泡泡暈眩阻止移動與丟字；反擊由受傷觸發。
 fresh(); select('thunder-attack'); run('state.enemies=[book(450),book(500,330)]; fireAtNearest();'); step(.1);
 assert.equal(run('state.enemies[1].hp'),982.5);
 select('thunder-skill'); run('state.enemies=[book(450)]; activateSkill();'); step(.6);
 assert.ok(run('state.enemies[0].stunTimer')>0);
-run('state.enemies[0].speed=100; state.enemies[0].knockback=0; globalThis.x=state.enemies[0].x; tick(.05);');
+run('state.enemies[0].speed=100; state.enemies[0].slide=null; globalThis.x=state.enemies[0].x; tick(.05);');
 close(run('state.enemies[0].x'),run('x'));
 select('thunder-counter'); run('state.projectiles=[]; state.enemies=[book(state.player.x,state.player.y)]; state.player.invincible=0; tick(.05);');
 assert.ok(run('state.enemies[0].hp')<1000);

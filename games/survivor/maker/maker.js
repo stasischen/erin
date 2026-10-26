@@ -155,7 +155,7 @@
       el('p', '「間隔秒數」也是這個積木再次發動前的休息時間。傷害隨卡片等級增加。', box);
       const fields = grid(box), keys = { projectile:['damage','speed','count','spread','interval'], aoe:['damage','radius','interval'], chain:['damage','radius','count','interval'], 'dash-trail':['damage','radius','duration','interval'], slow:['radius','duration','multiplier','interval'], stun:['radius','duration','interval'], knockback:['radius','distance','interval'], summon:['damage','radius','duration','speed','count','interval'], 'ring-with-gap':['damage','radius','gap','interval'] };
       keys[effect.type].forEach(key => range(fields, effect, key, key === 'distance' && effect.type === 'knockback' ? [-300,300,5] : undefined));
-      if (effect.type === 'knockback') el('p', '距離正數推開，負數拉近。', box);
+      if (effect.type === 'knockback') { if(effect.slideSeconds===undefined)effect.slideSeconds=.2; range(fields,effect,'slideSeconds',[.15,.25,.01],'滑動秒數'); el('p', '距離正數推開，負數拉近；滑動由快到慢。', box); }
       if (effect.type === 'dash-trail') el('p', '按衝刺時會在沿路留下範圍痕跡。', box);
       if (effect.type === 'summon') el('p', '小幫手留在召喚位置，暫時自動發射水球。', box);
     }
@@ -213,6 +213,7 @@
     range(body,draft.bodySeparation,'enemyForce',[0,1,.05],'怪物之間推力');
     el('p','衝刺及衝刺保護期間可以穿過怪物；大怪會擋路。分離逐幀推開，怪群推動主角有共同上限。',body);
     const weight=grid(panel('擊退與吸引重量'));
+    range(weight,draft.knockback,'slideSeconds',[.15,.25,.01],'擊退滑動秒數');
     toggle(weight,'重量影響推拉',draft.knockback,'enabled');
     range(weight,draft.knockback,'strength',[0,5,.1],'重量影響（越大越難推動大怪）');
     range(weight,draft.knockback,'minibossMass',[1,100,1],'小頭目重量');

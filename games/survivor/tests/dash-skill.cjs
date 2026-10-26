@@ -62,7 +62,8 @@ assert.equal(run('state.enemies[0].hp'), 300);
 step(.55);
 assert.equal(run('state.bomb'), null);
 assert.equal(run('state.enemies[0].hp'), 200);
-assert.equal(run('state.enemies[0].x'), 505);
+assert.equal(run('state.enemies[0].x'),450); // 爆炸當幀只加入衝量。
+step(.2);close(run('state.enemies[0].x'),505);
 assert.equal(run('state.enemies[1].hp'), 300);
 step(.1); assert.equal(run('state.enemies[0].hp'), 200);
 run('render();');

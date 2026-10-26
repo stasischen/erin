@@ -62,8 +62,8 @@ run(`state.gems=[{x:state.worldWidth-10,y:state.player.y,r:8,value:1,wobble:0,al
 assert.equal(run('state.xp'),1);
 run(`state.enemies=[{x:state.worldWidth-45,y:state.player.y,r:17,hp:100,maxHp:100,alive:true}];fireAtNearest();`);
 assert.ok(run('state.projectiles[0].vx<0'));
-run('shiftTarget(state.enemies[0],5,state.player.y,-20)');
-assert.equal(run('deltaX(state.enemies[0].x,5)'),-30);
+run('shiftTarget(state.enemies[0],5,state.player.y,-20);updateTargetSlide(state.enemies[0],.2)');
+assert.equal(run('deltaX(state.enemies[0].x,5)'),-35); // 主角半徑18＋怪物17，拉近到碰撞處停止。
 run(`state.boss={x:state.worldWidth-600,y:state.player.y,r:32};`);
 assert.ok(run('Math.abs(bossGuide().angle)===Math.PI'));
 // A bolt crosses just 20 units, never draws a line across the whole map.

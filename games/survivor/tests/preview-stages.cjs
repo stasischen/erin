@@ -25,9 +25,10 @@ for(const distance of [50,-40]) {
  const custom=JSON.parse(JSON.stringify(data));custom.cards[0].effects=[{...run('SurvivorData.PARAMS'),type:'knockback',trigger:'skill',distance,radius:180}];
  const r=createRun({preview:{data:custom,spec:{kind:'effect',id:custom.cards[0].id,index:0}}});
  assert.equal(r('SurvivorData.validate(GAME_DATA).valid'),true);
- r('for(let i=0;i<5;i++)stepPreview(.05)');
- const shift=r('state.enemies[1].x-state.enemies[1].homeX');assert.ok(distance>0?shift>30:shift< -20,`位移 ${distance}: ${shift}`);
- r('for(let i=0;i<55;i++)stepPreview(.05)');assert.ok(Math.abs(r('state.enemies[1].x-state.enemies[1].homeX'))<.01);
+ r('for(let i=0;i<9;i++)stepPreview(.05)');
+ // 假怪也會擋住滑動，完整無障礙距離由 knockback-slide.cjs 驗證。
+ const shift=r('state.enemies[1].x-state.enemies[1].homeX');assert.ok(distance>0?shift>1:shift< -1,`位移 ${distance}: ${shift}`);
+ r('for(let i=0;i<51;i++)stepPreview(.05)');assert.ok(Math.abs(r('state.enemies[1].x-state.enemies[1].homeX'))<.01);
 }
 const legacy=JSON.parse(JSON.stringify(data));delete legacy.stages;
 run(`globalThis.oldData=${JSON.stringify(legacy)}`);assert.equal(run('SurvivorData.validate(oldData).valid'),true);assert.equal(run('SurvivorData.validate(oldData).data.stages.length'),2);

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-knockback-slide",
+  "title": "擊退改成減速滑動",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-knockback-slide",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T134658Z-parent-knockback-slide.md",
+  "next": "請 Grok 審查 erin-watch 提交後的實質 SHA，並在 740×360、1024×461、1180×820 實際操作確認頓幀後減速滑開、碰撞阻擋、Maker 與箭頭。node games/survivor/tools/test.cjs 全部通過（未加 --layout）。版本 20261026ar；Godot §11 適用項目、測試及差距見 docs/survivor-knockback-slide-validation.md。無待決定事項；commit、push、開 PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T13:56:24.533493Z",
+  "updatedBy": "codex"
+}

@@ -65,14 +65,7 @@ function waveNeutralHit(target,vx,vy) {
   const x=target.x,y=target.y;
   shiftTarget(target,x-vx,y-vy,rule.actions[0].distance);
   skillVisual('splash',target.x,target.y,{radius:24,color:'#71d9f2',life:.3});
-  if (target===state.boss || (target.waveReady||0)>state.elapsed) return;
-  const others=combatTargets().filter(t=>t!==target && t!==state.boss && (t.waveReady||0)<=state.elapsed);
-  const index=SurvivorNeutral.collision(deltaX(target.x,x),deltaY(target.y,y),target.r,others.map(t=>({x:deltaX(t.x,x),y:deltaY(t.y,y),r:t.r})));
-  if(index<0) return;
-  const other=others[index];
-  target.waveReady=other.waveReady=state.elapsed+collision.cooldown;
-  hitBuildTarget(target,collision.amount);hitBuildTarget(other,collision.amount);
-  skillVisual('splash',other.x,other.y,{radius:32,color:'#71d9f2',life:.4});
+  target.slideWave=true;
 }
 function splitNeutralShot(shot) {
   const rule=cardBlock('item-split','onShotHit'),action=rule.actions[0];

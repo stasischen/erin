@@ -107,3 +107,86 @@ function targetDisplacement(target,distance) {
   return SurvivorBodies.displacement(distance,targetMass(target),c,
     armor*(c.enabled && target===state.boss ? c.bossMultiplier : 1));
 }
+
+// 可移植擊退積木：衝量以「剩餘位移」儲存，速度為 2 * 位移 / 剩餘秒數。
+// 二次 ease-out 精確積分，30/60/120 fps 的總位移相同。
+globalThis.SurvivorSlide = (() => {
+  function impulse(previous, dx, dy, seconds=.2) {
+    const duration=Math.max(.15,Math.min(.25,seconds));
+    const limit=Math.min(600,Math.max(previous ? previous.limit : 0,Math.hypot(dx,dy)*2));
+    let x=(previous ? previous.x : 0)+dx,y=(previous ? previous.y : 0)+dy;
+    const length=Math.hypot(x,y),scale=length>limit?limit/length:1;
+    return {x:x*scale,y:y*scale,time:duration,limit};
+  }
+  // 障礙使用目標中心的相對座標；圓與矩形都做掃掠，不跳過薄牆。
+  function sweep(dx,dy,r,circles=[],walls=[],bounds=null) {
+    let fraction=1,hit=-1;
+    const a=dx*dx+dy*dy;
+    if(!a)return {dx:0,dy:0,fraction,hit};
+    circles.forEach((b,i)=>{
+      const radius=r+b.r,near=b.x*dx+b.y*dy,c=b.x*b.x+b.y*b.y-radius*radius;
+      if(near<=0)return; // 已重疊時仍可離開，不能往障礙中心深入。
+      const disc=near*near-a*c;
+      if(disc<0)return;
+      const t=c<0?0:(near-Math.sqrt(disc))/a;
+      if(t>=0 && t<fraction){fraction=t;hit=i;}
+    });
+    for(const b of walls) {
+      let lo=0,hi=1;
+      for(const [v,min,max] of [[dx,b.x-r,b.x+b.width+r],[dy,b.y-r,b.y+b.height+r]]) {
+        if(!v){if(min>0 || max<0){hi=-1;break;}}
+        else {const s=min/v,t=max/v;lo=Math.max(lo,Math.min(s,t));hi=Math.min(hi,Math.max(s,t));}
+      }
+      if(lo<=hi && hi>=0 && lo<fraction){fraction=lo;hit=-2;}
+    }
+    if(bounds) for(const [v,min,max] of [[dx,bounds.left+r,bounds.right-r],[dy,bounds.top+r,bounds.bottom-r]]) {
+      if(v>0)fraction=Math.min(fraction,Math.max(0,max/v));
+      if(v<0)fraction=Math.min(fraction,Math.max(0,min/v));
+    }
+    if(bounds && bounds.zone) {
+      const z=bounds.zone,limit=Math.max(0,z.r-r),c=z.x*z.x+z.y*z.y-limit*limit;
+      const dot=z.x*dx+z.y*dy,disc=dot*dot-a*c;
+      if(c<=0 && disc>=0)fraction=Math.min(fraction,Math.max(0,(dot+Math.sqrt(disc))/a));
+      else if(c>0 && dot<0)fraction=0;
+    }
+    return {dx:dx*fraction,dy:dy*fraction,fraction,hit};
+  }
+  function step(motion,dt,r=0,circles=[],walls=[],bounds=null) {
+    if(!motion || dt<=0)return {motion,dx:0,dy:0,hit:-1};
+    const time=Math.max(0,motion.time-dt),ratio=time/motion.time;
+    const moved=sweep(motion.x*(1-ratio*ratio),motion.y*(1-ratio*ratio),r,circles,walls,bounds);
+    return {...moved,motion:time>1e-7 && moved.fraction===1?{...motion,x:motion.x*ratio*ratio,y:motion.y*ratio*ratio,time}:null};
+  }
+  return {impulse,sweep,step};
+})();
+function slideObstacles(target) {
+  const refs=[state.player,...state.enemies.filter(e=>e.alive),...(state.boss?[state.boss]:[])].filter(t=>t!==target && (t===state.player || targetVisible(t)));
+  const circles=refs.map(t=>({x:deltaX(t.x,target.x),y:deltaY(t.y,target.y),r:t.r}));
+  const walls=[];
+  for(const m of state.bossMoves) if(m.active && bossKind(m)==='barriers') for(const sign of [-1,1]) walls.push({x:deltaX(m.x+sign*m.wallWidth,target.x)-8,y:deltaY(m.y,target.y)-m.radius,width:16,height:m.radius*2});
+  const z=state.bossZone;
+  const bounds=z?{left:-Infinity,right:Infinity,top:-Infinity,bottom:Infinity,zone:{x:deltaX(z.x,target.x),y:deltaY(z.y,target.y),r:z.radius}}:null;
+  return {refs,circles,walls,bounds};
+}
+function slidePrediction(target) {
+  const m=target.slide;if(!m)return {dx:0,dy:0};
+  const o=slideObstacles(target);
+  return SurvivorSlide.sweep(m.x,m.y,target.r,o.circles,o.walls,o.bounds);
+}
+function updateTargetSlide(target,dt) {
+  if(!target.slide)return;
+  if(target!==state.player && !targetVisible(target)){target.slide=null;return;}
+  const o=slideObstacles(target),result=SurvivorSlide.step(target.slide,dt,target.r,o.circles,o.walls,o.bounds);
+  target.x+=result.dx;target.y+=result.dy;target.slide=result.motion;clampToMap(target);
+  // 浪花互撞在真正碰到時結算一次，不在發射時隔空傷害。
+  if(target.slideWave && result.hit>=0) {
+    const other=o.refs[result.hit],rule=cardBlock('item-wall','onWaveHit').actions[1];
+    target.slideWave=false;
+    if(other!==state.player && other!==state.boss && target!==state.boss && (target.waveReady||0)<=state.elapsed && (other.waveReady||0)<=state.elapsed) {
+      target.waveReady=other.waveReady=state.elapsed+rule.cooldown;
+      hitBuildTarget(target,rule.amount);hitBuildTarget(other,rule.amount);
+      skillVisual('splash',other.x,other.y,{radius:32,color:'#71d9f2',life:.4});
+    }
+  }
+  if(!target.slide)target.slideWave=false;
+}

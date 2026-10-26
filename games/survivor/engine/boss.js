@@ -186,7 +186,7 @@ function updateBoss(dt) {
           bossHurtPlayer(definition.damage,moveFeedback(definition,'move'));
           if(state.player.health<beforeHealth) {
             const angle=Math.atan2(deltaY(state.player.y,b.y),deltaX(state.player.x,b.x));
-            state.player.x+=Math.cos(angle)*policy.leapPush;state.player.y+=Math.sin(angle)*policy.leapPush;clampToMap(state.player);
+            shiftTarget(state.player,state.player.x-Math.cos(angle),state.player.y-Math.sin(angle),policy.leapPush);
           }
         }
         move.recovery=policy.leapRecovery;bossFeedbackShake(move);continue;

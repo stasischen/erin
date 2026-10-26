@@ -4,16 +4,16 @@ function fresh(weapon='water-ball') {run(`resetGame();state.mode='playing';state
 // Swept path catches targets passed in one push, ignores targets behind or to the side.
 assert.equal(run('SurvivorNeutral.collision(55,0,8,[{x:40,y:0,r:8}])'),0);
 for(const [x,y] of [[-20,0],[40,40],[90,0]])assert.equal(run(`SurvivorNeutral.collision(55,0,8,[{x:${x},y:${y},r:8}])`),-1);
-fresh();run('waveNeutralHit(state.enemies[0],1,0)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[982,982]);assert.equal(run('state.enemies[0].x-state.player.x'),105);
-run('state.enemies[0].x=state.player.x+50;waveNeutralHit(state.enemies[0],1,0)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[982,982]);
-run('state.elapsed=.6;state.enemies[0].x=state.player.x+50;waveNeutralHit(state.enemies[0],1,0)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[964,964]);
-fresh();run('state.upgrades={};waveNeutralHit(state.enemies[0],1,0)');assert.equal(run('state.enemies[0].hp'),1000);assert.equal(run('state.enemies[0].x-state.player.x'),50);
+fresh();run('waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[982,982]);assert.equal(run('state.enemies[0].x-state.player.x'),79);
+run('state.enemies[0].x=state.player.x+50;waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[982,982]);
+run('state.elapsed=.6;state.enemies[0].x=state.player.x+50;waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25)');assert.deepEqual(val('state.enemies.map(e=>e.hp)'),[964,964]);
+fresh();run('state.upgrades={};waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25)');assert.equal(run('state.enemies[0].hp'),1000);assert.equal(run('state.enemies[0].x-state.player.x'),50);
 // Real projectile and hammer integrations both push and cause collision damage.
 fresh();run('fireAtNearest();for(let i=0;i<4;i++)tick(.05)');assert.ok(run('state.enemies[1].hp<1000'));
-fresh('candy-hammer');run('fireAtNearest()');assert.ok(run('state.enemies[0].x-state.player.x>=120'));assert.ok(run('state.enemies[1].hp<1000'));
+fresh('candy-hammer');run('fireAtNearest();updateTargetSlide(state.enemies[0],.25)');assert.ok(run('state.enemies[0].x-state.player.x>50'));assert.ok(run('state.enemies[1].hp<1000'));
 // Offscreen targets cannot receive collision damage; lethal collision settles once.
-fresh();run('state.enemies[1].x=state.player.x+2000;waveNeutralHit(state.enemies[0],1,0)');assert.equal(run('state.enemies[1].hp'),1000);
-fresh();run("state.upgrades['item-cookie']=1;state.enemies.forEach(e=>e.hp=1);waveNeutralHit(state.enemies[0],1,0);waveNeutralHit(state.enemies[0],1,0)");assert.equal(run('state.neutral.kills'),2);
+fresh();run('state.enemies[1].x=state.player.x+2000;waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25)');assert.equal(run('state.enemies[1].hp'),1000);
+fresh();run("state.upgrades['item-cookie']=1;state.enemies.forEach(e=>e.hp=1);waveNeutralHit(state.enemies[0],1,0);updateTargetSlide(state.enemies[0],.25);waveNeutralHit(state.enemies[0],1,0)");assert.equal(run('state.neutral.kills'),2);
 // Every card's data selects the appropriate description; missing melee data falls back.
 for(const c of val('UPGRADES')) {
  assert.equal(run(`SurvivorWeapons.cardNote(UPGRADES.find(c=>c.id==='${c.id}'),GAME_DATA.weapons[0])`),c.description);

@@ -399,6 +399,7 @@
           }
           const e = { type: choice(effect.type, Object.keys(TYPES), '積木'), trigger: choice(effect.trigger, ['hit','skill','dash','interval','combo'], '觸發時機') };
           if(e.trigger==='combo') e.comboStep=num(effect.comboStep === undefined ? 3 : effect.comboStep,1,10,'第幾下',true);
+          if(e.type==='knockback') e.slideSeconds=effect.slideSeconds===undefined?.2:num(effect.slideSeconds,.15,.25,'擊退滑動秒數');
           for (const key of Object.keys(PARAMS)) e[key] = num(effect[key], key === 'distance' && e.type === 'knockback' ? -300 : BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
           return e;
         });
@@ -424,7 +425,8 @@
         if(!k || typeof k.enabled!=='boolean') fail('重量效果開關格式錯誤');
         data.knockback={enabled:k.enabled,strength:num(k.strength,0,5,'重量影響'),
           bossMass:num(k.bossMass,1,100,'老師重量'),minibossMass:num(k.minibossMass,1,100,'小頭目重量'),
-          bossMultiplier:num(k.bossMultiplier,0,1,'老師推拉倍率')};
+          bossMultiplier:num(k.bossMultiplier,0,1,'老師推拉倍率'),
+          slideSeconds:k.slideSeconds===undefined?.2:num(k.slideSeconds,.15,.25,'擊退滑動秒數')};
       }
       if(input.bodySeparation !== undefined) {
         const b=input.bodySeparation;

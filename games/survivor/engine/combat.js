@@ -115,7 +115,7 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
   damage = schoolDamage(enemy, damage);
   enemy.meleeFlash=false;
   enemy.hp -= damage;
-  enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
+  enemy.flash = HIT_FLASH_SECONDS; shiftTarget(enemy,state.player.x,state.player.y,KNOCKBACK_SPEED / 2);
   if (enemy.hp <= 0) playSound("death");
   damageNumber(enemy, damage);
   if (enemy.hp <= 0) {
@@ -165,15 +165,16 @@ function hitBuildTarget(target, damage, attack = {}) {
     else teacherRecoveryHit();
   } else if (target.alive) damageEnemy(target, damage);
 }
-function shiftTarget(target, x, y, distance, centerFallback = false) {
-  // 不讓推拉把尚未進場的怪帶進畫面；所有效果共用此入口。
-  if (!canAttackTarget(target)) return;
+function shiftTarget(target, x, y, distance, centerFallback = false, duration = GAME_DATA.knockback.slideSeconds) {
+  if (target !== state.player && !canAttackTarget(target)) return;
   distance = targetDisplacement(target,distance);
-  let dx = deltaX(target.x, x), dy = deltaY(target.y, y);
-  if (centerFallback && Math.hypot(dx,dy)<.01) { dx=1;dy=0; }
-  const length = Math.max(1, Math.hypot(dx, dy));
-  skillVisual("gust", target.x, target.y, { x2: target.x + dx / length * distance, y2: target.y + dy / length * distance, color: "#23815e" });
-  target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
+  let dx=deltaX(target.x,x),dy=deltaY(target.y,y);
+  if(centerFallback && Math.hypot(dx,dy)<.01){dx=1;dy=0;}
+  const length=Math.max(1,Math.hypot(dx,dy));
+  if(!distance || !Math.hypot(dx,dy))return;
+  target.slide=SurvivorSlide.impulse(target.slide,dx/length*distance,dy/length*distance,duration);
+  const end=slidePrediction(target);
+  skillVisual("gust",target.x,target.y,{x2:target.x+end.dx,y2:target.y+end.dy,color:"#23815e"});
 }
 // 通用積木：新作品可組合觸發時機和參數；既有卡沿用有回歸測試的配方。
 function triggerMakerEffects(trigger, x, y, comboStep = 0) {
@@ -222,7 +223,7 @@ function executeMakerEffect(effect, x, y, level) {
   for (const target of targets) {
     if (effect.type === "slow") { target.slowTimer = effect.duration; target.makerSlow = effect.multiplier; }
     else if (effect.type === "stun") stunTarget(target,effect.duration);
-    else if (effect.type === "knockback") shiftTarget(target, x, y, effect.distance);
+    else if (effect.type === "knockback") shiftTarget(target, x, y, effect.distance, false, effect.slideSeconds);
     else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(deltaY(target.y, y),deltaX(target.x, x))) > effect.gap/2 && Math.hypot(deltaX(target.x, x),deltaY(target.y, y)) >= effect.radius * .65)) hitBuildTarget(target,damage);
     if (state.mode !== "playing") return;
   }
@@ -450,8 +451,10 @@ function updateBomb(dt) {
   }
   for (const enemy of state.enemies) {
     if (!enemy.alive || !canAttackTarget(enemy) || Math.hypot(deltaX(enemy.x, bomb.x), deltaY(enemy.y, bomb.y)) > bomb.radius + enemy.r) continue;
+    const previous=enemy.slide;
     damageEnemy(enemy, bomb.damage);
-    if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
+    enemy.slide=previous; // 炸彈沿用自己的距離，不額外加普攻擊退。
+    if (enemy.alive) pushAway(enemy);
   }
   if (state.boss && canAttackTarget(state.boss) && Math.hypot(deltaX(state.boss.x, bomb.x), deltaY(state.boss.y, bomb.y)) <= bomb.radius + state.boss.r) {
     state.boss.hp -= schoolDamage(state.boss, bomb.damage); state.boss.flash = HIT_FLASH_SECONDS; state.boss.meleeFlash=false; pushAway(state.boss); updateHud();

@@ -5,7 +5,9 @@ const create=require('./maker-support.cjs');
 const ids=['wall','candy','bird','bank','split','magnet','crown','clover','rear','cookie'];
 function scenario(old,setup,steps,draw=.05) {
  const run=create();
- if(old) for(const body of Object.values(legacy))run(body);
+ run("globalThis.currentWave=waveNeutralHit");
+ if(old) for(const [name,body] of Object.entries(legacy)) if(name!=='waveNeutralHit')run(require('./slide-legacy.cjs')(body));
+ run("waveNeutralHit=currentWave");
  run(`Math.random=()=>${draw};resetGame();state.mode='playing';settingsPanel.hidden=true;
  state.spawnTimer=999;state.shotTimer=999;state.bossSpawned=true;state.enemies=[];state.boss=null;state.upgrades={};
  globalThis.enemy=(dx=50,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0,shotCooldown:999});

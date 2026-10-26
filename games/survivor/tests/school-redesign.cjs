@@ -57,7 +57,7 @@ run('state.enemies[0].wetTimer=0;damageEnemy(state.enemies[0],100);');assert.equ
 fresh();owns(['water-bubble']);run('activateDash();');step(.2);assert.equal(run('state.schoolCombat.bubble'),true);assert.equal(run('absorbSchoolHit(12)'),0);assert.equal(run('absorbSchoolHit(12)'),12);
 fresh();owns(['wind-refund']);run('activateDash();');step(.15);assert.ok(run('state.dashCooldown')<.7);assert.equal(run('Number.isInteger(state.dashCharges)'),true);
 // Independent timed fountains, wind push, rain, rod and stationary wall.
-fresh();owns(['water-fountain','wind-gust']);run("state.schoolCombat.timers={'water-fountain':.01,'wind-gust':.01};globalThis.x=state.enemies[0].x;updateSchoolCombat(.05);");assert.ok(run('state.enemies[0].x>x'));assert.ok(run('state.enemies[0].wetTimer>0'));
+fresh();owns(['water-fountain','wind-gust']);run("state.schoolCombat.timers={'water-fountain':.01,'wind-gust':.01};globalThis.x=state.enemies[0].x;updateSchoolCombat(.05);updateTargetSlide(state.enemies[0],.2);");assert.ok(run('state.enemies[0].x>x'));assert.ok(run('state.enemies[0].wetTimer>0'));
 fresh();owns(['water-rain']);run("state.enemies.push(book(1400));state.schoolCombat.timers['water-rain']=0;updateSchoolCombat(.05)");assert.ok(run('state.enemies.every(e=>e.slowTimer>0)'));assert.equal(run('state.enemies[1].hp'),10000);
 fresh();owns(['thunder-rod']);run("state.schoolCombat.timers['thunder-rod']=0;updateSchoolCombat(.05)");assert.equal(run('state.schoolCombat.rods.length'),1);assert.equal(run('state.enemies[0].hp'),9975);
 fresh();owns(['wind-eye']);step(1.1);assert.ok(run('schoolWindWall()'));run('state.keys.add("d");tick(.05);');assert.equal(run('!!schoolWindWall()'),false);
