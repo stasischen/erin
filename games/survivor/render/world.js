@@ -101,7 +101,17 @@ function backgroundTile(kind, density) {
 
 // 把不透明輪廓染成深色後快取；每幀只畫四個偏移，不讀取像素或使用濾鏡。
 const OUTLINE_MASKS = new WeakMap();
-function drawOutlinedSprite(g, sprite, x, y, w, h) {
+const SPRITE_TINTS = new WeakMap();
+function drawOutlinedSprite(g, sprite, x, y, w, h, tint) {
+  if(tint) {
+    let colors=SPRITE_TINTS.get(sprite);
+    if(!colors) {colors={};SPRITE_TINTS.set(sprite,colors);}
+    if(!colors[tint]) {
+      const mask=document.createElement('canvas');mask.width=sprite.width;mask.height=sprite.height;
+      const ink=mask.getContext('2d');ink.drawImage(sprite,0,0);ink.globalCompositeOperation='source-in';ink.fillStyle=tint;ink.fillRect(0,0,mask.width,mask.height);colors[tint]=mask;
+    }
+    sprite=colors[tint];
+  }
   if (GAME_DATA.visuals.spriteOutline) {
     let mask = OUTLINE_MASKS.get(sprite);
     if (!mask) {
@@ -192,24 +202,22 @@ function drawHero() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId) {
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint) {
   const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
   drawingContext.save(); drawingContext.translate(x, y - hop);
   const sprite = spriteId ? null : SPRITES[enemyId];
   if (sprite) {
-    if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-    drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
   const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
   if (skin) {
     drawingContext.imageSmoothingEnabled = false;
-    if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-    drawOutlinedSprite(drawingContext, skin, -r, -r, r * 2, r * 2); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, skin, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
-  drawingContext.fillStyle = flash ? "#fff" : color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
+  drawingContext.fillStyle = flash ? "#fff" : tint || color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
   drawingContext.beginPath();
   drawingContext.rect(-r * .82, -r * .8, r * 1.64, r * 1.6); drawingContext.fill(); drawingContext.stroke();
   drawingContext.fillStyle = "#f0bb80"; drawingContext.fillRect(-r * .5, -r * .55, r, r * .28);
@@ -352,8 +360,8 @@ function render() {
   updateCamera();
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
-  const shake = gameSettings.vibration && state.bossShake > 0 ? BOSS_TUNING.shakePixels : 0;
-  ctx.translate(-state.cameraX + Math.sin(state.elapsed * 91) * shake, -state.cameraY + Math.cos(state.elapsed * 83) * shake);
+  const shake = gameSettings.vibration ? Math.max(state.bossShake>0?BOSS_TUNING.shakePixels:0,state.hitShake>0?state.hitShakePixels:0) : 0;
+  ctx.translate(-state.cameraX + Math.sin((state.juiceClock||state.elapsed) * 91) * shake, -state.cameraY + Math.cos((state.juiceClock||state.elapsed) * 83) * shake);
   drawClassroom();
   drawBossZone();
   for (const offset of visibleWorldOffsets()) {
@@ -420,7 +428,7 @@ function render() {
       const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
-      drawOutlinedSprite(ctx, teacherPicture(b.flash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
+      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
       ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {
@@ -430,7 +438,16 @@ function render() {
     }
     for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
     for (const enemy of state.enemies) {
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, (enemy.airHeight || 0) + (enemy.typeId==='pudding' && enemy.phaseAttack && enemy.phaseAttack.phase==='windup' ? 12*(1-enemy.phaseAttack.left/enemy.phaseAttack.config.windup) : 0), enemy.spriteId);
+      const a=enemy.phaseAttack,phase=a&&a.phase;
+      const windup=phase==='windup' || !!(enemy.action && enemy.action.warning>0) || enemy.shotWarning>0, recovery=phase==='recovery';
+      const progress=phase==='windup'?1-a.left/Math.max(.001,a.config.windup):windup?1-(enemy.shotWarning || enemy.action.warning)/Math.max(.001,enemy.action&&enemy.action.kind==='blast'?GAME_DATA.pacing.fuseSeconds:GAME_DATA.pacing.warning):0;
+      const squash=enemy.impactSquash>0?Math.min(.3,enemy.impactSquash*2):windup?.18*progress:0;
+      const jitter=windup?Math.sin(state.elapsed*85)*2*progress:0;
+      const tint=enemy.impactFlash?'#ffffff':phase==='active'&&a.entered?'#ffffff':windup?'#ef8890':recovery?'#939da7':undefined;
+      ctx.save();ctx.translate(enemy.x+jitter,enemy.y);ctx.scale(1+squash,1-squash);ctx.translate(-enemy.x,-enemy.y);
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint);
+      ctx.restore();
+      if(windup || recovery) drawAttackMarker(enemy,windup?'!':'star');
       drawEncounterArmor(enemy);
       if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
     }
@@ -485,6 +502,7 @@ function render() {
     const scale = Math.min(1, inset / (radius + 19));
     ctx.globalAlpha = .42; ctx.strokeStyle = "#173f62"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.joy.baseX, state.joy.baseY, (radius + 11) * scale, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = "#4186be"; ctx.beginPath(); ctx.arc(state.joy.baseX + state.joy.x * radius * scale, state.joy.baseY + state.joy.y * radius * scale, 19 * scale, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   }
+  for(const e of combatTargets()) e.impactFlash=0;
 }
 
 // 使用螢幕座標，跟著鏡頭及橫向畫面尺寸定位；現階段只有老師，未加入新菁英。
@@ -612,36 +630,40 @@ function drawPacingWarnings() {
 }
 
 // 與命中共用 config／鎖定原點及方向，不從畫面尺寸推算攻擊規則。
+// 地面預警是招式表現；精確碰撞範圍只供練習場開關使用。
+function drawAttackMarker(e,kind) {
+  const x=Math.round(e.x),y=Math.round(e.y-e.r-24);
+  ctx.save();ctx.fillStyle=kind==='!'?'#ffe2a0':'#fff2b3';
+  if(kind==='!') {ctx.fillRect(x-2,y,4,10);ctx.fillRect(x-2,y+13,4,4);}
+  else {ctx.fillRect(x-2,y,4,14);ctx.fillRect(x-7,y+5,14,4);ctx.fillRect(x-5,y+3,10,8);}
+  ctx.restore();
+}
 function drawPhasedAttacks() {
   for(const e of state.enemies) {
     const a=e.phaseAttack;
-    if(!e.alive || !a || !['windup','active','recovery'].includes(a.phase)) continue;
-    ctx.save();
-    if(a.phase==='recovery') {
-      ctx.fillStyle='#e9ffff';ctx.font='bold 13px system-ui';ctx.textAlign='center';
-      ctx.fillText('反擊機會！',e.x,e.y-e.r-12);ctx.restore();continue;
-    }
-    const c=a.config,warning=a.phase==='windup';
-    ctx.strokeStyle=warning?'#e9485c':'#fff2ac';ctx.fillStyle=warning?'rgba(240,65,85,.23)':'rgba(255,180,70,.48)';ctx.lineWidth=3;ctx.lineJoin='round';
-    ctx.translate(a.x,a.y);ctx.rotate(a.angle);
+    if(!e.alive || !a || !['windup','active'].includes(a.phase)) continue;
+    const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,c.windup))):1;
+    ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle);
+    ctx.strokeStyle='#ed7e89';ctx.fillStyle=warning?'rgba(240,65,85,.32)':'rgba(245,87,93,.72)';ctx.lineWidth=2;
     if(c.shape==='projectiles') {
-      // 預警為子彈沿固定方向的完整掃掠範圍，含主角碰撞半徑。
       if(warning) for(const angle of SurvivorPacing.attackAngles(c,0)) {
-        ctx.save();ctx.rotate(angle);ctx.lineCap='round';
-        ctx.globalAlpha=.24;ctx.lineWidth=2*(c.radius+state.player.r);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.min(c.length,c.speed*c.active),0);ctx.stroke();
-        ctx.globalAlpha=1;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.min(c.length,c.speed*c.active),0);ctx.stroke();ctx.restore();
+        ctx.save();ctx.rotate(angle);const length=Math.min(c.length,c.speed*c.active);
+        ctx.globalAlpha=.18;ctx.lineWidth=2*c.radius;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();
+        ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length*progress,0);ctx.stroke();
+        if(state.practiceHit && state.practiceHitboxes) {ctx.strokeStyle='#fff5ae';ctx.globalAlpha=.2;ctx.lineWidth=2*(c.radius+state.player.r);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();}
+        ctx.restore();
       }
     } else {
-      ctx.beginPath();
-      if(c.shape==='line') ctx.rect(0,-c.radius,c.length,c.radius*2);
-      else if(c.shape==='sector') {const h=c.angle*Math.PI/360;ctx.moveTo(0,0);ctx.arc(0,0,c.radius,-h,h);ctx.closePath();}
-      else {ctx.arc(0,0,c.radius,0,Math.PI*2);if(c.shape==='ring') {ctx.moveTo(c.innerRadius,0);ctx.arc(0,0,c.innerRadius,0,Math.PI*2,true);}}
-      ctx.fill();ctx.stroke();
+      const path=(p)=>{
+        ctx.beginPath();
+        if(c.shape==='line') ctx.rect(0,-c.radius,c.length*p,c.radius*2);
+        else if(c.shape==='sector') {const h=c.angle*Math.PI/360;ctx.moveTo(0,0);ctx.arc(0,0,c.radius*p,-h,h);ctx.closePath();}
+        else {const radius=c.shape==='ring'?c.innerRadius+(c.radius-c.innerRadius)*p:c.radius*p;ctx.arc(0,0,radius,0,Math.PI*2);if(c.shape==='ring'){ctx.moveTo(c.innerRadius,0);ctx.arc(0,0,c.innerRadius,0,Math.PI*2,true);}}
+      };
+      path(1);ctx.save();ctx.globalAlpha=.2;ctx.fill();ctx.restore();ctx.stroke();
+      path(progress);ctx.fill();
+      if(state.practiceHit && state.practiceHitboxes) {path(1);ctx.strokeStyle='#fff5ae';ctx.lineWidth=1;ctx.stroke();}
     }
     ctx.restore();
-    if(warning) {
-      ctx.save();ctx.strokeStyle='#fff3aa';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle='#fff0cf';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('準備！',e.x,e.y-e.r-16);ctx.restore();
-    }
   }
 }

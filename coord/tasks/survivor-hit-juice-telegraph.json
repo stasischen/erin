@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-hit-juice-telegraph",
+  "title": "近戰打擊手感、敵人身體與地面預警、練習場追擊",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-hit-juice-telegraph",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T070053Z-parent-hit-juice-telegraph.md",
+  "next": "請 Grok 獨立審查 erin-watch 提交的最後實質 SHA，並在 1024×461、740×360 實際操作（含練習場與試這隻）。已完成刀光、近戰命中回饋、Maker 開關／強度、身體與地面預警、練習追擊與判定框開關；版本 20261026x。node games/survivor/tools/test.cjs 全部通過，未跑 --layout。Godot §11 對照、工程初值與試玩項目見 docs/survivor-hit-juice-telegraph-validation.md。兩項平衡／版面待辦只記文件。請 Erin 試玩手感與預警，無待決定而阻擋實作的事項。commit、push、PR 由 erin-watch 代勞；未核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T07:09:41.047438Z",
+  "updatedBy": "codex"
+}

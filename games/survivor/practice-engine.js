@@ -18,7 +18,6 @@ function practiceScore() {
 }
 function practiceStartRound() {
   const e=practiceEnemy,c=practiceConfig;
-  e.x=practiceHome.x+40;e.y=practiceHome.y;
   practiceWasHit=false;practiceResolved=false;practiceHold=0;
   const angle=Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x));
   c.windup=practiceRules.windup(practiceRules.model(GAME_DATA,practiceId).windup,practiceRound,practiceFast);
@@ -27,12 +26,20 @@ function practiceStartRound() {
   practiceBuildTimeline();
 }
 
+const practiceDirection=enemyDirection;
+enemyDirection=function(e,distance) {
+  if(state.enemies.includes(e)) {
+    if(e.action || e.phaseAttack && !['ready','cooldown'].includes(e.phaseAttack.phase)) return 0;
+    return distance>e.r+state.player.r+4?1:0;
+  }
+  return practiceDirection(e,distance);
+};
 const practiceNav=document.getElementById('practiceMoves');
 const practiceOriginalBehavior=updateEnemyBehavior, practiceOriginalBlob=drawBlob,practiceOriginalWarnings=drawPacingWarnings;
 // 木頭假人是本機程式圖，攻擊來源仍保留原來的怪物造型。
 drawBlob=function(x,y,r,color,wobble,flash,id,...rest) {
   if(id!=='practice-dummy') return practiceOriginalBlob(x,y,r,color,wobble,flash,id,...rest);
-  ctx.save();ctx.translate(x,y);ctx.fillStyle=flash?'#fff4cf':'#98693e';ctx.fillRect(-5,-28,10,55);ctx.fillRect(-27,-12,54,9);ctx.fillRect(-15,-32,30,24);
+  ctx.save();ctx.translate(x,y);ctx.fillStyle=flash?'#ffffff':'#98693e';ctx.fillRect(-5,-28,10,55);ctx.fillRect(-27,-12,54,9);ctx.fillRect(-15,-32,30,24);
   ctx.fillStyle='#d9ae72';ctx.fillRect(-11,-29,22,17);ctx.fillStyle='#533d2d';ctx.fillRect(-7,-24,4,4);ctx.fillRect(4,-24,4,4);ctx.fillRect(-18,24,36,6);ctx.restore();
 };
 // 固定鏡頭讓主角可走位；世界規則仍為遊戲單位。
@@ -53,6 +60,7 @@ updateEnemyBehavior=function(e,dt) {
 };
 // 舊招式也以主角中心的真實碰撞區顯示：衝撞為掃掠膠囊、自爆加上主角半徑。
 drawPacingWarnings=function() {
+  if(!state.practiceHitboxes) return;
   if(practiceConfig&&!practiceConfig.enabled){practiceOriginalWarnings();return;}
   const e=practiceEnemy,a=e&&e.action;if(!a)return;
   ctx.save();ctx.strokeStyle='#efc94e';ctx.fillStyle='rgba(239,201,78,.22)';
@@ -85,10 +93,11 @@ function practiceReset(keepPosition=false) {
   resetGame();state.mode=practicePaused?'paused':'playing';settingsPanel.hidden=true;
   if(!keepPosition){practiceStats={dodged:0,hit:0,streak:0};practiceRound=0;}
   state.practiceHit=practiceHit;practiceWasHit=false;practiceResolved=false;practiceToast=0;practiceDashProtected=false;practiceBasicFired=false;
-  gameSettings.music=false;gameSettings.sound=false;gameSettings.vibration=false;
+  gameSettings.music=false;gameSettings.sound=false;gameSettings.vibration=true;
   practiceHome=home||{x:state.player.x,y:state.player.y};updateCamera();
   state.player.x=position?position.x:practiceHome.x-80;state.player.y=position?position.y:practiceHome.y;
   if(keepPosition) {state.joy=joy;state.pointerId=pointerId;state.keys=keys;}
+  state.practiceHitboxes=document.getElementById('practiceHitboxes').checked;
   state.player.damageDisabled=true;practiceClock=0;practiceHold=0;practiceEnemy=null;
   practiceConfig=practiceRules.model(GAME_DATA,practiceId);
   if(practiceConfig.kind==='weapon') {
@@ -150,7 +159,7 @@ function practiceStep(dt) {
       practiceHold+=dt;
       if(practiceHold>=Math.max(.45,c.legacy?c.cooldown:0)) {
         if(!practiceEnemy.alive) {practiceEnemy.alive=true;state.enemies=[practiceEnemy];}
-        practiceStartRound();
+        if(encounterDistance(practiceEnemy,state.player)<=(c.triggerDistance||c.radius+70)) practiceStartRound();
       }
     }
   }
@@ -218,6 +227,7 @@ document.getElementById('practicePause').addEventListener('click',()=>practiceMe
 document.getElementById('practiceResume').addEventListener('click',()=>practiceMenu(false));
 document.getElementById('practiceExit').addEventListener('click',()=>{if(frameElement._practiceClose)frameElement._practiceClose();});
 document.getElementById('practiceReplay').addEventListener('click',()=>{practiceReset();practiceMenu(false);});
+document.getElementById('practiceHitboxes').addEventListener('change',e=>{state.practiceHitboxes=e.target.checked;practicePaint();});
 document.getElementById('practiceFast').addEventListener('change',e=>{practiceFast=e.target.checked;practiceReset();});
 document.addEventListener('pointerdown',event=>{if(event.target===canvas&&canvas.focus)canvas.focus();},true);
 window.addEventListener('resize',()=>{practiceSize();practiceHome=null;practiceReset();});

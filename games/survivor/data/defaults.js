@@ -2063,6 +2063,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     "playerForce": 1,
     "enemyForce": 0.25
   },
+  "hitJuice": { "enabled": true, "intensity": 1 },
   "bodyContact": {
     "pushOnly": false,
     "damageScale": 0.25

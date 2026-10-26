@@ -16,8 +16,8 @@ run('state.enemies=[book(50),book(-50)];state.swingCount=3;state.weaponAttack=nu
 // No target in reach preserves fourth swing, dash boost, charge and shot counter.
 fresh(['thunder-charge']);run('state.enemies=[book(200)];state.swingCount=3;state.weaponAttack=null;state.dashAttack=1;state.schoolCombat.kills=10;fireAtNearest();');assert.equal(run('state.swingCount'),3);assert.equal(run('state.dashAttack'),1);assert.equal(run('state.schoolCombat.shots+state.schoolCombat.chargedUsed'),0);
 run('state.enemies=[book(50)];fireAtNearest();');assert.equal(run('state.dashAttack'),0);assert.equal(run('state.schoolCombat.chargedUsed'),1);assert.ok(run('state.vfx.some(v=>v.kind==="hammer-swing"&&v.boosted)'));
-// 0.7s cadence, rapid cards and movement attack-rate apply to the hammer.
-fresh();assert.equal(run('effectiveShotInterval()'),.7);run('state.shotTimer=0;tick(0);for(let i=0;i<13;i++)tick(.05);tick(.04);');assert.equal(run('state.swingCount'),1);run('state.enemies=[book()];tick(.011)');assert.equal(run('state.swingCount'),2);
+// 命中頓幀 .05s 後，0.7s 模擬時間 cadence, rapid cards and movement attack-rate apply to the hammer.
+fresh();assert.equal(run('effectiveShotInterval()'),.7);run('state.shotTimer=0;tick(0);tick(.05);for(let i=0;i<13;i++)tick(.05);tick(.04);');assert.equal(run('state.swingCount'),1);run('state.enemies=[book()];tick(.011)');assert.equal(run('state.swingCount'),2);
 fresh(['rapid-water']);assert.ok(run('effectiveShotInterval()')<.7);
 // Size, water form, multishot and piercing map to cleave dimensions.
 fresh(['big-water','multi-water','piercing-water','water-drop']);run('state.schoolCombat.shots=GAME_DATA.schoolRules.bigDropEvery-1;fireAtNearest();');assert.ok(run('state.vfx.find(v=>v.kind==="hammer-swing").radius')>70);assert.ok(run('state.vfx.find(v=>v.kind==="hammer-swing").arc')>Math.PI*2/3);
