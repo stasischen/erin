@@ -12,9 +12,9 @@ run('e.arc=Math.PI*2');assert.equal(run('SurvivorWeapons.intersects(50,0,8,e)'),
 fresh();run('state.enemies=[book(),book(40,20),book(-50),book(100)];fireAtNearest();');
 const damage=run('PROJECTILE_DAMAGE*1.6');
 assert.deepEqual(json('state.enemies.map(e=>e.hp)'),[10000-damage,10000-damage,10000,10000]);assert.equal(run('state.projectiles.length'),0);assert.equal(run('state.swingCount'),1);
-run('state.enemies=[book(50),book(-50)];state.swingCount=3;fireAtNearest();');assert.ok(run('state.enemies.every(e=>e.hp<10000)'));assert.equal(run('state.vfx.filter(v=>v.kind==="hammer-swing").pop().spin'),true);
+run('state.enemies=[book(50),book(-50)];state.swingCount=3;state.weaponAttack=null;fireAtNearest();');assert.ok(run('state.enemies.every(e=>e.hp<10000)'));assert.equal(run('state.vfx.filter(v=>v.kind==="hammer-swing").pop().spin'),true);
 // No target in reach preserves fourth swing, dash boost, charge and shot counter.
-fresh(['thunder-charge']);run('state.enemies=[book(200)];state.swingCount=3;state.dashAttack=1;state.schoolCombat.kills=10;fireAtNearest();');assert.equal(run('state.swingCount'),3);assert.equal(run('state.dashAttack'),1);assert.equal(run('state.schoolCombat.shots+state.schoolCombat.chargedUsed'),0);
+fresh(['thunder-charge']);run('state.enemies=[book(200)];state.swingCount=3;state.weaponAttack=null;state.dashAttack=1;state.schoolCombat.kills=10;fireAtNearest();');assert.equal(run('state.swingCount'),3);assert.equal(run('state.dashAttack'),1);assert.equal(run('state.schoolCombat.shots+state.schoolCombat.chargedUsed'),0);
 run('state.enemies=[book(50)];fireAtNearest();');assert.equal(run('state.dashAttack'),0);assert.equal(run('state.schoolCombat.chargedUsed'),1);assert.ok(run('state.vfx.some(v=>v.kind==="hammer-swing"&&v.boosted)'));
 // 0.7s cadence, rapid cards and movement attack-rate apply to the hammer.
 fresh();assert.equal(run('effectiveShotInterval()'),.7);run('state.shotTimer=0;tick(0);for(let i=0;i<13;i++)tick(.05);tick(.04);');assert.equal(run('state.swingCount'),1);run('state.enemies=[book()];tick(.011)');assert.equal(run('state.swingCount'),2);
@@ -32,7 +32,7 @@ fresh();assert.equal(run('absorbSchoolHit(20)'),17);run('state.schoolCombat.bubb
 fresh();run('state.enemies=[book(500)];fireAtNearest();');assert.equal(run('state.swingCount'),0);
 fresh();run('state.enemies=[];summonTeacher();state.boss.x=state.player.x+50;state.boss.y=state.player.y;state.boss.hp=1;fireAtNearest();');assert.equal(run('state.boss.hp'),1);run('state.bossIntro=0;fireAtNearest();');assert.equal(run('state.mode'),'transition');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('state.swingCount'),1);
 // Restart clears weapon and counters; picker clock stays frozen and stale callbacks ignored.
-run('startGame();tick(2);');assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),2);assert.equal(run('state.pickingWeapon'),true);
+run('startGame();tick(2);');assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),3);assert.equal(run('state.pickingWeapon'),true);
 run('globalThis.old=state.pendingChoices;applyUpgrade(1);applyUpgrade(0,old);');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('Object.keys(state.upgrades).length'),0);assert.equal(run('state.schoolRun.starter'),null);assert.equal(run('buildAppearance().main'),'water');
 // Bounded visuals after many swings, and legacy/custom Maker data round-trips.
 fresh();run('for(let i=0;i<200;i++)fireAtNearest();');assert.ok(run('state.vfx.length<=VFX_TUNING.limit'));assert.equal(run('state.projectiles.length'),0);

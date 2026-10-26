@@ -172,7 +172,7 @@ function practicePaint() {
   if(practiceWasHit&&practiceToast>0){ctx.save();ctx.strokeStyle='#ff596d';ctx.lineWidth=5;ctx.beginPath();ctx.arc(px,py,state.player.r+5,0,Math.PI*2);ctx.stroke();if(state.player.hitFlash>0){ctx.fillStyle='rgba(255,50,70,.45)';ctx.fill();}ctx.restore();}
   const toast=document.getElementById('practiceFeedback');toast.hidden=practiceToast<=0;
   toast.style.left=(Math.max(80,Math.min(state.width-80,px))/state.width*100)+'%';toast.style.top=(Math.max(90,py-32)/state.height*100)+'%';
-  document.getElementById('practiceStats').textContent=practiceConfig.kind==='weapon'?'武器練習 · 木樁會追過來':`躲開 ${practiceStats.dodged} · 被打 ${practiceStats.hit+(practiceWasHit&&!practiceResolved?1:0)} · 連續 ${practiceWasHit?0:practiceStats.streak}｜挑戰 ${practiceWasHit?0:Math.min(10,practiceStats.streak)}/10`;
+  document.getElementById('practiceStats').textContent=practiceConfig.kind==='weapon'?`武器練習 · 連段 ${state.weaponAttack?state.weaponAttack.number:0}/${activeWeapon().comboEvery} · 聚氣 ${Math.round((state.weaponAttack?state.weaponAttack.charge:0)/activeWeapon().chargeSeconds*100)}% · 站定聚氣，移動保留 ${Math.round(activeWeapon().moveRetention*100)}%` :`躲開 ${practiceStats.dodged} · 被打 ${practiceStats.hit+(practiceWasHit&&!practiceResolved?1:0)} · 連續 ${practiceWasHit?0:practiceStats.streak}｜挑戰 ${practiceWasHit?0:Math.min(10,practiceStats.streak)}/10`;
 
   const current=practiceTimelineState(),line=practiceRules.timeline(practiceConfig,current.phase,current.left);
   document.getElementById('practiceCursor').style.left=(line.progress*100)+'%';

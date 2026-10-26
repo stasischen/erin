@@ -58,5 +58,20 @@ globalThis.SurvivorEffectBlocks = (() => {
     }
     return {timers,events};
   }
-  return {version:1,recipes,modify,step};
+  function attackTick(previous, weapon, dt, moving) {
+    const p=previous || {number:0,idle:0,charge:0,moving:false};
+    const idle=p.idle+dt;
+    let charge=weapon.chargeEnabled ? p.charge : 0;
+    if (moving && !p.moving) charge*=weapon.moveRetention;
+    if (!moving && weapon.chargeEnabled) charge=Math.min(weapon.chargeSeconds,charge+dt);
+    return {number:idle>=weapon.comboReset?0:p.number,idle,charge,moving};
+  }
+  function attack(previous, weapon, fallbackNumber=0) {
+    const p=previous || {number:fallbackNumber,idle:0,charge:0,moving:false};
+    const number=weapon.comboEnabled ? (p.idle>=weapon.comboReset?1:p.number%weapon.comboEvery+1) : 1;
+    const charged=weapon.chargeEnabled && p.charge>=weapon.chargeSeconds;
+    return {state:{...p,number,idle:0,charge:charged?0:p.charge},
+      event:{type:'weapon-attack',weaponId:weapon.id,number,finisher:weapon.comboEnabled && number===weapon.comboEvery,charged}};
+  }
+  return {version:1,recipes,modify,step,attackTick,attack};
 })();

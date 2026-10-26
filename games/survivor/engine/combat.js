@@ -26,6 +26,12 @@ function fireAtNearest() {
   if (activeWeapon().kind === "melee") { swingAtNearest(); return; }
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
+  const sequence=SurvivorEffectBlocks.attack(state.weaponAttack,activeWeapon());
+  state.weaponAttack=sequence.state; state.lastWeaponAttack=sequence.event;
+  const bigBubble=sequence.event.finisher && !sequence.event.charged;
+  const autoCharged=sequence.event.charged, weapon=activeWeapon();
+  triggerMakerEffects('combo',state.player.x,state.player.y,sequence.event.number);
+  if(state.mode!=='playing') return;
   const boosted = state.dashAttack > 0 && state.dashTimer <= 0;
   if (boosted) {
     state.dashAttack = 0;
@@ -36,12 +42,12 @@ function fireAtNearest() {
   const properties = SurvivorSchools.shot(c ? c.shots : 1,c ? c.kills : 0,c ? c.chargedUsed : 0,{drop:effectLevel('water-drop'),charge:effectLevel('thunder-charge')},r);
   if (properties.charged) c.chargedUsed = Math.floor(c.kills / r.chargeKills);
   const look = buildAppearance();
-  const angle = Math.atan2(deltaY(target.y, state.player.y), deltaX(target.x, state.player.x));
+  const angle = SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
   playSound("shoot");
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, piercing: effectLevel("piercing-water") > 0, pierce: effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
   prepareNeutralShots(angle);
 }
@@ -49,6 +55,17 @@ function fireAtNearest() {
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
 function resolveWaterHit(shot) {
   playSound("water");
+  if(shot.bigBubble) {
+    shot.bigBubble=false;
+    const weapon=GAME_DATA.weapons.find(w=>w.id==='water-ball');
+    const original=shot.damage;
+    // 小水花是範圍命中，不產生遞迴大泡泡；同一顆泡泡不重複命中本體目標。
+    skillVisual('splash',shot.x,shot.y,{radius:shot.r*weapon.splashSize});
+    for(const t of combatTargets()) if(!shot.hitList.includes(t) && Math.hypot(deltaX(t.x,shot.x),deltaY(t.y,shot.y))<=shot.r*weapon.splashSize+t.r) {
+      shot.hitList.push(t);hitBuildTarget(t,original*weapon.splashDamage);
+      if(state.mode!=='playing') return;
+    }
+  }
   if (!shot.maker) triggerMakerEffects("hit", shot.x, shot.y);
   const continues = shot.pierce > 0;
   if (continues) shot.pierce--; else shot.alive = false;
@@ -153,12 +170,13 @@ function shiftTarget(target, x, y, distance, centerFallback = false) {
   target.x += dx / length * distance; target.y += dy / length * distance; clampToMap(target);
 }
 // 通用積木：新作品可組合觸發時機和參數；既有卡沿用有回歸測試的配方。
-function triggerMakerEffects(trigger, x, y) {
+function triggerMakerEffects(trigger, x, y, comboStep = 0) {
   for (const card of UPGRADES) {
     const level = upgradeLevel(card.id);
     if (!level) continue;
     card.effects.forEach((effect, i) => {
       if (effect.feature || effect.trigger !== trigger) return;
+      if(trigger==='combo' && effect.comboStep!==comboStep) return;
       const key = card.id + ":" + i;
       if ((state.makerTimers[key] || 0) > 0) return;
       state.makerTimers[key] = effect.interval;
@@ -175,7 +193,7 @@ function executeMakerEffect(effect, x, y, level) {
     const angle = Math.atan2(deltaY(target.y, y), deltaX(target.x, x));
     for (let n = 0; n < effect.count && state.projectiles.length < PROJECTILE_LIMIT; n++) {
       const a = angle + (n - (effect.count - 1) / 2) * effect.spread;
-      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, colors: buildAppearance().colors, transformed:false, push:0, charged:false, blade:false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, bounces:0, fragment:false, boosted: false, maker: true }));
+      state.projectiles.push(takeFromPool(state.projectilePool, { x, y, vx: Math.cos(a) * effect.speed, vy: Math.sin(a) * effect.speed, r: 10, damage, pierce: 0, piercing: false, colors: buildAppearance().colors, transformed:false, push:0, charged:false, blade:false, schools: [], rangeLeft: BUILD_TUNING.shotRange, hitList: [], alive: true, bounces:0, fragment:false, bigBubble:false,autoCharged:false,boosted: false, maker: true }));
     }
     return;
   }
@@ -392,7 +410,8 @@ function activateSkill() {
     delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`) || school === "wind" && effectLevel("wind-dash")) };
   state.skillCooldown = gameSettings.bombCooldown;
   triggerMakerEffects("skill", state.player.x, state.player.y);
-  playSound("water"); updateActionControls();
+  playSound("water");
+ updateActionControls();
 }
 function updateBomb(dt) {
   if (state.bombBlast) { state.bombBlast.life -= dt; if (state.bombBlast.life <= 0) state.bombBlast = null; }

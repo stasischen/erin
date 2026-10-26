@@ -48,7 +48,7 @@ function neutralEvent(type,x,y,cardId) {
 function neutralCopyShot(source,angle,damage,fragment) {
   if (state.projectiles.length>=PROJECTILE_LIMIT) return;
   const speed = Math.hypot(source.vx,source.vy);
-  state.projectiles.push(takeFromPool(state.projectilePool,{...source,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,hitList:source.hitList.slice(),alive:true,fragment}));
+  state.projectiles.push(takeFromPool(state.projectilePool,{...source,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,hitList:source.hitList.slice(),alive:true,bigBubble:fragment?false:source.bigBubble,fragment}));
 }
 function prepareNeutralShots(angle) {
   const volley=state.projectiles.filter(s=>s.alive && !s.maker && s.x===state.player.x && s.y===state.player.y);

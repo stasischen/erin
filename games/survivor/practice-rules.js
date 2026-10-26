@@ -6,6 +6,7 @@ globalThis.SurvivorPracticeRules = (() => {
   const seconds=n=>String(Number(n.toFixed(3)));
   function moves(data) {
     return [{id:'water-ball',name:'水球',icon:'big-water',kind:'weapon'},
+      {id:'candy-sword',name:'糖果大劍',icon:'candy-sword',kind:'weapon'},
       {id:'candy-hammer',name:'棒棒糖錘',icon:'candy-hammer',kind:'weapon'},
       {id:'item-wall',name:data.cards.find(c=>c.id==='item-wall').name,icon:'item-wall',kind:'weapon'},
       ...['pudding','mushroom','fairy','donut','pop-candy'].map(id=>({id,name:data.enemies.find(e=>e.id===id).name,icon:'monster',kind:'enemy'}))];
@@ -17,8 +18,8 @@ globalThis.SurvivorPracticeRules = (() => {
       const interval=w.kind==='melee'?w.interval:t.shotInterval;
       // 普攻沒有預警或收招無敵窗；時間軸紅段代表本次發射／揮擊的間隔。
       return {...move,enabled:true,windup:0,active:interval,recovery:0,cooldown:0,
-        damage:t.projectileDamage*(w.damageMultiplier||1),shape:w.kind==='melee'?'sector':'projectiles',
-        radius:w.radius,angle:w.arcDegrees,spinEvery:w.spinEvery,interval,
+        damage:t.projectileDamage*(w.damageMultiplier||1),shape:w.kind==='melee'?(w.baseShape==='line'?'line':'sector'):'projectiles',
+        chargeShape:w.chargeShape,chargeStun:w.chargeStun,direction:w.direction,comboEvery:w.comboEvery,chargeSeconds:w.chargeSeconds,comboReset:w.comboReset,comboMultiplier:w.comboMultiplier,chargeMultiplier:w.chargeMultiplier,radius:w.radius,angle:w.arcDegrees,spinEvery:w.id==='candy-hammer' && w.comboEnabled?w.comboEvery:0,interval,
         speed:t.projectileSpeed,length:data.build.shotRange,push:w.push||0,
         wavePush:id==='item-wall'?data.neutralRules.wavePush:0,
         waveDamage:id==='item-wall'?data.neutralRules.waveDamage:0};
@@ -42,7 +43,7 @@ globalThis.SurvivorPracticeRules = (() => {
     const shapes={sector:`扇形 ${c.angle}°`,circle:`圓形 半徑 ${c.radius}`,ring:`圓環 ${c.innerRadius}–${c.radius}`,
       line:`直線 ${c.length} × ${c.radius*2}`,projectiles:c.radial?`${c.count} 發｜缺口 ${c.gapDegrees}°｜速度 ${c.speed}｜距離 ${c.length}`:`子彈 速度 ${c.speed}｜距離 ${c.length}`,
       charge:`衝撞 ${c.length}｜速度 ${c.speed}`,blast:`自爆 半徑 ${c.radius}`};
-    return `${c.name}：${phases.map(p=>seconds(c[p]||0)+'s').join(' → ')}｜${shapes[c.shape]}｜傷害 ${seconds(c.damage)}${c.push?'｜擊退 '+c.push:''}${c.spinEvery?'｜每 '+c.spinEvery+' 下旋轉':''}${c.wavePush?'｜浪花擊退 '+c.wavePush+' 互撞傷害 '+c.waveDamage:''}${c.legacy?'｜舊招式，無收招階段':''}${c.kind==='weapon'?'｜紅段為攻擊間隔，飛行可重疊':''}`;
+    return `${c.name}：${phases.map(p=>seconds(c[p]||0)+'s').join(' → ')}｜${shapes[c.shape]}｜傷害 ${seconds(c.damage)}${c.push?'｜擊退 '+c.push:''}${c.spinEvery?'｜每 '+c.spinEvery+' 下旋轉':''}${c.wavePush?'｜浪花擊退 '+c.wavePush+' 互撞傷害 '+c.waveDamage:''}${c.legacy?'｜舊招式，無收招階段':''}${c.kind==='weapon'?`｜紅段為攻擊間隔，飛行可重疊｜${c.comboEvery} 段連擊 ×${c.comboMultiplier}｜停攻 ${c.comboReset}s 重置｜站定 ${c.chargeSeconds}s 聚氣 ×${c.chargeMultiplier}（${{line:"前方直線",sector:"前方扇形",projectile:"穿透水球"}[c.chargeShape]}）${c.chargeStun?"｜暈眩 "+c.chargeStun+"s":""}`:''}`;
   }
   // 輸入上一輪統計與是否命中；一輪只能由接合層結算一次。
   function score(stats, hit) {

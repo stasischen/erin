@@ -54,7 +54,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   assert.equal(await evaluate("window.Survivor.engine.loop.resetGame === resetGame && window.Survivor.ui.levelup.showUpgradeChoices === showUpgradeChoices"),true,'共用清單與命名空間確實載入');
   await evaluate("startGame();true");
   assert.equal(await evaluate(`(()=>{
-    if(!state.pickingWeapon||state.pendingChoices.length!==2)throw Error('缺少武器選擇');
+    if(!state.pickingWeapon||state.pendingChoices.length!==3)throw Error('缺少武器選擇');
     for(const selector of ['#upgradePanel','#upgradeDetails','#confirmUpgrade','#upgradeCards button:first-child','#upgradeCards button:last-child']) {
       const n=document.querySelector(selector),r=n.getBoundingClientRect();
       if(r.width<=0||r.height<=0||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('武器選擇不完整 '+selector);

@@ -10,16 +10,43 @@ globalThis.SURVIVOR_DEFAULTS = {
   "weapons": [
     {
       "id": "water-ball",
+      "baseShape": "projectile",
+      "comboShape": "projectile",
+      "chargeShape": "projectile",
+      "direction": "nearest",
+      "chargeStun": 0,
       "name": "水球",
       "icon": "big-water",
-      "description": "自動發射水球，遠遠打倒敵人。",
-      "kind": "projectile"
+      "description": "自動發射水球；每第三發大泡泡破成小水花，站定聚氣發射穿透水球。",
+      "kind": "projectile",
+      "comboEnabled": true,
+      "chargeEnabled": true,
+      "comboEvery": 3,
+      "comboReset": 1.1,
+      "comboMultiplier": 1.6,
+      "chargeSeconds": 1,
+      "chargeMultiplier": 2.5,
+      "moveRetention": 0.35,
+      "chargeSize": 1.7,
+      "comboSize": 1.5,
+      "comboPush": 30,
+      "finisherRecovery": 0,
+      "stepDistance": 0,
+      "dashThrust": false,
+      "splashSize": 2.5,
+      "splashDamage": 0.3,
+      "thrustWidth": 18
     },
     {
       "id": "candy-hammer",
+      "baseShape": "sector",
+      "comboShape": "spin",
+      "chargeShape": "sector",
+      "direction": "nearest",
+      "chargeStun": 0.8,
       "name": "棒棒糖錘",
       "icon": "candy-hammer",
-      "description": "自動朝最近的小怪揮錘，每第四下轉一圈，受到的傷害減少 15%。",
+      "description": "自動揮錘，第四下轉一圈；站定聚氣後朝前方重擊並暈眩。受到傷害減少 15%。",
       "kind": "melee",
       "interval": 0.7,
       "arcDegrees": 120,
@@ -27,7 +54,60 @@ globalThis.SURVIVOR_DEFAULTS = {
       "damageMultiplier": 1.6,
       "push": 15,
       "spinEvery": 4,
-      "damageReduction": 0.15
+      "damageReduction": 0.15,
+      "comboEnabled": true,
+      "chargeEnabled": true,
+      "comboEvery": 4,
+      "comboReset": 1.1,
+      "comboMultiplier": 1.6,
+      "chargeSeconds": 1,
+      "chargeMultiplier": 2.5,
+      "moveRetention": 0.35,
+      "chargeSize": 1.7,
+      "comboSize": 1.5,
+      "comboPush": 30,
+      "finisherRecovery": 0,
+      "stepDistance": 0,
+      "dashThrust": false,
+      "splashSize": 2.5,
+      "splashDamage": 0.3,
+      "thrustWidth": 18
+    },
+    {
+      "id": "candy-sword",
+      "baseShape": "sector",
+      "comboShape": "line",
+      "chargeShape": "line",
+      "direction": "nearest",
+      "chargeStun": 0,
+      "name": "糖果大劍",
+      "icon": "candy-sword",
+      "description": "自動橫斬、反手斬、重刺三連擊；衝刺後突刺。站定聚氣後使出長直線穿透突刺。",
+      "kind": "melee",
+      "interval": 0.45,
+      "arcDegrees": 100,
+      "radius": 80,
+      "damageMultiplier": 1,
+      "push": 15,
+      "spinEvery": 3,
+      "damageReduction": 0,
+      "comboEnabled": true,
+      "chargeEnabled": true,
+      "comboEvery": 3,
+      "comboReset": 1.1,
+      "comboMultiplier": 2.5,
+      "chargeSeconds": 1,
+      "chargeMultiplier": 2.5,
+      "moveRetention": 0.35,
+      "chargeSize": 1.7,
+      "comboSize": 1.5,
+      "comboPush": 30,
+      "finisherRecovery": 0.35,
+      "stepDistance": 12,
+      "dashThrust": true,
+      "splashSize": 2.5,
+      "splashDamage": 0.3,
+      "thrustWidth": 18
     }
   ],
   "visuals": {
@@ -232,7 +312,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮擊範圍變大、傷害更高。"
     },
     {
       "id": "rapid-water",
@@ -250,7 +331,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮劍更快。"
     },
     {
       "id": "multi-water",
@@ -268,7 +350,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮擊角度變大。"
     },
     {
       "id": "onion-dash",
@@ -286,7 +369,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "移動速度提升"
     },
     {
       "id": "bubble-shield",
@@ -304,7 +388,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "血條變長一點，並回一點血"
     },
     {
       "id": "gem-magnet",
@@ -322,7 +407,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "撿取範圍提升"
     },
     {
       "id": "piercing-water",
@@ -340,7 +426,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮擊距離每級增加 10%。"
     },
     {
       "id": "splash-water",
@@ -358,7 +445,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "命中時造成小範圍傷害"
     },
     {
       "id": "auto-heal",
@@ -376,7 +464,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "慢慢恢復血條"
     },
     {
       "id": "water-attack",
@@ -396,7 +485,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮劍命中濺水花，升級擴大水花。"
     },
     {
       "id": "water-skill",
@@ -415,7 +505,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮劍命中和泡泡留下緩速水窪。"
     },
     {
       "id": "water-dash",
@@ -434,7 +525,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "衝刺沿路留下緩速水痕"
     },
     {
       "id": "water-ultimate",
@@ -454,7 +546,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "legendary"
+      "rarity": "legendary",
+      "descriptionSword": "每 10 秒一道巨浪掃過全場"
     },
     {
       "id": "wind-attack",
@@ -474,7 +567,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮擊距離增加。"
     },
     {
       "id": "wind-dash",
@@ -493,7 +587,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "技能產生旋風，衝刺也會留下旋風"
     },
     {
       "id": "wind-speed",
@@ -512,7 +607,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "衝刺和移動時揮劍更快。"
     },
     {
       "id": "wind-ultimate",
@@ -532,7 +628,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "legendary"
+      "rarity": "legendary",
+      "descriptionSword": "龍捲風繞主角旋轉，碰到就傷害"
     },
     {
       "id": "thunder-attack",
@@ -552,7 +649,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "揮劍命中會跳電到附近另一隻，升級更痛。"
     },
     {
       "id": "thunder-skill",
@@ -571,7 +669,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "泡泡帶電，炸中讓敵人暈眩"
     },
     {
       "id": "thunder-counter",
@@ -590,7 +689,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "common"
+      "rarity": "common",
+      "descriptionSword": "每次受傷放電反擊附近敵人"
     },
     {
       "id": "thunder-ultimate",
@@ -610,7 +710,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "rarity": "legendary"
+      "rarity": "legendary",
+      "descriptionSword": "雷雲定期隨機劈中一隻敵人"
     },
     {
       "id": "fusion-puddle",
@@ -634,7 +735,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "schools": [
         "water",
         "thunder"
-      ]
+      ],
+      "descriptionSword": "水窪額外放電，升級增加電傷害"
     },
     {
       "id": "fusion-storm",
@@ -658,7 +760,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "schools": [
         "water",
         "wind"
-      ]
+      ],
+      "descriptionSword": "旋風衝刺同時灑下傷敵水窪"
     },
     {
       "id": "fusion-dash",
@@ -682,7 +785,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "schools": [
         "wind",
         "thunder"
-      ]
+      ],
+      "descriptionSword": "衝刺留下會跳電的電痕"
     },
     {
       "id": "water-drop",
@@ -701,7 +805,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-drop",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每第 5 下揮擊變大、變痛，還會推開怪物。"
     },
     {
       "id": "water-fountain",
@@ -720,7 +825,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-fountain",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每 6 秒噴泉把附近怪物彈飛"
     },
     {
       "id": "water-bubble",
@@ -739,7 +845,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-bubble",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "衝刺結束產生泡泡，擋下一次攻擊"
     },
     {
       "id": "water-wet",
@@ -758,7 +865,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-wet",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "被弄濕的怪物多受 15% 傷害"
     },
     {
       "id": "water-rain",
@@ -777,7 +885,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "water-rain",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "定期下雨，讓所有怪物變慢"
     },
     {
       "id": "wind-blade",
@@ -796,7 +905,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-blade",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "揮擊後追加一次近距離追斬。"
     },
     {
       "id": "wind-gust",
@@ -815,7 +925,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-gust",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每 8 秒把附近所有怪物推開"
     },
     {
       "id": "wind-refund",
@@ -834,7 +945,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-refund",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "衝刺後退回半格衝刺次數"
     },
     {
       "id": "wind-light",
@@ -853,7 +965,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-light",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "移速 +10%，撿經驗範圍變大"
     },
     {
       "id": "wind-eye",
@@ -872,7 +985,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "wind-eye",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "站著不動時產生保護風牆"
     },
     {
       "id": "thunder-charge",
@@ -891,7 +1005,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-charge",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每打倒 10 隻，下一次揮擊蓄電。"
     },
     {
       "id": "thunder-rod",
@@ -910,7 +1025,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-rod",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "插在地上的避雷針會電附近怪物"
     },
     {
       "id": "thunder-step",
@@ -929,7 +1045,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-step",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "衝刺穿過的怪物短暫暈眩"
     },
     {
       "id": "thunder-static",
@@ -948,7 +1065,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-static",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "碰到主角的怪物會被電"
     },
     {
       "id": "thunder-super",
@@ -967,7 +1085,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "thunder-super",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每次連鎖多跳一隻，而且傷害不衰減"
     },
     {
       "id": "item-wall",
@@ -986,7 +1105,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-wall",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "揮劍推得更遠，撞到別隻怪物時兩隻都受傷。"
     },
     {
       "id": "item-candy",
@@ -1005,7 +1125,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-candy",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "打倒怪物有 10% 機率掉小炸彈。"
     },
     {
       "id": "item-bird",
@@ -1024,7 +1145,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-bird",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "小鳥繞著你飛，啄附近的怪物。"
     },
     {
       "id": "item-bank",
@@ -1043,7 +1165,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-bank",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每撿 10 顆經驗球傷害 +1%，最多 +30%。"
     },
     {
       "id": "item-split",
@@ -1062,7 +1185,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-split",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "只改變飛行水球；糖果大劍本體不會分裂。"
     },
     {
       "id": "item-magnet",
@@ -1081,7 +1205,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-magnet",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "拾取範圍變成 2.5 倍。"
     },
     {
       "id": "item-crown",
@@ -1100,7 +1225,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-crown",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "詛咒：傷害 +30%，最大血量 -1。"
     },
     {
       "id": "item-clover",
@@ -1119,7 +1245,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-clover",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "立即多一次重抽，稀有卡更容易出現。"
     },
     {
       "id": "item-rear",
@@ -1138,7 +1265,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-rear",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "每次揮劍也向後揮擊。"
     },
     {
       "id": "item-cookie",
@@ -1157,7 +1285,8 @@ globalThis.SURVIVOR_DEFAULTS = {
           "feature": "item-cookie",
           "power": 1
         }
-      ]
+      ],
+      "descriptionSword": "持有時每打倒 20 隻，回 1 點血。"
     }
   ],
   "enemies": [

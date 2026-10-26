@@ -80,7 +80,7 @@
     el('h3', '編輯選中的卡片', edit);
     const c = draft.cards[cardIndex], fields = grid(edit);
     if (globalThis.SurvivorPreview) { const host=el('div',undefined,edit); host.className='skill-preview-host'; SurvivorPreview.mount(host,draft,{kind:'card',id:c.id}); }
-    iconPicker(fields, c); text(fields, '卡片名稱', c, 'name'); text(fields, '遠程說明', c, 'description', 120); text(fields, '近戰說明', c, 'descriptionMelee', 120); range(fields, c, 'maxLevel');
+    iconPicker(fields, c); text(fields, '卡片名稱', c, 'name'); text(fields, '遠程說明', c, 'description', 120); text(fields, '近戰說明', c, 'descriptionMelee', 120); text(fields, '大劍說明', c, 'descriptionSword', 120); range(fields, c, 'maxLevel');
     if (!c.neutral) select(fields, '流派', c, 'school', { '': '支援', ...Object.fromEntries(draft.schools.map(s => [s.id,draft.build[s.id].name])) });
     select(fields, '欄位', c, 'slot', {attack:'普攻',skill:'技能',dash:'衝刺',passive:'被動'});
     select(fields, '品質', c, 'rarity', {common:'普通',rare:'稀有',legendary:'傳說'});
@@ -109,7 +109,8 @@
     });
     if (effect.feature) { el('p', '使用這張原本卡片的效果組合；數值可到「共用數值」調整。最多合計 5 級的效果。', box); range(box, effect, 'power'); }
     else {
-      select(box, '什麼時候發動？', effect, 'trigger', {hit:'水球命中時',skill:'按技能時',dash:'按衝刺時',interval:'每隔一段時間'});
+      if(effect.trigger==='combo') {if(effect.comboStep===undefined)effect.comboStep=3;range(box,effect,'comboStep',[1,10,1],'第幾下');}
+      select(box, '什麼時候發動？', effect, 'trigger', {combo:'第 N 下攻擊時',hit:'武器命中時',skill:'按技能時',dash:'按衝刺時',interval:'每隔一段時間'});
       el('p', '「間隔秒數」也是這個積木再次發動前的休息時間。傷害隨卡片等級增加。', box);
       const fields = grid(box), keys = { projectile:['damage','speed','count','spread','interval'], aoe:['damage','radius','interval'], chain:['damage','radius','count','interval'], 'dash-trail':['damage','radius','duration','interval'], slow:['radius','duration','multiplier','interval'], stun:['radius','duration','interval'], knockback:['radius','distance','interval'], summon:['damage','radius','duration','speed','count','interval'], 'ring-with-gap':['damage','radius','gap','interval'] };
       keys[effect.type].forEach(key => range(fields, effect, key, key === 'distance' && effect.type === 'knockback' ? [-300,300,5] : undefined));
@@ -228,9 +229,24 @@
     range(jf,j,'radius',[20,70,1],'搖桿半徑');
     range(jf,j,'deadZone',[0,10,1],'搖桿死區');
     el('p','手指拖遠時底座跟著走；關閉則固定在第一次碰的位置。死區越大，越不容易因手抖而移動。',jp);
-    const wf=grid(panel('棒棒糖錘數值'));
-    const weaponNames={interval:'揮錘間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
-    for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) range(wf,draft.weapons.find(w=>w.kind==='melee'),key,bounds,weaponNames[key]);
+    const weaponNames={interval:'揮擊間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
+    const attackNames={chargeStun:'蓄力暈眩秒數',splashSize:'大泡泡水花半徑倍率',splashDamage:'大泡泡水花傷害比例',comboEvery:'連段下數',comboReset:'停止攻擊幾秒重置',comboMultiplier:'最後一段傷害倍率',chargeSeconds:'站定聚氣秒數',chargeMultiplier:'蓄力傷害倍率',moveRetention:'開始移動保留聚氣比例（0 為重置）',chargeSize:'蓄力範圍倍率',comboSize:'最後一段範圍倍率',comboPush:'蓄力／重刺額外擊退',finisherRecovery:'最後一段額外收招秒',stepDistance:'重刺踏步距離',thrustWidth:'突刺半寬'};
+    for(const w of draft.weapons) {
+      const fields=grid(panel(w.name+'連段與聚氣'));
+      select(fields,'攻擊方向',w,'direction',{nearest:'朝最近的敵人',facing:'朝移動面向'});
+      if(w.kind==='melee') for(const [key,label] of [['baseShape','普通招式'],['comboShape','最後一段招式'],['chargeShape','蓄力招式']]) select(fields,label,w,key,key==='comboShape'?{sector:'前方扇形',line:'前方直線',spin:'旋轉一圈'}:{sector:'前方扇形',line:'前方直線'});
+      if(w.kind==='melee') for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) if(key!=='spinEvery') range(fields,w,key,bounds,weaponNames[key]);
+      for(const [key,bounds] of Object.entries(api.ATTACK_BOUNDS)) {
+        if(w.kind!=='projectile' && ['splashSize','splashDamage'].includes(key)) continue;
+        if(w.kind==='projectile' && ['comboPush','finisherRecovery','stepDistance','thrustWidth','chargeStun'].includes(key) || w.id!=='candy-sword' && ['stepDistance','thrustWidth'].includes(key)) continue;
+        range(fields,w,key,bounds,attackNames[key]);
+      }
+      for(const [key,label] of [['comboEnabled','連段'],['chargeEnabled','自動聚氣'],['dashThrust','衝刺突刺']]) {
+        if(key==='dashThrust' && w.id!=='candy-sword') continue;
+        const toggle=button(fields,label+'：'+(w[key]?'開':'關'),()=>{w[key]=!w[key];changed();render();});
+        toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(w[key]));
+      }
+    }
     const nf=grid(panel('中立道具數值'));
     const names={wavePush:"浪花額外擊退距離",waveDamage:"浪花互撞傷害",waveCooldown:"浪花每隻冷卻秒", "itemsPerRun": "每場道具卡池張數", "bombChance": "炸彈掉落機率", "bombDelay": "炸彈等待秒", "bombRadius": "炸彈半徑", "bombDamage": "炸彈傷害", "birdRadius": "小鳥繞行半徑", "birdReach": "小鳥啄擊距離", "birdSeconds": "小鳥攻擊間隔秒", "birdDamage": "小鳥傷害", "bankEvery": "金庫每幾顆球成長", "bankStep": "金庫每次傷害加成", "bankCap": "金庫傷害加成上限", "splitDamage": "分裂傷害倍率", "splitAngle": "分裂角度", "magnetMultiplier": "磁鐵拾取倍率", "crownDamage": "王冠傷害加成", "crownHealth": "王冠減少最大血量", "luckyRareMultiplier": "幸運草稀有權重倍率", "cookieKills": "餅乾回血所需擊倒數"};
     for(const [key,bounds] of Object.entries(api.NEUTRAL_BOUNDS)) range(nf,draft.neutralRules,key,bounds,names[key]);
