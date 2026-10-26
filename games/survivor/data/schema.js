@@ -166,6 +166,12 @@
       // 舊的兩種怪物作品以穩定 id 補新種類，原本的名稱、行為和攻擊都保留。
       if (!Array.isArray(input.enemies) || input.enemies.length < 2 || input.enemies.length > data.enemies.length || new Set(input.enemies.map(e=>e.id)).size !== input.enemies.length || input.enemies.some(e=>!data.enemies.some(b=>b.id===e.id)) || data.enemies.slice(0,2).some(b=>!input.enemies.some(e=>e.id===b.id))) fail('怪物種類數量不正確');
       input = {...input,enemies:data.enemies.map(b=>input.enemies.find(e=>e.id===b.id)||b)};
+      if(input.bodySeparation !== undefined) {
+        const b=input.bodySeparation;
+        if(!b || typeof b.enabled!=='boolean') fail('身體分離開關格式錯誤');
+        data.bodySeparation={enabled:b.enabled,radiusScale:num(b.radiusScale,.5,1.5,'身體半徑倍率'),
+          playerForce:num(b.playerForce,0,1,'主角與怪物推力'),enemyForce:num(b.enemyForce,0,1,'怪物之間推力')};
+      }
       if(input.bodyContact !== undefined) {
         if(typeof input.bodyContact.pushOnly !== 'boolean') fail('碰撞開關格式錯誤');
         data.bodyContact={pushOnly:input.bodyContact.pushOnly,damageScale:num(input.bodyContact.damageScale,0,1,'身體傷害倍率')};

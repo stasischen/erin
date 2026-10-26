@@ -164,6 +164,11 @@
     const toggle=(parent,label,obj,key)=>{const b=button(parent,label+'：'+(obj[key]?'開':'關'),()=>{obj[key]=!obj[key];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(obj[key]));};
     toggle(body,'碰撞只會推開，不會受傷',draft.bodyContact,'pushOnly');
     range(body,draft.bodyContact,'damageScale',[0,1,.05],'身體傷害倍率（所有小怪，Boss 除外）');
+    toggle(body,'身體柔性分離',draft.bodySeparation,'enabled');
+    range(body,draft.bodySeparation,'radiusScale',[.5,1.5,.05],'身體半徑倍率');
+    range(body,draft.bodySeparation,'playerForce',[0,1,.05],'主角與怪物推力');
+    range(body,draft.bodySeparation,'enemyForce',[0,1,.05],'怪物之間推力');
+    el('p','衝刺及衝刺保護期間可以穿過怪物；大怪會擋路。分離逐幀推開，怪群推動主角有共同上限。',body);
     const pacing = grid(panel('出怪節奏'));
     select(pacing,'波次型態',draft.pacing,'pattern',{alternating:'強弱交替',steady:'穩定出怪'});
     const names = {density:'出怪密度倍率',strongScale:'強波密度倍率',weakScale:'喘息波密度倍率',cycleSeconds:'強弱交替秒數',eventCount:'每次事件怪物數',eventSeconds:'事件進場秒數',warning:'招式預警秒數',chargeSpeed:'衝撞速度',chargeSeconds:'衝撞持續秒數',fuseSeconds:'跳跳糖引信（固定兩秒）',blastRadius:'自爆半徑',blastDamage:'自爆對主角傷害',blastEnemyDamage:'自爆對怪物傷害',shieldRadius:'仙子護盾範圍',shieldSeconds:'護盾施放間隔秒數',shieldHits:'護盾擋住幾下'};

@@ -123,3 +123,13 @@ assert.equal(phaseData.enemies[0].phaseAttack.enabled,true);assert.equal(phaseDa
 assert.equal(phaseData.enemies[0].phaseAttack.recovery,1);assert.equal(phaseData.enemies[0].phaseAttack.gapDegrees,90);
 ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='碰撞只會推開，不會受傷：開'&&n.attrs['aria-checked']==='true'));
 console.log('PASS: Maker body push switch, damage scale, phase timing/shape parameters, enabling attack, save/reopen');
+
+ui=setup();ui.tab('enemies');ui.click('身體柔性分離：開');
+for(const [label,value] of [['身體半徑倍率',1.2],['主角與怪物推力',.8],['怪物之間推力',.4]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+ui.ids.save.fire('click');
+assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).bodySeparation,{enabled:false,radiusScale:1.2,playerForce:.8,enemyForce:.4});
+ui=setup({saved:ui.storage});ui.tab('enemies');
+assert.ok(ui.nodes().some(n=>n._text==='身體柔性分離：關'&&n.attrs['aria-checked']==='false'));
+console.log('PASS: Maker body separation toggle, radius and two forces persist and reload');

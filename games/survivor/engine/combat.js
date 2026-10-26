@@ -367,9 +367,11 @@ function activateDash() {
   state.dashCharges--;
   if (state.dashCooldown <= 0) state.dashCooldown = gameSettings.dashCooldown;
   state.dashTimer = gameSettings.dashSeconds;
+  state.dashBodyPass = Math.max(gameSettings.dashSeconds, UPGRADE_TUNING.dashInvincible);
   state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
   if (perfect) {
     state.player.health = Math.min(maxPlayerHealth(), state.player.health + UPGRADE_TUNING.perfectHeal);
+    state.dashBodyPass = Math.max(state.dashBodyPass, UPGRADE_TUNING.perfectShield);
     state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.perfectShield);
     state.slowMotion = UPGRADE_TUNING.perfectSlowSeconds;
     skillVisual("discharge", state.player.x, state.player.y, {radius:90,color:"#fff5a3",life:.45});
