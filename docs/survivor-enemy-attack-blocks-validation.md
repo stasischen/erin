@@ -40,3 +40,7 @@ Grok 通過後請 Erin 比較修改前後是否一樣好閃，以及積木是否
 穩定 id、積木版本、JSON 值與純轉換／編譯可供未來 Resource 資料轉換參考；時間用秒、形狀用世界單位，UI 不參與判定。固定初始資料、亂數與時間步驟的等價案例可在另一引擎重寫。
 
 本卡沿用既有戰鬥與表現接合，尚未建立全角色共用的戰鬥執行器／事件匯流排；actor 的合法觸發與形狀參數仍由各編譯器限制。卡片規則遷移和可編輯回饋由後續第 6、7 步處理。預設資料仍在 `defaults.js`，尚未外置 JSON。素材與音訊未改，沒有新增匯出檔案。
+
+## Grok 退件修正（2026-10-26）
+
+依 `20261026T101030Z-grok-enemy-attack-blocks-feedback.md`，只將 `tests/levelup-layout.cjs` 老師招式測試的容器選擇器由 `.maker-move` 改為 `.maker-content`，符合目前共用積木面板。遊戲資源未改，版本號維持 `20261026ae`。重新執行 `node games/survivor/tools/test.cjs` 全過（exit 0）；依家長指示未加 `--layout`，版面驗證請 Grok 對新 SHA 重跑。Godot §11 的資料、規則、事件、素材與平台差距沿用上節，本次僅修測試定位。

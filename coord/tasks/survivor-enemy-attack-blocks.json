@@ -8,13 +8,13 @@
   "branch": "codex/survivor-enemy-attack-blocks",
   "pr": null,
   "brief": "coord/inbox/done/20261026T095650Z-parent-enemy-attack-blocks.md",
-  "next": "請 Grok 審查並於 1024×461、740×360 操作後交 Erin 試玩。測試全過；Godot §11 與差距見 enemy-attack-blocks 交接文件。提交／PR 由 erin-watch 代辦。",
+  "next": "已依 Grok 回饋只修 levelup-layout.cjs 老師面板選擇器為 .maker-content；node games/survivor/tools/test.cjs 全過（exit 0），依指示未跑 --layout。請 Grok 重審新 SHA 並重跑版面驗證；通過後交 Erin 試玩。Godot §11 與差距見交接文件，本次只修測試、不改遊戲資源。提交／PR 由 erin-watch 代辦。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T10:02:14.701219Z",
+  "updated": "2026-10-26T10:11:46.578282Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weapon-blocks"

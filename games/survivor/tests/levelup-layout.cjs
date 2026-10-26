@@ -146,7 +146,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   // 老師招式沿用真實引擎小場景；改預警滑桿後不用重開 Maker。
   assert.equal(await evaluate(`(async()=>{
     document.querySelector('[data-tab="boss"]').click();document.querySelector('[data-item="'+SurvivorData.defaults().boss.moves[0].id+'"]').click();
-    const box=document.querySelector('.maker-move'),slider=box.querySelector('input[aria-label="預警秒數"]');
+    const box=document.querySelector('.maker-content'),slider=box.querySelector('input[aria-label="預警秒數"]');
     if(!slider)throw Error('缺少老師預警拉桿');slider.value=1.2;slider.dispatchEvent(new Event('input',{bubbles:true}));
     await new Promise(r=>setTimeout(r,180));
     const f=document.querySelector('.maker-preview .skill-preview-host iframe');if(!f||f._previewPayload.data.boss.moves.find(m=>m.id===f._previewPayload.spec.id).warning!==1.2)throw Error('老師預覽沒有跟著拉桿更新');
