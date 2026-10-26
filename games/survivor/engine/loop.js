@@ -68,7 +68,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
+  state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
   state.vfx = [];
@@ -214,6 +214,7 @@ function tick(dt) {
 
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
+  state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
@@ -234,7 +235,8 @@ function tick(dt) {
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= dt;
-  if (state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval(); }
+  if (dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
+  if (state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
@@ -259,7 +261,7 @@ function tick(dt) {
     if (!shot.alive) continue;
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
     shot.rangeLeft -= Math.hypot(shot.vx, shot.vy) * dt;
-    if (shot.rangeLeft <= 0) { shot.alive = false; continue; }
+    if (shot.rangeLeft <= 0) { if(shot.bigBubble) resolveWaterHit(shot); if(state.mode!=="playing")return; shot.alive = false; continue; }
     clampToMap(shot);
     for (const enemy of state.enemies) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
@@ -275,6 +277,7 @@ function tick(dt) {
           for (const nearby of state.enemies) if (nearby !== enemy && nearby.alive && canAttackTarget(nearby) && !shot.hitList.includes(nearby) && Math.hypot(deltaX(nearby.x, enemy.x), deltaY(nearby.y, enemy.y)) < radius) { shot.hitList.push(nearby); damageEnemy(nearby, shot.damage * BUILD_TUNING.supportSplashDamage); }
         }
         resolveWaterHit(shot);
+        if (state.mode !== "playing") return;
         if (!shot.alive) break;
       }
     }

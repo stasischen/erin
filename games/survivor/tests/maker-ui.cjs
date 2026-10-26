@@ -93,8 +93,8 @@ console.log('PASS: Maker density/strong/weak/cycle/event count, pattern selector
 
 // 錘子數值的真實 Maker 控制項可存檔與重載。
 ui=setup();ui.tab('numbers');
-for(const [label,value] of [['揮錘間隔秒',1],['揮擊距離',100],['每幾下旋轉一圈',3],['受到傷害減少比例',.2]]) {
- const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider,label);slider.value=value;slider.fire('input');
+for(const [label,value] of [['揮擊間隔秒',1],['揮擊距離',100],['連段下數',3],['受到傷害減少比例',.2]]) {
+ const matches=ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']===label);const slider=matches[label==='連段下數'?1:0];assert.ok(slider,label);slider.value=value;slider.fire('input');
 }
 ui.ids.save.fire('click');const weapons=JSON.parse(ui.storage['erin-survivor-maker-v1']).weapons;
 assert.equal(weapons[1].interval,1);assert.equal(weapons[1].radius,100);assert.equal(weapons[1].spinEvery,3);assert.equal(weapons[1].damageReduction,.2);
@@ -153,3 +153,17 @@ assert.ok(ui.nodes().some(n=>n._text==='重量影響推拉：關'));
 const massSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='重量');
 assert.equal(Number(massSlider.value),5);
 console.log('PASS: Maker weight toggle, strength, boss/miniboss mass, boss multiplier and per-enemy mass save/reopen');
+
+// 三把武器各自的連段與聚氣參數真的會存檔；開關不能互相覆蓋。
+ui=setup();ui.tab('numbers');
+for(const [label,values] of [['站定聚氣秒數',[.8,1.2,1.5]],['最後一段傷害倍率',[1.8,2,3]],['開始移動保留聚氣比例（0 為重置）',[0,.5,1]]]) {
+ const nodes=ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']===label);
+ assert.equal(nodes.length,3,label);
+ values.forEach((v,i)=>{nodes[i].value=v;nodes[i].fire('input');});
+}
+const toggles=ui.nodes().filter(n=>n.tag==='button'&&n._text==='自動聚氣：開');assert.equal(toggles.length,3);toggles[2].fire('click');
+ui.ids.save.fire('click');const attackData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.deepEqual(attackData.weapons.map(w=>w.chargeSeconds),[.8,1.2,1.5]);assert.deepEqual(attackData.weapons.map(w=>w.comboMultiplier),[1.8,2,3]);
+assert.deepEqual(attackData.weapons.map(w=>w.moveRetention),[0,.5,1]);assert.deepEqual(attackData.weapons.map(w=>w.chargeEnabled),[true,true,false]);
+ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='站定聚氣秒數')[2].value,1.5);
+console.log('PASS: three independent weapon combo/charge controls, movement retention and switches save and reopen');

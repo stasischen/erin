@@ -22,8 +22,10 @@ assert.match(run('SurvivorPracticeRules.describe(SurvivorPracticeRules.model(GAM
 assert.equal(run('SurvivorPracticeRules.model(GAME_DATA,"pop-candy").recovery'),0);
 // 真實引擎沙盒：每個清單項目能循環，無傷、無生成、無結算；確實發射／揮擊／分階段。
 run(fs.readFileSync(`${__dirname}/../practice-engine.js`,'utf8'));
-for(const id of ['water-ball','candy-hammer','item-wall','pudding','mushroom','fairy','donut','pop-candy']) {
+for(const id of ['water-ball','candy-hammer','candy-sword','item-wall','pudding','mushroom','fairy','donut','pop-candy']) {
   run(`practiceId='${id}';practiceReset();globalThis.seenShots=0;globalThis.seenSwings=0;globalThis.seenPhases=new Set();globalThis.seenSpin=false`);
+  // 第四下旋轉獨立驗證；站定蓄力依家長修訂會優先改成前方重擊。
+  if(id==='candy-hammer')run("GAME_DATA.weapons.find(w=>w.id==='candy-hammer').chargeEnabled=false");
   for(let i=0;i<300;i++)run('practiceStep(.05);seenShots=Math.max(seenShots,state.projectiles.length+state.enemyShots.length);seenSwings=Math.max(seenSwings,state.swingCount);seenSpin=seenSpin||state.vfx.some(v=>v.kind==="hammer-swing"&&v.spin);if(practiceEnemy&&practiceEnemy.phaseAttack)seenPhases.add(practiceEnemy.phaseAttack.phase)');
   assert.equal(run('state.player.health'),data.tuning.playerHealth,id);
   assert.equal(run('state.mode'),'playing',id);

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-sword-combo-charge",
+  "title": "糖果大劍與三把武器連段、聚氣",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-sword-combo-charge",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T063539Z-parent-sword-combo-charge.md",
+  "next": "已處理 Grok 070500Z 唯一阻擋：版面測試依 SurvivorPracticeRules.moves(GAME_DATA) 逐招檢查數量、觸控可達、選取狀態與實際 id，不再寫死八招。node --check 及 node games/survivor/tools/test.cjs 均 exit 0；依指示未跑 --layout。請 erin-watch 代辦指定檔案 commit、push 及 PR，再交 Grok 對新完整 SHA 重跑九尺寸版面檢查。Godot §11：本輪僅網頁平台測試修正，無資料／規則／事件／素材／音訊／世界單位變更，既有差距見 docs/survivor-sword-combo-charge-validation.md。無待決定的阻擋事項；突刺強弱手感留給 Erin 試玩。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T06:56:46.275605Z",
+  "updatedBy": "codex"
+}

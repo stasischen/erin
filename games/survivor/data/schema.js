@@ -18,6 +18,7 @@
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
+  const ATTACK_BOUNDS = {chargeStun:[0,2,.1],splashSize:[1,4,.1],splashDamage:[0,1,.05],comboEvery:[2,10,1],comboReset:[.3,5,.1],comboMultiplier:[1,5,.1],chargeSeconds:[.2,5,.1],chargeMultiplier:[1,5,.1],moveRetention:[0,1,.05],chargeSize:[1,3,.1],comboSize:[1,3,.1],comboPush:[0,100,1],finisherRecovery:[0,1,.05],stepDistance:[0,40,1],thrustWidth:[5,50,1]};
   const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
   const PHASE_BOUNDS = {radius:[4,150,1],innerRadius:[0,150,1],length:[40,500,5],angle:[20,180,5],windup:[.6,3,.05],active:[.1,4,.05],recovery:[.2,3,.05],cooldown:[.5,15,.1],damage:[0,30,1],triggerDistance:[40,500,5],speed:[50,200,5],count:[1,12,1],gapDegrees:[40,160,5]};
   const PHASE_SHAPES = {line:'直線',sector:'扇形',circle:'圓形',ring:'圓環',projectiles:'子彈型態'};
@@ -50,13 +51,22 @@
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
-      // 舊作品省略 weapons 時補上兩把武器；只允許調整近戰數值。
+      // 舊作品的兩把武器／缺省欄位自動補齊；未知或重複 id 拒絕。
       if (input.weapons !== undefined) {
-        if (!Array.isArray(input.weapons) || input.weapons.length !== data.weapons.length) fail('武器清單不正確');
+        if (!Array.isArray(input.weapons) || input.weapons.length < 2 || input.weapons.length > data.weapons.length || new Set(input.weapons.map(w=>w && w.id)).size !== input.weapons.length || input.weapons.some(w=>!w || !data.weapons.some(b=>b.id===w.id))) fail('武器清單不正確');
         for (const weapon of data.weapons) {
-          const source = input.weapons.find(w => w && w.id === weapon.id);
+          const source = input.weapons.find(w => w.id === weapon.id);
+          if (!source && weapon.id === 'candy-sword') continue;
           if (!source || source.kind !== weapon.kind) fail('武器種類不正確');
           if (weapon.kind === 'melee') for (const [field,bounds] of Object.entries(WEAPON_BOUNDS)) weapon[field] = num(source[field],bounds[0],bounds[1],field,field === 'spinEvery');
+          for (const [field,bounds] of Object.entries(ATTACK_BOUNDS)) if(source[field] !== undefined) weapon[field]=num(source[field],bounds[0],bounds[1],field,field==='comboEvery');
+          for(const field of ['baseShape','comboShape','chargeShape']) if(source[field]!==undefined) weapon[field]=choice(source[field],weapon.kind==='projectile'?['projectile']:field==='comboShape'?['sector','line','spin']:['sector','line'],field);
+          if(source.direction!==undefined) weapon.direction=choice(source.direction,['nearest','facing'],'武器方向');
+          if(weapon.id==='candy-hammer') {if(source.comboEvery===undefined) weapon.comboEvery=weapon.spinEvery;weapon.spinEvery=weapon.comboEvery;}
+          for (const field of ['comboEnabled','chargeEnabled','dashThrust']) if(source[field] !== undefined) {
+            if(typeof source[field] !== 'boolean') fail(field+' 需要開或關');
+            weapon[field]=source[field];
+          }
         }
       }
       // 舊作品缺省補齊；半徑與死區使用遊戲畫面單位。
@@ -131,6 +141,8 @@
         const c = input.cards[i];
         if (!c || c.id !== base.id) fail('卡片識別碼不正確');
         const result = { ...base, name: name(c.name, '卡片名稱', 24), description: name(c.description, '卡片說明', 120), icon: root.SurvivorIcons.normalize(c.icon, base.icon), maxLevel: num(c.maxLevel, 1, 5, '最高等級', true), slot: choice(c.slot, ['attack','skill','dash','passive'], '欄位') };
+        if (c.descriptionSword !== undefined) result.descriptionSword = name(c.descriptionSword, '大劍說明', 120);
+        else result.descriptionSword = c.descriptionMelee || c.description;
         if (c.descriptionMelee !== undefined) result.descriptionMelee = name(c.descriptionMelee, '近戰說明', 120);
         if (base.id === 'item-wall' && c.name === '彈牆水球') { result.name=base.name; result.description=base.description; result.descriptionMelee=base.descriptionMelee; }
         if (base.neutral && (c.school || c.tier || c.requires.length)) fail('中立道具不能有流派或前置卡');
@@ -145,7 +157,8 @@
             if (!features.has(effect.feature) || features.get(effect.feature) !== effect.type) fail('既有組合不正確');
             return { type: effect.type, feature: effect.feature, power: num(effect.power, 1, 3, '組合強度', true) };
           }
-          const e = { type: choice(effect.type, Object.keys(TYPES), '積木'), trigger: choice(effect.trigger, ['hit','skill','dash','interval'], '觸發時機') };
+          const e = { type: choice(effect.type, Object.keys(TYPES), '積木'), trigger: choice(effect.trigger, ['hit','skill','dash','interval','combo'], '觸發時機') };
+          if(e.trigger==='combo') e.comboStep=num(effect.comboStep === undefined ? 3 : effect.comboStep,1,10,'第幾下',true);
           for (const key of Object.keys(PARAMS)) e[key] = num(effect[key], key === 'distance' && e.type === 'knockback' ? -300 : BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
           return e;
         });
@@ -254,5 +267,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

@@ -1,4 +1,5 @@
 function canOffer(card) {
+  if(activeWeapon().kind==='melee' && card.id==='item-split') return false;
   return SurvivorSchools.eligible(card, UPGRADES, state.upgrades, state.schoolRun, GAME_DATA.schoolRules, UPGRADE_TUNING.maxUpgradeLevel);
 }
 function buildAppearance() { return SurvivorSchools.appearance(UPGRADES, state.upgrades, state.schoolRun, GAME_DATA.schoolRules); }
@@ -6,7 +7,7 @@ function transformed(school) { return buildAppearance().forms.includes(school); 
 function maxDashCharges() { return UPGRADE_TUNING.dashCharges + (transformed('wind') ? GAME_DATA.schoolRules.windFormCharges : 0); }
 function showWeaponChoices() {
   state.pickingWeapon = true;
-  state.pendingChoices = GAME_DATA.weapons.map(w => w.kind === 'melee' ? {...w,description:`每 ${w.interval} 秒自動揮錘，每第 ${w.spinEvery} 下轉一圈，受到傷害減少 ${Math.round(w.damageReduction*100)}%。`} : w);
+  state.pendingChoices = GAME_DATA.weapons.map(w => ({...w}));
   showUpgradeChoices();
 }
 
