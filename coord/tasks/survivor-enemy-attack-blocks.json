@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-enemy-attack-blocks",
+  "title": "小怪獸：怪物與老師共用招式積木",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-enemy-attack-blocks",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T095650Z-parent-enemy-attack-blocks.md",
+  "next": "請 Grok 審查並於 1024×461、740×360 操作後交 Erin 試玩。測試全過；Godot §11 與差距見 enemy-attack-blocks 交接文件。提交／PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T10:02:14.701219Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-weapon-blocks"
+  ]
+}

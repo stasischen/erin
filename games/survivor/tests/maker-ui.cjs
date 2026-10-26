@@ -100,3 +100,32 @@ choose('boss',defaults.boss.moves[0].id);ui.click('試玩');assert.equal(ui.call
 ui=setup();ui.click('預覽');assert.equal(ui.nodes().find(n=>n.className==='maker-preview').hidden,false);ui.click('收起預覽');assert.equal(ui.nodes().find(n=>n.className==='maker-preview').hidden,true);
 choose('rules','defaults');const outer=ui.nodes().find(n=>n.tag==='details');outer.open=true;ui.click('預覽');assert.equal(ui.nodes().find(n=>n.tag==='details').open,true);
 console.log('PASS: selected weapon/enemy draft trial routing, card/boss effect trials, preview toggle and defaults expansion survive rendering');
+
+// 怪物與老師使用武器同款五積木；編輯、收合、預覽與試玩不會混寫其他來源。
+ui=setup();choose('enemies','pudding');
+assert.equal(ui.nodes().filter(n=>n.className==='weapon-block').length,10);
+let enemyFold=ui.nodes().find(n=>n.className==='weapon-block');enemyFold.open=false;enemyFold.fire('toggle');
+slider('觸發距離',125);slider('起手預警秒數',1.4);
+ui.click('使用分階段攻擊：開');
+assert.equal(ui.nodes().find(n=>n.className==='weapon-block').open,false);
+ui.click('使用分階段攻擊：關');
+ui.ids.save.fire('click');
+let blockData=saved(),pudding=blockData.enemies.find(e=>e.id==='pudding');
+assert.equal(pudding.blocks.moves[0].trigger.triggerDistance,125);
+assert.equal(pudding.blocks.moves[0].timing.windup,1.4);
+assert.equal(pudding.phaseAttack.windup,1.4);
+ui.click('試這隻');assert.equal(ui.calls[ui.calls.length-1].id,'pudding');
+assert.equal(ui.calls[ui.calls.length-1].data.enemies.find(e=>e.id==='pudding').phaseAttack.windup,1.4);
+choose('enemies','jaben');slider('開始攻擊等級',3);
+choose('boss','words');
+assert.equal(ui.nodes().filter(n=>n.className==='weapon-block').length,5);
+slider('預警秒數',1.6);slider('傷害',26);ui.click('試這隻');
+assert.equal(ui.calls[ui.calls.length-1].spec.id,'words');
+assert.equal(ui.calls[ui.calls.length-1].data.boss.moves[0].warning,1.6);
+ui.ids.save.fire('click');blockData=saved();
+assert.equal(blockData.enemies[0].blocks.moves[1].trigger.level,3);
+assert.equal(blockData.boss.moves[0].blocks.moves[0].timing.warning,1.6);
+assert.equal(blockData.boss.moves[0].blocks.moves[0].effect.damage,26);
+assert.equal(blockData.boss.moves[0].damage,26);
+ui=setup({saved:ui.storage});ui.ids.save.fire('click');assert.deepEqual(saved(),blockData);
+console.log('PASS: shared five-part enemy/teacher editors, folded state, canonical phase/legacy/boss edits, trial current draft, save/reload');

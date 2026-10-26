@@ -8,7 +8,7 @@
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
   function message(text, error = false) { status.textContent = text; status.className = error ? 'error' : ''; }
-  function changed() { for(const w of draft.weapons) if(w.blocks) Object.assign(w,api.compileWeapon(w)); for(const e of draft.enemies) if(e.phaseAttack.timing) Object.assign(e.phaseAttack,e.phaseAttack.timing); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
+  function changed() { for(const w of draft.weapons) if(w.blocks) Object.assign(w,api.compileWeapon(w)); for(const e of draft.enemies) if(e.blocks) Object.assign(e,api.compileEnemy(e)); for(const m of draft.boss.moves) if(m.blocks) Object.assign(m,api.compileBossMove(m)); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
   function panel(title) { const node = el('section', undefined, content); node.className = 'panel'; el('h2', title, node); return node; }
   function grid(parent) { const node = el('div', undefined, parent); node.className = 'grid'; return node; }
   function text(parent, label, object, key, maxLength = 24) { const row = el('label', label, parent), input = el('input', undefined, row); input.type = 'text'; input.maxLength = maxLength; input.value = object[key] || ''; input.addEventListener('input', () => { object[key] = input.value; changed(); }); }
@@ -178,6 +178,39 @@
     const f=grid(panel(stage.name+' 波次'));
     stage.waves.forEach(wave=>range(f,wave,'every',[.3,5,.05],wave.start+' 秒起出怪間隔'));
   }
+  // 武器、怪物、老師共用相同的積木外殼與收合狀態。
+  function blockPanel(group,key,part) {
+    const box=el('details',undefined,group);box.className='weapon-block';
+    box.open=weaponBlocksOpen[key]!==false;
+    box.addEventListener('toggle',()=>{weaponBlocksOpen[key]=box.open;});
+    el('summary',api.BLOCK_PARTS[part]+'積木',box);
+    return grid(box);
+  }
+  function drawAttackStacks(host,owner,defs,key) {
+    if(!owner.blocks) owner.blocks=defs===api.ENEMY_STACKS?api.enemyStacks(owner):api.bossStacks(owner);
+    const names={enabled:'使用分階段攻擊',triggerDistance:'觸發距離',radial:'子彈向四周發射（留缺口）',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',gapDegrees:'四周子彈缺口角度',level:'開始攻擊等級',minPhase:'第幾階段開始使用',phaseCount:'每個階段是否多一個目標'};
+    for(const [i,move] of owner.blocks.moves.entries()) {
+      const def=defs[i],group=el('section',undefined,host);group.className='weapon-move';el('h3',def.label,group);
+      for(const part of Object.keys(api.BLOCK_PARTS)) {
+        const fields=blockPanel(group,key+'-'+move.id+'-'+part,part),values=move[part];
+        if(part==='feedback') {el('p',move.id==='phase'?'鎖定方向與危險範圍；起手提示音，收招可以反擊。':'沿用原本的預警、攻擊圖像與音效。',fields);continue;}
+        if(part==='trigger') el('p',move.id==='phase'?'距離內開始預警，方向與原點鎖定。':move.id==='legacy'?'達到等級且間隔到時；分階段攻擊啟用時不重複出招。':'到達老師階段後，依原有招式順序使用。',fields);
+        if(move.id==='phase' && part==='timing') {drawTiming(fields,values,api.PHASE_BOUNDS);continue;}
+        for(const field of def[part]) {
+          if(['enabled','radial'].includes(field)) {
+            const b=button(fields,names[field]+'：'+(values[field]?'開':'關'),()=>{values[field]=!values[field];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(values[field]));
+          } else if(field==='shape') select(fields,'預警與命中形狀',values,field,api.PHASE_SHAPES);
+          else if(field==='type') select(fields,'攻擊形狀',values,field,{none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
+          else if(field==='kind') select(fields,'招式形狀',values,field,api.KINDS);
+          else {
+            const legacy={interval:[1,15,.5],level:[2,20,1],damage:[0,30,1],speed:[50,200,5],radius:[10,100,1],count:[1,5,1],spread:[0,.6,.05]};
+            const bounds=move.id==='phase'?api.PHASE_BOUNDS[field]:move.id==='legacy'?legacy[field]:field==='minPhase'?[1,3,1]:field==='phaseCount'?[0,1,1]:api.BOUNDS[field];
+            range(fields,values,field,bounds,names[field]);
+          }
+        }
+      }
+    }
+  }
   function drawEnemies() {
     const toggle=(parent,label,obj,key)=>{const b=button(parent,label+'：'+(obj[key]?'開':'關'),()=>{obj[key]=!obj[key];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(obj[key]));};
     draft.enemies.filter(e=>e.id===selected.enemies).forEach(e => {
@@ -188,18 +221,9 @@
       live.addEventListener('toggle',()=>{if(live.open && previewPane.contains(live))SurvivorPractice.mount(arena,draft,e.id);else SurvivorPractice.unmount(arena);});
       monsterPicker(fields, e);
       select(fields, '移動方式', e, 'behavior', api.BEHAVIORS);
-      const phase=el('fieldset',undefined,p);el('legend','起手 → 生效 → 收招 → 冷卻',phase);
-      toggle(phase,'使用分階段攻擊',e.phaseAttack,'enabled');
-      select(phase,'預警與命中形狀',e.phaseAttack,'shape',api.PHASE_SHAPES);
-      toggle(phase,'子彈向四周發射（留缺口）',e.phaseAttack,'radial');
-      const phaseNames={radius:'半徑／子彈半徑／直線半寬',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',windup:'起手預警秒數',active:'生效秒數（子彈最長壽命）',recovery:'收招停頓秒數',cooldown:'冷卻秒數',damage:'攻擊傷害',triggerDistance:'觸發距離',speed:'子彈速度',count:'子彈數',gapDegrees:'四周子彈缺口角度'};
-      if(!e.phaseAttack.timing)e.phaseAttack.timing=Object.fromEntries(Object.keys(api.TIMING_BOUNDS).map(key=>[key,e.phaseAttack[key]]));
-      drawTiming(phase,e.phaseAttack.timing,api.PHASE_BOUNDS);
-      for(const [key,bounds] of Object.entries(api.PHASE_BOUNDS)) if(!api.TIMING_BOUNDS[key]) range(phase,e.phaseAttack,key,bounds,phaseNames[key]);
-      el('p','分階段攻擊開啟時取代下方舊攻擊。起手鎖定方向；子彈飛完才收招。紅色是危險範圍，收招時可以反擊。',phase);
-      const attack = el('fieldset', undefined, p); el('legend','怪物的攻擊',attack);
-      select(attack, '攻擊積木', e.attack, 'type', {none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
-      const controls = grid(attack); range(controls,e.attack,'interval',[1,15,.5]); range(controls,e.attack,'level',[2,20,1],'開始攻擊等級'); range(controls,e.attack,'damage',[0,30,1]); range(controls,e.attack,'speed',[50,200,5]); range(controls,e.attack,'radius',[10,100,1]); range(controls,e.attack,'count',[1,5,1]); range(controls,e.attack,'spread',[0,.6,.05]);
+      el('p','分階段攻擊開啟時優先使用；關閉後才使用等級攻擊。原有移動與輔助能力保持原樣。',p);
+      drawAttackStacks(p,e,api.ENEMY_STACKS,e.id);
+
     });
   }
   function drawBoss() {
@@ -216,7 +240,13 @@
     el('p','每次提前 4 秒顯示下一圈。圈外速度剩 80%；最小圈直徑是 1.5 個螢幕寬。完整效果請按試玩，單招展示不縮圈。',zone);
     } else {
     moveIndex=draft.boss.moves.findIndex(m=>m.id===selected.boss);
-    [draft.boss.moves[moveIndex]].forEach(m => { const box=panel(m.name), f=grid(box); if(globalThis.SurvivorPreview){const host=el('div',undefined,previewPane);host.className='skill-preview-host';SurvivorPreview.mount(host,draft,{kind:'move',id:m.id});} box.className += ' maker-move'; text(f,'招式名稱',m,'name'); select(f,'招式積木',m,'kind',api.KINDS); range(f,m,'minPhase',[1,3,1],'第幾階段開始使用'); ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance'].forEach(key=>range(f,m,key)); range(f,m,'phaseCount',[0,1,1],'每個階段是否多一個目標'); el('p','招式只使用相關參數：扇形用速度／數量／角度；範圍用大小／數量；衝撞用速度／距離；圈用大小／缺口／持續時間。老師在畫面外不出招。',box); });
+    const m=draft.boss.moves[moveIndex], box=panel(m.name);
+    text(grid(box),'招式名稱',m,'name');
+    button(box,'試這隻',()=>trial({spec:{kind:'move',id:m.id}}));
+    if(globalThis.SurvivorPreview){const host=el('div',undefined,previewPane);host.className='skill-preview-host';SurvivorPreview.mount(host,draft,{kind:'move',id:m.id});}
+    drawAttackStacks(box,m,api.BOSS_STACKS,'boss-'+m.id);
+    el('p','老師在畫面外不出招；各招式只使用相關參數，沿用原本的預警與效果。',box);
+
     }
   }
   function drawDefaults() {
@@ -259,18 +289,14 @@
       if(!w.blocks) w.blocks=api.weaponStacks(w);
       const host=panel(w.name+'招式積木');
       el('p','由上往下拼招式；連段重招、蓄力和衝刺斬沿用普通攻擊的時間軸；特殊招有自己的冷卻。按旁邊的預覽或試玩看看！',host);
-      const partNames={trigger:'觸發',shape:'形狀',timing:'時機',effect:'效果',feedback:'回饋'};
+      const partNames=api.BLOCK_PARTS;
       const toggles={comboEnabled:'連段',chargeEnabled:'自動聚氣',dashThrust:'衝刺突刺'};
       for(const [i,move] of w.blocks.moves.entries()) {
         if(move.id==='dash' && w.id!=='candy-sword') continue;
         const group=el('section',undefined,host); group.className='weapon-move';
         el('h3',api.WEAPON_STACKS[i].label,group);
         for(const part of Object.keys(partNames)) {
-          const box=el('details',undefined,group);box.className='weapon-block';
-          const key=w.id+'-'+move.id+'-'+part;box.open=weaponBlocksOpen[key]!==false;
-          box.addEventListener('toggle',()=>{weaponBlocksOpen[key]=box.open;});
-          el('summary',partNames[part]+'積木',box);
-          const fields=grid(box), values=move[part];
+          const fields=blockPanel(group,w.id+'-'+move.id+'-'+part,part),values=move[part];
           if(part==='feedback') {el('p',move.id==='special'?{leap:'跳躍落地刀光、頓幀與震動', 'sword-wave':'前方劍波與出招音效','water-fan':'扇形水球與出招音效'}[w.specialKind]:w.kind==='melee'?'命中刀光、頓幀與震動；出招音效':'水球與水花；出招音效',fields);el('small','沿用玩家的打擊回饋與聲音設定。',fields);continue;}
           if(move.id==='primary' && part==='timing') drawTiming(fields,values.phases,api.TIMING_BOUNDS);
           for(const field of api.WEAPON_STACKS[i][part]) {

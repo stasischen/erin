@@ -20,7 +20,8 @@ assert.equal(run('migrated.data.weapons[0].timing.windup'),.1);
 for(const edit of ['d.weapons[0].timing.windup=-1','d.weapons[0].timing.active=Infinity','d.weapons[0].timing=null','d.enemies[2].phaseAttack.timing={windup:.1,active:1,recovery:1,cooldown:1}']) {
  assert.equal(run(`(()=>{const d=SurvivorData.defaults();${edit};return SurvivorData.validate(d).valid})()`),false,edit);
 }
-run('migrated.data.enemies[2].phaseAttack.timing.windup=1.7;SurvivorData.save(migrated.data)');
+// 轉換後以積木為儲存來源；舊 timing 欄位由編譯回填。
+run('migrated.data.enemies[2].blocks.moves[0].timing.windup=1.7;SurvivorData.save(migrated.data)');
 const saved=createRun({maker:true,saved:run.storage});assert.equal(saved('ENEMY_TYPES[2].phaseAttack.windup'),1.7);
 assert.equal(saved('ENEMY_TYPES[2].phaseAttack.timing.windup'),1.7);
 function fresh(id='candy-sword') {run(`resetGame();GAME_DATA.attackMode='manual';state.mode='playing';state.weaponId='${id}';state.enemies=[];state.spawnTimer=999;state.player.damageDisabled=true;activeWeapon().timing={...cfg};`);}

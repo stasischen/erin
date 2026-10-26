@@ -87,10 +87,12 @@
   function compileWeapon(weapon) {
     if(weapon.blocks===undefined) return {...weapon};
     const blocks=weapon.blocks;
+    blockObject(blocks,["version","moves"],"武器");
     if(!blocks || Object.keys(blocks).some(k=>!['version','moves'].includes(k)) || blocks.version!==1 || !Array.isArray(blocks.moves) || blocks.moves.length!==WEAPON_STACKS.length) throw new Error('武器積木版本或招式數量不正確');
     const result={...weapon};
     blocks.moves.forEach((move,i)=>{
       const def=WEAPON_STACKS[i];
+      blockObject(move,['id',...Object.keys(BLOCK_PARTS)],'武器招式');
       if(!move || move.id!==def.id || Object.keys(move).some(k=>!['id','trigger','shape','timing','effect','feedback'].includes(k))) throw new Error('武器招式積木不正確');
       for(const part of ['trigger','shape','timing','effect']) {
         const values=move[part], allowed=def[part].concat(part==='trigger'?['event']:def.id==='primary'&&part==='timing'?['phases']:[]);
@@ -110,6 +112,58 @@
     });
     return result;
   }
+  // 與武器相同的五類積木；編譯只搬資料，傷害、時序與表現仍走既有接合層。
+  const BLOCK_PARTS = {trigger:'觸發',shape:'形狀',timing:'時機',effect:'效果',feedback:'回饋'};
+  const ENEMY_STACKS = [
+    {id:'phase',label:'分階段攻擊',event:'targetInRange',trigger:['enabled','triggerDistance'],shape:['shape','radial','radius','innerRadius','length','angle','speed','count','gapDegrees'],timing:['windup','active','recovery','cooldown'],effect:['damage']},
+    {id:'legacy',label:'等級攻擊（分階段關閉時）',event:'levelTimer',trigger:['level'],shape:['type','radius','speed','count','spread'],timing:['interval'],effect:['damage']}
+  ];
+  const BOSS_STACKS = [{id:'move',label:'老師招式',event:'bossPhase',trigger:['minPhase','phaseCount'],shape:['kind','speed','count','spread','radius','gap','distance'],timing:['warning','duration','pulse'],effect:['damage']}];
+  function attackStacks(owner,defs) {
+    return {version:1,moves:defs.map(def=>{
+      const source=def.id==='phase'?owner.phaseAttack:def.id==='legacy'?owner.attack:owner;
+      const move={id:def.id};
+      for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].map(key=>[key,copy(part==='timing' && def.id==='phase' ? (source.timing || source)[key] : source[key])]));
+      move.trigger.event=def.event;
+      move.feedback={cue:def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning',sound:'warning'};
+      return move;
+    })};
+  }
+  function blockObject(value,allowed,label) {
+    if(!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(k=>!allowed.includes(k))) throw new Error(label+'積木格式不正確');
+  }
+  function compileAttack(owner,defs) {
+    if(owner.blocks===undefined) return {...owner};
+    const blocks=owner.blocks;
+    blockObject(blocks,['version','moves'],'招式');
+    if(blocks.version!==1 || !Array.isArray(blocks.moves) || blocks.moves.length!==defs.length) throw new Error('招式積木版本或數量不正確');
+    const result={...owner};
+    blocks.moves.forEach((move,i)=>{
+      const def=defs[i];
+      blockObject(move,['id',...Object.keys(BLOCK_PARTS)],'招式');
+      if(move.id!==def.id) throw new Error('招式積木識別碼不正確');
+      const source={};
+      for(const part of ['trigger','shape','timing','effect']) {
+        blockObject(move[part],def[part].concat(part==='trigger'?['event']:[]),part);
+        for(const key of def[part]) {
+          if(move[part][key]===undefined) throw new Error('招式積木缺少 '+key);
+          source[key]=move[part][key];
+        }
+      }
+      if(move.trigger.event!==def.event) throw new Error('招式觸發不支援');
+      blockObject(move.feedback,['cue','sound'],'回饋');
+      const cue=def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning';
+      if(move.feedback.cue!==cue || move.feedback.sound!=='warning') throw new Error('招式回饋不支援');
+      if(def.id==='phase') {source.timing=Object.fromEntries(def.timing.map(k=>[k,source[k]]));result.phaseAttack=source;}
+      else if(def.id==='legacy') result.attack=source;
+      else Object.assign(result,source);
+    });
+    return result;
+  }
+  const enemyStacks = enemy => attackStacks(enemy,ENEMY_STACKS);
+  const bossStacks = move => attackStacks(move,BOSS_STACKS);
+  const compileEnemy = enemy => compileAttack(enemy,ENEMY_STACKS);
+  const compileBossMove = move => compileAttack(move,BOSS_STACKS);
   function defaults() { return copy(root.SURVIVOR_DEFAULTS); }
   function validate(input) {
     const data = defaults(), errors = [];
@@ -301,7 +355,7 @@
         data.bodyContact={pushOnly:input.bodyContact.pushOnly,damageScale:num(input.bodyContact.damageScale,0,1,'身體傷害倍率')};
       }
       data.enemies = data.enemies.map((base, i) => {
-        const e = input.enemies[i]; if (!e || e.id !== base.id) fail('怪物識別碼不正確');
+        const e = compileEnemy(input.enemies[i]); if (!e || e.id !== base.id) fail('怪物識別碼不正確');
         const result = { ...base, name: name(e.name, '怪物名稱', 24), hp: num(e.hp, 10, 500, '血量'), speed: num(e.speed, 0, 170, '移速'), radius: num(e.radius, 10, 35, '大小'), damage: num(e.damage, 0, 40, '碰撞傷害'), behavior: choice(e.behavior, Object.keys(BEHAVIORS), '移動方式') };
         // 舊作品沒有造型欄位時，依原種類補上；保留名稱、能力與數值。
         result.spriteId = e.spriteId === undefined ? base.spriteId : choice(e.spriteId, root.SurvivorMonsters.ids, '怪物造型');
@@ -319,6 +373,7 @@
           if(a.shape==='ring' && a.innerRadius>=a.radius) fail('圓環內圈需小於外圈');
         }
         if(!result.phaseAttack.timing) result.phaseAttack.timing=timing(result.phaseAttack,Object.fromEntries(Object.keys(TIMING_BOUNDS).map(k=>[k,PHASE_BOUNDS[k]])));
+        result.blocks=enemyStacks(result);
         return result;
       });
       const b = { ...input.boss };
@@ -329,9 +384,10 @@
       if (Array.isArray(b.moves)) b.moves = b.moves.concat(data.boss.moves.filter(m => ['chalk-wall','shrinking-ring'].includes(m.id) && !b.moves.some(old => old.id === m.id)));
       if (!Array.isArray(b.moves) || b.moves.length !== data.boss.moves.length) fail('魔王招式數量不正確');
       data.boss.moves = data.boss.moves.map((base, i) => {
-        const m = b.moves[i]; if (!m || m.id !== base.id) fail('招式識別碼不正確');
+        const m = compileBossMove(b.moves[i]); if (!m || m.id !== base.id) fail('招式識別碼不正確');
         const result = { ...base, name: name(m.name, '招式名稱', 24), kind: choice(m.kind, Object.keys(KINDS), '招式積木'), minPhase: num(m.minPhase, 1, 3, '開始階段', true), phaseCount: num(m.phaseCount, 0, 1, '每階段增加數量', true) };
         for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
+        result.blocks=bossStacks(result);
         return result;
       });
       // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
@@ -377,5 +433,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);
