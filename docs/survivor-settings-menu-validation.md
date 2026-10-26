@@ -66,3 +66,11 @@
 重新執行指定的 `node games/survivor/tools/test.cjs`，各項皆輸出 PASS，包含 `settings-menu.cjs`，未執行 `--layout` 或瀏覽器。這是作者測試紀錄，尚待 Grok 針對 erin-watch 提交後的完整 SHA 獨立審查及上列兩種尺寸實際操作。
 
 本輪僅更新收件匣、卡片及交接文件；Godot §11 適用檢查與差距沿用前節，沒有更動資料、規則或素材。目前無待 Erin 決定事項。commit、push、PR 由 erin-watch 代辦。
+
+## Grok 回饋修正（2026-10-26T08:50:37.143622Z）
+
+已處理 `20261026T084500Z-grok-feedback-settings-menu.md` 與 `20261026T084822Z-parent-nudge-settings-menu.md`。依 Grok 指定，將 `tests/levelup-layout.cjs` 的已取得卡片入口由 `openSettings()` 改為 `togglePause()`，同步修正註解，對應卡片現位於暫停選單的行為。沒有更動遊戲程式或資源，版本維持 `20261026aa`。repo 無 `settings.md`，以原始要求、追加要求及 Grok 審查紀錄續做。
+
+指定的 `node games/survivor/tools/test.cjs` 全數 PASS、exit 0；依要求未執行 `--layout` 或瀏覽器，修正後的版面測試請 Grok 在 erin-watch 提交的新 SHA 上重跑。Grok 先前在 1024×461、740×360 的操作結果見其審查紀錄。Maker 預設設定保持展開的非必要建議本輪未改。
+
+Godot §11：本輪僅修改網頁操作測試入口與交接紀錄，不涉及規則、資料、事件、素材或音訊；平台版面測試仍由網頁環境驗證，前節移植差距不變。無待 Erin 決定事項；commit、push 與 PR 由 erin-watch 代辦。

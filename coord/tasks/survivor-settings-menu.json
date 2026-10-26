@@ -8,12 +8,12 @@
   "branch": "codex/survivor-settings-menu",
   "pr": null,
   "brief": "coord/inbox/done/20261026T080020Z-parent-settings-menu.md",
-  "next": "續做提醒已處理，指定測試全通過。請 erin-watch 提交並交 Grok 審查及兩尺寸操作；Godot §11 與交接見 docs/survivor-settings-menu-validation.md。無待決定事項。",
+  "next": "已修正 Grok 指出的 levelup-layout 暫停卡入口；指定一般測試全數 PASS。請 erin-watch 提交並交 Grok 對新 SHA 重跑 --layout 及審查。Godot §11：僅改平台操作測試，未改遊戲規則、資料與素材，差距見 docs/survivor-settings-menu-validation.md。無待 Erin 決定事項。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-26T08:34:15.125369Z",
+  "updated": "2026-10-26T08:50:37.143622Z",
   "updatedBy": "codex"
 }
