@@ -2,7 +2,7 @@
 function resetEncounters() {
   state.eliteTimer = GAME_DATA.elites.interval;
   state.bearSpawned = false; state.miniboss = null;
-  state.syrup = []; state.splitQueue = [];
+  state.syrup = []; state.splitQueue = []; state.jellyQueue=[]; resetPacing();
   state.rewardChoices = 0; state.rewardPicking = false; state.rewardPicked = [];
 }
 function encounterDistance(a, b) { return Math.hypot(deltaX(a.x,b.x),deltaY(a.y,b.y)); }
@@ -34,6 +34,7 @@ function spawnChocobear() {
 }
 // 回傳 true 代表這下被護盾／盔甲擋住；破甲這下不穿透到本體。
 function encounterShield(enemy, damage) {
+  if (enemy.fairyShield > 0) { enemy.fairyShield--; enemy.flash=HIT_FLASH_SECONDS; return true; }
   if (enemy.shield > 0) {
     enemy.shield--; enemy.flash = HIT_FLASH_SECONDS;
     burst(enemy.x,enemy.y,enemy.shield ? '#d9f9ff' : '#fff0c8',enemy.shield ? 3 : 18);
@@ -48,6 +49,7 @@ function encounterShield(enemy, damage) {
   return false;
 }
 function encounterDefeated(enemy) {
+  splitJelly(enemy);
   if (enemy.elite) {
     // 直接給經驗獎勵，不受寶石數量上限影響；在安全的 tick 邊界開選卡。
     state.xp += GAME_DATA.elites.rewardXp;
@@ -62,6 +64,9 @@ function encounterDefeated(enemy) {
 }
 function updateEncounters(dt) {
   const c = GAME_DATA.elites, b = GAME_DATA.chocobear;
+  while(state.jellyQueue.length && state.enemies.filter(e=>e.alive).length<ENEMY_LIMIT) {
+    const child=state.jellyQueue.shift();spawnEnemy({small:true,typeId:child.typeId,position:child});
+  }
   if (!PREVIEW_MODE && c.enabled && !state.boss) {
     state.eliteTimer = countdown(state.eliteTimer,dt);
     if (!state.eliteTimer) {
@@ -151,11 +156,11 @@ function drawEncounterGround() {
   }
 }
 function drawEncounterArmor(e) {
-  if (!(e.shield > 0 || e.armor > 0)) return;
+  if (!(e.shield > 0 || e.armor > 0 || e.fairyShield > 0)) return;
   ctx.strokeStyle = '#d7f9ff'; ctx.lineWidth = e.miniboss ? 5 : 3;
   ctx.beginPath(); ctx.arc(e.x,e.y,e.r+3,0,Math.PI*2); ctx.stroke();
   ctx.fillStyle = '#fff0c8';
-  const count = e.miniboss ? Math.ceil(6*e.armor/e.maxArmor) : e.shield;
+  const count = e.miniboss ? Math.ceil(6*e.armor/e.maxArmor) : (e.shield || e.fairyShield);
   for(let i=0;i<count;i++) ctx.fillRect(e.x-e.r+i*8,e.y-e.r-8,5,5);
 }
 globalThis.Survivor.engine.encounters = {resetEncounters,updateEncounters,spawnChocobear,makeElite,encounterShield,encounterDefeated,openEncounterReward,eliteSpeed,syrupSpeed,drawEncounterGround,drawEncounterArmor};

@@ -16,9 +16,10 @@ function setup(saved = {}) {
   return (code) => vm.runInContext(code, context);
 }
 const run = setup();
+// 以下舊射擊案例從「已完成預警」開始；完整預警流程另見 enemy-pacing.cjs。
 function fresh() {
   run(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
-    spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, typeId: 'jaben', shotCooldown: 0 });`);
+    spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, typeId: 'jaben', shotCooldown: 0, shotPrepared: true, shotWarning: 0 });`);
 }
 fresh();
 run('state.level = 7; tick(0.05);');
@@ -39,7 +40,7 @@ assert.ok(Math.abs(run('Math.hypot(state.enemyShots[0].vx, state.enemyShots[0].v
 assert.ok(Math.abs(run('state.enemyShots[0].vx / state.enemyShots[0].vy') - 1.5) < 1e-8);
 assert.equal(run('state.enemies[0].shotCooldown'), 3);
 // 兩隻同時準備好仍只射一顆，全體至少相隔 0.65 秒。
-run(`spawnEnemy(); Object.assign(state.enemies[1], { x: 200, y: 100, speed: 0, typeId: 'otsubon', shotCooldown: 0 }); tick(0.05);`);
+run(`spawnEnemy(); Object.assign(state.enemies[1], { x: 200, y: 100, speed: 0, typeId: 'otsubon', shotCooldown: 0, shotPrepared: true, shotWarning: 0 }); tick(0.05);`);
 assert.equal(run('state.enemyShots.length'), 1);
 run('for (let i = 0; i < 13; i++) tick(0.05);');
 assert.equal(run('state.enemyShots.length'), 2);
@@ -51,7 +52,7 @@ run('state.mode = "playing"; state.bookNoticeTimer = 0; grantExperience(experien
 assert.equal(run('enemyNotice.hidden'), true);
 // 小兵國字和老師詞句各有上限，混用仍保留老師三發。
 fresh();
-run(`state.level = 8; for (let i = 0; i < 30; i++) { state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; updateBookShooting(0); }
+run(`state.level = 8; for (let i = 0; i < 30; i++) { state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; state.enemies[0].shotPrepared = true; state.enemies[0].shotWarning = 0; updateBookShooting(0); }
   summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0); render();`);
 assert.equal(run('state.enemyShots.filter(s => s.source === "book").length'), 12);
 assert.equal(run('state.enemyShots.filter(s => s.source === "teacher").length'), 3);
@@ -63,12 +64,12 @@ run(`state.level = 8; tick(0); globalThis.bookShot = state.enemyShots[0];
   Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 0 }); tick(0);`);
 assert.equal(run('state.player.health'), 84);
 assert.equal(run('state.enemyShotPool.includes(bookShot)'), true);
-run('state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);');
+run('state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; state.enemies[0].shotPrepared = true; state.enemies[0].shotWarning = 0; tick(0);');
 assert.equal(run('state.enemyShots[0] === bookShot'), true);
 run('Object.assign(bookShot, { x: state.player.x, y: state.player.y, vx: 0, vy: 0 }); state.player.invincible = 0.01; tick(0.05);');
 assert.equal(run('state.player.health'), 84);
 // 壽命結束回收，再由老師重用仍更新來源、傷害、半徑、文字。
-run(`state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; tick(0);
+run(`state.bookShotTimer = 0; state.enemies[0].shotCooldown = 0; state.enemies[0].shotPrepared = true; state.enemies[0].shotWarning = 0; tick(0);
   state.enemyShots[0].life = 0; tick(0); summonTeacher(); state.boss.x = 100; state.boss.y = 100; state.bossIntro = 0; beginBossMove("words"); updateBoss(0.9); tick(0);`);
 assert.equal(run('bookShot.source'), 'teacher');
 assert.equal(run('bookShot.damage'), 12);
@@ -83,7 +84,7 @@ fresh();
 run('state.level = 8; state.enemies = []; tick(0); for (let i = 0; i < 81; i++) tick(0.05);');
 assert.equal(run('enemyNotice.hidden'), true);
 fresh();
-run(`state.level = 8; for (let i = 1; i < 26; i++) { spawnEnemy(); Object.assign(state.enemies[i], { x: 100, y: 100, speed: 0, shotCooldown: 0 }); }
+run(`state.level = 8; for (let i = 1; i < 26; i++) { spawnEnemy(); Object.assign(state.enemies[i], { x: 100, y: 100, speed: 0, shotCooldown: 0, shotPrepared: true, shotWarning: 0 }); }
   globalThis.lastCount = 0; globalThis.lastShotTime = -999; globalThis.shortestGap = Infinity;
   for (let i = 0; i < 120; i++) { tick(0.05); if (state.enemyShots.length > lastCount) { shortestGap = Math.min(shortestGap, state.elapsed - lastShotTime); lastShotTime = state.elapsed; lastCount = state.enemyShots.length; } }`);
 assert.ok(run('shortestGap >= 0.65 - 1e-8'));
@@ -109,7 +110,7 @@ saved('updateSettingValue("enemyShootLevel", 3); updateSettingValue("enemyShotDa
 assert.equal(saved('gameSettings.enemyShootLevel'), 3);
 assert.equal(saved('gameSettings.enemyShotDamage'), 4);
 saved(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.level = 3; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;
-  spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, shotCooldown: 0 }); tick(0);`);
+  spawnEnemy(); Object.assign(state.enemies[0], { x: 100, y: 100, speed: 0, shotCooldown: 0, shotPrepared: true, shotWarning: 0 }); tick(0);`);
 assert.equal(saved('state.enemyShots[0].damage'), 4);
 assert.ok(Math.abs(saved('Math.hypot(state.enemyShots[0].vx, state.enemyShots[0].vy)') - 80) < 1e-8);
 console.log('PASS: Lv8 gate/notice, aim, stagger, slower second enemy, pause, caps, pooled book/teacher shots, damage/invincibility/death, restart, saved settings');

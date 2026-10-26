@@ -3,6 +3,7 @@
 (function (root) {
   'use strict';
   const labels = {
+    pudding:'布丁', 'pop-candy':'跳跳糖', 'marshmallow-fairy':'棉花糖仙子',
     'marshmallow-rabbit':'棉花糖兔', 'soda-bubble':'汽水泡泡', 'jelly-slime':'果凍史萊姆',
     'macaron-knight':'馬卡龍騎士', 'donut-spinner':'甜甜圈陀螺', 'gummy-bear':'小熊軟糖',
     'chocolate-bear':'巧克力大熊', 'mushroom-hopper':'蘑菇跳跳', 'hedgehog-ball':'刺蝟球',
@@ -21,7 +22,17 @@
       rect(7,y,3,4,ink); rect(14,y,3,4,ink); rect(7,y,1,1,white); rect(14,y,1,1,white);
       rect(5,y+4,3,1,pink); rect(16,y+4,3,1,pink); rect(11,y+5,2,1,ink);
     };
-    if (id === 'marshmallow-rabbit') {
+    if (id === 'pudding') {
+      box(6,4,12,4,'#a76745'); box(4,8,16,7,'#f8d681'); box(2,15,20,6,'#edbf65');
+      rect(6,8,12,2,'#b87c4b'); rect(5,11,3,4,'#fff0ba'); face(12);
+    } else if (id === 'pop-candy') {
+      box(1,7,6,10,'#f3a5ba'); box(17,7,6,10,'#f3a5ba');box(5,4,14,16,'#e87994');
+      rect(7,6,4,3,'#ffe5b8');rect(10,1,2,4,'#a9cf85');rect(13,0,2,3,'#ffe4a0');face(10);
+    } else if (id === 'marshmallow-fairy') {
+      box(0,8,8,10,'#bce3ec');box(16,8,8,10,'#bce3ec');box(5,4,14,16,white);
+      rect(7,6,5,2,'#fff');face(10);rect(4,1,2,3,'#ffe18d');rect(2,2,6,1,'#ffe18d');
+      rect(11,21,2,2,'#e5b7dc');
+    } else if (id === 'marshmallow-rabbit') {
       box(5,1,5,11,white); box(14,0,5,12,white); rect(7,3,1,6,pink); rect(16,2,1,7,pink);
       box(3,9,18,12,white); rect(5,20,5,3,ink); rect(14,20,5,3,ink); face(12);
     } else if (id === 'soda-bubble') {

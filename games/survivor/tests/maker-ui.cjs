@@ -42,7 +42,7 @@ console.log('PASS: in-game entry/exit, five custom-control tabs, names/icons/eff
 // 造型按鈕要有真實像素縮圖，換裝後存檔且不改怪物能力。
 ui=setup();ui.tab('enemies');
 const skins=ui.nodes().filter(n=>n.tag==='button'&&n.attrs['aria-label']==='蘑菇跳跳');
-assert.equal(skins.length,2);assert.ok(skins[0].children.some(n=>n.tag==='canvas'));
+assert.equal(skins.length,8);assert.ok(skins[0].children.some(n=>n.tag==='canvas'));
 skins[0].fire('click');ui.ids.save.fire('click');
 const skinData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
 assert.equal(skinData.enemies[0].spriteId,'mushroom-hopper');
@@ -78,3 +78,15 @@ assert.equal(encounterData.elites.interval,25);assert.equal(encounterData.elites
 assert.equal(encounterData.elites.abilities.includes('teleport'),false);assert.equal(encounterData.chocobear.armor,250);assert.equal(encounterData.chocobear.slamWarning,2);assert.equal(encounterData.chocobear.name,'糖衣大熊');
 ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(switchButton('啟用精英怪：關'));assert.ok(switchButton('傳送：關'));
 console.log('PASS: Maker elite/bear icon toggles, abilities, numeric controls, name, save/reload');
+// 出怪節奏、波次型態、每關密度和八種怪物皆可實際儲存重載。
+ui=setup();ui.tab('enemies');
+for(const [label,value] of [['出怪密度倍率',.6],['強波密度倍率',1.3],['喘息波密度倍率',.5],['強弱交替秒數',15],['每次事件怪物數',4]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+const waveSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='0 秒起出怪間隔');assert.ok(waveSlider);waveSlider.value=2.5;waveSlider.fire('input');
+assert.ok(ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='移動速度').length>=8);
+assert.equal(ui.nodes().filter(n=>n.tag==='canvas'&&n.attrs['aria-label']&&n.attrs['aria-label'].endsWith('角色預覽')).length,8);
+ui.click('穩定出怪');ui.ids.save.fire('click');
+const pacingData=JSON.parse(ui.storage['erin-survivor-maker-v1']);assert.equal(pacingData.pacing.density,.6);assert.equal(pacingData.pacing.pattern,'steady');assert.equal(pacingData.stages[0].waves[0].every,2.5);
+ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='波次型態：穩定出怪'));
+console.log('PASS: Maker density/strong/weak/cycle/event count, pattern selector, stage wave intervals and all eight speed controls persist');

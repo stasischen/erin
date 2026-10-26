@@ -17,6 +17,8 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
+  const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
+  const BEHAVIORS = {chase:'追趕',fast:'弧線快跑',tank:'擋住其他怪',shooter:'射擊後退',charger:'預警衝撞',bomber:'兩秒自爆',splitter:'分裂兩隻',support:'護盾輔助',still:'站在原地',retreat:'靠近後退'};
   const NEUTRAL_BOUNDS = {"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
   const SCHOOL_BOUNDS = {
     schoolsPerRun:[1,3,1], cardsPerSchool:[3,8,1], transformCards:[2,5,1], ultimateCards:[3,8,1], fusionCards:[1,4,1],
@@ -136,10 +138,17 @@
         visiting.add(id); data.cards.find(c => c.id === id).requires.forEach(visit); visiting.delete(id); visited.add(id);
       }
       data.cards.forEach(c => visit(c.id));
-      if (!Array.isArray(input.enemies) || input.enemies.length !== data.enemies.length) fail('怪物種類數量不正確');
+      if (input.pacing !== undefined) {
+        data.pacing.pattern=choice(input.pacing.pattern,["alternating","steady"],"波次型態");
+        for (const [field,b] of Object.entries(PACING_BOUNDS)) data.pacing[field] = num(input.pacing[field],b[0],b[1],field,['eventCount','shieldHits'].includes(field));
+        if (JSON.stringify(input.pacing.themes)!==JSON.stringify(data.pacing.themes) || JSON.stringify(input.pacing.eventPool)!==JSON.stringify(data.pacing.eventPool)) fail('主題與事件池請由資料檔擴充');
+      }
+      // 舊的兩種怪物作品以穩定 id 補新種類，原本的名稱、行為和攻擊都保留。
+      if (!Array.isArray(input.enemies) || input.enemies.length < 2 || input.enemies.length > data.enemies.length || new Set(input.enemies.map(e=>e.id)).size !== input.enemies.length || input.enemies.some(e=>!data.enemies.some(b=>b.id===e.id)) || data.enemies.slice(0,2).some(b=>!input.enemies.some(e=>e.id===b.id))) fail('怪物種類數量不正確');
+      input = {...input,enemies:data.enemies.map(b=>input.enemies.find(e=>e.id===b.id)||b)};
       data.enemies = data.enemies.map((base, i) => {
         const e = input.enemies[i]; if (!e || e.id !== base.id) fail('怪物識別碼不正確');
-        const result = { ...base, name: name(e.name, '怪物名稱', 24), hp: num(e.hp, 10, 500, '血量'), speed: num(e.speed, 0, 170, '移速'), radius: num(e.radius, 10, 35, '大小'), damage: num(e.damage, 0, 40, '碰撞傷害'), behavior: choice(e.behavior, ['chase','still','retreat'], '移動方式') };
+        const result = { ...base, name: name(e.name, '怪物名稱', 24), hp: num(e.hp, 10, 500, '血量'), speed: num(e.speed, 0, 170, '移速'), radius: num(e.radius, 10, 35, '大小'), damage: num(e.damage, 0, 40, '碰撞傷害'), behavior: choice(e.behavior, Object.keys(BEHAVIORS), '移動方式') };
         // 舊作品沒有造型欄位時，依原種類補上；保留名稱、能力與數值。
         result.spriteId = e.spriteId === undefined ? base.spriteId : choice(e.spriteId, root.SurvivorMonsters.ids, '怪物造型');
         result.shadowSize = e.shadowSize === undefined ? .9 : num(e.shadowSize, .3, 1.8, '影子寬度倍率');
@@ -175,6 +184,11 @@
         }
         return migrated;
       });
+      if (savedStages) savedStages.forEach(stage=>{
+        const base=data.stages.find(s=>s.id===stage.id);
+        if (!base || !Array.isArray(stage.waves) || stage.waves.length!==base.waves.length) fail('波次數量不正確');
+        stage.waves.forEach((wave,i)=>{base.waves[i].every=num(wave.every,.3,5,'出怪間隔秒數');});
+      });
       const fixedStages = rows => rows.map(({ decorationDensity, ...stage }) => stage);
       if (input.stages !== undefined && JSON.stringify(fixedStages(savedStages)) !== JSON.stringify(fixedStages(data.stages))) fail('本版尚未開放關卡編輯');
       // 波次只預留資料位置，本版不提供編輯。
@@ -195,5 +209,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);
