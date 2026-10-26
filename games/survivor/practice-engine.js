@@ -1,9 +1,34 @@
 // 獨立 iframe 的平台接合層：正式 tick、碰撞、攻擊與繪圖照用，僅隔離生成／傷害／結算。
 const practiceRules=SurvivorPracticeRules;
 let practiceId=frameElement._practiceId||'water-ball',practiceConfig,practiceEnemy=null,practiceHome,practiceClock=0,practiceHold=0;
-let practiceRequest=null,practiceLast=0,practiceVisible=true;
+let practiceRequest=null,practiceLast=0,practiceVisible=true,practicePaused=false;
+let practiceStats={dodged:0,hit:0,streak:0},practiceRound=0,practiceWasHit=false,practiceResolved=false,practiceFast=false,practiceToast=0,practiceDashProtected=false,practiceBasicFired=false;
+const practiceMini=!!frameElement._practiceMini;
+if(practiceMini) document.body.classList.add('mini');
+function practiceHit() {
+  if(practiceWasHit||practiceResolved||practiceDashProtected) return;
+  practiceWasHit=true;state.player.hitFlash=.3;practiceMessage('被打到了','#ff7a86');
+}
+state.practiceHit=practiceHit;
+function practiceMessage(text,color) {const n=document.getElementById('practiceFeedback');n.textContent=text;n.style.color=color;practiceToast=1.2;}
+function practiceScore() {
+  if(practiceResolved)return;practiceResolved=true;
+  practiceStats=practiceRules.score(practiceStats,practiceWasHit);practiceRound++;
+  if(!practiceWasHit)practiceMessage(practiceStats.streak===10?'連續 10 次！挑戰成功！':'躲開了！','#8af4ad');
+}
+function practiceStartRound() {
+  const e=practiceEnemy,c=practiceConfig;
+  e.x=practiceHome.x+40;e.y=practiceHome.y;
+  practiceWasHit=false;practiceResolved=false;practiceHold=0;
+  const angle=Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x));
+  c.windup=practiceRules.windup(practiceRules.model(GAME_DATA,practiceId).windup,practiceRound,practiceFast);
+  if(!c.legacy)e.phaseAttack={phase:'windup',left:c.windup,x:e.x,y:e.y,angle,config:{...c},hit:false};
+  else e.action={kind:c.shape==='charge'?'charge':'blast',warning:c.windup,angle};
+  practiceBuildTimeline();
+}
+
 const practiceNav=document.getElementById('practiceMoves');
-const practiceOriginalBehavior=updateEnemyBehavior, practiceOriginalBlob=drawBlob;
+const practiceOriginalBehavior=updateEnemyBehavior, practiceOriginalBlob=drawBlob,practiceOriginalWarnings=drawPacingWarnings;
 // 木頭假人是本機程式圖，攻擊來源仍保留原來的怪物造型。
 drawBlob=function(x,y,r,color,wobble,flash,id,...rest) {
   if(id!=='practice-dummy') return practiceOriginalBlob(x,y,r,color,wobble,flash,id,...rest);
@@ -15,13 +40,20 @@ updateCamera=function(){state.cameraX=practiceHome?practiceHome.x-state.width/2:
 canvasPoint=function(event){const r=canvas.getBoundingClientRect();return {x:(event.clientX-r.left)*state.width/r.width,y:(event.clientY-r.top)*state.height/r.height};};
 updateEnemyBehavior=function(e,dt) {
   if(e!==practiceEnemy) return;
-  if(!practiceConfig.legacy) {
-    // 只推進目前這一輪，ready 由重播接合層重新定位，避免在遠處重新觸發。
-    if(e.phaseAttack && e.phaseAttack.phase!=='ready') updatePhasedAttack(e,dt);
-  } else if(e.action) practiceOriginalBehavior(e,dt);
+  const old={x:e.x,y:e.y}, charging=e.action&&e.action.kind==='charge'&&e.action.warning<=dt;
+  if(practiceConfig.enabled) {
+    if(!practiceConfig.legacy) { if(e.phaseAttack&&e.phaseAttack.phase!=='ready')updatePhasedAttack(e,dt); }
+    else if(e.action) practiceOriginalBehavior(e,dt);
+  } else practiceOriginalBehavior(e,dt);
+  if(charging) {
+    const vx=e.x-old.x,vy=e.y-old.y,px=state.player.x-old.x,py=state.player.y-old.y;
+    const t=Math.max(0,Math.min(1,(px*vx+py*vy)/(vx*vx+vy*vy||1)));
+    if(Math.hypot(px-vx*t,py-vy*t)<e.r+state.player.r)practiceHit();
+  }
 };
 // 舊招式也以主角中心的真實碰撞區顯示：衝撞為掃掠膠囊、自爆加上主角半徑。
 drawPacingWarnings=function() {
+  if(practiceConfig&&!practiceConfig.enabled){practiceOriginalWarnings();return;}
   const e=practiceEnemy,a=e&&e.action;if(!a)return;
   ctx.save();ctx.strokeStyle='#efc94e';ctx.fillStyle='rgba(239,201,78,.22)';
   if(a.kind==='charge') {
@@ -32,7 +64,7 @@ drawPacingWarnings=function() {
   ctx.restore();
 };
 function practiceSize() {
-  const r=canvas.getBoundingClientRect();state.width=800;state.height=800*r.height/Math.max(1,r.width);
+  const r=canvas.getBoundingClientRect();state.width=practiceMini?800:r.width;state.height=state.width*r.height/Math.max(1,r.width);
   const scale=Math.min(window.devicePixelRatio||1,2);
   canvas.width=Math.round(state.width*scale);canvas.height=Math.round(state.height*scale);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=false;
   state.pointerId=null;state.joy=null;state.keys.clear();
@@ -43,14 +75,16 @@ function practiceButtons() {
     const b=document.createElement('button');b.type='button';b.title=m.name;b.setAttribute('aria-label',m.name);b.setAttribute('aria-pressed',String(m.id===practiceId));
     if(m.kind==='enemy') {const image=document.createElement('canvas');image.width=image.height=32;const g=image.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(SurvivorMonsters.picture(GAME_DATA.enemies.find(e=>e.id===m.id).spriteId),0,0,32,32);b.appendChild(image);}
     else b.innerHTML=SurvivorIcons.html(m.icon);
-    b.addEventListener('click',()=>{practiceId=m.id;frameElement._practiceId=m.id;practiceReset();practiceButtons();});practiceNav.appendChild(b);
+    b.addEventListener('click',()=>{practiceId=m.id;frameElement._practiceId=m.id;practiceReset();practiceButtons();practiceMenu(false);});practiceNav.appendChild(b);
   }
   document.getElementById('practiceReplay').innerHTML=SurvivorIcons.html('reroll');
 }
 function practiceReset(keepPosition=false) {
   const position=keepPosition?{x:state.player.x,y:state.player.y}:null;
   const home=practiceHome,joy=state.joy,pointerId=state.pointerId,keys=new Set(state.keys);
-  resetGame();state.mode='playing';settingsPanel.hidden=true;
+  resetGame();state.mode=practicePaused?'paused':'playing';settingsPanel.hidden=true;
+  if(!keepPosition){practiceStats={dodged:0,hit:0,streak:0};practiceRound=0;}
+  state.practiceHit=practiceHit;practiceWasHit=false;practiceResolved=false;practiceToast=0;practiceDashProtected=false;practiceBasicFired=false;
   gameSettings.music=false;gameSettings.sound=false;gameSettings.vibration=false;
   practiceHome=home||{x:state.player.x,y:state.player.y};updateCamera();
   state.player.x=position?position.x:practiceHome.x-80;state.player.y=position?position.y:practiceHome.y;
@@ -61,15 +95,16 @@ function practiceReset(keepPosition=false) {
     state.weaponId=practiceId==='item-wall'?'water-ball':practiceId;
     if(practiceId==='item-wall') state.upgrades['item-wall']=1;
     const distance=activeWeapon().kind==='melee'?55:150;
-    state.enemies=[0,1].map(i=>({typeId:'practice-dummy',spriteId:'practice-dummy',behavior:'still',x:state.player.x+distance+i*65,y:state.player.y,homeX:state.player.x+distance+i*65,homeY:state.player.y,r:18,speed:0,damage:0,hp:1e9,maxHp:1e9,alive:true,flash:0,wobble:0,shotCooldown:Infinity}));
+    state.enemies=[0,1].map(i=>({typeId:'practice-dummy',spriteId:'practice-dummy',behavior:'chaser',x:state.player.x+distance+i*65,y:state.player.y,homeX:state.player.x+distance+i*65,homeY:state.player.y,r:18,speed:45,damage:0,hp:1e9,maxHp:1e9,alive:true,flash:0,wobble:0,shotCooldown:Infinity}));
     state.shotTimer=0;
-  } else if(practiceConfig.enabled) {
+  } else {
     practiceEnemy=spawnEnemy({typeId:practiceId});
-    Object.assign(practiceEnemy,{x:practiceHome.x+40,y:practiceHome.y,speed:0,shotCooldown:Infinity,actionCooldown:Infinity});
-    const e=practiceEnemy,c=practiceConfig,angle=Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x));
-    if(!c.legacy) e.phaseAttack={phase:'windup',left:c.windup,x:e.x,y:e.y,angle,config:{...c},hit:false};
-    else e.action={kind:c.shape==='charge'?'charge':'blast',warning:c.windup,angle};
+    Object.assign(practiceEnemy,{x:practiceHome.x+40,y:practiceHome.y,speed:GAME_DATA.enemies.find(e=>e.id===practiceId).speed,hp:1e9,maxHp:1e9,shotCooldown:practiceConfig.enabled?Infinity:0,actionCooldown:Infinity});
+    if(practiceConfig.enabled)practiceStartRound();
+    else {state.level=20;state.bookShotTimer=0;}
+
   }
+  updateActionControls();
   document.getElementById('practiceName').textContent=practiceConfig.name+' · 免傷練習';
   document.getElementById('practiceDescription').textContent=practiceRules.describe(practiceConfig);
   practiceBuildTimeline();practicePaint();
@@ -87,26 +122,39 @@ function practiceStep(dt) {
   const c=practiceConfig;
   // 停用遊戲事件與自然生成；不修改共享作品中的設定值。
   state.spawnTimer=Infinity;state.eliteTimer=Infinity;state.bearSpawned=true;state.stageElapsed=0;
-  state.bossRest=Infinity;state.bookShotTimer=Infinity;
+  state.bossRest=Infinity;if(c.enabled||practiceBasicFired)state.bookShotTimer=Infinity;
   if(c.kind!=='weapon') state.shotTimer=Infinity;
   practiceClock+=dt;
+  practiceDashProtected=state.dashTimer>0;
+  const prepared=practiceEnemy&&practiceEnemy.shotPrepared;
   tick(dt);
+  if(c.basic&&prepared&&!practiceEnemy.shotPrepared&&practiceEnemy.shotCooldown>0)practiceBasicFired=true;
+  practiceToast=Math.max(0,practiceToast-dt);
   // 沙盒不收集經驗；玩家與來源留在固定可視練習區。
   state.gems=[];state.xp=0;state.rewardChoices=0;
   state.player.x=Math.max(state.cameraX+state.player.r,Math.min(state.cameraX+state.width-state.player.r,state.player.x));
   state.player.y=Math.max(state.cameraY+state.player.r,Math.min(state.cameraY+state.height-state.player.r,state.player.y));
+  // 擊退仍然有效，但練習對手不會被推到鏡頭外而停止出招。
+  for(const e of state.enemies){e.x=Math.max(state.cameraX+e.r,Math.min(state.cameraX+state.width-e.r,e.x));e.y=Math.max(state.cameraY+e.r,Math.min(state.cameraY+state.height-e.r,e.y));}
   if(c.kind==='weapon') {
-    // 木頭假人受擊後回到原位，讓第四下與浪花互撞可以持續練習。
-    for(const e of state.enemies) if(!e.flash) {const blend=Math.min(1,dt*6);e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;}
-    if(practiceClock>=effectiveShotInterval()*Math.max(4,activeWeapon().spinEvery||4)) practiceReset(true);
+    // 木樁沿正式敵人移動規則追來，受擊擊退後繼續走，不重設位置或冷卻。
+  } else if(c.basic) {
+    if(practiceBasicFired&&!state.enemyShots.length&&!state.enemyHazards.length) {
+      practiceScore();
+      if(practiceEnemy.shotCooldown<=0){practiceBasicFired=false;practiceWasHit=false;practiceResolved=false;state.bookShotTimer=0;}
+    }
   } else if(c.enabled) {
-    if(!c.legacy && practiceEnemy.phaseAttack.phase==='ready') practiceReset(true);
-    if(c.legacy && !practiceEnemy.action) {
+    const finished=c.legacy?!practiceEnemy.action:practiceEnemy.phaseAttack&&practiceEnemy.phaseAttack.phase==='ready';
+    if(finished && !state.enemyShots.length) {
+      if(!practiceResolved)practiceScore();
       practiceHold+=dt;
-      // 自爆沒有收招／冷卻；稍留畫面看爆炸，時間軸停在終點。
-      if(practiceHold>=Math.max(.45,c.cooldown)) practiceReset(true);
+      if(practiceHold>=Math.max(.45,c.legacy?c.cooldown:0)) {
+        if(!practiceEnemy.alive) {practiceEnemy.alive=true;state.enemies=[practiceEnemy];}
+        practiceStartRound();
+      }
     }
   }
+
   practicePaint();
 }
 function practiceBuildTimeline() {
@@ -119,14 +167,39 @@ function practiceBuildTimeline() {
 }
 function practicePaint() {
   render();
+  // 免傷仍用正式攻擊碰撞；受擊紅環與文字由練習接合層呈現。
+  const px=state.player.x-state.cameraX,py=state.player.y-state.cameraY;
+  if(practiceWasHit&&practiceToast>0){ctx.save();ctx.strokeStyle='#ff596d';ctx.lineWidth=5;ctx.beginPath();ctx.arc(px,py,state.player.r+5,0,Math.PI*2);ctx.stroke();if(state.player.hitFlash>0){ctx.fillStyle='rgba(255,50,70,.45)';ctx.fill();}ctx.restore();}
+  const toast=document.getElementById('practiceFeedback');toast.hidden=practiceToast<=0;
+  toast.style.left=(Math.max(80,Math.min(state.width-80,px))/state.width*100)+'%';toast.style.top=(Math.max(90,py-32)/state.height*100)+'%';
+  document.getElementById('practiceStats').textContent=practiceConfig.kind==='weapon'?'武器練習 · 木樁會追過來':`躲開 ${practiceStats.dodged} · 被打 ${practiceStats.hit+(practiceWasHit&&!practiceResolved?1:0)} · 連續 ${practiceWasHit?0:practiceStats.streak}｜挑戰 ${practiceWasHit?0:Math.min(10,practiceStats.streak)}/10`;
+
   const current=practiceTimelineState(),line=practiceRules.timeline(practiceConfig,current.phase,current.left);
   document.getElementById('practiceCursor').style.left=(line.progress*100)+'%';
 }
 window.updatePracticeData=function(data) {
   const result=SurvivorData.validate(data);if(!result.valid)return;
-  // 引擎尚有啟動時綁定的常數；重載這個獨立沙盒，確保所有滑桿真的改到攻擊。
-  frameElement._practicePayload={data:result.data};location.reload();
+  frameElement._practicePayload={data:result.data};
+  // 更新既有物件，保留引擎對資料表的引用；不重開 iframe。
+  function copyInto(target,source) {
+    for(const key of Object.keys(source)) {
+      if(source[key]&&typeof source[key]==='object'&&target[key]&&typeof target[key]==='object')copyInto(target[key],source[key]);
+      else target[key]=source[key];
+    }
+    if(Array.isArray(target))target.length=source.length;
+  }
+  copyInto(GAME_DATA,result.data);Object.assign(gameSettings,SETTING_DEFAULTS,GAME_DATA.tuning);
+  PLAYER_SPEED=GAME_DATA.tuning.playerSpeed;PLAYER_HEALTH=GAME_DATA.tuning.playerHealth;SHOT_INTERVAL=GAME_DATA.tuning.shotInterval;
+  practiceReset();practiceButtons();
 };
+function practiceMenu(open) {
+  practicePaused=open;state.mode=open?'paused':'playing';practiceLast=0;
+  state.keys.clear();state.joy=null;state.pointerId=null;
+  document.getElementById('practicePanel').hidden=!open;updateActionControls();
+  if(!open && canvas.focus)canvas.focus();
+}
+// 練習場自己的暫停入口，避免啟動正式遊戲的排程或隱藏設定頁。
+togglePause=function(){practiceMenu(!practicePaused);};
 function practiceFrame(now) {
   practiceRequest=null;if(!practiceVisible||document.hidden)return;
   if(practiceLast) practiceStep(Math.min(.05,(now-practiceLast)/1000));practiceLast=now;
@@ -135,10 +208,22 @@ function practiceFrame(now) {
 function practiceVisibility(visible) {
   practiceVisible=visible;practiceLast=0;state.keys.clear();state.joy=null;state.pointerId=null;
   if(practiceRequest!==null)cancelAnimationFrame(practiceRequest);
-  state.mode='playing';practiceRequest=visible?requestAnimationFrame(practiceFrame):null;
+  if(!visible)practiceMenu(true);
+  practiceRequest=visible?requestAnimationFrame(practiceFrame):null;
 }
-document.getElementById('practiceReplay').addEventListener('click',()=>practiceReset());
+for(const [id,icon] of [['practiceMenu','tree'],['practicePause','settings'],['practiceReplay','reroll'],['practiceResume','play'],['practiceExit','close']])document.getElementById(id).innerHTML=SurvivorIcons.html(icon);
+dashButton.innerHTML='<span>'+SurvivorIcons.html('dash')+'</span>';skillButton.innerHTML='<span>'+SurvivorIcons.html('skill')+'</span>';
+document.getElementById('practiceMenu').addEventListener('click',()=>practiceMenu(true));
+document.getElementById('practicePause').addEventListener('click',()=>practiceMenu(true));
+document.getElementById('practiceResume').addEventListener('click',()=>practiceMenu(false));
+document.getElementById('practiceExit').addEventListener('click',()=>{if(frameElement._practiceClose)frameElement._practiceClose();});
+document.getElementById('practiceReplay').addEventListener('click',()=>{practiceReset();practiceMenu(false);});
+document.getElementById('practiceFast').addEventListener('change',e=>{practiceFast=e.target.checked;practiceReset();});
+document.addEventListener('pointerdown',event=>{if(event.target===canvas&&canvas.focus)canvas.focus();},true);
 window.addEventListener('resize',()=>{practiceSize();practiceHome=null;practiceReset();});
-window.addEventListener('blur',()=>{state.keys.clear();state.joy=null;state.pointerId=null;state.mode='playing';});window.addEventListener('focus',()=>practiceVisibility(true));
+window.addEventListener('blur',()=>{state.keys.clear();state.joy=null;state.pointerId=null;if(practiceMini)state.mode='playing';else practiceMenu(true);});
+window.addEventListener('focus',()=>practiceVisibility(true));
 document.addEventListener('visibilitychange',()=>practiceVisibility(!document.hidden));
 practiceSize();practiceReset();practiceButtons();practiceVisibility(true);
+
+window.setPracticeActive=function(active){practiceVisibility(active);if(active&&practiceMini)practiceMenu(false);};

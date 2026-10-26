@@ -1,25 +1,39 @@
-// 練習場與 Maker 共用 draft；每次輸入直接以目前已驗證的作品重播，不經儲存。
+// 每個小場景各有獨立引擎；只傳已驗證的作品資料，不存檔。
 globalThis.SurvivorPractice = (()=>{
-  let frame=null,host=null;
+  let full=null;
+  const minis=[];
+  function payload(data) {const r=SurvivorData.validate(data);return r.valid?SurvivorData.copy(r.data):null;}
   function refresh(data) {
-    if(!frame) return;
-    const result=SurvivorData.validate(data);
-    if(!result.valid) return;
-    frame._practicePayload={data:SurvivorData.copy(result.data)};
-    if(frame.contentWindow && frame.contentWindow.updatePracticeData) frame.contentWindow.updatePracticeData(frame._practicePayload.data);
+    const value=payload(data);if(!value)return;
+    for(const entry of minis.concat(full?[full]:[])) {
+      entry.frame._practicePayload={data:SurvivorData.copy(value)};
+      if(entry.frame.contentWindow&&entry.frame.contentWindow.updatePracticeData)entry.frame.contentWindow.updatePracticeData(value);
+    }
   }
-  function close() {
-    if(host) host.remove();host=null;frame=null;
+  function frame(data,id,mini=false) {
+    const f=document.createElement('iframe');f.title=mini?'怪物即時預覽':'招式練習場';f._practicePayload={data:payload(data)};f._practiceId=id;f._practiceMini=mini;
+    f.src=new URL('practice.html?v=20261026v',SurvivorPreview.base).href;return f;
   }
-  function open(data, container, onClose) {
-    close();
-    host=document.createElement('section');host.className='practice-dock';host.setAttribute('aria-label','招式練習場');
-    const heading=document.createElement('header');
-    const title=document.createElement('strong');title.textContent='招式練習場';
-    const closeButton=document.createElement('button');closeButton.type='button';closeButton.className='practice-close';closeButton.innerHTML=SurvivorIcons.html('close');closeButton.setAttribute('aria-label','關閉練習場');closeButton.title='關閉練習場';closeButton.addEventListener('click',()=>{close();if(onClose)onClose();});
-    frame=document.createElement('iframe');frame.title='招式練習場';refresh(data);
-    frame.src=new URL('practice.html?v=20261026u',SurvivorPreview.base).href;
-    heading.append(title,closeButton);host.append(heading,frame);container.appendChild(host);
+  function closeFull() {
+    if(!full)return;
+    const {host,origin,onClose}=full;full=null;host.remove();
+    for(const entry of minis)if(entry.frame.contentWindow.setPracticeActive)entry.frame.contentWindow.setPracticeActive(true);
+    if(origin&&origin.focus)origin.focus();if(onClose)onClose();
   }
-  return {open,close,refresh};
+  function close() {closeFull();for(const e of minis)e.host.textContent='';minis.length=0;}
+  function open(data,container,onClose,id='water-ball') {
+    closeFull();
+    const host=document.createElement('section');host.className='practice-dock';host.setAttribute('aria-label','招式練習場');
+    const f=frame(data,id);f._practiceClose=closeFull;
+    full={host,frame:f,origin:document.activeElement,onClose};host.appendChild(f);
+    // 外層 game-shell 已跟正式遊戲一起處理旋轉、安全區及視窗尺寸。
+    (document.querySelector('.game-shell')||container).appendChild(host);
+    for(const e of minis)if(e.frame.contentWindow.setPracticeActive)e.frame.contentWindow.setPracticeActive(false);
+    f.addEventListener('load',()=>{if(f.contentWindow)f.contentWindow.focus();});
+  }
+  function mount(host,data,id) {
+    const f=frame(data,id,true);host.appendChild(f);minis.push({host,frame:f});
+  }
+  function unmount(host) {const i=minis.findIndex(e=>e.host===host);if(i>=0)minis.splice(i,1);host.textContent='';}
+  return {open,close,refresh,mount,unmount};
 })();

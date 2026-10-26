@@ -188,6 +188,10 @@
     drawEncounters('elites','精英怪'); drawEncounters('chocobear','巧克力大熊');
     draft.enemies.forEach(e => {
       const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields,e,'mass',[1,100,1],'重量'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
+      button(p,'試這隻',()=>SurvivorPractice.open(draft,editor,null,e.id));
+      const live=el('details',undefined,p);live.className='enemy-preview-toggle';el('summary','即時預覽（點開／收起）',live);
+      const arena=el('div',undefined,live);arena.className='enemy-live-preview';
+      live.addEventListener('toggle',()=>{if(live.open)SurvivorPractice.mount(arena,draft,e.id);else SurvivorPractice.unmount(arena);});
       monsterPicker(fields, e);
       select(fields, '移動方式', e, 'behavior', api.BEHAVIORS);
       const phase=el('fieldset',undefined,p);el('legend','起手 → 生效 → 收招 → 冷卻',phase);

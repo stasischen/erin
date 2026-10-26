@@ -76,9 +76,10 @@
 .maker-encounters .encounter-toggle button, .maker-encounters .encounter-adjust { border-radius: 50%; width: 48px; height: 48px; min-height: 48px; padding: 8px; }
 /* 每頁保留固定可視範圍；練習場使用整個內容區，不壓縮編輯欄。 */
 .maker-editor .panel { min-width: 0; max-width: 100%; }
-.maker-editor:has(.practice-dock) { overflow: hidden; padding: 0; }
-.practice-dock { height: 100%; min-height: 0; min-width: 0; display: grid; grid-template-rows: 44px minmax(0, 1fr); background: #142331; }
-.practice-dock iframe { width: 100%; height: 100%; min-height: 0; border: 0; display: block; }
-.practice-dock header { display: flex; align-items: center; justify-content: space-between; padding-left: 8px; }
-.maker-room .practice-close { width: 44px; height: 44px; padding: 8px; border-radius: 50%; }
-#save { width: 44px; flex-shrink: 0; padding: 0; border-radius: 50%; }
+/* 練習場覆蓋整個正式遊戲 shell；沒有常駐側欄或外框標題。 */
+.practice-dock{position:absolute;inset:0;z-index:50;display:block;width:100%;height:100%}
+.practice-dock iframe{width:100%;height:100%;border:0;display:block}
+.enemy-live-preview{width:100%;height:210px;min-width:0;margin:8px 0}
+.enemy-live-preview iframe{display:block;width:100%;height:100%;border:1px solid #557482}
+.enemy-preview-toggle{margin:8px 0;max-width:100%}
+:where(.game-shell[data-short~="compact"]) .enemy-live-preview{height:160px}

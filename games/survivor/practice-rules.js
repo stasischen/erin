@@ -11,7 +11,7 @@ globalThis.SurvivorPracticeRules = (() => {
       ...['pudding','mushroom','fairy','donut','pop-candy'].map(id=>({id,name:data.enemies.find(e=>e.id===id).name,icon:'monster',kind:'enemy'}))];
   }
   function model(data,id) {
-    const move=moves(data).find(m=>m.id===id), t=data.tuning, p=data.pacing;
+    const move=moves(data).find(m=>m.id===id)||{id,name:data.enemies.find(e=>e.id===id).name,kind:'enemy'}, t=data.tuning, p=data.pacing;
     if(move.kind==='weapon') {
       const w=data.weapons.find(w=>w.id===(id==='item-wall'?'water-ball':id));
       const interval=w.kind==='melee'?w.interval:t.shotInterval;
@@ -28,7 +28,7 @@ globalThis.SurvivorPracticeRules = (() => {
     // 這兩招在正式遊戲仍為舊招式：不捏造收招時間；冷卻照引擎原值。
     if(e.behavior==='charger') return {...move,enabled:true,legacy:true,windup:p.warning,active:p.chargeSeconds,recovery:0,cooldown:3,shape:'charge',length:p.chargeSpeed*p.chargeSeconds,radius:e.radius,speed:p.chargeSpeed,damage:data.bodyContact.pushOnly?0:e.damage*data.bodyContact.damageScale};
     if(e.behavior==='bomber') return {...move,enabled:true,legacy:true,windup:p.fuseSeconds,active:0,recovery:0,cooldown:0,shape:'blast',radius:p.blastRadius,damage:p.blastDamage};
-    return {...move,enabled:false,windup:0,active:0,recovery:0,cooldown:0,shape:'none',damage:0};
+    return {...move,basic:['projectile','aoe'].includes(e.attack.type),enabled:false,windup:0,active:0,recovery:0,cooldown:0,shape:'none',damage:0};
   }
   function timeline(config,phase,left) {
     let total=0;
@@ -38,11 +38,16 @@ globalThis.SurvivorPracticeRules = (() => {
     return {segments,total,elapsed,progress:total?elapsed/total:0,phase:current?current.id:'ready'};
   }
   function describe(c) {
-    if(!c.enabled) return c.name+'：此招已停用';
+    if(!c.enabled) return c.name+(c.basic?'：循環展示目前的怪物攻擊設定（以可出招等級示範）':'：目前沒有主動招式，可練習移動與走位');
     const shapes={sector:`扇形 ${c.angle}°`,circle:`圓形 半徑 ${c.radius}`,ring:`圓環 ${c.innerRadius}–${c.radius}`,
       line:`直線 ${c.length} × ${c.radius*2}`,projectiles:c.radial?`${c.count} 發｜缺口 ${c.gapDegrees}°｜速度 ${c.speed}｜距離 ${c.length}`:`子彈 速度 ${c.speed}｜距離 ${c.length}`,
       charge:`衝撞 ${c.length}｜速度 ${c.speed}`,blast:`自爆 半徑 ${c.radius}`};
     return `${c.name}：${phases.map(p=>seconds(c[p]||0)+'s').join(' → ')}｜${shapes[c.shape]}｜傷害 ${seconds(c.damage)}${c.push?'｜擊退 '+c.push:''}${c.spinEvery?'｜每 '+c.spinEvery+' 下旋轉':''}${c.wavePush?'｜浪花擊退 '+c.wavePush+' 互撞傷害 '+c.waveDamage:''}${c.legacy?'｜舊招式，無收招階段':''}${c.kind==='weapon'?'｜紅段為攻擊間隔，飛行可重疊':''}`;
   }
-  return {moves,model,timeline,describe};
+  // 輸入上一輪統計與是否命中；一輪只能由接合層結算一次。
+  function score(stats, hit) {
+    return {dodged:stats.dodged+(hit?0:1),hit:stats.hit+(hit?1:0),streak:hit?0:stats.streak+1};
+  }
+  function windup(base, round, fast) { return base*(fast?Math.max(.25,Math.pow(.92,round)):1); }
+  return {moves,model,timeline,describe,score,windup};
 })();

@@ -39,7 +39,57 @@ run('practiceReset(true)');assert.equal(run('state.pointerId'),7);assert.equal(r
 run('practiceReset();state.player.x=practiceEnemy.x-40;state.player.y=practiceEnemy.y');
 for(let i=0;i<80;i++)run('practiceStep(.05)');
 assert.equal(run('state.player.health'),data.tuning.playerHealth);
-// 即時更新採整個沙盒重載，避免速度、傷害等 const 留在舊值；保留招式選擇。
+// 熱更新不重建 iframe；同一引擎立即讀取新的攻擊數值。
 run('globalThis.reloads=0;location.reload=()=>reloads++;window.updatePracticeData(descriptionData)');
-assert.equal(run('reloads'),1);assert.equal(run('frameElement._practicePayload.data.enemies.find(e=>e.id==="pudding").phaseAttack.damage'),23);
-console.log('PASS: practice descriptions/timeline boundaries/data changes, eight real-engine loops, fourth hammer spin, real phase recovery, immune movement, held joystick, hot reload payload');
+assert.equal(run('reloads'),0);assert.equal(run('practiceConfig.damage'),23);
+assert.equal(run('frameElement._practicePayload.data.enemies.find(e=>e.id==="pudding").phaseAttack.damage'),23);
+// 命中只記一輪、衝刺保護、一次結算、失誤清空連勝。
+run('practiceReset();practiceDashProtected=false;practiceHit();practiceHit();practiceScore();practiceScore()');
+assert.deepEqual(JSON.parse(run('JSON.stringify(practiceStats)')),{dodged:0,hit:1,streak:0});
+run('practiceStartRound();practiceDashProtected=true;practiceHit();practiceScore()');
+assert.deepEqual(JSON.parse(run('JSON.stringify(practiceStats)')),{dodged:1,hit:1,streak:1});
+run('practiceStartRound();practiceDashProtected=false;practiceHit();practiceScore()');
+assert.equal(run('practiceStats.streak'),0);
+assert.equal(run('state.player.health'),data.tuning.playerHealth);
+assert.equal(run('SurvivorPracticeRules.windup(2,0,true)'),2);
+assert.equal(run('SurvivorPracticeRules.windup(2,100,true)'),.5);
+// 下一輪瞄準當下位置，不清空手指、鍵盤、衝刺／技能冷卻。
+run('state.player.y+=90;state.keys.add("ArrowRight");state.skillCooldown=3;practiceStartRound()');
+assert.ok(run('practiceEnemy.phaseAttack.angle>0'));
+assert.equal(run('state.skillCooldown'),3);assert.equal(run('state.keys.has("ArrowRight")'),true);
+// 真實 pointer 事件接到共用搖桿；第二指不得搶走，動作鍵可同時啟動。
+run('practiceReset();globalThis.pointer={pointerId:42,clientX:100,clientY:300,target:{closest:()=>null},preventDefault(){}}');
+run.elements.gameCanvas.listeners.pointerdown(run('pointer'));
+assert.equal(run('state.pointerId'),42);
+run.elements.gameCanvas.listeners.pointermove(run('({...pointer,clientX:200})'));
+run('globalThis.inputStart=state.player.x;practiceStep(.05)');assert.ok(run('state.player.x>inputStart'));
+run.elements.dashButton.listeners.pointerdown(run('({preventDefault(){},stopPropagation(){}})'));
+assert.ok(run('state.dashTimer>0'));assert.equal(run('state.pointerId'),42);
+run('practiceMenu(true);globalThis.pausedX=state.player.x;practiceStep(1)');
+assert.equal(run('state.player.x'),run('pausedX'));run('practiceMenu(false)');
+// 木樁走向主角；武器連續攻擊不重設主角或動作冷卻。
+run('practiceId="water-ball";practiceReset();globalThis.dummyStart=state.enemies[1].x;practiceStep(.05)');
+assert.ok(run('state.enemies[1].x<dummyStart'));
+console.log('PASS: eight practice loops, timeline, live data, immune movement, pointer and dash together, hit/dodge/streak, dash protection, round aiming, pause, walking dummies');
+
+// 真實碰撞輸入→免傷命中事件；非只呼叫計分函式。
+run('practiceId="pudding";practiceReset();state.player.x=practiceEnemy.x-30;state.player.y=practiceEnemy.y;practiceEnemy.phaseAttack.left=0;practiceStep(.01)');
+assert.equal(run('practiceWasHit'),true);assert.equal(run('state.player.health'),data.tuning.playerHealth);
+run('practiceReset();state.enemyShots.push({x:state.player.x,y:state.player.y,vx:0,vy:0,r:10,damage:5,life:1});practiceStep(.01)');
+assert.equal(run('practiceWasHit'),true);
+run('practiceReset();state.dashTimer=.01;state.enemyShots.push({x:state.player.x,y:state.player.y,vx:0,vy:0,r:100,damage:5,life:1});practiceStep(.05)');
+assert.equal(run('practiceWasHit'),false);
+run('practiceId="pop-candy";practiceReset();state.player.x=practiceEnemy.x;state.player.y=practiceEnemy.y;practiceEnemy.action.warning=.001;practiceStep(.01)');
+assert.equal(run('practiceWasHit'),true);
+run('practiceStats={dodged:0,hit:0,streak:0};for(let i=0;i<10;i++){practiceStartRound();practiceScore();}');assert.equal(run('practiceStats.streak'),10);
+console.log('PASS: real melee/projectile/blast practice hit, zero health loss, dash final-frame immunity, ten-dodge challenge');
+
+// 標準測試僅檢查版面測試腳本語法；真實瀏覽器操作交 Grok 執行 --layout。
+new (require('node:vm').Script)(fs.readFileSync(`${__dirname}/levelup-layout.cjs`,'utf8'));
+
+// 「試這隻」也能練一般國字射擊，實際一輪飛完才結算，不在飛行中重播。
+run('practiceId="jaben";practiceReset()');
+for(let i=0;i<300;i++)run('practiceStep(.05)');
+assert.ok(run('practiceStats.hit+practiceStats.dodged>0'));
+assert.equal(run('state.player.health'),data.tuning.playerHealth);
+console.log('PASS: custom enemy trial uses real basic shot cycle and scoring');

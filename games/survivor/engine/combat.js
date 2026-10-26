@@ -217,6 +217,7 @@ function updateMakerEffects(dt) {
     if(h.warning>0) continue;
     state.enemyHazards.splice(i,1);
     if (h.owner) skillVisual('splash',h.x,h.y,{radius:h.r,color:'#b68159',life:.4});
+    if(state.practiceHit && targetVisible(h) && Math.hypot(deltaX(h.x,state.player.x),deltaY(h.y,state.player.y))<h.r+state.player.r) pacingHurtPlayer(h.damage);
     if(targetVisible(h) && !state.player.damageDisabled && state.dashTimer<=0 && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
       state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
