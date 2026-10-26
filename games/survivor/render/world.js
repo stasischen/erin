@@ -373,10 +373,7 @@ function render() {
   updateCamera();
   ctx.save();
   if(state.zoom) {
-    ctx.setTransform(state.pixelRatio,0,0,state.pixelRatio,0,0);
-    ctx.fillStyle='#142331';ctx.fillRect(0,0,state.screenWidth,state.screenHeight);
     ctx.setTransform(state.pixelRatio*state.zoom,0,0,state.pixelRatio*state.zoom,state.viewLeft*state.pixelRatio,state.viewTop*state.pixelRatio);
-    ctx.beginPath();ctx.rect(0,0,state.width,state.height);ctx.clip();
   }
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();

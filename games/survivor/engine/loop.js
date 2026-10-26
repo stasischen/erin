@@ -42,14 +42,13 @@ function fitVisibleViewport() {
   gameShell.style.top = `${viewport ? viewport.offsetTop : 0}px`;
   gameShell.style.transform = rotated ? "rotate(90deg) translateY(-100%)" : "none";
 }
-// 固定 320000 平方世界單位；向下取四分之一倍，剩餘 CSS 空間留邊。
-// 同樣面積保留裝置長寬比，不讓取整改變遊戲可見面積。
+// 固定 320000 平方世界單位，連續縮放鋪滿整個 Canvas，不取整或留邊。
+// 740×360 手機約顯示 811×395 世界單位；大裝置放大，像素圖關閉平滑。
 function worldViewport(cssWidth, cssHeight) {
-  const raw=Math.sqrt(cssWidth*cssHeight/(800*400));
-  const zoom=Math.max(.25,Math.floor(raw*4)/4);
-  const width=cssWidth/raw,height=cssHeight/raw;
+  const zoom=Math.sqrt(cssWidth*cssHeight/(800*400));
+  const width=cssWidth/zoom,height=cssHeight/zoom;
   return {width,height,zoom,screenWidth:cssWidth,screenHeight:cssHeight,
-    viewLeft:(cssWidth-width*zoom)/2,viewTop:(cssHeight-height*zoom)/2};
+    viewLeft:0,viewTop:0};
 }
 function applyWorldViewport(cssWidth,cssHeight) {
   Object.assign(state,worldViewport(cssWidth,cssHeight));

@@ -4,12 +4,26 @@ const json=code=>JSON.parse(run('JSON.stringify('+code+')'));
 for(const [w,h] of [[740,360],[844,390],[1024,768],[1180,820]]) {
  run(`globalThis.v=worldViewport(${w},${h})`);
  assert.ok(Math.abs(run('v.width*v.height')-320000)<1e-7);
- assert.equal(run('v.zoom*4%1'),0);
- assert.ok(run('v.viewLeft>=0 && v.viewTop>=0 && v.width*v.zoom<=v.screenWidth+.00001 && v.height*v.zoom<=v.screenHeight+.00001'));
+ assert.ok(run('v.width*v.height>=320000*.75 && v.width*v.height<=320000*1.25'));
+ assert.equal(run('v.viewLeft'),0);assert.equal(run('v.viewTop'),0);
+ assert.ok(Math.abs(run('v.width*v.zoom-v.screenWidth'))<1e-7);
+ assert.ok(Math.abs(run('v.height*v.zoom-v.screenHeight'))<1e-7);
+ if(w===740) {
+  // #89 之前為 1:1；兩個方向及總面積均不可變小。
+  assert.ok(run('v.width>=740 && v.height>=360 && v.width*v.height>=740*360'));
+ }
  run(`canvas.clientWidth=${w};canvas.clientHeight=${h};canvas.getBoundingClientRect=()=>({left:20,top:30,right:${w}+20,width:${w},height:${h}});window.innerWidth=${w};window.innerHeight=${h};resize();`);
  const before=json('[state.worldWidth,state.worldHeight]');
+ assert.equal(run('ctx.imageSmoothingEnabled'),false);
+ assert.equal(run('state.screenWidth'),w);assert.equal(run('state.screenHeight'),h);
  // CSS point at player center, then 100 world units to the right.
  assert.ok(Math.abs(run('canvasPoint({clientX:20+state.viewLeft+(state.width/2+100)*state.zoom,clientY:30+state.viewTop+state.height/2*state.zoom}).x-state.width/2')-100)<1e-7);
+ // 任意方向與四角皆能從螢幕座標還原世界座標。
+ for(const [fx,fy] of [[0,0],[1,0],[0,1],[1,1],[.25,.75]]) {
+  run(`globalThis.aim=canvasPoint({clientX:20+${w}*${fx},clientY:30+${h}*${fy}})`);
+  assert.ok(Math.abs(run('aim.x')-run('state.width')*fx)<1e-7);
+  assert.ok(Math.abs(run('aim.y')-run('state.height')*fy)<1e-7);
+ }
  run('resetGame();state.mode="playing";summonTeacher();state.bossIntro=0;');
  assert.equal(run('state.bossZone.radius'),600);
  assert.deepEqual(json('[state.worldWidth,state.worldHeight]'),before);
@@ -47,4 +61,4 @@ for(const protect of ['none','dodge','dash']) {
 // 新欄位皆可安全存取；舊作品缺省遷移，新招也保留統一五積木。
 run('globalThis.d=SurvivorData.defaults();delete d.boss.combat;d.boss.phases.forEach(p=>delete p.speed);d.boss.moves=d.boss.moves.slice(0,9);globalThis.result=SurvivorData.validate(d)');assert.equal(run('result.valid'),true);assert.equal(run('result.data.boss.moves.length'),14);
 for(const expr of ['d.boss.combat.healthPerUpgrade=Infinity','d.boss.phases[2].speed=999','d.bossZone.finalRadius=0'])assert.equal(run(`(()=>{const d=SurvivorData.defaults();${expr};return SurvivorData.validate(d).valid})()`),false);
-console.log('PASS: four equal-area/quantized/letterboxed viewports, world aim, fixed map/zone, pure distance choices/scaled health, offscreen pursuit, five new moves/time boundaries, legacy migration/bounds');
+console.log('PASS: four equal-area/fullscreen viewports, phone minimum view, world aim, fixed map/zone, pure distance choices/scaled health, offscreen pursuit, five new moves/time boundaries, legacy migration/bounds');
