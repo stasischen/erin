@@ -1,5 +1,7 @@
 function summonTeacher() {
-  const position = offscreenSpawn(60); // 老師下方名字也必須在鏡頭外。
+  // 老師只需身體與名字都在鏡頭外，不套小怪的額外 160 格安全距離。
+  // 窄畫面若套用小怪距離，近邊候選會失敗，退到半張世界之外。
+  const position = offscreenSpawn(60, undefined, state.player.r + GAME_DATA.boss.radius);
   if (!position) return;
   playSound("warning");
   state.boss = { ...position, r: GAME_DATA.boss.radius, speed: GAME_DATA.boss.speed, hp: gameSettings.teacherHealth * currentStage().bossHealthScale, maxHp: gameSettings.teacherHealth * currentStage().bossHealthScale, flash: 0, wobble: 0 };

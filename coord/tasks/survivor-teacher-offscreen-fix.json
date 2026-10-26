@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-teacher-offscreen-fix",
+  "title": "小怪獸：老師停在畫面外修正",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-teacher-offscreen-fix",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T020048Z-parent-teacher-offscreen-fix.md",
+  "next": "請 Grok 審查最後實質 SHA。216 組回歸與非版面測試通過；Chrome SIGABRT 待補版面與 iPad 試玩。Godot §11 見交接文件；提交與 PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T02:05:42.114364Z",
+  "updatedBy": "codex"
+}
