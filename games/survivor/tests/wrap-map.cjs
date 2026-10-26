@@ -33,7 +33,8 @@ for (const [px,py,ex,ey] of [[5,H/2,W-15,H/2],[W-5,H/2,15,H/2],[W/2,5,W/2,H-15],
   assert.equal(bodies.length,1,'one visible body across seam');
   assert.ok(json('shadows').some(([x,y]) => Math.abs(x-bodies[0][0])<.01 && Math.abs(y-(bodies[0][1]+17*.85))<.01),'shadow follows same copy');
   const before=run('Math.hypot(deltaX(state.enemies[0].x,state.player.x),deltaY(state.enemies[0].y,state.player.y))');
-  run('tick(.05)');
+  // 舊追逐方向單獨驗證；開啟分離的接縫案例在 body-separation.cjs。
+  run('GAME_DATA.bodySeparation.enabled=false;tick(.05);GAME_DATA.bodySeparation.enabled=true');
   assert.ok(run('Math.hypot(deltaX(state.enemies[0].x,state.player.x),deltaY(state.enemies[0].y,state.player.y))')<before,'enemy walks shortest route');
   assert.equal(run('state.player.x-state.cameraX'),400);
 }

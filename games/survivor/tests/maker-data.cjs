@@ -2,9 +2,9 @@
 const assert=require('node:assert/strict'), fs=require('node:fs');
 const createRun=require('./maker-support.cjs'), traces=require('./maker-traces.cjs');
 const baseline=require('./maker-baseline.json');
-assert.deepEqual(traces(createRun()),baseline,'預設玩法必須符合 153 組固定亂數快照（衝刺升級版）');
+assert.deepEqual(traces(createRun(),true),baseline,'關閉新分離時保留 153 組舊玩法快照');
 // Maker 的預設作品也必須重現普通模式，不能被舊設定污染。
-assert.deepEqual(traces(createRun({maker:true,saved:{'erin-survivor-settings-v3':JSON.stringify({playerHealth:200,enemySpeed:130})}})),baseline);
+assert.deepEqual(traces(createRun({maker:true,saved:{'erin-survivor-settings-v3':JSON.stringify({playerHealth:200,enemySpeed:130})}})),traces(createRun()));
 const run=createRun();
 assert.equal(run('SurvivorData.validate(SurvivorData.defaults()).valid'),true);
 const invalid = [

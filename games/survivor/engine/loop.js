@@ -75,7 +75,7 @@ function resetGame() {
   for (const field of state.fields) state.fieldPool.push(field);
   state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateTimers = {}; state.ultimateVisuals = {}; state.ultimateVisual = null; state.moveRate = 0;
   state.dashCharges = UPGRADE_TUNING.dashCharges; state.dashAttack = 0; state.slowMotion = 0; state.dashGhosts = [];
-  state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
+  state.dashBodyPass = 0; state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
   state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
   state.bomb = null; state.bombBlast = null; state.pointerId = null;
   for (const item of state.projectiles) state.projectilePool.push(item);
@@ -254,7 +254,7 @@ function tick(dt) {
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
-  separateTanks();
+  if(!GAME_DATA.bodySeparation.enabled) separateTanks();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;
@@ -344,7 +344,11 @@ function tick(dt) {
       updateHud();
     }
   }
-  pushEnemyBodies();
+  const bodyPass = dashTime>0 || state.dashBodyPass>0;
+  separateEnemyBodies(dt,{x:oldX,y:oldY},bodyPass);
+  state.dashBodyPass = countdown(state.dashBodyPass,dt);
+  // 保留舊作品「只推開」行為；新分離關閉時才使用，不阻擋衝刺。
+  if(!GAME_DATA.bodySeparation.enabled && !bodyPass) pushEnemyBodies();
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { finishRun(false); return; }

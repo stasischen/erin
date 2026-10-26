@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-body-separation",
+  "title": "主角與怪物身體柔性分離",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-body-separation",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T043448Z-parent-body-separation.md",
+  "next": "請 Grok 獨立審查 erin-watch 最後實質 SHA 並跑 --layout。已完成主角／怪物柔性分離、空間格與候選上限、重型擋路、衝刺與衝刺保護期間穿越、Maker 設定／舊作品遷移，版本 20261026q。node games/survivor/tools/test.cjs 全部通過；未跑 --layout。Godot §11 適用項目、初值、測試調整與差距見 docs/survivor-body-separation-validation.md。請 Erin 試玩怪群、大怪擋路與衝刺結束手感，舊 iPad 流暢度待實機確認；目前無待決定事項。commit、push、PR 由 erin-watch 代勞，未核准上線。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T04:40:27.903085Z",
+  "updatedBy": "codex"
+}

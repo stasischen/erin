@@ -1,6 +1,8 @@
 // 固定視窗、世界位置與亂數 → 老師在鏡頭外進場，邊緣中央 7.5 秒／角落 15 秒內完整可見且可受傷。
 const assert = require('node:assert/strict');
 const run = require('./maker-support.cjs')();
+// 本測試固定主角位置檢查老師進場；分離推移由 body-separation.cjs 檢查。
+run('GAME_DATA.bodySeparation.playerForce=0');
 let cases = 0;
 for (const [width, height] of [[732,310],[800,360],[915,412],[667,375],[1024,768],[120,100]]) {
   for (const position of ['state.worldWidth/2,state.worldHeight/2', '5.123,5.456', 'state.worldWidth-5.123,state.worldHeight-5.456']) {

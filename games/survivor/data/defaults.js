@@ -1920,6 +1920,12 @@ globalThis.SURVIVOR_DEFAULTS = {
       "candy-rain"
     ]
   },
+  "bodySeparation": {
+    "enabled": true,
+    "radiusScale": 1,
+    "playerForce": 1,
+    "enemyForce": 0.25
+  },
   "bodyContact": {
     "pushOnly": false,
     "damageScale": 0.25

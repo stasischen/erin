@@ -65,7 +65,7 @@ assert.equal(run('state.player.health'),78);
 // 沙包仍有輕微碰撞；開關開啟後有推開但不受傷，關閉後恢復。
 for(const [id,hurt] of [['jaben',3.75],['otsubon',3]]) {
  fresh(id,0);run('tick(0)');assert.equal(run('state.player.health'),90-hurt);
- fresh(id,0);run('GAME_DATA.bodyContact.pushOnly=true;tick(0)');assert.equal(run('state.player.health'),90);
+ fresh(id,0);run('GAME_DATA.bodyContact.pushOnly=true;GAME_DATA.bodySeparation.enabled=false;tick(0)');assert.equal(run('state.player.health'),90);
  assert.ok(run('encounterDistance(e,state.player)>=e.r+state.player.r-.001'));
  run('GAME_DATA.bodyContact.pushOnly=false;e.x=state.player.x;e.y=state.player.y;tick(0)');assert.equal(run('state.player.health'),90-hurt);
 }
