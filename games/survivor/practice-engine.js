@@ -47,7 +47,7 @@ drawBlob=function(x,y,r,color,wobble,flash,id,...rest) {
 updateCamera=function(){state.cameraX=practiceHome?practiceHome.x-state.width/2:0;state.cameraY=practiceHome?practiceHome.y-state.height/2:0;};
 canvasPoint=function(event){const r=canvas.getBoundingClientRect();return {x:(event.clientX-r.left)*state.width/r.width,y:(event.clientY-r.top)*state.height/r.height};};
 updateEnemyBehavior=function(e,dt) {
-  if(e!==practiceEnemy) return;
+  if(e!==practiceEnemy) return practiceOriginalBehavior(e,dt);
   const old={x:e.x,y:e.y}, charging=e.action&&e.action.kind==='charge'&&e.action.warning<=dt;
   if(practiceConfig.enabled) {
     if(!practiceConfig.legacy) { if(e.phaseAttack&&e.phaseAttack.phase!=='ready')updatePhasedAttack(e,dt); }
@@ -98,7 +98,7 @@ function practiceReset(keepPosition=false) {
   practiceHome=home||{x:state.player.x,y:state.player.y};updateCamera();
   state.player.x=position?position.x:practiceHome.x-80;state.player.y=position?position.y:practiceHome.y;
   if(keepPosition) {state.joy=joy;state.pointerId=pointerId;state.keys=keys;}
-  state.practiceHitboxes=document.getElementById('practiceHitboxes').checked;
+  state.practiceHitboxes=SurvivorDebugTools.options.hitboxes || document.getElementById('practiceHitboxes').checked;
   state.player.damageDisabled=true;practiceClock=0;practiceHold=0;practiceEnemy=null;
   practiceConfig=practiceRules.model(GAME_DATA,practiceId);
   if(practiceConfig.kind==='weapon') {
@@ -128,6 +128,7 @@ function practiceTimelineState() {
   return {phase:'cooldown',left:Math.max(0,c.cooldown-practiceHold)};
 }
 function practiceStep(dt) {
+  dt=SurvivorDebugTools.step(dt);if(!dt){practicePaint();return;}
   if(state.mode!=='playing') return;
   const c=practiceConfig;
   // 停用遊戲事件與自然生成；不修改共享作品中的設定值。
@@ -165,7 +166,7 @@ function practiceStep(dt) {
     }
   }
 
-  practicePaint();
+  SurvivorDebugTools.sample();practicePaint();
 }
 function practiceBuildTimeline() {
   const line=practiceRules.timeline(practiceConfig,'ready',0);
@@ -176,7 +177,7 @@ function practiceBuildTimeline() {
   });
 }
 function practicePaint() {
-  render();
+  render();SurvivorDebugTools.draw();
   // 免傷仍用正式攻擊碰撞；受擊紅環與文字由練習接合層呈現。
   const px=state.player.x-state.cameraX,py=state.player.y-state.cameraY;
   if(practiceWasHit&&practiceToast>0){ctx.save();ctx.strokeStyle='#ff596d';ctx.lineWidth=5;ctx.beginPath();ctx.arc(px,py,state.player.r+5,0,Math.PI*2);ctx.stroke();if(state.player.hitFlash>0){ctx.fillStyle='rgba(255,50,70,.45)';ctx.fill();}ctx.restore();}
@@ -188,6 +189,7 @@ function practicePaint() {
   document.getElementById('practiceCursor').style.left=(line.progress*100)+'%';
 }
 window.updatePracticeData=function(data) {
+  if(window.captureDebugBefore)window.captureDebugBefore();
   const result=SurvivorData.validate(data);if(!result.valid)return;
   frameElement._practicePayload={data:result.data};
   // 更新既有物件，保留引擎對資料表的引用；不重開 iframe。
@@ -235,6 +237,6 @@ window.addEventListener('resize',()=>{practiceSize();practiceHome=null;practiceR
 window.addEventListener('blur',()=>{state.keys.clear();state.joy=null;state.pointerId=null;if(practiceMini)state.mode='playing';else practiceMenu(true);});
 window.addEventListener('focus',()=>practiceVisibility(true));
 document.addEventListener('visibilitychange',()=>practiceVisibility(!document.hidden));
-practiceSize();practiceReset();practiceButtons();practiceVisibility(true);
+practiceSize();practiceReset();SurvivorDebugTools.mount();practiceButtons();practiceVisibility(true);
 
 window.setPracticeActive=function(active){practiceVisibility(active);if(active&&practiceMini)practiceMenu(false);};

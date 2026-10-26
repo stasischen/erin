@@ -43,12 +43,12 @@ function fireAtNearest(command = null) {
   if (properties.charged) c.chargedUsed = Math.floor(c.kills / r.chargeKills);
   const look = buildAppearance();
   const angle = command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
-  playSound("shoot");
+  feedbackSound(weaponFeedback({charged:autoCharged,heavy:bigBubble}),"shoot");
   const count = cardBlock('multi-water','onShot').actions[0].count;
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const offset = (i - (count - 1) / 2) * cardBlock('multi-water','onShot').actions[0].angle;
     const spread = command && autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
-    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, vy: Math.sin(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + cardBlock('piercing-water','onShot').actions[0].count + (effectLevel('wind-blade') ? cardBlock('wind-blade','onShot').actions[0].count : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * cardBlock('wind-attack','onShot').actions[0].multiplier, hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
+    state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, vy: Math.sin(a) * PROJECTILE_SPEED * cardBlock('wind-attack','onShot').actions[0].multiplier, r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + cardBlock('piercing-water','onShot').actions[0].count + (effectLevel('wind-blade') ? cardBlock('wind-blade','onShot').actions[0].count : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), feedback:feedbackPayload(weaponFeedback({charged:autoCharged,heavy:bigBubble})),rangeLeft: BUILD_TUNING.shotRange * cardBlock('wind-attack','onShot').actions[0].multiplier, hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
   if (!(command && autoCharged)) prepareNeutralShots(angle);
 }
@@ -239,9 +239,9 @@ function updateMakerEffects(dt) {
     if(h.warning>0) continue;
     state.enemyHazards.splice(i,1);
     if (h.owner) skillVisual('splash',h.x,h.y,{radius:h.r,color:'#b68159',life:.4});
-    if(state.practiceHit && targetVisible(h) && Math.hypot(deltaX(h.x,state.player.x),deltaY(h.y,state.player.y))<h.r+state.player.r) pacingHurtPlayer(h.damage);
+    if(state.practiceHit && targetVisible(h) && Math.hypot(deltaX(h.x,state.player.x),deltaY(h.y,state.player.y))<h.r+state.player.r) pacingHurtPlayer(h.damage,h.feedback);
     if(targetVisible(h) && !state.player.damageDisabled && state.dashTimer<=0 && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
-      state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
+      feedbackImpact(h.feedback);state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }
   }

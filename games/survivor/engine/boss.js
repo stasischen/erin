@@ -18,8 +18,9 @@ function clearBossMoves() {
     if (state.enemyShots[i].source === "teacher") state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
 }
-function bossHurtPlayer(damage) {
+function bossHurtPlayer(damage,feedback) {
   if (!state.boss || !targetVisible(state.boss) || state.player.damageDisabled || state.player.invincible > 0) return;
+  feedbackImpact(feedback,false);
   state.player.health = Math.max(0, state.player.health - absorbSchoolHit(damage));
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
   playSound("hurt"); updateHud(); counterDischarge();
@@ -35,7 +36,7 @@ function beginBossMove(id) {
   const b = state.boss && { ...state.boss, x: state.cameraX + state.width / 2 + deltaX(state.boss.x, state.cameraX + state.width / 2), y: state.cameraY + state.height / 2 + deltaY(state.boss.y, state.cameraY + state.height / 2) };
   if (!b || !targetVisible(b) || state.bossMoves.length >= BOSS_TUNING.hazardLimit) return;
   if (["ring","cage"].includes(kind) && Math.min(state.width, state.height) < 196) return; // 太窄就不封路。
-  playSound("warning");
+  feedbackSound(moveFeedback(definition,'move'),'warning');
   const angle = Math.atan2(deltaY(p.y, b.y), deltaX(p.x, b.x));
   const move = takeFromPool(state.bossMovePool, {
     id, kind, x: b.x, y: b.y, angle, warning: definition.warning,
@@ -77,7 +78,7 @@ function fireBossFan(move) {
     if (state.enemyShots.filter(shot => shot.source === "teacher").length >= UPGRADE_TUNING.teacherShotLimit) break;
     const a = move.angle + (i - (move.count - 1) / 2) * spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      dodged: false, phaseShot:false, source: "teacher", x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+      dodged: false, phaseShot:false, source: "teacher", feedback:feedbackPayload(moveFeedback(bossDefinition(move),'move')), x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       r: bossKind(move) === "chalk" ? 10 : 17, text: bossKind(move) === "chalk" ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
       damage: bossDefinition(move).damage, life: 4
     }));
@@ -147,26 +148,26 @@ function updateBoss(dt) {
       move.active = true; move.life = bossKind(move) === "dash" ? Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed : (move.wallDuration || bossDefinition(move).duration);
       if (bossKind(move) === "words" || bossKind(move) === "chalk") { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
       if (bossKind(move) === "summon") for (let n = 0; n < Math.min(10, bossDefinition(move).count + bossDefinition(move).phaseCount * state.bossPhase); n++) spawnEnemy();
-      if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") state.bossShake = BOSS_TUNING.shakeSeconds;
+      if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") bossFeedbackShake(move);
       continue; // 出手畫面至少呈現一幀，再開始範圍命中判斷。
     }
     if (bossKind(move) === "wall") {
-      if (Math.abs(deltaX(wallX(move),state.player.x)) < state.player.r + 10 && deltaY(state.player.y,move.y) >= 0 && deltaY(state.player.y,move.y) <= move.wallHeight) bossHurtPlayer(bossDefinition(move).damage);
+      if (Math.abs(deltaX(wallX(move),state.player.x)) < state.player.r + 10 && deltaY(state.player.y,move.y) >= 0 && deltaY(state.player.y,move.y) <= move.wallHeight) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "chalk") {
       move.pulse = countdown(move.pulse, dt);
       if (move.pulse <= 0) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
     } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
-      for (const point of move.points) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      for (const point of move.points) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "cage") {
       const radius = move.radius * Math.max(0,move.life/bossDefinition(move).duration);
-      if (Math.abs(Math.hypot(deltaX(state.player.x,move.x),deltaY(state.player.y,move.y))-radius) < state.player.r+10) bossHurtPlayer(bossDefinition(move).damage);
+      if (Math.abs(Math.hypot(deltaX(state.player.x,move.x),deltaY(state.player.y,move.y))-radius) < state.player.r+10) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "ring") {
-      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      for (const point of ringPoints(move)) if (targetVisible(point) && Math.hypot(deltaX(state.player.x, point.x), deltaY(state.player.y, point.y)) < point.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     } else if (bossKind(move) === "dash") {
       const dx = deltaX(move.endX, b.x), dy = deltaY(move.endY, b.y), length = Math.hypot(dx, dy);
       const step = Math.min(length, bossDefinition(move).speed * dt);
       if (length > 0) { b.x += dx / length * step; b.y += dy / length * step; clampToMap(b); }
-      if (Math.hypot(deltaX(b.x, state.player.x), deltaY(b.y, state.player.y)) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage);
+      if (Math.hypot(deltaX(b.x, state.player.x), deltaY(b.y, state.player.y)) < b.r + state.player.r) bossHurtPlayer(bossDefinition(move).damage,moveFeedback(bossDefinition(move),'move'));
     }
     if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
     move.life = countdown(move.life, dt);

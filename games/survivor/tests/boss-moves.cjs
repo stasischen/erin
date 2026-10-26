@@ -113,13 +113,15 @@ run('state.mode="levelup"; tick(1);'); assert.equal(run('JSON.stringify(state.bo
 // 小畫面不出無法安全通過的罰站圈；完整遊戲迴圈也能連續出招與轉場。
 fresh(); run('state.height=180; beginBossMove("ring");'); assert.equal(run('state.bossMoves.length'),0);
 fresh(); run(`state.player.invincible=999; state.bossRest=0;
+  globalThis.bossTestExperienceNeeded=experienceNeeded;experienceNeeded=()=>Infinity; // 此段只測 Boss 長時間排程，排除隨機掉落觸發升級。
   for(let i=0;i<2400;i++) {
     if(i===800) state.boss.hp=1300;
     if(i===1600) state.boss.hp=600;
     tick(.05); if(i%30===0) render();
     if(state.mode!=="playing") throw new Error("unexpected mode "+state.mode);
     if(state.bossMoves.length>8 || state.enemyShots.length>48) throw new Error("cap exceeded");
-  }`);
+  }
+  experienceNeeded=bossTestExperienceNeeded;`);
 assert.equal(run('state.bossPhase'),3);
 // 上限、池重用、重開、勝敗清理及可關閉震動。
 fresh(); run('for(let i=0;i<100;i++) beginBossMove("call");'); assert.equal(run('state.bossMoves.length'),8);

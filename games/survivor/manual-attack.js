@@ -66,10 +66,10 @@ function releaseManualAttack(kind) {
 function executeManualSpecial(event) {
   if(event.kind==='leap') {
     const swing={angle:event.angle,arc:Math.PI*.8,radius:event.range,damage:effectiveDamage()*event.damageMultiplier,push:45,heavy:true,shape:'sector',width:20};
-    skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,colors:['water'],life:.3});
+    skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,...(moveFeedback(activeWeapon(),'special').slash?{}:{slash:false}),colors:['water'],life:.3});
     for(const t of combatTargets().filter(t=>SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,swing))) {
       const hp=t.hp;hitBuildTarget(t,swing.damage);
-      if(t.hp<hp)meleeImpact(t,swing);
+      if(t.hp<hp)meleeImpact(t,{...swing,feedbackId:'special'});
       if(state.mode!=='playing')return;
       if(t.alive||t===state.boss){shiftTarget(t,state.player.x,state.player.y,swing.push);t.stunTimer=Math.max(t.stunTimer||0,.8);}
     }
@@ -78,10 +78,10 @@ function executeManualSpecial(event) {
       const angle=event.angle+(i-(event.count-1)/2)*event.spread;
       state.projectiles.push(takeFromPool(state.projectilePool,{x:state.player.x,y:state.player.y,vx:Math.cos(angle)*PROJECTILE_SPEED,vy:Math.sin(angle)*PROJECTILE_SPEED,
         r:event.kind==='sword-wave'?16:12,damage:effectiveDamage()*event.damageMultiplier,pierce:event.kind==='sword-wave'?99:0,piercing:event.kind==='sword-wave',
-        rangeLeft:event.range,colors:buildAppearance().colors,schools:[],hitList:[],alive:true,push:0,charged:false,blade:event.kind==='sword-wave',bigBubble:false,autoCharged:false,boosted:false,bounces:0,fragment:false,maker:false}));
+        feedback:feedbackPayload(weaponFeedback({feedbackId:'special'})),rangeLeft:event.range,colors:buildAppearance().colors,schools:[],hitList:[],alive:true,push:0,charged:false,blade:event.kind==='sword-wave',bigBubble:false,autoCharged:false,boosted:false,bounces:0,fragment:false,maker:false}));
     }
   }
-  playSound('shoot');
+  feedbackSound(moveFeedback(activeWeapon(),'special'),'shoot');
 }
 function advanceManualTiming(dt) {
   let a=state.manualTiming;
@@ -139,8 +139,10 @@ function drawManualAim() {
   if(!manualMode())return;
   const hold=manualHolds.special||manualHolds.attack;
   if(!hold||hold.angle===null)return;
+  if(!moveFeedback(activeWeapon(),manualHolds.special?'special':'primary').hint)return;
   const angle=hold.angle,x=state.player.x,y=state.player.y,length=85;
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle='#fff0a5';ctx.lineWidth=4;
+  warningFeedback(moveFeedback(activeWeapon(),manualHolds.special?'special':'primary'),state.elapsed);
   ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(length,0);ctx.lineTo(length-14,-12);ctx.moveTo(length,0);ctx.lineTo(length-14,12);ctx.stroke();ctx.restore();
 }
 for(const [kind,button] of Object.entries(manualButtons)) {

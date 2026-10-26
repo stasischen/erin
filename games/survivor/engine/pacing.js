@@ -113,7 +113,7 @@ function updateEnemyBehavior(e,dt) {
   if(e.behavior==='charger' && distance<420) e.action={kind:'charge',warning:cfg.warning,angle:Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x))};
   if(e.behavior==='bomber' && distance<cfg.blastRadius+70) e.action={kind:'blast',warning:cfg.fuseSeconds};
   if(e.behavior==='support') e.action={kind:'shield',warning:cfg.warning};
-  if(e.action) playSound('warning');
+  if(e.action) feedbackSound(enemyFeedback(e,'legacy'),'warning');
 }
 function enemyDirection(e,distance) {
   if(e.action || e.phaseAttack && !['cooldown','ready'].includes(e.phaseAttack.phase) || e.behavior==='still') return 0;
@@ -137,9 +137,10 @@ function splitJelly(e) {
   for(let i=0;i<2 && state.jellyQueue.length<18;i++) state.jellyQueue.push({typeId:e.typeId,x:e.x+(i?10:-10),y:e.y});
 }
 
-function pacingHurtPlayer(damage) {
-  if (state.practiceHit) { if(state.dashTimer<=0 && state.player.invincible<=0) state.practiceHit(); return; }
+function pacingHurtPlayer(damage,feedback) {
+  if (state.practiceHit) { if(state.dashTimer<=0 && state.player.invincible<=0) {state.practiceHit();feedbackImpact(feedback);} return; }
   if(state.player.damageDisabled || state.dashTimer>0 || state.player.invincible>0) return;
+  feedbackImpact(feedback);
   state.player.health=Math.max(0,state.player.health-absorbSchoolHit(damage));
   state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;
   playSound('hurt'); updateHud(); counterDischarge();
@@ -156,7 +157,7 @@ function updatePhasedAttack(e,dt) {
     if(encounterDistance(e,state.player)>config.triggerDistance) return false;
     a={...SurvivorTiming.start(config),x:e.x,y:e.y,
       angle:Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x)),config:{...config},hit:false};
-    e.phaseAttack=a;playSound('warning');return true;
+    e.phaseAttack=a;feedbackSound(enemyFeedback(e),'warning');return true;
   }
   a=SurvivorPacing.advanceAttack(a,a.config,dt);e.phaseAttack=a;
   const c=a.config;
@@ -164,7 +165,7 @@ function updatePhasedAttack(e,dt) {
     if(c.shape==='projectiles' && a.entered) {
       for(const angle of SurvivorPacing.attackAngles(c,a.angle)) {
         if(state.enemyShots.filter(s=>s.source==='book').length>=UPGRADE_TUNING.enemyShotLimit) break;
-        state.enemyShots.push(takeFromPool(state.enemyShotPool,{source:'book',phaseShot:true,dodged:false,
+        state.enemyShots.push(takeFromPool(state.enemyShotPool,{source:'book',phaseShot:true,dodged:false,feedback:feedbackPayload(enemyFeedback(e)),
           x:a.x,y:a.y,vx:Math.cos(angle)*c.speed,vy:Math.sin(angle)*c.speed,
           r:c.radius,damage:c.damage,candy:c.radial,text:'●',life:Math.min(SurvivorTiming.segments(c)[1].seconds,c.length/c.speed)}));
       }
@@ -172,7 +173,7 @@ function updatePhasedAttack(e,dt) {
       const dx=deltaX(state.player.x,a.x),dy=deltaY(state.player.y,a.y);
       const x=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),y=-dx*Math.sin(a.angle)+dy*Math.cos(a.angle);
       if(SurvivorPacing.inShape(c,x,y)) {
-        a.hit=true;pacingHurtPlayer(c.damage);
+        a.hit=true;pacingHurtPlayer(c.damage,enemyFeedback(e));
       }
     }
   }

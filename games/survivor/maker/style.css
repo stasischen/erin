@@ -99,7 +99,8 @@
 :where(.game-shell[data-short~="compact"]) .maker-room { padding: 4px max(4px,var(--safe-right)) 4px max(4px,var(--safe-left)); gap: 4px; grid-template-rows: 44px 44px minmax(0,1fr) 54px; }
 :where(.game-shell[data-short~="compact"]) .maker-editor, :where(.game-shell[data-short~="compact"]) .maker-editor[data-preview="closed"] { grid-template-columns: 72px minmax(0,1fr); gap: 4px; }
 :where(.game-shell[data-short~="compact"]) .maker-items button { font-size: 11px; }
-:where(.game-shell[data-short~="compact"]) .maker-preview { position: absolute; z-index: 2; top: 52px; right: 0; bottom: 0; width: min(300px,75%); box-shadow: -4px 0 8px #071522; }
+:where(.game-shell[data-short~="compact"]) .maker-editor[data-preview="open"] { grid-template-columns: 72px minmax(0,1fr) minmax(170px,30%); }
+:where(.game-shell[data-short~="compact"]) .maker-preview { position: static; width: auto; box-shadow: none; }
 :where(.game-shell[data-short~="compact"]) .maker-tabs button { min-width: 64px; font-size: 13px; }
 :where(.game-shell[data-short~="compact"]) .maker-toolbar strong { font-size: 16px; }
 :where(.game-shell[data-short~="compact"]) #makerStatus { font-size: 12px; }

@@ -73,14 +73,30 @@
     {id:'dash',label:'衝刺斬',trigger:['dashThrust'],shape:[],timing:[],effect:[]}
   ];
   const WEAPON_TRIGGERS={primary:'attackReleaseOrTimer',combo:'attackNumber',charge:'chargeReady',special:'specialRelease',dash:'dashAttack'};
+  // 回饋 v1：倍率套在既有表現上；缺省欄位讓舊作品保持原手感。
+  const FEEDBACK_BOUNDS={hitStop:[0,2,.1],shake:[0,2,.1]};
+  const WARNING_STYLES={original:'原來樣式',outline:'只有外框',pulse:'閃動外框'};
+  const FEEDBACK_SOUNDS={shoot:'出招',warning:'預警',hit:'命中',water:'水花',lightning:'閃電',none:'靜音'};
+  function feedback(value,base) {
+    blockObject(value,['cue','sound','warningStyle','slash','hitStop','shake','hint'],'回饋');
+    const f={warningStyle:'original',slash:true,hitStop:base.sound==='warning'?0:1,shake:base.sound==='warning'?0:1,hint:true,...base,...value};
+    if(f.cue!==base.cue || !Object.keys(FEEDBACK_SOUNDS).includes(f.sound) || !Object.keys(WARNING_STYLES).includes(f.warningStyle)) throw new Error('回饋選項不支援');
+    for(const key of ['slash','hint']) if(typeof f[key]!=='boolean') throw new Error('回饋開關不正確');
+    for(const key of Object.keys(FEEDBACK_BOUNDS)) if(typeof f[key]!=='number'||!Number.isFinite(f[key])||f[key]<0||f[key]>2) throw new Error('回饋強度超出範圍');
+    return f;
+  }
   function weaponCue(weapon,id) {return id==='special'?weapon.specialKind:weapon.kind==='melee'?'hammer-swing':'projectile';}
+  function weaponFeedbackBase(weapon,id) {
+    const impact=weapon.kind==='melee' && (id!=='special' || weapon.specialKind==='leap');
+    return {cue:weaponCue(weapon,id),sound:'shoot',hitStop:impact?1:0,shake:impact?1:0};
+  }
   function weaponStacks(weapon) {
     return {version:1, moves:WEAPON_STACKS.map(def=>{
       const move={id:def.id};
       for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].filter(k=>weapon[k]!==undefined).map(k=>[k,copy(weapon[k])]));
       move.trigger.event=WEAPON_TRIGGERS[def.id];
       if(def.id==='primary') move.timing.phases=copy(weapon.timing);
-      move.feedback={cue:weaponCue(weapon,def.id),sound:'shoot'};
+      move.feedback=feedback((weapon.feedback||{})[def.id]||{}, weaponFeedbackBase(weapon,def.id));
       return move;
     })};
   }
@@ -107,8 +123,8 @@
         if(!move.timing.phases) throw new Error('武器缺少時機積木');
         result.timing=move.timing.phases;
       }
-      const feedback=move.feedback;
-      if(!feedback || Object.keys(feedback).length!==2 || feedback.cue!==weaponCue(weapon,def.id) || feedback.sound!=='shoot') throw new Error('武器回饋積木不支援');
+      if(!result.feedback) result.feedback={};
+      result.feedback={...result.feedback,[def.id]:feedback(move.feedback,weaponFeedbackBase(weapon,def.id))};
     });
     return result;
   }
@@ -125,7 +141,7 @@
       const move={id:def.id};
       for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].map(key=>[key,copy(part==='timing' && def.id==='phase' ? (source.timing || source)[key] : source[key])]));
       move.trigger.event=def.event;
-      move.feedback={cue:def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning',sound:'warning'};
+      move.feedback=feedback((owner.feedback||{})[def.id]||{}, {cue:def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning',sound:'warning',shake:def.id==='move'?1:0});
       return move;
     })};
   }
@@ -151,9 +167,8 @@
         }
       }
       if(move.trigger.event!==def.event) throw new Error('招式觸發不支援');
-      blockObject(move.feedback,['cue','sound'],'回饋');
       const cue=def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning';
-      if(move.feedback.cue!==cue || move.feedback.sound!=='warning') throw new Error('招式回饋不支援');
+      result.feedback={...result.feedback,[def.id]:feedback(move.feedback,{cue,sound:'warning',shake:def.id==='move'?1:0})};
       if(def.id==='phase') {source.timing=Object.fromEntries(def.timing.map(k=>[k,source[k]]));result.phaseAttack=source;}
       else if(def.id==='legacy') result.attack=source;
       else Object.assign(result,source);
@@ -220,7 +235,9 @@
           for(const [key,b] of Object.entries(SPECIAL_BOUNDS)) if(compiled[key]!==undefined) weapon[key]=num(compiled[key],b[0],b[1],key,key==='specialCount');
           if(compiled.specialKind!==undefined) weapon.specialKind=choice(compiled.specialKind,[weapon.specialKind],'特殊招種類');
         }
+        if(source) weapon.feedback=compileWeapon({...weapon,...source}).feedback;
         weapon.blocks=weaponStacks(weapon);
+        weapon.feedback=Object.fromEntries(weapon.blocks.moves.map(m=>[m.id,m.feedback]));
       }
       // 舊作品缺省補齊；半徑與死區使用遊戲畫面單位。
       if (input.joystick !== undefined) {
@@ -373,7 +390,10 @@
           if(a.shape==='ring' && a.innerRadius>=a.radius) fail('圓環內圈需小於外圈');
         }
         if(!result.phaseAttack.timing) result.phaseAttack.timing=timing(result.phaseAttack,Object.fromEntries(Object.keys(TIMING_BOUNDS).map(k=>[k,PHASE_BOUNDS[k]])));
+        result.feedback=e.feedback;
         result.blocks=enemyStacks(result);
+        result.feedback=Object.fromEntries(result.blocks.moves.map(m=>[m.id,m.feedback]));
+        result.phaseAttack.feedback=result.feedback.phase;
         return result;
       });
       const b = { ...input.boss };
@@ -387,7 +407,9 @@
         const m = compileBossMove(b.moves[i]); if (!m || m.id !== base.id) fail('招式識別碼不正確');
         const result = { ...base, name: name(m.name, '招式名稱', 24), kind: choice(m.kind, Object.keys(KINDS), '招式積木'), minPhase: num(m.minPhase, 1, 3, '開始階段', true), phaseCount: num(m.phaseCount, 0, 1, '每階段增加數量', true) };
         for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOUNDS[key][0], BOUNDS[key][1], key, key === 'count');
+        result.feedback=m.feedback;
         result.blocks=bossStacks(result);
+        result.feedback=Object.fromEntries(result.blocks.moves.map(m=>[m.id,m.feedback]));
         return result;
       });
       // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
@@ -433,5 +455,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);
