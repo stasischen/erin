@@ -53,15 +53,6 @@
 .maker-slider::-moz-range-track { height: 8px; background: #091a2b; border: 2px solid #75adc8; }
 .maker-slider::-moz-range-thumb { width: 20px; height: 26px; border: 3px solid #d1efff; border-radius: 0; background: #2176a0; }
 .maker-room [role="switch"][aria-checked="true"] { background: #23604f; border-color: #a3f0ca; }
-.maker-editor:has(.maker-card-workspace) { overflow: hidden; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; }
-.maker-editor .maker-card-workspace { height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); grid-template-rows: auto minmax(0, 1fr); gap: 6px; }
-.maker-card-workspace > h2 { grid-column: 1 / -1; font-size: 16px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; }
-.maker-card-workspace > .maker-tree { min-height: 0; overflow: auto; touch-action: pan-y; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.maker-card-workspace > .maker-card-edit { min-height: 0; overflow: auto; touch-action: pan-y; }
-.maker-card-workspace .maker-branch .upgrade-card { min-height: 64px; margin-bottom: 8px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; font-size: 13px; }
-.maker-card-workspace .maker-card-edit { padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border: 2px solid #ffe4a1; }
-.maker-card-workspace .maker-card-edit > h3 { margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; }
-
 /* 共用尺寸旗標：compact */
 :where(.game-shell[data-short~="compact"]) .maker-room { gap: 4px; }
 :where(.game-shell[data-short~="compact"]) .maker-footer { padding-top: 4px; }
@@ -83,3 +74,33 @@
 .enemy-live-preview iframe{display:block;width:100%;height:100%;border:1px solid #557482}
 .enemy-preview-toggle{margin:8px 0;max-width:100%}
 :where(.game-shell[data-short~="compact"]) .enemy-live-preview{height:160px}
+
+/* 六個分類固定在頂端；只建立目前選中的編輯面板。 */
+.maker-room { grid-template-columns: minmax(0,1fr); grid-template-rows: 44px 48px minmax(0,1fr) 56px; }
+.maker-tabs { grid-column: 1 / -1; flex-direction: row; overflow-y: hidden; overflow-x: auto; touch-action: pan-x; padding: 0 0 4px; gap: 4px; }
+.maker-tabs button { flex: 1 0 auto; text-align: center; padding: 4px 8px; }
+.maker-editor { position: relative; display: grid; grid-template-columns: 108px minmax(0,1fr) minmax(220px,30%); gap: 8px; overflow: hidden; padding: 0; }
+.maker-editor[data-preview="closed"] { grid-template-columns: 108px minmax(0,1fr); }
+.maker-items, .maker-content, .maker-preview { min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 3px 5px 20px 0; }
+.maker-items { display: flex; flex-direction: column; gap: 6px; }
+.maker-items button { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; overflow-wrap: anywhere; font-size: 13px; padding: 6px 3px; }
+.maker-content .panel { margin: 6px 0; padding: 10px; }
+.maker-content .grid { grid-template-columns: repeat(auto-fit,minmax(min(200px,100%),1fr)); }
+.maker-item-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.maker-item-heading strong { margin-right: auto; }
+.maker-item-heading button { padding: 4px 8px; font-size: 14px; }
+.maker-preview { background: #091a2b; padding: 8px; border: 1px solid #547c96; }
+.maker-preview[hidden] { display: none; }
+.maker-preview h3 { margin: 0; }
+.maker-preview .skill-preview-host { width: 100%; }
+.maker-trial { position: absolute; inset: 0; z-index: 55; background: #102538; padding: 8px; display: flex; flex-direction: column; overflow: auto; }
+.maker-trial > .skill-preview-host { flex: 1; min-height: 180px; }
+
+:where(.game-shell[data-short~="compact"]) .maker-room { padding: 4px max(4px,var(--safe-right)) 4px max(4px,var(--safe-left)); gap: 4px; grid-template-rows: 44px 44px minmax(0,1fr) 54px; }
+:where(.game-shell[data-short~="compact"]) .maker-editor, :where(.game-shell[data-short~="compact"]) .maker-editor[data-preview="closed"] { grid-template-columns: 72px minmax(0,1fr); gap: 4px; }
+:where(.game-shell[data-short~="compact"]) .maker-items button { font-size: 11px; }
+:where(.game-shell[data-short~="compact"]) .maker-preview { position: absolute; z-index: 2; top: 52px; right: 0; bottom: 0; width: min(300px,75%); box-shadow: -4px 0 8px #071522; }
+:where(.game-shell[data-short~="compact"]) .maker-tabs button { min-width: 64px; font-size: 13px; }
+:where(.game-shell[data-short~="compact"]) .maker-toolbar strong { font-size: 16px; }
+:where(.game-shell[data-short~="compact"]) #makerStatus { font-size: 12px; }
+:where(.game-shell[data-short~="compact"]) #play { min-width: 90px; font-size: 18px; }

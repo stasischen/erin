@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-maker-shell",
+  "title": "Maker 六分頁與單項編輯外殼",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-maker-shell",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T085530Z-parent-maker-shell.md",
+  "next": "實作完成，一般測試 node games/survivor/tools/test.cjs 全數通過（未跑 --layout）。請 erin-watch 提交、push 並開 PR，交 Grok 審查最後 SHA；請在 1024×461、740×360 實際操作六分頁、單項編輯、預覽／試玩、預設設定保持展開與玩家設定末端可觸及。Godot §11 適用結果與既有差距見 docs/survivor-maker-shell-validation.md；資料格式與戰鬥規則未改。沒有待 Erin 決定事項。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T09:05:42.931793Z",
+  "updatedBy": "codex"
+}
