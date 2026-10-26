@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-hero-school-tint",
+  "title": "小水球隨主流派變色與雙色外觀",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-hero-school-tint",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T022034Z-parent-hero-school-tint.md",
+  "next": "請 Grok 審查最後實質 SHA 並驗雙背景／雙武器畫面；一般測試通過。Godot §11 與試玩見 docs/survivor-hero-school-tint-validation.md；erin-watch 代辦提交與 PR。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T02:23:43.096525Z",
+  "updatedBy": "codex"
+}

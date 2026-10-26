@@ -58,7 +58,8 @@ globalThis.SurvivorSchools = (() => {
     const ranked = ids.slice().sort((a,b) => (owned[b] || 0) - (owned[a] || 0) || (a === (run && run.starter) ? -1 : b === (run && run.starter) ? 1 : 0));
     const main = ranked.find(id => owned[id]) || 'water';
     const fusion = cards.find(c => c.schools && upgrades[c.id]);
-    return { main, colors: fusion ? fusion.schools : [main], forms: ids.filter(id => (owned[id] || 0) >= rules.transformCards) };
+    const colors = fusion ? fusion.schools : [main];
+    return { main, colors, bodyColors: fusion || ranked.some(id => owned[id]) ? colors : [], forms: ids.filter(id => (owned[id] || 0) >= rules.transformCards) };
   }
   function shot(number, kills, chargedUsed, powers, rules) {
     const big = powers.drop && number % rules.bigDropEvery === 0;

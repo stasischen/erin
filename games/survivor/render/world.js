@@ -179,11 +179,15 @@ function drawHero() {
   else {
     // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
     ctx.imageSmoothingEnabled = false;
-    drawOutlinedSprite(ctx, hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy, -20, -30, 40, 48);
+    drawOutlinedSprite(ctx, heroSchoolPicture(hurt, look.bodyColors), -20, -30, 40, 48);
   }
-  if (look.forms.length || state.schoolRun && state.schoolRun.starter) {
-    ctx.fillStyle=color;ctx.globalAlpha *= .8;ctx.beginPath();ctx.arc(0,1,14,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.fillRect(-8,-5,6,7);ctx.fillRect(3,-5,6,7);ctx.fillStyle='#182e43';ctx.fillRect(-5,-3,3,4);ctx.fillRect(6,-3,3,4);
+  if (look.bodyColors.includes('thunder')) {
+    // 第一張雷卡就帶火花；變身後原有的環繞光點仍保留。
+    ctx.fillStyle=BUILD_TUNING.thunder.color;
+    for (const side of [-1,1]) {
+      const y=Math.round(Math.sin(state.elapsed*6+side)*5);
+      ctx.fillRect(side*24-1,y-2,2,6);ctx.fillRect(side*24-3,y,6,2);
+    }
   }
   ctx.restore();
 }
