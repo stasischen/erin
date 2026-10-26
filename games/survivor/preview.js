@@ -18,6 +18,11 @@
         'water-attack': () => `打中濺出 ${t.splashBaseRadius+t.splashPerLevel*n} 格大的水花。`,
         'water-skill': () => `水球和泡泡留下水窪，怪物變慢 ${b.slowSeconds} 秒。`,
         'water-dash': () => `衝刺留下水痕，怪物只剩 ${Math.round(b.slowMultiplier*100)}% 速度。`,
+        'water-drop': () => `每第 ${data.schoolRules.bigDropEvery} 下普攻放大到 ${data.schoolRules.bigDropSize} 倍，傷害 ${data.schoolRules.bigDropDamage} 倍並推開 ${data.schoolRules.bigDropPush} 格。`,
+        'water-fountain': () => `每 ${data.schoolRules.fountainSeconds} 秒推開 ${data.schoolRules.fountainRadius} 格內的怪，推 ${data.schoolRules.fountainPush} 格並弄濕。`,
+        'water-bubble': () => '衝刺結束取得泡泡盾，擋下一次傷害後消失。',
+        'water-wet': () => `濕潤的怪多受 ${Math.round(data.schoolRules.wetDamage*100)}% 傷害。`,
+        'water-rain': () => `每 ${data.schoolRules.rainSeconds} 秒下雨 ${data.schoolRules.rainDuration} 秒，讓全場怪物變慢又濕潤。`,
         'water-ultimate': () => `每 ${b.ultimateSeconds} 秒一道巨浪掃過怪物。`,
         'wind-attack': () => `水球飛得更快、更遠，每級加快 ${Math.round(b.windSpeed*100)}%。`,
         'wind-dash': () => `衝刺留下旋風，把怪推開 ${b.pushDistance} 格。`,
@@ -27,7 +32,7 @@
         'thunder-skill': () => `泡泡炸開會放電，怪物暈 ${b.stunSeconds} 秒。`,
         'thunder-counter': () => `受傷時放電，反擊 ${b.counterRadius} 格內的怪。`,
         'thunder-ultimate': () => `每 ${b.cloudSeconds} 秒雷雲劈一隻怪。`,
-        'fusion-puddle': () => `水窪讓怪變慢，也會跳電打旁邊的怪。`,
+        'fusion-puddle': () => `水窪讓怪變慢，也對水窪裡的怪追加雷傷。`,
         'fusion-storm': () => `衝刺同時留下旋風和水窪，推開怪也讓牠變慢。`,
         'thunder-charge': () => `每擊倒 ${data.schoolRules.chargeKills} 隻怪蓄電，下一次普攻傷害變成 ${data.schoolRules.chargeDamage} 倍並跳電。`,
         'thunder-rod': () => `每 ${data.schoolRules.rodSeconds} 秒放下避雷針，在 ${data.schoolRules.rodRadius} 格內每 ${data.schoolRules.rodTick} 秒打 ${data.schoolRules.rodDamage} 滴血。`,
@@ -81,7 +86,7 @@
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261026af', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261026ag', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

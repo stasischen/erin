@@ -35,6 +35,39 @@ globalThis.SurvivorEffectBlocks = (() => {
       interval:ref('schoolRules.rodTick'),radius:ref('schoolRules.rodRadius'),damage:ref('schoolRules.rodDamage')}]}]},
     {feature:'thunder-step',rules:[{trigger:'onDashCross',conditions:[{type:'segmentTouching'}],actions:[{type:'stun',duration:ref('schoolRules.thunderStepStun')}]}]}
   );
+  // 水流派沿用舊卡 id、場地生命週期及事件順序；公式只在這份共用資料定義。
+  const waterField = {type:'field',school:'water',spacing:ref('build.trailSpacing'),radius:ref('build.fieldRadius'),
+    radiusGrowth:ref('build.fieldRadiusGrowth'),seconds:ref('build.fieldSeconds'),interval:ref('build.fieldInterval'),limit:ref('build.fieldLimit')};
+  const waterTick={trigger:'onFieldTick',actions:[
+    {type:'damage',amount:op('multiply',ref('build.fieldDamage'),op('max',1,arg('level')))},
+    {type:'wet',duration:ref('schoolRules.wetSeconds')},{type:'slow',duration:ref('build.slowSeconds'),multiplier:0}]};
+  recipes.push(
+    {feature:'water-attack',rules:[{trigger:'onWaterHit',conditions:[{type:'radius',strict:true,
+      radius:op('add',ref('tuning.splashBaseRadius'),op('multiply',arg('level'),ref('tuning.splashPerLevel')))}],actions:[
+      {type:'damage',amount:op('multiply',arg('damage'),op('add',ref('build.splashDamageBase'),op('multiply',arg('level'),ref('build.splashDamageGrowth'))))}]}]},
+    {feature:'water-skill',rules:[
+      {trigger:'onWaterHit',actions:[waterField]}, {trigger:'onSkillBlast',actions:[waterField]},
+      {trigger:'onShotHit',actions:[{type:'wet',duration:ref('schoolRules.wetSeconds')}]},
+      waterTick]},
+    {feature:'water-dash',rules:[{trigger:'onDashTrail',actions:[waterField]},waterTick]},
+    {feature:'fusion-puddle',rules:[{trigger:'onWaterHit',actions:[waterField]},
+      {trigger:'onFieldTick',actions:[{type:'damage',amount:op('multiply',ref('build.fieldDamage'),arg('level'))}]}]},
+    {feature:'water-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.ultimateSeconds'),actions:[
+      {type:'damage',amount:op('multiply',ref('build.ultimateDamage'),op('add',1,op('multiply',op('subtract',arg('level'),1),ref('build.ultimateGrowth'))))}]}]},
+    {feature:'water-drop',rules:[{trigger:'onShot',conditions:[{type:'shotMultiple',every:ref('schoolRules.bigDropEvery')}],actions:[
+      {type:'big-drop',size:ref('schoolRules.bigDropSize'),damage:ref('schoolRules.bigDropDamage'),push:ref('schoolRules.bigDropPush')}]}]},
+    {feature:'water-fountain',rules:[{trigger:'onPulse',interval:ref('schoolRules.fountainSeconds'),conditions:[{type:'radius',radius:ref('schoolRules.fountainRadius')}],actions:[
+      {type:'push',distance:ref('schoolRules.fountainPush')},{type:'wet',duration:ref('schoolRules.wetSeconds')}]}]},
+    {feature:'water-bubble',rules:[{trigger:'onDashEnd',actions:[{type:'bubble',active:true}]},
+      {trigger:'onHurt',conditions:[{type:'positiveDamage'},{type:'bubbleActive'}],actions:[{type:'absorb',damage:0,active:false}]}]},
+    {feature:'water-wet',rules:[{trigger:'onDamage',conditions:[{type:'wetTarget'}],actions:[
+      {type:'damage-multiplier',multiplier:op('add',1,ref('schoolRules.wetDamage'))}]}]},
+    {feature:'water-rain',rules:[{trigger:'onPulse',interval:ref('schoolRules.rainSeconds'),actions:[
+      {type:'rain',duration:ref('schoolRules.rainDuration'),cueRadius:ref('schoolRules.fountainRadius')},
+      {type:'slow',duration:ref('schoolRules.rainDuration'),multiplier:0},{type:'wet',duration:ref('schoolRules.wetSeconds')}]},
+      {trigger:'onRainTick',actions:[{type:'slow',duration:op('multiply',arg('dt'),2),multiplier:0},
+        {type:'wet',duration:ref('schoolRules.wetSeconds')}]}]}
+  );
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
   function collect(node) {
     if (!node || typeof node!=='object') return;
@@ -42,7 +75,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     Object.values(node).forEach(collect);
   }
   recipes.forEach(collect);
-  const inputs=new Set(['level','transformed','radius','damage']);
+  const inputs=new Set(['level','transformed','radius','damage','dt']);
   function value(expression, data, context={}) {
     if (typeof expression === 'number' && Number.isFinite(expression)) return expression;
     if (expression && refs.has(expression.ref)) {
@@ -73,6 +106,10 @@ globalThis.SurvivorEffectBlocks = (() => {
     return rule ? resolve(rule,data,context) : null;
   }
   function matches(condition,target,player={r:0},end={x:0,y:0}) {
+    if(condition.type==='positiveDamage') return target.damage>0;
+    if(condition.type==='bubbleActive') return !!target.bubble;
+    if(condition.type==='wetTarget') return target.wetTimer>0;
+    if(condition.type==='shotMultiple') return target.number % condition.every === 0;
     if(condition.type==='radius') return condition.strict ? Math.hypot(target.dx,target.dy)<condition.radius : Math.hypot(target.dx,target.dy)<=condition.radius+(condition.includeTargetRadius?target.r:0);
     if(condition.type==='segmentTouching') {
       const length=end.x*end.x+end.y*end.y;
@@ -84,6 +121,10 @@ globalThis.SurvivorEffectBlocks = (() => {
   function select(rule,targets,draw) {
     const random=(rule.conditions||[]).find(c=>c.type==='randomTarget');
     return random ? (targets.length ? [targets[Math.floor(draw*targets.length)]] : []) : targets.slice();
+  }
+  function drop(number,owned,data) {
+    const rule=event('water-drop','onShot',data);
+    return owned && matches(rule.conditions[0],{number}) ? rule.actions[0] : {size:1,damage:1,push:0};
   }
   function charge(kills,used,owned,data) {
     const rule=event('thunder-charge','onShot',data);
@@ -108,7 +149,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     const timers={...input.timers}, events=[];
     for (const recipe of definitions) if (input.levels[recipe.feature]) for (const rule of recipe.rules || []) {
       if (rule.trigger !== 'onTimer') {
-        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross'].includes(rule.trigger)) continue;
+        if (['onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick'].includes(rule.trigger)) continue;
         throw new Error('Unsupported effect trigger');
       }
       const seconds=value(rule.interval,input.data);
@@ -144,5 +185,5 @@ globalThis.SurvivorEffectBlocks = (() => {
     return {state:{...p,number,idle:0,charge:charged?0:p.charge},
       event:{type:'weapon-attack',weaponId:weapon.id,number,finisher:weapon.comboEnabled && number===weapon.comboEvery,charged}};
   }
-  return {version:2,recipes,modify,step,attackTick,attack,event,matches,charge,select};
+  return {version:2,recipes,modify,step,attackTick,attack,event,matches,charge,select,drop};
 })();
