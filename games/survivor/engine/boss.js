@@ -235,7 +235,7 @@ function updateBossZone(dt) {
   }
   // 紫霧是持續小傷害，不觸發反擊、連續音效或受傷無敵；衝刺仍可保護。
   if (outsideBossZone() && !state.player.damageDisabled && state.player.invincible <= 0 && config.damage > 0) {
-    state.player.health = Math.max(0, state.player.health - config.damage * Math.min(dt, MAX_DT));
+    state.player.health = Math.max(0, state.player.health - SurvivorWeapons.receivedDamage(config.damage, activeWeapon()) * Math.min(dt, MAX_DT));
     updateHud();
     if (state.player.health <= 0) finishRun(false);
   }

@@ -2,6 +2,10 @@
 // schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
+  "weapons": [
+    {"id":"water-ball","name":"水球","icon":"big-water","description":"自動發射水球，遠遠打倒敵人。","kind":"projectile"},
+    {"id":"candy-hammer","name":"棒棒糖錘","icon":"candy-hammer","description":"自動朝最近的小怪揮錘，每第四下轉一圈，受到的傷害減少 15%。","kind":"melee","interval":0.7,"arcDegrees":120,"radius":70,"damageMultiplier":1.6,"push":15,"spinEvery":4,"damageReduction":0.15}
+  ],
   "visuals": {
     "spriteOutline": true
   },

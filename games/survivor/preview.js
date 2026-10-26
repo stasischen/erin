@@ -56,6 +56,10 @@
     }
     if (spec.id === 'heal') return `補回 ${Math.ceil(data.tuning.playerHealth/data.build.shieldHealthDivisor)} 滴血。`;
     const card = data.cards.find(c => c.id === spec.id), effects = spec.kind === 'effect' ? [card.effects[spec.index]] : card.effects;
+    if (spec.weaponId === 'candy-hammer' && globalThis.SurvivorWeapons) {
+      const note = SurvivorWeapons.cardNote(card,data.weapons.find(w=>w.id===spec.weaponId));
+      if (note) return note;
+    }
     return effects.map(e => effectDescription(e, data, spec.level || 1)).join(' ') + (card.slot === 'dash' ? ` 有 ${data.tuning.dashCharges} 格衝刺，衝刺無敵，結束後第一顆水球強化。` : '');
   }
   function stop() {
@@ -72,7 +76,7 @@
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261026j', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261026k', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

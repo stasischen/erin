@@ -36,12 +36,13 @@ window.addEventListener('resize',()=>{sizePreview();resetPreview();paintPreview(
 function resetPreview() {
   resetGame(); state.mode = 'playing'; settingsPanel.hidden = true;
   state.spawnTimer = 999; state.shotTimer = 999;
+  if (GAME_DATA.weapons.some(w=>w.id===previewSpec.weaponId)) state.weaponId=previewSpec.weaponId;
   // 免傷獨立於受傷／閃爍計時，衝刺也不會切成受傷表情。
   state.player.damageDisabled = true;
   previewTime = 0; previewFired = false;
   const p = state.player;
   previewOrigin = {x:p.x + (previewMove ? 0 : PREVIEW_COMPOSITION.originX), y:p.y}; updateCamera();
-  state.enemies = PREVIEW_COMPOSITION.targetDistances.map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
+  state.enemies = (activeWeapon().kind==='melee' ? [45,60,75] : PREVIEW_COMPOSITION.targetDistances).map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
   if (previewSpec.kind === 'move') {
     state.enemies = [];
     state.boss = {x:p.x-160,y:p.y,r:32,hp:2000,maxHp:2000,speed:0,wobble:0,flash:0};

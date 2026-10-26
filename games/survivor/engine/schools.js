@@ -56,7 +56,7 @@ globalThis.SurvivorSchools = (() => {
   function appearance(cards, upgrades, run, rules) {
     const owned = counts(cards, upgrades), ids = run ? run.schools : Object.keys(owned);
     const ranked = ids.slice().sort((a,b) => (owned[b] || 0) - (owned[a] || 0) || (a === (run && run.starter) ? -1 : b === (run && run.starter) ? 1 : 0));
-    const main = ranked[0] || 'water';
+    const main = ranked.find(id => owned[id]) || 'water';
     const fusion = cards.find(c => c.schools && upgrades[c.id]);
     return { main, colors: fusion ? fusion.schools : [main], forms: ids.filter(id => (owned[id] || 0) >= rules.transformCards) };
   }

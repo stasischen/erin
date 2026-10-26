@@ -289,7 +289,8 @@ function drawSkillVisuals() {
   for (const v of state.vfx) {
     ctx.save(); ctx.globalAlpha = Math.min(1, v.life / v.maxLife * 2);
     const progress = 1 - v.life / v.maxLife;
-    if (v.kind === "maker-ring") {
+    if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
+    else if (v.kind === "maker-ring") {
       ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); ctx.stroke();
       ctx.strokeStyle="#16804b";ctx.beginPath();ctx.arc(v.x,v.y,v.radius,-v.gap/2,v.gap/2);ctx.stroke();
     } else if (v.kind === "lightning") drawBolt(v.x, v.y, v.x2, v.y2);
@@ -446,7 +447,7 @@ function render() {
       ctx.save(); ctx.globalAlpha = g.life / .22 * .25;
       ctx.translate(g.x-state.player.x,g.y-state.player.y); drawHero();ctx.restore();
     }
-    drawHero();
+    drawHero(); drawHeldWeapon();
     for (const effect of state.effects) {
       const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
       if (effect.kind === "water-hit") {

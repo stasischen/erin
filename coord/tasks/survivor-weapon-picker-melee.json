@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-weapon-picker-melee",
+  "title": "小怪獸：開場選武器與棒棒糖錘",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-weapon-picker-melee",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T020911Z-parent-weapon-picker-melee.md",
+  "next": "請 Grok 審查最後實質 SHA 並跑六種版面；--layout 交給 Grok，Codex 不重試。一般測試及新武器／Maker／展示案例通過。Godot §11、卡片對應及待試玩項目見 docs/survivor-weapon-picker-melee-validation.md。提交、push、PR 由 erin-watch 代辦，再請 Erin 試玩近戰手感與平衡。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T02:16:32.940063Z",
+  "updatedBy": "codex"
+}

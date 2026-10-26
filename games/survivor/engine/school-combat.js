@@ -15,7 +15,7 @@ function absorbSchoolHit(damage) {
     skillVisual('splash',state.player.x,state.player.y,{radius:50,color:BUILD_TUNING.water.color});
     return 0;
   }
-  return damage;
+  return SurvivorWeapons.receivedDamage(damage, activeWeapon());
 }
 function schoolWindWall() { return state.schoolCombat && effectLevel('wind-eye') && state.schoolCombat.still >= GAME_DATA.schoolRules.eyeWait; }
 function schoolDashEnded() {
@@ -33,7 +33,7 @@ function schoolShotHit(shot, target) {
   if ((shot.schools || []).includes('water') || effectLevel('water-skill')) target.wetTimer = r.wetSeconds;
   if (shot.push) shiftTarget(target, shot.x - shot.vx, shot.y - shot.vy, shot.push);
   if (shot.charged) { lightning(state.player.x,state.player.y,target.x,target.y); schoolEffect('thunder',target,target.x,target.y,shot.damage,shot.hitList); }
-  if (effectLevel('wind-blade') && shot.pierce > 0 && !shot.blade) {
+  if (!shot.melee && effectLevel('wind-blade') && shot.pierce > 0 && !shot.blade) {
     const other = combatTargets().find(e => !shot.hitList.includes(e) && Math.hypot(deltaX(e.x,target.x),deltaY(e.y,target.y)) <= r.windBladeRange);
     skillVisual('gust',target.x,target.y,{x2:target.x+shot.vx*.15,y2:target.y+shot.vy*.15,color:BUILD_TUNING.wind.color});
     if (other && state.projectiles.length < PROJECTILE_LIMIT) {
