@@ -46,6 +46,12 @@ const scenarios=[
   `state.projectiles=[{x:30,y:40,r:8,alive:true,colors:['wind','thunder'],vx:40,vy:10,piercing:true,charged:true}];state.gems=[{x:30,y:50,wobble:.3}];state.effects=[{kind:'water-hit',x:25,y:35,life:.2,maxLife:.4,text:'1',color:'blue'}];render()`
 ];
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+// Normalize battle numbers to six decimals before hashing; Math.sin/cos tails vary by runtime.
+// Canvas command hashes remain exact. This is a test-only comparison policy.
+const battleHash=value=>hash(JSON.parse(JSON.stringify(value,(_key,item)=>
+ typeof item==='number'?Number(item.toFixed(6)):item)));
+assert.equal(battleHash({shots:[[-110.82700212995589]]}),battleHash({shots:[[-110.8270021299559]]}));
+assert.notEqual(battleHash({shots:[[-110.827002]]}),battleHash({shots:[[-110.827004]]}));
 function snapshots(r) {
  return scenarios.map(code=>{
   r("state.width=800;state.height=600;resetGame();state.mode='playing';state.elapsed=.5;Math.random=()=>.5;"+code);
@@ -56,7 +62,8 @@ function snapshots(r) {
 const fixture=path.join(__dirname,'art-baseline.json');
 const expected=JSON.parse(fs.readFileSync(fixture));
 assert.deepEqual(snapshots(createRun()),expected.canvas);
-assert.equal(hash(require('./maker-traces.cjs')(createRun())),expected.battle);
+assert.equal(expected.battleNumberDecimals,6);
+assert.equal(battleHash(require('./maker-traces.cjs')(createRun())),expected.battle);
 // Visual frame selection cannot enter an active damage phase or emit a hit.
 run("globalThis.before=JSON.stringify(SurvivorTiming.advance({phase:'windup',left:.5},{windup:.5,active:.2,recovery:.3,cooldown:1},.1));testArt.assets['character/player'].animations.active.fps=999");
 run("SurvivorArt.lookup('character/player','active',99,testArt)");

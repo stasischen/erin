@@ -76,7 +76,7 @@ Maker 現存作品先經 `data/schema.js` 的驗證／舊作品遷移，再由�
 
 ## 等價測試與 §11 交接
 
-`tests/art-baseline.json` 記錄本卡改動前來源（分支起點 `6d28ed2838c3af7201305d8332d34faf72017b3c`）的六組 Canvas 指令 SHA-256 與既有 153 組固定亂數戰鬥 trace 的 SHA-256，沒有截圖或個資。六組包含主角／怪物／地面、移動受傷、閃電／旋風／影子、VFX、近戰、完整場景的水球／寶石／命中特效。測試比較重構後固定輸入的輸出；其他既有測試繼續覆蓋老師預警、積木、Maker、觸控等行為。
+`tests/art-baseline.json` 記錄本卡改動前來源（分支起點 `6d28ed2838c3af7201305d8332d34faf72017b3c`）的六組 Canvas 指令 SHA-256 與既有 153 組固定亂數戰鬥 trace 的 SHA-256，沒有截圖或個資。六組包含主角／怪物／地面、移動受傷、閃電／旋風／影子、VFX、近戰、完整場景的水球／寶石／命中特效。戰鬥紀錄在 hash 前將所有數字四捨五入到小數六位（`Number(value.toFixed(6))`），容許不同執行環境的三角函式尾差；Canvas 指令 hash 仍逐值精確比較。`battleNumberDecimals: 6` 記錄此比較規則。修正後的戰鬥基準仍從上述改動前 SHA 的原始碼重新產生，並非採用重構後結果。測試也確認 Grok 提供的兩個尾差值 hash 相同，而相差 0.000002 的值仍可辨識。這只是測試正規化，不改遊戲數值；日後 Godot 等價測試也應明確約定浮點容差。測試比較重構後固定輸入的輸出；其他既有測試繼續覆蓋老師預警、積木、Maker、觸控等行為。
 
 `tests/art-manifest.cjs` 另測純查詢、非法路徑、未知 id／動畫、負時間、循環／末幀、描述不洩漏可變參照、模擬圖片載入與裁格／錨點／快取／缺格回退，以及動畫 fps 不影響時機狀態。Godot 將相同輸入與預期數字移到 GdUnit 案例，以 `godot --headless --path <project> ...` 執行；GdUnit 的實際 runner 參數留待選定 Godot／GdUnit 版本，這次未執行 Godot 測試。
 
@@ -88,3 +88,5 @@ Maker 現存作品先經 `data/schema.js` 的驗證／舊作品遷移，再由�
 Codex 只執行 `node games/survivor/tools/test.cjs`（不加 --layout）。Grok 應補 740×360、1024×461、1180×820 操作與 layout：遊戲、Maker 造型、技能展示、招式練習、HUD 圓形像素按鈕，以及老師／小怪的預警是否與原先相同。
 
 本卡驗證結果：`node games/survivor/tools/test.cjs` 全部通過（exit 0）；`git diff --check` 通過。未執行 --layout 或 Godot；實機與三尺寸操作交 Grok。提交、push、開 PR 由 erin-watch 執行。
+
+Grok 浮點尾差回饋修正：本輪僅調整測試、基準與交接文件，沒有更改遊戲資源，資源版本維持 20261026aw。Node 22 本機一般測試結果及 Node 24 待複驗項目見任務卡；Grok 先前的畫面與操作檢查見原審查紀錄，本輪未自行審查或執行 layout。
