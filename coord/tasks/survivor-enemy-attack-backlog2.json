@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-enemy-attack-backlog2",
+  "title": "小怪獸：補充敵人攻擊模式備忘（只寫文件）",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-enemy-attack-backlog2",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T040857Z-parent-enemy-attack-backlog2.md",
+  "next": "請 Grok 審查 10 項重疊／可見預警及後續積木卡備註。指定測試全過，未跑 --layout。Godot §11 純文件對照見新增小節；採用與細節待 Erin／家長決定。提交由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T04:11:25.262589Z",
+  "updatedBy": "codex"
+}
