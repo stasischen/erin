@@ -199,3 +199,9 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 
 /* 傳說卡在選卡時持續金色光暈；圓形圖示沿用升級畫面。 */
 .upgrade-card[data-rarity="legendary"] { border-color:#ffdc83; box-shadow:0 0 15px 4px #ffc94d88,0 4px 0 #efc971; }
+
+/* 開場只選武器；沿用六種版面的圓形像素按鈕與鍵盤操作。 */
+.weapon-picker #upgradePreview, .weapon-picker .tree-details { display: none; }
+.weapon-picker .upgrade-workspace { grid-template-columns: 1fr; }
+.weapon-picker #upgradeRequirements { display: none; }
+.upgrade-panel.weapon-picker .upgrade-card { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 50%; border-width: 3px; }

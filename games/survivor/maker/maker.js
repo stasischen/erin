@@ -195,10 +195,13 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
+    const wf=grid(panel('棒棒糖錘數值'));
+    const weaponNames={interval:'揮錘間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
+    for(const [key,bounds] of Object.entries(api.WEAPON_BOUNDS)) range(wf,draft.weapons.find(w=>w.kind==='melee'),key,bounds,weaponNames[key]);
     const nf=grid(panel('中立道具數值'));
     const names={"itemsPerRun": "每場道具卡池張數", "bombChance": "炸彈掉落機率", "bombDelay": "炸彈等待秒", "bombRadius": "炸彈半徑", "bombDamage": "炸彈傷害", "birdRadius": "小鳥繞行半徑", "birdReach": "小鳥啄擊距離", "birdSeconds": "小鳥攻擊間隔秒", "birdDamage": "小鳥傷害", "bankEvery": "金庫每幾顆球成長", "bankStep": "金庫每次傷害加成", "bankCap": "金庫傷害加成上限", "splitDamage": "分裂傷害倍率", "splitAngle": "分裂角度", "magnetMultiplier": "磁鐵拾取倍率", "crownDamage": "王冠傷害加成", "crownHealth": "王冠減少最大血量", "luckyRareMultiplier": "幸運草稀有權重倍率", "cookieKills": "餅乾回血所需擊倒數"};
     for(const [key,bounds] of Object.entries(api.NEUTRAL_BOUNDS)) range(nf,draft.neutralRules,key,bounds,names[key]);
-    const schoolPanel=panel('流派與精靈數值'), schoolFields=grid(schoolPanel);
+    const schoolPanel=panel('流派數值'), schoolFields=grid(schoolPanel);
     for (const [key,bounds] of Object.entries(api.SCHOOL_BOUNDS)) range(schoolFields,draft.schoolRules,key,bounds,SCHOOL_NAMES[key]);
     for(const [key,title] of [['tuning','基本玩法'],['build','流派共用數值'],['bossTuning','魔王共用數值']]) {
       const p=panel(title), fields=grid(p);

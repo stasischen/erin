@@ -90,3 +90,13 @@ ui.click('穩定出怪');ui.ids.save.fire('click');
 const pacingData=JSON.parse(ui.storage['erin-survivor-maker-v1']);assert.equal(pacingData.pacing.density,.6);assert.equal(pacingData.pacing.pattern,'steady');assert.equal(pacingData.stages[0].waves[0].every,2.5);
 ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='波次型態：穩定出怪'));
 console.log('PASS: Maker density/strong/weak/cycle/event count, pattern selector, stage wave intervals and all eight speed controls persist');
+
+// 錘子數值的真實 Maker 控制項可存檔與重載。
+ui=setup();ui.tab('numbers');
+for(const [label,value] of [['揮錘間隔秒',1],['揮擊距離',100],['每幾下旋轉一圈',3],['受到傷害減少比例',.2]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+ui.ids.save.fire('click');const weapons=JSON.parse(ui.storage['erin-survivor-maker-v1']).weapons;
+assert.equal(weapons[1].interval,1);assert.equal(weapons[1].radius,100);assert.equal(weapons[1].spinEvery,3);assert.equal(weapons[1].damageReduction,.2);
+ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='揮擊距離').value,100);
+console.log('PASS: Maker melee cadence/range/spin/mitigation controls persist and reload');

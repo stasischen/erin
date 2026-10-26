@@ -23,6 +23,7 @@ function closestEnemy() {
 }
 
 function fireAtNearest() {
+  if (activeWeapon().kind === "melee") { swingAtNearest(); return; }
   const target = closestEnemy();
   if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
   const boosted = state.dashAttack > 0 && state.dashTimer <= 0;
@@ -113,7 +114,7 @@ function effectLevel(feature) {
   return Math.min(5, UPGRADES.reduce((total, card) => total + upgradeLevel(card.id) * card.effects.reduce((n, effect) => n + (effect.feature === feature ? effect.power : 0), 0), 0));
 }
 function effectiveDamage() { return PROJECTILE_DAMAGE * (1 + effectLevel("big-water") * UPGRADE_TUNING.damagePerLevel); }
-function effectiveShotInterval() { return Math.max(0.12, SHOT_INTERVAL * (1 - effectLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / (1 + (state.moveRate || 0) * effectLevel("wind-speed") * BUILD_TUNING.movingRate)); }
+function effectiveShotInterval() { return Math.max(0.12, (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL) * (1 - effectLevel("rapid-water") * UPGRADE_TUNING.fireRateReduction) / (1 + (state.moveRate || 0) * effectLevel("wind-speed") * BUILD_TUNING.movingRate)); }
 function maxPlayerHealth() { return Math.max(1, PLAYER_HEALTH + effectLevel("bubble-shield") * Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor) - (effectLevel("item-crown") ? GAME_DATA.neutralRules.crownHealth : 0)); }
 function addHealEffect() {
   if (state.effects.length >= 90) return;

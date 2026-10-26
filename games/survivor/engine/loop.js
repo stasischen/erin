@@ -68,7 +68,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.pickingSpirit = false; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
+  state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
   state.vfx = [];
@@ -113,7 +113,7 @@ function startGame() {
   SurvivorIcons.set(pauseButton, "settings");
   state.lastTime = performance.now();
   scheduleFrame();
-  if (PREVIEW_MODE) spawnEnemy(); else showSpiritChoices();
+  if (PREVIEW_MODE) spawnEnemy(); else showWeaponChoices();
   updateActionControls();
   playSound("click");
 }
@@ -121,9 +121,9 @@ function startGame() {
 function finishRun(won) {
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
+    const progress = { weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
     resetGame();
-    Object.assign(state, { stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
+    Object.assign(state, { weaponId: progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
@@ -234,7 +234,7 @@ function tick(dt) {
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= dt;
-  if (state.shotTimer <= 0) { fireAtNearest(); state.shotTimer += effectiveShotInterval(); }
+  if (state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval(); }
   for (const enemy of state.enemies) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);

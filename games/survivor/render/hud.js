@@ -18,7 +18,7 @@ function updateHud() {
     slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;
     if (!PREVIEW_MODE && globalThis.SurvivorPreview) UPGRADES.filter(card => upgradeLevel(card.id)).forEach(card => {
       const button = document.createElement('button'); button.type = 'button'; button.textContent = card.name + '・看效果';
-      button.addEventListener('click', () => SurvivorPreview.mount(document.getElementById('ownedPreview'), GAME_DATA, {kind:'card',id:card.id,level:upgradeLevel(card.id)}));
+      button.addEventListener('click', () => SurvivorPreview.mount(document.getElementById('ownedPreview'), GAME_DATA, {kind:'card',id:card.id,level:upgradeLevel(card.id),weaponId:state.weaponId}));
       slots.appendChild(button);
     });
   }

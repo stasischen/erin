@@ -50,9 +50,22 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   for(let i=0;i<100;i++){try{if(await evaluate("typeof showUpgradeChoices==='function' && document.readyState==='complete'"))break;}catch{}await new Promise(resolve=>setTimeout(resolve,20));}
   assert.equal(await evaluate("window.Survivor.engine.loop.resetGame === resetGame && window.Survivor.ui.levelup.showUpgradeChoices === showUpgradeChoices"),true,'共用清單與命名空間確實載入');
   await evaluate("startGame();true");
-  assert.equal(await evaluate(`(()=>{if(!state.pickingSpirit||state.pendingChoices.length!==3)throw Error('缺少起始精靈');for(const n of document.querySelectorAll('#upgradeCards button')){const r=n.getBoundingClientRect();if(r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1||Math.min(r.width,r.height)<64)throw Error('精靈按鈕不完整');if(!n.querySelector('.pixel-icon')||getComputedStyle(n).borderRadius==='0px')throw Error('精靈要用圓形點陣圖示');}return document.querySelector('#rerollUpgrade').hidden;})()`),true);
+  assert.equal(await evaluate(`(()=>{
+    if(!state.pickingWeapon||state.pendingChoices.length!==2)throw Error('缺少武器選擇');
+    for(const selector of ['#upgradePanel','#upgradeDetails','#confirmUpgrade','#upgradeCards button:first-child','#upgradeCards button:last-child']) {
+      const n=document.querySelector(selector),r=n.getBoundingClientRect();
+      if(r.width<=0||r.height<=0||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('武器選擇不完整 '+selector);
+      if(selector.includes('button') || selector==='#confirmUpgrade') {
+        if(Math.min(r.width,r.height)<64 || Math.abs(r.width-r.height)>1)throw Error('武器按鈕需為至少64px圓形');
+        if(!n.querySelector('.pixel-icon')||getComputedStyle(n).borderRadius!=='50%'||n.textContent.trim())throw Error('武器要用圓形純點陣圖示');
+        if(!n.contains(document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2)))throw Error('武器按鈕被遮住');
+      }
+    }
+    const details=document.querySelector('#upgradeDetails');if(details.scrollHeight>details.clientHeight+1)throw Error('武器說明需完整顯示');
+    return document.querySelector('#rerollUpgrade').hidden;
+  })()`),true);
   await touch('#upgradeCards button:nth-child(2)');await touch('#confirmUpgrade');
-  assert.equal(await evaluate("state.mode==='playing'&&!!state.schoolRun.starter&&Object.keys(state.upgrades).length===1"),true);
+  assert.equal(await evaluate("state.mode==='playing'&&state.weaponId==='candy-hammer'&&state.schoolRun.starter===null&&Object.keys(state.upgrades).length===0"),true);
   await evaluate("resetGame();state.pendingChoices=UPGRADES.filter(c=>c.tier==='fusion');showUpgradeChoices();true");
   const layout=await evaluate(geometry);
   await evaluate("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();true");

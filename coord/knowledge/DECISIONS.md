@@ -74,3 +74,5 @@
 - 2026-10-26：家長同意先記錄八種小怪行為、120 秒出怪時間軸、主題怪加隨機兩種、事件池抽兩種及高低波交替；共同規則為畫面外生成、攻擊有預警、全程保留沙包怪。只寫文件，未實作；事件抽選與時間軸等未定細節留待 Erin 與家長確認。來源：`coord/inbox/done/20261025T190155Z-parent-enemy-pacing-plan.md`；完整備忘見 `docs/survivor-skill-backlog.md`「小怪行為與出怪節奏（備忘，不實作）」。
 
 - 2026-10-26：家長要求「先這樣做一版 之後再看會不會太密」，授權實作八種小怪行為、120 秒節奏、每關主題加隨機兩種與兩次抽選事件，數值由 Codex 先訂並可在 Maker 調整；明確允許果凍子體出現在死亡位置。初版範圍、工程初值、移植對照與待試玩事項見 `docs/survivor-enemy-pacing-build-validation.md`；不視為 Erin 已確認平衡或家長已核准上線。來源：`coord/inbox/done/20261026T014019Z-parent-enemy-pacing-build.md`。
+
+- 2026-10-26：家長要求移除起始精靈選擇，改為開場選水球或棒棒糖錘，流派由升級取得的流派卡形成。依指定初值製作 0.7 秒／120 度／70 世界單位／1.6 倍傷害、每第四下全周、持錘減傷 15% 的近戰初版，數值可由 Maker 調整；卡片對應、未適用的彈牆／分裂及待試玩手感見 `docs/survivor-weapon-picker-melee-validation.md`。家長另指示這張卡的真實 Chrome `--layout` 交 Grok，Codex 只跑一般測試、不重試。尚待 Grok 審查及 Erin 試玩，未核准上線。（來源：`coord/inbox/done/20261026T020911Z-parent-weapon-picker-melee.md`、`coord/inbox/done/20261026T021322Z-grok-weapon-picker-melee-no-layout.md`）
