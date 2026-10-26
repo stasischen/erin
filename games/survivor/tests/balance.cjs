@@ -78,7 +78,7 @@ assert.equal(run('state.player.health'), 78);
 for (const [type, damage] of [['jaben', 15], ['otsubon', 12]]) {
   fresh();
   run(`state.elapsed = state.stageElapsed = ${type === 'jaben' ? 0 : 60}; Math.random = () => ${type === 'jaben' ? 0.99 : 0}; spawnEnemy({typeId:"${type}"}); Math.random = Object.getPrototypeOf(Math).random; Object.assign(state.enemies[0], { x: state.player.x, y: state.player.y, speed: 0 }); tick(0);`);
-  assert.equal(run('state.player.health'), 90 - damage);
+  assert.equal(run('state.player.health'), 90 - damage*.25);
   assert.equal(run('state.player.invincible'), 1);
 }
 // 現存敵人也隨時間加速（60 秒時 1.10 倍）。

@@ -41,7 +41,7 @@ function updateBookShooting(dt) {
   if (!ready.length) return;
   const allowed = ready.filter(e => {
     const type=ENEMY_TYPES.find(t=>t.id===e.typeId);
-    return type && type.attack.type!=="none" && state.level >= (MAKER_MODE || e.typeId!=="jaben" && e.typeId!=="otsubon" ? type.attack.level : gameSettings.enemyShootLevel);
+    return type && !type.phaseAttack.enabled && type.attack.type!=="none" && state.level >= (MAKER_MODE || e.typeId!=="jaben" && e.typeId!=="otsubon" ? type.attack.level : gameSettings.enemyShootLevel);
   });
   if (!allowed.length) return;
   const enemy = allowed.find(e=>e.shotPrepared) || allowed[Math.floor(Math.random() * allowed.length)];
@@ -59,7 +59,7 @@ function updateBookShooting(dt) {
     if (state.enemyShots.filter(s => s.source === "book").length >= UPGRADE_TUNING.enemyShotLimit) break;
     const a = angle + (n - (attack.count - 1) / 2) * attack.spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      dodged: false, source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
+      dodged: false, phaseShot:false, source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
       text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: attack.radius, damage: attack.damage
     }));
   }

@@ -47,6 +47,6 @@ preview('stepPreview(.26);paintPreview()');assert.equal(preview('state.weaponId'
 console.log('PASS: equipped hammer preview uses real melee targets, hits and rendering');
 
 // 真實接觸傷害與 tick 中的最後一擊，不能繼續更新已換場的狀態。
-fresh();run('state.enemies=[book(0)];state.enemies[0].damage=20;globalThis.health=state.player.health;tick(0)');assert.equal(run('health-state.player.health'),17);
+fresh();run('state.enemies=[book(0)];state.enemies[0].damage=20;globalThis.health=state.player.health;tick(0)');assert.equal(run('health-state.player.health'),4.25);
 fresh();run('state.stageIndex=STAGES.length-1;state.enemies=[];summonTeacher();state.bossIntro=0;state.boss.x=state.player.x+40;state.boss.y=state.player.y;state.boss.hp=1;state.shotTimer=0;tick(0)');assert.equal(run('state.mode'),'won');
 console.log('PASS: live contact mitigation and final boss melee kill through tick');

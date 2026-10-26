@@ -110,3 +110,16 @@ assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).joystick,{foll
 ui=setup({saved:ui.storage});ui.tab('numbers');
 assert.ok(ui.nodes().some(n=>n._text==='搖桿跟隨：關'&&n.attrs['aria-checked']==='false'));
 console.log('PASS: Maker joystick switch/sliders save and reopen');
+
+// 身體／招式分開的實際控制項：編輯、儲存及重載。
+ui=setup();ui.tab('enemies');ui.click('碰撞只會推開，不會受傷：關');
+for(const [label,value] of [['身體傷害倍率（所有小怪，Boss 除外）',.5],['起手預警秒數',1.5],['收招停頓秒數',1],['四周子彈缺口角度',90]]) {
+ const slider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(slider,label);slider.value=value;slider.fire('input');
+}
+ui.click('使用分階段攻擊：關');ui.ids.save.fire('click');
+const phaseData=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.deepEqual(phaseData.bodyContact,{pushOnly:true,damageScale:.5});
+assert.equal(phaseData.enemies[0].phaseAttack.enabled,true);assert.equal(phaseData.enemies[0].phaseAttack.windup,1.5);
+assert.equal(phaseData.enemies[0].phaseAttack.recovery,1);assert.equal(phaseData.enemies[0].phaseAttack.gapDegrees,90);
+ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='碰撞只會推開，不會受傷：開'&&n.attrs['aria-checked']==='true'));
+console.log('PASS: Maker body push switch, damage scale, phase timing/shape parameters, enabling attack, save/reopen');

@@ -160,6 +160,10 @@
   }
 
   function drawEnemies() {
+    const body=grid(panel('怪物身體碰撞'));
+    const toggle=(parent,label,obj,key)=>{const b=button(parent,label+'：'+(obj[key]?'開':'關'),()=>{obj[key]=!obj[key];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(obj[key]));};
+    toggle(body,'碰撞只會推開，不會受傷',draft.bodyContact,'pushOnly');
+    range(body,draft.bodyContact,'damageScale',[0,1,.05],'身體傷害倍率（所有小怪，Boss 除外）');
     const pacing = grid(panel('出怪節奏'));
     select(pacing,'波次型態',draft.pacing,'pattern',{alternating:'強弱交替',steady:'穩定出怪'});
     const names = {density:'出怪密度倍率',strongScale:'強波密度倍率',weakScale:'喘息波密度倍率',cycleSeconds:'強弱交替秒數',eventCount:'每次事件怪物數',eventSeconds:'事件進場秒數',warning:'招式預警秒數',chargeSpeed:'衝撞速度',chargeSeconds:'衝撞持續秒數',fuseSeconds:'跳跳糖引信（固定兩秒）',blastRadius:'自爆半徑',blastDamage:'自爆對主角傷害',blastEnemyDamage:'自爆對怪物傷害',shieldRadius:'仙子護盾範圍',shieldSeconds:'護盾施放間隔秒數',shieldHits:'護盾擋住幾下'};
@@ -174,6 +178,13 @@
       const p = panel(e.name); const portrait = el('canvas', undefined, p); portrait.className = 'maker-portrait'; portrait.width = 128; portrait.height = 100; portrait.setAttribute('aria-label', e.name + '角色預覽'); const preview = portrait.getContext('2d'); preview.imageSmoothingEnabled = false; drawBlob(64, 50, e.radius, e.color, 0, false, e.id, preview, e.shadowSize, 0, e.spriteId); const fields = grid(p); text(fields, '怪物名稱', e, 'name'); range(fields, e, 'hp'); range(fields, e, 'speed', [0,170,5], '移動速度'); range(fields, e, 'radius', [10,35,1], '身體大小'); range(fields, e, 'damage', [0,40,1], '碰撞傷害'); range(fields, e, 'shadowSize', [.3,1.8,.1], '影子寬度倍率');
       monsterPicker(fields, e);
       select(fields, '移動方式', e, 'behavior', api.BEHAVIORS);
+      const phase=el('fieldset',undefined,p);el('legend','起手 → 生效 → 收招 → 冷卻',phase);
+      toggle(phase,'使用分階段攻擊',e.phaseAttack,'enabled');
+      select(phase,'預警與命中形狀',e.phaseAttack,'shape',api.PHASE_SHAPES);
+      toggle(phase,'子彈向四周發射（留缺口）',e.phaseAttack,'radial');
+      const phaseNames={radius:'半徑／子彈半徑／直線半寬',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',windup:'起手預警秒數',active:'生效秒數（子彈最長壽命）',recovery:'收招停頓秒數',cooldown:'冷卻秒數',damage:'攻擊傷害',triggerDistance:'觸發距離',speed:'子彈速度',count:'子彈數',gapDegrees:'四周子彈缺口角度'};
+      for(const [key,bounds] of Object.entries(api.PHASE_BOUNDS)) range(phase,e.phaseAttack,key,bounds,phaseNames[key]);
+      el('p','分階段攻擊開啟時取代下方舊攻擊。起手鎖定方向；子彈飛完才收招。紅色是危險範圍，收招時可以反擊。',phase);
       const attack = el('fieldset', undefined, p); el('legend','怪物的攻擊',attack);
       select(attack, '攻擊積木', e.attack, 'type', {none:'不攻擊',projectile:'發射國字',aoe:'預警後範圍傷害',summon:'召喚怪物'});
       const controls = grid(attack); range(controls,e.attack,'interval',[1,15,.5]); range(controls,e.attack,'level',[2,20,1],'開始攻擊等級'); range(controls,e.attack,'damage',[0,30,1]); range(controls,e.attack,'speed',[50,200,5]); range(controls,e.attack,'radius',[10,100,1]); range(controls,e.attack,'count',[1,5,1]); range(controls,e.attack,'spread',[0,.6,.05]);
