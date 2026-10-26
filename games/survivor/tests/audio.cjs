@@ -111,3 +111,11 @@ const resumedNotes=run('audioCalls.oscillators.length');
 run("state.mode='playing';Survivor.audio.sync();sharedAudio.currentTime+=.08;for(const [id,fn] of Array.from(audioCalls.timers)){audioCalls.timers.delete(id);fn();}");
 assert.ok(Math.abs(run(`audioCalls.oscillators[${resumedNotes}].frequency.value`)-440*Math.pow(2,(67-69)/12))<.001,'upgrade resumes at musical position, not intro');
 console.log('PASS: upgrade freezes playhead and resumes after 17 seconds without restarting intro');
+
+// 玩家音量套在共用輸出端；零音量與切換立即生效，保留原曲式音量。
+run('gameSettings.soundVolume=.25;gameSettings.musicVolume=.5;Survivor.audio.sync()');
+assert.equal(run('audioCalls.gains[0].gain.value'),run('Survivor.audio.tuning.soundVolume*.25'));
+assert.equal(run('audioCalls.gains[1].gain.value'),run('Survivor.audio.tuning.musicVolume*.5'));
+run('gameSettings.soundVolume=0;gameSettings.musicVolume=0;Survivor.audio.sync()');
+assert.equal(run('audioCalls.gains[0].gain.value+audioCalls.gains[1].gain.value'),0);
+console.log('PASS: independent live sound/music gain and zero-volume output');

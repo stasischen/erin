@@ -22,6 +22,7 @@ const BUILD_TUNING = GAME_DATA.build;
 const VFX_TUNING = { limit: 48, lightningSeconds: 0.22 };
 const BUILD_SLOTS = { attack: "普攻", skill: "技能", dash: "衝刺", passive: "被動" };
 const SETTINGS_KEY = "erin-survivor-settings-v3";
+const PLAYER_SETTINGS_KEY = "erin-survivor-player-settings-v1";
 const RECORD_KEY = MAKER_MODE ? "erin-survivor-maker-best-seconds-v1" : "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
   playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
@@ -41,8 +42,7 @@ const SETTING_DEFAULTS = {
   bombRadius: UPGRADE_TUNING.bombRadius,
   bombKnockback: UPGRADE_TUNING.bombKnockback,
   actionButtonSize: UPGRADE_TUNING.actionButtonSize,
-  attackMode: "manual", attackModeChosen: false,
-  sound: true, music: true, vibration: true
+  ...SurvivorData.playerDefaults(GAME_DATA)
 };
 const SETTING_CONTROLS = [
   { key: "dashCooldown", label: "衝刺後休息幾秒", min: 1, max: 8, step: 0.5, unit: " 秒" },
@@ -88,10 +88,33 @@ function loadSavedSettings() {
     return result;
   } catch (_) { return { ...SETTING_DEFAULTS }; }
 }
-let gameSettings = MAKER_MODE ? { ...SETTING_DEFAULTS } : loadSavedSettings();
-if (!MAKER_MODE) GAME_DATA.attackMode = gameSettings.attackMode;
+function loadPlayerSettings() {
+  const base = SurvivorData.playerDefaults(GAME_DATA);
+  if (PREVIEW_MODE) return base;
+  try {
+    const raw=localStorage.getItem(PLAYER_SETTINGS_KEY);
+    if (raw !== null) return SurvivorData.normalizePlayer(JSON.parse(raw),base);
+    const readLegacy=key=>{try{return JSON.parse(localStorage.getItem(key) || 'null');}catch(_){return null;}};
+    const old=readLegacy(SETTINGS_KEY);
+    const workRaw=readLegacy(SurvivorData.KEY);
+    const work=workRaw ? SurvivorData.validate(workRaw) : null;
+    const legacy=work && work.valid ? SurvivorData.playerDefaults(work.data) : base;
+    const migrated=old ? {...legacy,...old} : legacy;
+    if(old && Object.prototype.hasOwnProperty.call(old,'attackMode')) migrated.attackModeChosen=old.attackModeChosen===true;
+    const result=SurvivorData.normalizePlayer(migrated,base);
+    try {localStorage.setItem(PLAYER_SETTINGS_KEY,JSON.stringify(result));} catch (_) {}
+    return result;
+  } catch (_) { return base; }
+}
+let gameSettings = {...(MAKER_MODE ? SETTING_DEFAULTS : loadSavedSettings()), ...loadPlayerSettings()};
+function applyPlayerSettings() {
+  GAME_DATA.attackMode=gameSettings.attackMode;
+  GAME_DATA.joystick={follow:gameSettings.joystickFollow,radius:gameSettings.joystickRadius,deadZone:gameSettings.joystickDeadZone};
+  GAME_DATA.hitJuice={enabled:gameSettings.hitFeedback,intensity:gameSettings.feedbackIntensity};
+}
+applyPlayerSettings();
 function saveSettings() {
-  try { if (!MAKER_MODE) localStorage.setItem(SETTINGS_KEY, JSON.stringify(gameSettings)); } catch (_) { /* 儲存空間不可用時仍可正常遊玩 */ }
+  try { if (!PREVIEW_MODE) localStorage.setItem(PLAYER_SETTINGS_KEY, JSON.stringify(SurvivorData.normalizePlayer(gameSettings))); } catch (_) { /* 儲存空間不可用時仍可正常遊玩 */ }
 }
 function loadBestRecord() {
   try { const value = Number(localStorage.getItem(RECORD_KEY)); return Number.isFinite(value) && value > 0 ? value : 0; } catch (_) { return 0; }

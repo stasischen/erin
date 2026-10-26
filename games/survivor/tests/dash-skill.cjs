@@ -100,7 +100,7 @@ run('windowListeners.keydown[0](key("Escape"));'); assert.equal(run('state.mode'
 // 設定相容 v3、缺欄位補預設。
 const saved = setup({'erin-survivor-settings-v3': JSON.stringify({playerHealth:110,dashCooldown:99})});
 assert.equal(saved('gameSettings.playerHealth'), 110); assert.equal(saved('gameSettings.dashCooldown'), 8); assert.equal(saved('gameSettings.bombDamage'), 100);
-saved('updateSettingValue("bombDamage", 150); gameSettings = loadSavedSettings();'); assert.equal(saved('gameSettings.bombDamage'), 150);
+saved('updateSettingValue("bombDamage", 150); gameSettings = loadSavedSettings();'); assert.equal(saved('gameSettings.bombDamage'), 100); // 玩家儲存不再包含傷害數值
 // 座標測試包含非零原點、90 度旋轉與縮放；拖曳要沿玩家看到的遊戲方向。
 fresh();
 run(`elements.gameCanvas.getBoundingClientRect = () => ({left:20,top:30,right:820,width:800,height:600});`);

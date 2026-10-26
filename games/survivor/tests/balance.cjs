@@ -111,9 +111,9 @@ assert.equal(previous('gameSettings.teacherHealth'), 2000);
 assert.equal(previous('gameSettings.enemyShotDamage'), 6);
 assert.equal(previous('bestRecord'), 123.5);
 previous('updateSettingValue("playerHealth", 110); gameSettings = loadSavedSettings();');
-assert.equal(previous('gameSettings.playerHealth'), 110);
+assert.equal(previous('gameSettings.playerHealth'), 90); // 玩家偏好不再寫入舊玩法存檔
 previous('resetSettingsButton.listeners.click(); resetGame(); state.player.x = 400; state.player.y = 300; updateCamera();');
-assert.equal(previous('state.player.health'), 90);
+assert.equal(previous('state.player.health'), 110); // 恢復玩家偏好不改玩法或回血
 assert.equal(previous('bestRecord'), 123.5);
 const current = setup({ 'erin-survivor-settings-v3': JSON.stringify({ playerHealth: 110 }) });
 assert.equal(current('gameSettings.playerHealth'), 110);

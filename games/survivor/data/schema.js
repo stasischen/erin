@@ -38,6 +38,29 @@
   };
   const ELITE_ABILITIES = {shield:'糖霜護盾',split:'分裂',haste:'加速光環',syrup:'黏黏糖漿',teleport:'傳送'};
   const PARAMS = { damage: 35, radius: 80, speed: 190, count: 1, spread: .2, duration: 1, interval: 2, multiplier: .55, distance: 40, gap: 1.8 };
+  const PLAYER_BOUNDS = {joystickRadius:[20,70,1],joystickDeadZone:[0,10,1],feedbackIntensity:[0,2,.1],soundVolume:[0,1,.05],musicVolume:[0,1,.05]};
+  const PLAYER_LABELS = {joystickRadius:'搖桿大小',joystickDeadZone:'搖桿死區',feedbackIntensity:'打擊回饋強度',soundVolume:'音效音量',musicVolume:'音樂音量'};
+  function playerDefaults(data) {
+    if (data.playerDefaults) return copy(data.playerDefaults);
+    const result = copy(root.SURVIVOR_DEFAULTS.playerDefaults);
+    if (data.attackModeChosen === true && ['auto','manual'].includes(data.attackMode)) {
+      result.attackMode=data.attackMode; result.attackModeChosen=true;
+    }
+    if (data.joystick) Object.assign(result,{joystickFollow:data.joystick.follow,joystickRadius:data.joystick.radius,joystickDeadZone:data.joystick.deadZone});
+    if (data.hitJuice) Object.assign(result,{hitFeedback:data.hitJuice.enabled,feedbackIntensity:data.hitJuice.intensity});
+    return result;
+  }
+  function normalizePlayer(input, base = root.SURVIVOR_DEFAULTS.playerDefaults) {
+    const result=copy(base);
+    if (!input || typeof input !== 'object') return result;
+    for (const key of Object.keys(result)) {
+      const value=input[key];
+      if (PLAYER_BOUNDS[key] && typeof value==='number' && Number.isFinite(value)) result[key]=Math.max(PLAYER_BOUNDS[key][0],Math.min(PLAYER_BOUNDS[key][1],value));
+      else if (typeof result[key]==='boolean' && typeof value==='boolean') result[key]=value;
+    }
+    result.attackMode = input.attackModeChosen===true && ['auto','manual'].includes(input.attackMode) ? input.attackMode : 'manual';
+    return result;
+  }
   function defaults() { return copy(root.SURVIVOR_DEFAULTS); }
   function validate(input) {
     const data = defaults(), errors = [];
@@ -53,6 +76,16 @@
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
       if (input.attackMode !== undefined) data.attackMode = choice(input.attackMode,['auto','manual'],'攻擊模式');
       data.attackModeChosen = input.attackModeChosen === true;
+      if (input.playerDefaults !== undefined) {
+        const p=input.playerDefaults;
+        if (!p || typeof p!=='object') fail('預設設定格式不正確');
+        for (const [key,value] of Object.entries(data.playerDefaults)) {
+          if (PLAYER_BOUNDS[key]) num(p[key],PLAYER_BOUNDS[key][0],PLAYER_BOUNDS[key][1],key);
+          else if (key==='attackMode') choice(p[key],['auto','manual'],'預設攻擊模式');
+          else if (typeof p[key] !== typeof value) fail('預設設定 '+key+' 格式不正確');
+        }
+        data.playerDefaults=normalizePlayer(p);
+      } else data.playerDefaults=playerDefaults(input);
       // 舊作品的兩把武器／缺省欄位自動補齊；未知或重複 id 拒絕。
       if (input.weapons !== undefined) {
         if (!Array.isArray(input.weapons) || input.weapons.length < 2 || input.weapons.length > data.weapons.length || new Set(input.weapons.map(w=>w && w.id)).size !== input.weapons.length || input.weapons.some(w=>!w || !data.weapons.some(b=>b.id===w.id))) fail('武器清單不正確');
@@ -277,5 +310,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

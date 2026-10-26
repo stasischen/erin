@@ -91,6 +91,8 @@
   }
   function sync() {
     if (!context) return;
+    soundGain.gain.value=tuning.soundVolume*gameSettings.soundVolume;
+    musicGain.gain.value=tuning.musicVolume*gameSettings.musicVolume;
     if (!available() || !gameSettings.sound) stopNodes(voices);
     const wanted = desiredTrack();
     if (!wanted) { stopMusic(); return; }

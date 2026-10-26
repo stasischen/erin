@@ -11,8 +11,10 @@ function updateHud() {
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
+    const weapon = slot === "attack" && state.weaponId ? activeWeapon() : null;
+    const base = weapon ? SurvivorIcons.html(weapon.icon) + weapon.name : "";
     const detail = cards.map(card => `${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
-    return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${detail || "尚未取得"}</span></span>`;
+    return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${[base,detail].filter(Boolean).join("、") || "尚未取得"}</span></span>`;
   }).join("");
   if (slotMarkup !== lastSlotMarkup) {
     slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;

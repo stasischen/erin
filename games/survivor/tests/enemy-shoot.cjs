@@ -106,7 +106,7 @@ assert.equal(saved('gameSettings.enemyShootLevel'), 8);
 assert.equal(saved('gameSettings.playerHealth'), 110);
 assert.equal(saved('gameSettings.enemyShotDamage'), 30);
 assert.equal(saved('gameSettings.enemyShotSpeed'), 80);
-saved('updateSettingValue("enemyShootLevel", 3); updateSettingValue("enemyShotDamage", 4); gameSettings = loadSavedSettings();');
+saved('updateSettingValue("enemyShootLevel", 3); updateSettingValue("enemyShotDamage", 4);');
 assert.equal(saved('gameSettings.enemyShootLevel'), 3);
 assert.equal(saved('gameSettings.enemyShotDamage'), 4);
 saved(`resetGame(); state.player.x = 400; state.player.y = 300; updateCamera(); state.level = 3; state.mode = 'playing'; state.spawnTimer = 999; state.shotTimer = 999;

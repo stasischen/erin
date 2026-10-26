@@ -163,9 +163,6 @@
   function drawEnemies() {
     const body=grid(panel('怪物身體碰撞'));
     const toggle=(parent,label,obj,key)=>{const b=button(parent,label+'：'+(obj[key]?'開':'關'),()=>{obj[key]=!obj[key];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(obj[key]));};
-    const juice=grid(panel('打擊手感'));
-    toggle(juice,'打擊回饋',draft.hitJuice,'enabled');
-    range(juice,draft.hitJuice,'intensity',[0,2,.1],'打擊強度（頓幀、震動、火花與壓扁）');
     toggle(body,'碰撞只會推開，不會受傷',draft.bodyContact,'pushOnly');
     range(body,draft.bodyContact,'damageScale',[0,1,.05],'身體傷害倍率（所有小怪，Boss 除外）');
     toggle(body,'身體柔性分離',draft.bodySeparation,'enabled');
@@ -226,21 +223,16 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
-    const attackPanel = panel('攻擊操作');
-    const mode = button(attackPanel, '', () => {
-      draft.attackMode = draft.attackMode === 'manual' ? 'auto' : 'manual';
-      draft.attackModeChosen = true; changed(); render();
-    });
-    mode.className = 'attack-mode-toggle'; mode.setAttribute('role', 'switch');
-    mode.setAttribute('aria-label', '手動攻擊'); mode.setAttribute('aria-checked', String(draft.attackMode === 'manual'));
-    mode.innerHTML = '<span class="mode-pixel" aria-hidden="true"></span><span>攻擊：' + (draft.attackMode === 'manual' ? '手動' : '自動') + '　切換</span>';
-    el('p', '這是作品與練習場的攻擊設定；首頁遊戲請用開始畫面或暫停選單切換。', attackPanel);
-    const jp=panel('左搖桿'), jf=grid(jp), j=draft.joystick;
-    const follow=button(jf,'搖桿跟隨：'+(j.follow?'開':'關'),()=>{j.follow=!j.follow;changed();render();});
-    follow.setAttribute('role','switch'); follow.setAttribute('aria-checked',String(j.follow));
-    range(jf,j,'radius',[20,70,1],'搖桿半徑');
-    range(jf,j,'deadZone',[0,10,1],'搖桿死區');
-    el('p','手指拖遠時底座跟著走；關閉則固定在第一次碰的位置。死區越大，越不容易因手抖而移動。',jp);
+    const pp=panel('預設設定'), details=el('details',undefined,pp), p=draft.playerDefaults;
+    el('summary','調整新玩家的預設值',details);
+    const pf=grid(details);
+    el('p','只供沒有個人設定的新玩家使用；你自己的操作、手感、聲音請到齒輪設定調整。',pp);
+    select(pf,'預設攻擊模式',p,'attackMode',{manual:'手動',auto:'自動'},()=>{p.attackModeChosen=true;changed();});
+    for (const [key,label] of Object.entries({joystickFollow:'搖桿跟隨',hitFeedback:'打擊回饋',vibration:'畫面震動',sound:'音效',music:'音樂',lowEffects:'低特效（省電）'})) {
+      const b=button(pf,label+'：'+(p[key]?'開':'關'),()=>{p[key]=!p[key];changed();render();});
+      b.setAttribute('role','switch');b.setAttribute('aria-checked',String(p[key]));
+    }
+    for (const [key,bounds] of Object.entries(api.PLAYER_BOUNDS)) range(pf,p,key,bounds,api.PLAYER_LABELS[key]);
     const weaponNames={interval:'揮擊間隔秒',arcDegrees:'揮擊角度',radius:'揮擊距離',damageMultiplier:'水球傷害的幾倍',push:'擊退距離',spinEvery:'每幾下旋轉一圈',damageReduction:'受到傷害減少比例'};
     const attackNames={chargeStun:'蓄力暈眩秒數',splashSize:'大泡泡水花半徑倍率',splashDamage:'大泡泡水花傷害比例',comboEvery:'連段下數',comboReset:'停止攻擊幾秒重置',comboMultiplier:'最後一段傷害倍率',chargeSeconds:'站定聚氣秒數',chargeMultiplier:'蓄力傷害倍率',moveRetention:'開始移動保留聚氣比例（0 為重置）',chargeSize:'蓄力範圍倍率',comboSize:'最後一段範圍倍率',comboPush:'蓄力／重刺額外擊退',finisherRecovery:'最後一段額外收招秒',stepDistance:'重刺踏步距離',thrustWidth:'突刺半寬'};
     for(const w of draft.weapons) {
