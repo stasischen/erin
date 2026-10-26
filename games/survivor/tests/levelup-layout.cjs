@@ -92,9 +92,12 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     await touch(`[data-tab="${tab}"]`);
     assert.equal(await evaluate(`(async()=>{
       const editor=document.querySelector('#editor'),nav=document.querySelector('.maker-tabs'),content=document.querySelector('.maker-content'),list=document.querySelector('.maker-items');
-      if(nav.getBoundingClientRect().bottom>editor.getBoundingClientRect().top+1)throw Error('分類未放在上方');
+      // 比較同一 offsetParent 的版面座標；直向時 game-shell 旋轉，螢幕上下左右已不同。
+      if(nav.offsetParent!==editor.offsetParent)throw Error('分類與編輯區座標基準不同');
+      if(nav.offsetTop+nav.offsetHeight>editor.offsetTop+1)throw Error('分類未放在上方');
       if(content.clientHeight<80||editor.scrollWidth>editor.clientWidth+2)throw Error('內容區太小或橫向溢出');
-      if(list.getBoundingClientRect().right>content.getBoundingClientRect().left+1)throw Error('左列重疊編輯區');
+      if(list.offsetParent!==content.offsetParent)throw Error('左列與編輯內容座標基準不同');
+      if(list.offsetLeft+list.offsetWidth>content.offsetLeft+1)throw Error('左列重疊編輯區');
       const ids=[...list.querySelectorAll('[data-item]')].map(b=>b.dataset.item);
       for(const id of ids) {
         document.querySelector('[data-item="'+id+'"]').click();
@@ -115,7 +118,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   assert.equal(await evaluate("document.querySelector('.maker-content details').open"),true);
   // 個人設定末端滑桿與固定按鈕列分開，不能互相遮擋。
   await evaluate("document.querySelector('#makerClose').click();openSettings();true");
-  assert.equal(await evaluate(`(()=>{const controls=document.querySelector('#settingsControls'),last=controls.lastElementChild;last.scrollIntoView({block:'end'});const r=controls.getBoundingClientRect(),a=document.querySelector('#settingsPanel .settings-actions').getBoundingClientRect();return r.bottom<=a.top+1;})()`),true);
+  assert.equal(await evaluate(`(()=>{const controls=document.querySelector('#settingsControls'),last=controls.lastElementChild;last.scrollIntoView({block:'end'});const actions=document.querySelector('#settingsPanel .settings-actions');if(controls.offsetParent!==actions.offsetParent)throw Error('設定控制區與按鈕列座標基準不同');return controls.offsetTop+controls.offsetHeight<=actions.offsetTop+1;})()`),true);
   await evaluate("closeSettings();openSurvivorMaker();true");
   // 怪物滑桿旁即時預覽，拉桿輸入後同一 iframe 更新；「試這隻」帶目前 draft。
   await evaluate(`document.querySelector('[data-tab="enemies"]').click();document.querySelector('.maker-items [data-item]').click();if(document.querySelector('.maker-preview').hidden)document.querySelector('.maker-item-heading button:last-child').click();document.querySelector('.enemy-preview-toggle').open=true;true`);
