@@ -181,6 +181,71 @@
   const bossStacks = move => attackStacks(move,BOSS_STACKS);
   const compileEnemy = enemy => compileAttack(enemy,ENEMY_STACKS);
   const compileBossMove = move => compileAttack(move,BOSS_STACKS);
+
+  // 波次 v1：和武器／敵人共用五種積木外殼。純資料編譯，不讀時鐘或抽亂數。
+  function waveDefinitions(data) {
+    const defs=[];
+    for(const stage of data.stages) stage.waves.forEach((wave,i)=>defs.push({id:stage.id+'-'+i,label:stage.name+' 第 '+(i+1)+' 波',section:stage.id,
+      event:'stageTime',trigger:['start'],shape:['position'],timing:['every'],effect:['typeId','count'],feedback:['sound','hint'],wave,i,stage}));
+    defs.push({id:'pacing',label:'出怪節奏',section:'pacing',event:'stageClock',trigger:['pattern','cycleSeconds'],shape:[],timing:[],effect:['density','strongScale','weakScale'],feedback:[]});
+    defs.push({id:'events',label:'事件時間',section:'pacing',event:'stageTime',trigger:['first','second'],shape:[],timing:['eventSeconds','warning'],effect:['eventCount'],feedback:[]});
+    for(const id of data.pacing.eventPool) defs.push({id:'event-'+id,label:({ring:'包圍',tide:'湧潮','elite-squad':'精英小隊','candy-rain':'跳跳糖'})[id],section:'pacing',event:'eventSelected',trigger:[],shape:['position'],timing:[],effect:['typeId','elite'],feedback:[]});
+    defs.push({id:'elites',label:'精英怪',section:'elites',event:'interval',trigger:['enabled','chance'],shape:['position'],timing:['interval'],effect:['typeId','count'],feedback:['sound','hint']});
+    defs.push({id:'chocobear',label:'巧克力大熊',section:'chocobear',event:'stageFraction',trigger:['enabled','stageFraction'],shape:['position'],timing:[],effect:['typeId','count'],feedback:['sound','hint']});
+    return defs;
+  }
+  const WAVE_POSITIONS={zone:'畫面外（跟隨安全圈）',random:'畫面外隨機',sides:'四邊輪流',top:'上方',right:'右方',bottom:'下方',left:'左方'};
+  function waveStacks(data) {
+    const previous=data.waveBlocks;
+    if(previous) return copy(previous);
+    return {version:1,moves:waveDefinitions(data).map(def=>{
+      const move={id:def.id,trigger:{event:def.event},shape:{},timing:{},effect:{},feedback:{}};
+      let values;
+      if(def.wave) values={...def.wave,typeId:def.wave.typeId||'pacing',count:def.wave.count||1,position:def.wave.position||'zone',sound:def.wave.sound||'none',hint:def.wave.hint===true};
+      else if(def.id==='pacing') values=data.pacing;
+      else if(def.id==='events') values={...data.pacing,first:45,second:90};
+      else if(def.id.startsWith('event-')) {const id=def.id.slice(6);values={typeId:id==='tide'?'otsubon':id==='candy-rain'?'pop-candy':'jaben',elite:id==='elite-squad',position:id==='ring'?'sides':id==='tide'?'left':'zone'};}
+      else values={...data[def.id],typeId:def.id==='chocobear'?'chocobear':'pacing',count:1,position:def.id==='chocobear'?'random':'zone',sound:def.id==='chocobear'?'warning':'none',hint:false};
+      for(const part of ['trigger','shape','timing','effect','feedback']) for(const key of def[part]) move[part][key]=copy(values[key]);
+      return move;
+    })};
+  }
+  function compileWaves(data) {
+    if(data.waveBlocks===undefined) return data;
+    const result=copy(data), blocks=data.waveBlocks, defs=waveDefinitions(root.SURVIVOR_DEFAULTS);
+    blockObject(blocks,['version','moves'],'波次');
+    if(blocks.version!==1 || !Array.isArray(blocks.moves) || blocks.moves.length!==defs.length) throw new Error('波次積木版本或數量不正確');
+    result.waveEvents={};
+    const numeric=(v,a,b,integer=false)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<a||v>b||integer&&!Number.isInteger(v)) throw new Error('波次數值超出安全範圍');};
+    blocks.moves.forEach((move,i)=>{
+      const def=defs[i];blockObject(move,['id',...Object.keys(BLOCK_PARTS)],'波次');
+      if(move.id!==def.id) throw new Error('波次積木識別碼不正確');
+      const values={};
+      for(const part of ['trigger','shape','timing','effect','feedback']) {
+        blockObject(move[part],def[part].concat(part==='trigger'?['event']:[]),'波次'+part);
+        for(const key of def[part]) {if(move[part][key]===undefined) throw new Error('波次積木缺少 '+key);values[key]=move[part][key];}
+      }
+      if(move.trigger.event!==def.event) throw new Error('波次觸發不支援');
+      if(values.position!==undefined && !Object.keys(WAVE_POSITIONS).includes(values.position)) throw new Error('生怪位置不支援');
+      if(values.typeId!==undefined && !(def.id==='chocobear'?values.typeId==='chocobear':['pacing',...root.SURVIVOR_DEFAULTS.enemies.map(e=>e.id)].includes(values.typeId))) throw new Error('生怪種類不支援');
+      if(values.count!==undefined) numeric(values.count,1,def.id==='chocobear'?1:10,true);
+      if(values.elite!==undefined && typeof values.elite!=='boolean') throw new Error('精英開關不正確');
+      if(values.sound!==undefined && !['none','warning'].includes(values.sound)) throw new Error('波次音效不支援');
+      if(values.hint!==undefined && typeof values.hint!=='boolean') throw new Error('波次提示不正確');
+      if(def.wave) {
+        numeric(values.start,0,300);numeric(values.every,.3,5);
+        const stage=result.stages.find(s=>s.id===def.section), wave=stage.waves[def.i];for(const key of ['start','every','typeId','count','position','sound','hint']) wave[key]=values[key];
+      } else if(def.id==='events') {
+        numeric(values.first,1,299);numeric(values.second,2,300);if(values.first>=values.second) throw new Error('事件時間需遞增');
+        Object.assign(result.pacing,values);result.pacing.eventTimes=[values.first,values.second];
+      } else if(def.id.startsWith('event-')) result.waveEvents[def.id.slice(6)]=values;
+      else if(def.id==='pacing') Object.assign(result.pacing,values);
+      else Object.assign(result[def.id],values);
+    });
+    for(const stage of result.stages) if(stage.waves[0].start!==0 || stage.waves.some((w,i)=>i&&w.start<=stage.waves[i-1].start)) throw new Error('波次時間需從 0 秒遞增');
+    return result;
+  }
+
   function defaults() { return copy(root.SURVIVOR_DEFAULTS); }
   function validate(input) {
     const data = defaults(), errors = [];
@@ -198,6 +263,7 @@
     };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
+      input=compileWaves(input);
       if (input.attackMode !== undefined) data.attackMode = choice(input.attackMode,['auto','manual'],'攻擊模式');
       data.attackModeChosen = input.attackModeChosen === true;
       if (input.playerDefaults !== undefined) {
@@ -420,30 +486,32 @@
         result.feedback=Object.fromEntries(result.blocks.moves.map(m=>[m.id,m.feedback]));
         return result;
       });
-      // 舊作品缺少 stages 時補上預設；關卡資料保留給之後 Maker 使用，本版不開放編輯。
-      const savedStages = input.stages && input.stages.map(stage => {
-        const migrated = { ...stage };
-        const base = data.stages.find(row => row.id === stage.id);
-        if (base) {
-          base.decorationDensity = stage.decorationDensity === undefined ? base.decorationDensity : num(stage.decorationDensity, 0, 1, "裝飾密度");
-          migrated.decorationDensity = base.decorationDensity;
-        }
-        if (stage.id === "classroom" && stage.name === "教室" && stage.background === "classroom") {
-          migrated.name = "糖果森林"; migrated.background = "candy-forest";
-        } else if (stage.id === "playground" && stage.name === "操場" && stage.background === "playground") {
-          migrated.name = "餅乾森林"; migrated.background = "cookie-forest";
-        }
-        return migrated;
-      });
-      if (savedStages) savedStages.forEach(stage=>{
-        const base=data.stages.find(s=>s.id===stage.id);
-        if (!base || !Array.isArray(stage.waves) || stage.waves.length!==base.waves.length) fail('波次數量不正確');
-        stage.waves.forEach((wave,i)=>{base.waves[i].every=num(wave.every,.3,5,'出怪間隔秒數');});
-      });
-      const fixedStages = rows => rows.map(({ decorationDensity, ...stage }) => stage);
-      if (input.stages !== undefined && JSON.stringify(fixedStages(savedStages)) !== JSON.stringify(fixedStages(data.stages))) fail('本版尚未開放關卡編輯');
-      // 波次只預留資料位置，本版不提供編輯。
-      if (JSON.stringify(input.waves) !== JSON.stringify(data.waves)) fail('本版尚未開放關卡編輯');
+      // 舊波次保留全部數字；新積木編譯出的生怪欄位交給同一接合層。
+      if(input.stages!==undefined) {
+        if(!Array.isArray(input.stages)||input.stages.length!==data.stages.length) fail('關卡數量不正確');
+        data.stages=data.stages.map((base,i)=>{
+          const stage=input.stages[i];if(!stage||stage.id!==base.id||!Array.isArray(stage.waves)||stage.waves.length!==base.waves.length) fail('波次數量不正確');
+          const metadata={...stage};delete metadata.waves;delete metadata.decorationDensity;
+          const expected={...base};delete expected.waves;delete expected.decorationDensity;
+          if(stage.id==='classroom' && metadata.name==='教室' && metadata.background==='classroom') {metadata.name=base.name;metadata.background=base.background;}
+          if(stage.id==='playground' && metadata.name==='操場' && metadata.background==='playground') {metadata.name=base.name;metadata.background=base.background;}
+          if(JSON.stringify(metadata)!==JSON.stringify(expected)) fail('關卡背景與倍率請沿用原設定');
+          const result={...base,decorationDensity:stage.decorationDensity===undefined?base.decorationDensity:num(stage.decorationDensity,0,1,'裝飾密度')};
+          result.waves=stage.waves.map((w,j)=>{
+            const row={...base.waves[j],start:num(w.start,0,300,'波次開始'),every:num(w.every,.3,5,'出怪間隔秒數'),jaben:num(w.jaben,0,1,'甲本比例'),otsubon:num(w.otsubon,0,1,'乙本比例')};
+            if(input.waveBlocks) for(const key of ['typeId','count','position','sound','hint']) row[key]=w[key];
+            return row;
+          });
+          if(result.waves[0].start!==0||result.waves.some((w,j)=>j&&w.start<=result.waves[j-1].start)) fail('波次時間需從 0 秒遞增');
+          return result;
+        });
+      }
+      if (JSON.stringify(input.waves) !== JSON.stringify(data.waves)) fail('請編輯各關卡的波次積木');
+      // 所有作品（含舊存檔）輸出統一積木；編譯後再驗證節奏／遭遇數值。
+      if(input.waveBlocks) data.waveBlocks=copy(input.waveBlocks);
+      else data.waveBlocks=waveStacks(data);
+      const compiled=compileWaves(data);
+      for(const key of ['stages','pacing','waveEvents','elites','chocobear']) data[key]=compiled[key];
     } catch (error) { errors.push(error.message); }
     return { valid: errors.length === 0, data: errors.length ? defaults() : data, errors };
   }
@@ -463,5 +531,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

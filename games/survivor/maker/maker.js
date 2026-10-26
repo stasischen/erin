@@ -8,7 +8,20 @@
   const labels = { damage: '傷害', radius: '範圍／大小', speed: '速度', count: '數量', spread: '散射角度', duration: '持續秒數', interval: '間隔秒數', multiplier: '緩速後剩餘速度', distance: '擊退／衝撞距離', gap: '缺口角度', warning: '預警秒數', pulse: '連發間隔', hp: '血量', maxLevel: '最高等級', power: '原本效果強度' };
   function el(tag, text, parent) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (parent) parent.appendChild(node); return node; }
   function message(text, error = false) { status.textContent = text; status.className = error ? 'error' : ''; }
-  function changed() { for(const w of draft.weapons) if(w.blocks) Object.assign(w,api.compileWeapon(w)); for(const e of draft.enemies) if(e.blocks) Object.assign(e,api.compileEnemy(e)); for(const m of draft.boss.moves) if(m.blocks) Object.assign(m,api.compileBossMove(m)); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
+  let wavePreview;
+  function syncWaveDraft() {
+    if(!draft.waveBlocks) draft.waveBlocks=api.waveStacks(draft);
+    let compiled;try {compiled=api.compileWaves(draft);} catch(error) {message(error.message,true);return false;}
+    for(const key of ['pacing','elites','chocobear']) Object.assign(draft[key],compiled[key]);
+    draft.stages.forEach((stage,i)=>stage.waves.forEach((wave,j)=>Object.assign(wave,compiled.stages[i].waves[j])));
+    draft.waveEvents=compiled.waveEvents;return true;
+  }
+  function waveBinding(id) {
+    const move=draft.waveBlocks.moves.find(m=>m.id===id), binding={};
+    for(const part of ['trigger','shape','timing','effect','feedback']) for(const key of Object.keys(move[part])) if(key!=='event') Object.defineProperty(binding,key,{enumerable:true,get:()=>move[part][key],set:value=>{move[part][key]=value;}});
+    return binding;
+  }
+  function changed() { syncWaveDraft(); if(wavePreview) drawWavePreview(wavePreview); for(const w of draft.weapons) if(w.blocks) Object.assign(w,api.compileWeapon(w)); for(const e of draft.enemies) if(e.blocks) Object.assign(e,api.compileEnemy(e)); for(const m of draft.boss.moves) if(m.blocks) Object.assign(m,api.compileBossMove(m)); refreshTimelines(); if (globalThis.SurvivorPreview) SurvivorPreview.refresh(); if (globalThis.SurvivorPractice) SurvivorPractice.refresh(draft); dirty = true; const result = api.validate(draft); message(result.valid ? '作品已修改，記得儲存或按試玩！' : result.errors.join('；'), !result.valid); }
   function panel(title) { const node = el('section', undefined, content); node.className = 'panel'; el('h2', title, node); return node; }
   function grid(parent) { const node = el('div', undefined, parent); node.className = 'grid'; return node; }
   function text(parent, label, object, key, maxLength = 24) { const row = el('label', label, parent), input = el('input', undefined, row); input.type = 'text'; input.maxLength = maxLength; input.value = object[key] || ''; input.addEventListener('input', () => { object[key] = input.value; changed(); }); }
@@ -164,7 +177,8 @@
     });
   }
   function drawEncounters(key, title) {
-    const p = panel(title), cfg = draft[key]; p.className += ' maker-encounters';
+    const p = panel(title), cfg = draft[key]; drawWaveBlocks(p,key); wavePreview=key;drawWavePreview(key); p.className += ' maker-encounters';
+    const bound=waveBinding(key); for(const field of Object.keys(bound)) if(field in cfg) Object.defineProperty(cfg,field,{enumerable:true,configurable:true,get:()=>bound[field],set:value=>{bound[field]=value;}});
     const toggle = (parent, label, value, action) => {
       const row = el('div',undefined,parent); row.className='encounter-toggle';
       el('span',label,row);
@@ -172,7 +186,7 @@
       b.setAttribute('aria-label',label + (value ? '：開' : '：關')); b.title=label;
       b.setAttribute('role','switch'); b.setAttribute('aria-checked',String(value));
     };
-    toggle(p,'啟用'+title,cfg.enabled,()=>{cfg.enabled=!cfg.enabled;changed();render();});
+
     if (key==='elites') {
       for (const [id,name] of Object.entries(api.ELITE_ABILITIES)) toggle(p,name,cfg.abilities.includes(id),()=>{
         if (cfg.abilities.includes(id) && cfg.abilities.length===1) { message('至少保留一種能力；可用總開關停用精英。'); return; }
@@ -185,7 +199,7 @@
     }
     const names={interval:'精英抽選間隔秒數',chance:'每次抽選出現機率',limit:'同時精英上限',sizeScale:'精英身體倍率',healthScale:'精英血量倍率',rewardXp:'擊敗精英獎勵經驗',shieldHits:'糖霜擋住幾下',auraRadius:'加速光環範圍',auraSpeed:'光環速度倍率',syrupInterval:'留下糖漿間隔秒數',syrupSeconds:'糖漿持續秒數',syrupRadius:'糖漿範圍',syrupSlow:'糖漿內剩餘速度',teleportInterval:'傳送休息秒數',teleportWarning:'傳送預警秒數',teleportDistance:'傳送落點離主角距離',stageFraction:'每關出場時間比例',hp:'本體血量',armor:'糖衣盔甲血量',radius:'身體大小',speed:'移動速度',damage:'碰撞傷害',slamInterval:'重擊休息秒數',slamWarning:'重擊預警秒數',slamRadius:'重擊範圍',slamDamage:'重擊傷害'};
     const fields=grid(p);
-    for (const [field,bounds] of Object.entries(api.ENCOUNTER_BOUNDS[key])) range(fields,cfg,field,bounds,names[field],true);
+    for (const [field,bounds] of Object.entries(api.ENCOUNTER_BOUNDS[key])) {if(!(field in bound)) range(fields,cfg,field,bounds,names[field],true);}
   }
 
   function drawBodyRules() {
@@ -207,15 +221,47 @@
     el('p','一般怪重量 1；坦克預設 8。重量也用於身體分離；關閉重量效果會恢復原本推拉距離。',weight);
   }
   function drawPacing() {
-    const pacing = grid(panel('出怪節奏'));
-    select(pacing,'波次型態',draft.pacing,'pattern',{alternating:'強弱交替',steady:'穩定出怪'});
+    const root=panel('出怪節奏');drawWaveBlocks(root,'pacing'); wavePreview='pacing';drawWavePreview('pacing');const pacing = grid(root);
+    const bound=waveBinding('pacing'),events=waveBinding('events');for(const field of [...Object.keys(bound),...Object.keys(events)]) if(field in draft.pacing) {const b=field in bound?bound:events;Object.defineProperty(draft.pacing,field,{enumerable:true,configurable:true,get:()=>b[field],set:value=>{b[field]=value;}});}
+
     const names = {density:'出怪密度倍率',strongScale:'強波密度倍率',weakScale:'喘息波密度倍率',cycleSeconds:'強弱交替秒數',eventCount:'每次事件怪物數',eventSeconds:'事件進場秒數',warning:'招式預警秒數',chargeSpeed:'衝撞速度',chargeSeconds:'衝撞持續秒數',fuseSeconds:'跳跳糖引信（固定兩秒）',blastRadius:'自爆半徑',blastDamage:'自爆對主角傷害',blastEnemyDamage:'自爆對怪物傷害',shieldRadius:'仙子護盾範圍',shieldSeconds:'護盾施放間隔秒數',shieldHits:'護盾擋住幾下'};
-    for(const [key,bounds] of Object.entries(api.PACING_BOUNDS)) range(pacing,draft.pacing,key,bounds,names[key]);
-    el('p','每關主題怪＋隨機兩種，最後混合本場怪物。45／90 秒各抽一個不同事件；先預警，再從畫面外進場。主角升到設定等級後，小熊與蒲公英仍會丟字。',pacing);
+    for(const [key,bounds] of Object.entries(api.PACING_BOUNDS)) if(!(key in bound)&&!(key in events)) range(pacing,draft.pacing,key,bounds,names[key]);
+    el('p','每關主題怪＋隨機兩種，最後混合本場怪物。依事件積木時間各抽一個不同事件；先預警，再從畫面外進場。主角升到設定等級後，小熊與蒲公英仍會丟字。',pacing);
+  }
+  function drawWavePreview(id) {
+    if(!previewPane) return;
+    // 時間表與編譯後資料同源；編輯時立即刷新，實際走位用「試玩」。
+    if(!previewPane.waveSummary) previewPane.waveSummary=el('div',undefined,previewPane);
+    const host=previewPane.waveSummary;host.textContent='';if(!api.validate(draft).valid) {el('p','請先修正積木數值，再查看預覽或試玩。',host);return;}
+    const stage=draft.stages.find(s=>s.id===id);
+    if(stage) for(const w of stage.waves) el('p',w.start+' 秒起：'+(w.typeId==='pacing'?'本場怪物':(draft.enemies.find(e=>e.id===w.typeId)||{}).name)+' ×'+w.count+'，每 '+w.every+' 秒，'+api.WAVE_POSITIONS[w.position],host);
+    else if(id==='pacing') {const p=draft.pacing;el('p',(p.pattern==='steady'?'穩定密度：'+p.strongScale+'。':'強／弱密度：'+p.strongScale+'／'+p.weakScale+'；每 '+p.cycleSeconds+' 秒交替。')+'事件 '+p.eventTimes.join('／')+' 秒，預警 '+p.warning+' 秒後分批 '+p.eventCount+' 隻。',host);for(const [kind,e] of Object.entries(draft.waveEvents)) el('p',({ring:'包圍',tide:'湧潮','elite-squad':'精英小隊','candy-rain':'跳跳糖'})[kind]+'：'+(e.typeId==='pacing'?'本場隨機怪物':(draft.enemies.find(m=>m.id===e.typeId)||{}).name)+(e.elite?'（精英）':'')+'，'+api.WAVE_POSITIONS[e.position],host);}
+    else {const c=draft[id];el('p',!c.enabled?'已停用':id==='elites'?'每 '+c.interval+' 秒抽選，機率 '+c.chance+'，每批 '+c.count+' 隻。':'老師出場時間 × '+c.stageFraction+' 時出現一次。',host);}
+  }
+  function drawWaveBlocks(parent,section) {
+    for(const def of api.waveDefinitions(draft).filter(d=>d.section===section)) {
+      const move=draft.waveBlocks.moves.find(m=>m.id===def.id), group=el('section',undefined,parent);group.className='weapon-stack';el('h3',def.label,group);
+      for(const part of ['trigger','shape','timing','effect','feedback']) {
+        const fields=blockPanel(group,'wave-'+def.id+'-'+part,part), values=move[part];
+        if(part==='trigger') el('p',({stageTime:'關卡時間到時',stageClock:'關卡時鐘',eventSelected:'本場抽到這個事件時',interval:'每隔一段時間抽選',stageFraction:'每關出現一次'})[values.event],fields);
+        for(const key of def[part]) {
+          if(key==='typeId') {if(section==='chocobear') el('p','生出巧克力大熊',fields);else select(fields,'生出哪種怪',values,key,{pacing:'本場隨機怪物',...Object.fromEntries(draft.enemies.map(e=>[e.id,e.name]))});}
+          else if(key==='position') select(fields,'生怪位置',values,key,api.WAVE_POSITIONS);
+          else if(key==='sound') select(fields,'進場音效',values,key,{none:'靜音',warning:'預警'});
+          else if(key==='hint'||key==='elite'||key==='enabled') {const toggle=button(fields,({hint:'進場提示',elite:'變成精英',enabled:'啟用'})[key]+'：'+(values[key]?'開':'關'),()=>{values[key]=!values[key];changed();render();},values[key]);if(key==='enabled') {toggle.setAttribute('aria-label','啟用'+def.label+(values[key]?'：開':'：關'));toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(values[key]));}}
+          else if(key==='pattern') select(fields,'波次型態',values,key,{alternating:'強弱交替',steady:'穩定出怪'});
+          else {
+            const bounds=({start:[0,300,1],every:[.3,5,.05],count:[1,10,1],first:[1,299,1],second:[2,300,1]})[key]||api.PACING_BOUNDS[key]||api.ENCOUNTER_BOUNDS[section]&&api.ENCOUNTER_BOUNDS[section][key];
+            const names={start:'開始秒數',every:move.trigger.start+' 秒起出怪間隔',count:'每批怪物數',first:'第一個事件秒數',second:'第二個事件秒數',density:'出怪密度倍率',strongScale:'強波密度倍率',weakScale:'喘息波密度倍率',cycleSeconds:'強弱交替秒數',eventSeconds:'事件進場秒數',eventCount:'每次事件怪物數',warning:'招式預警秒數',interval:'精英抽選間隔秒數',chance:'每次抽選出現機率',stageFraction:'每關出場時間比例'};
+            if(bounds && !(section==='chocobear' && key==='count')) range(fields,values,key,bounds,names[key]);
+          }
+        }
+        if(!def[part].length) el('small','沿用關卡的生怪規則',fields);
+      }
+    }
   }
   function drawStage(stage) {
-    const f=grid(panel(stage.name+' 波次'));
-    stage.waves.forEach(wave=>range(f,wave,'every',[.3,5,.05],wave.start+' 秒起出怪間隔'));
+    drawWaveBlocks(panel(stage.name+' 波次'),stage.id);wavePreview=stage.id;drawWavePreview(stage.id);
   }
   // 武器、怪物、老師共用相同的積木外殼與收合狀態。
   function blockPanel(group,key,part) {
@@ -422,9 +468,10 @@
       button(dock,'返回編輯',()=>{SurvivorPreview.stop();dock.remove();render();});
       const host=el('div',undefined,dock);host.className='skill-preview-host';SurvivorPreview.mount(host,draft,item.spec);return;
     }
-    if(save()) location.href='?maker=1&play=1';
+    if(save()) location.href='?maker=1&play=1'+(tab==='stages' && draft.stages.some(s=>s.id===item.id)?'&stage='+item.id:'');
   }
   function render() {
+    syncWaveDraft();wavePreview=null;
     timingViews.length=0;
     if (globalThis.SurvivorPreview) SurvivorPreview.stop();
     if (globalThis.SurvivorPractice) SurvivorPractice.close();
@@ -448,14 +495,14 @@
     el('h3','預覽',previewPane);
     current.draw();content.scrollTop=scroll;
     if(previewOpen && current.practice && tab==='weapons' && globalThis.SurvivorPractice) {const host=el('div',undefined,previewPane);host.className='enemy-live-preview';SurvivorPractice.mount(host,draft,current.practice);}
-    if(!current.spec && !current.practice) el('p','按「試玩」到遊戲裡看看這個設定的效果。',previewPane);
+    if(tab!=='stages' && !current.spec && !current.practice) el('p','按「試玩」到遊戲裡看看這個設定的效果。',previewPane);
   }
   document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => {
     tab = button.dataset.tab; render();content.scrollTop=0;
   }));
   function save() { const result=api.save(draft); if(result.valid){dirty=false;message('作品已儲存在這台裝置！');}else message(result.errors.join('；'),true);return result.valid; }
   document.getElementById('save').addEventListener('click',save);
-  document.getElementById('play').addEventListener('click',()=>{if(save()) location.href='?maker=1&play=1';});
+  document.getElementById('play').addEventListener('click',()=>{if(save()) location.href='?maker=1&play=1'+(tab==='stages' && draft.stages.some(s=>s.id===item.id)?'&stage='+item.id:'');});
   document.getElementById('reset').addEventListener('click',()=>{draft=api.defaults();if(globalThis.SurvivorPractice) SurvivorPractice.refresh(draft);if(save()){render();message('已恢復預設作品。');}});
   window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
   const room = document.getElementById('makerPanel');

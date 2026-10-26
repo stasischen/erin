@@ -6,7 +6,7 @@ function spawnEnemy(options = {}) {
   const type=configuredTypes.find(t=>t.id===typeId) || configuredTypes[0];
   const scale = options.elite ? GAME_DATA.elites.sizeScale : options.small ? .6 : 1;
   const radius = type.radius * scale;
-  const position = options.small && options.position ? {...options.position} : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side);
+  const position = options.small && options.position ? {...options.position} : options.offscreen ? offscreenSpawn(radius) : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
   state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, spriteId:type.spriteId, small:!!options.small, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
