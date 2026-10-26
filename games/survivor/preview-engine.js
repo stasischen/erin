@@ -122,7 +122,7 @@ function stepPreview(dt) {
   // 命中時保留引擎的擊退／吸引位移，最後 .7 秒平順回位；重播不跳動。
   if (previewSpec.kind !== 'move' && previewTime > 2.3) {
     const blend = Math.min(1, dt / Math.max(dt, 3-previewTime));
-    state.enemies.forEach(e=>{e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;e.knockback=0;});
+    state.enemies.forEach(e=>{e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;e.slide=null;});
   }
   spacePreviewTargets();
   SurvivorDebugTools.sample();paintPreview();

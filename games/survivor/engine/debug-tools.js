@@ -17,12 +17,8 @@ globalThis.SurvivorDebugTools = (()=>{
     if(state.practiceHitboxes) {
       for(const p of [...state.projectiles,...state.enemyShots,...state.enemyHazards])circle(p,'#fff29c');
     }
-    if(options.arrows)for(const v of state.vfx)if(v.kind==='gust' && Number.isFinite(v.x2) && Number.isFinite(v.y2)) {
-      const a=Math.atan2(v.y2-v.y,v.x2-v.x);ctx.strokeStyle='#ffc271';ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.lineTo(v.x2,v.y2);ctx.lineTo(v.x2-Math.cos(a-.5)*8,v.y2-Math.sin(a-.5)*8);ctx.moveTo(v.x2,v.y2);ctx.lineTo(v.x2-Math.cos(a+.5)*8,v.y2-Math.sin(a+.5)*8);ctx.stroke();
-    }
-    if(options.arrows)for(const e of state.enemies)if(e.knockback>0) {
-      const d=Math.max(1,Math.hypot(e.knockX,e.knockY)),a=Math.atan2(e.knockY,e.knockX),n=Math.min(100,e.knockback*.2);
-      const x=e.x+e.knockX/d*n,y=e.y+e.knockY/d*n;
+    if(options.arrows)for(const e of [state.player,...state.enemies,...(state.boss?[state.boss]:[])])if(e.slide) {
+      const end=slidePrediction(e),a=Math.atan2(end.dy,end.dx),x=e.x+end.dx,y=e.y+end.dy;
       ctx.strokeStyle='#ffc271';ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(x,y);ctx.lineTo(x-Math.cos(a-.5)*8,y-Math.sin(a-.5)*8);ctx.moveTo(x,y);ctx.lineTo(x-Math.cos(a+.5)*8,y-Math.sin(a+.5)*8);ctx.stroke();
     }
     ctx.restore();

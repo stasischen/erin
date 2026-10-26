@@ -2198,7 +2198,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     "strength": 1,
     "bossMass": 40,
     "minibossMass": 8,
-    "bossMultiplier": 0
+    "bossMultiplier": 0,
+    "slideSeconds": 0.2
   }
 };
 

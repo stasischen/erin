@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-knockback-slide",
+  "title": "擊退改成減速滑動",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-knockback-slide",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T134658Z-parent-knockback-slide.md",
+  "next": "請 Grok 審查 erin-watch 提交後的實質 SHA；依家長 20261026T140917Z 決定保留怪物身體阻擋（接受難度提高），僅移除紫霧 bossZone 阻擋。新增圈內外怪物／圈外主角完整擊退與真障壁／箭頭回歸測試；node games/survivor/tools/test.cjs 全部通過（未加 --layout）。版本 20261026as；Godot §11 檢查與差距見 docs/survivor-knockback-slide-validation.md。請在 740×360、1024×461、1180×820 實際確認滑動、身體阻擋、紫霧可穿越。無待決定事項；commit、push、開 PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T14:14:01.734916Z",
+  "updatedBy": "codex"
+}

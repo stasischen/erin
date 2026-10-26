@@ -5,7 +5,7 @@ const ids=['water-attack','water-skill','water-dash','water-ultimate','fusion-pu
 function scenario(old,setup,steps){
   const run=create();
   if(old) {
-    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(body);
+    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(body));
     run('SurvivorSchools.shot='+legacy.shot.replace('function shot','function')+';');
   }
   run(`resetGame();state.mode='playing';Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;

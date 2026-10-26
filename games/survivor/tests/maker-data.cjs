@@ -2,8 +2,9 @@
 const assert=require('node:assert/strict'), fs=require('node:fs');
 const createRun=require('./maker-support.cjs'), traces=require('./maker-traces.cjs');
 const baseline=require('./maker-baseline.json');
-// 老師選招／休息已依新規格改動；保留 48 組卡片快照，老師由 boss-moves 與 view-teacher 驗證。
-assert.deepEqual(traces(createRun(),true).filter(row=>!row.boss),baseline.filter(row=>!row.boss),'關閉分離與重量時保留 48 組卡片快照');
+// 舊位置快照包含等速／瞬移，改由純規則距離與碰撞案例驗證；保留 48 組卡片的傷害與攻速平衡。
+const balance=rows=>rows.filter(row=>!row.boss).map(({id,level,state})=>({id,level,damage:state.damage,interval:state.interval}));
+assert.deepEqual(balance(traces(createRun(),true)),balance(baseline));
 // Maker 的預設作品也必須重現普通模式，不能被舊設定污染。
 assert.deepEqual(traces(createRun({maker:true,saved:{'erin-survivor-settings-v3':JSON.stringify({playerHealth:200,enemySpeed:130})}})),traces(createRun()));
 const run=createRun();
@@ -42,7 +43,7 @@ for(const type of ['projectile','aoe','chain','dash-trail','slow','stun','knockb
   if(type==='chain') assert.equal(r('state.enemies.filter(e=>e.hp<10000).length'),2);
   if(type==='slow') {assert.equal(r('state.enemies[0].slowTimer'),1);assert.equal(r('state.enemies[0].makerSlow'),.55);}
   if(type==='stun') assert.equal(r('state.enemies[0].stunTimer'),1);
-  if(type==='knockback') assert.equal(r('state.enemies[0].x-state.player.x'),90);
+  if(type==='knockback') {assert.equal(r('state.enemies[0].x-state.player.x'),50); assert.equal(r('state.enemies[0].slide.x'),40); r('for(const e of state.enemies.slice().reverse())updateTargetSlide(e,.2)');assert.equal(r('state.enemies[0].x-state.player.x'),90);}
   if(type==='ring-with-gap') {assert.equal(r('state.enemies.filter(e=>e.hp<10000).length'),0);r('state.enemies[0].x=state.player.x-140;state.makerTimers={};triggerMakerEffects("skill",state.player.x,state.player.y);');assert.equal(r('state.enemies[0].hp'),9954);}
   if(type==='dash-trail'||type==='summon') {assert.equal(r('state.makerFields.length'),1);r('updateMakerEffects(.05);');assert.ok(r(type==='summon'?'state.projectiles.length===2':'state.enemies[0].hp<10000'));}
   r('globalThis.before=JSON.stringify(state);state.mode="paused";tick(1);'); assert.equal(r('state.makerFields.every(f=>f.life>0)'),true);

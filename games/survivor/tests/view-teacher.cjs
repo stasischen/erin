@@ -55,7 +55,7 @@ for(const protect of ['none','dodge','dash']) {
  if(protect==='dash')run('state.player.invincible=1');
  step(.7);
  assert.equal(run('state.player.health'),protect==='none'?78:90);
- if(protect==='none')assert.ok(Math.abs(run('deltaX(state.player.x,startX)')-60)<1e-7);
+ if(protect==='none'){run('updateTargetSlide(state.player,.25)');assert.ok(Math.abs(run('deltaX(state.player.x,startX)')-60)<1e-7);}
  step(.4);assert.equal(run('state.player.health'),protect==='none'?78:90);
 }
 // 新欄位皆可安全存取；舊作品缺省遷移，新招也保留統一五積木。
