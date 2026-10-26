@@ -5,7 +5,7 @@ function teacherChoices(moves,phase,distance,visible,policy,previous=[]) {
   const kinds=!visible||distance>=policy.farDistance?['leap','sniper']:distance<=policy.nearDistance?['rain','call','ring','cage','leap','tracking']:['words','chalk','barriers','dash','combo','summon'];
   const choices=unlocked.filter(m=>kinds.includes(m.kind));
   const fresh=choices.filter(m=>!previous.includes(m.id));
-  return fresh.length?fresh:choices;
+  return fresh;
 }
 function summonTeacher() {
   // 老師只需身體與名字都在鏡頭外，不套小怪的額外 160 格安全距離。
@@ -52,6 +52,7 @@ function beginBossMove(id) {
     id, kind, x: b.x, y: b.y, angle, warning: kind==='tracking'?GAME_DATA.boss.combat.trackingSeconds+GAME_DATA.boss.combat.lockSeconds:Math.max(.6,definition.warning),
     repeats:kind==='combo'?Math.min(3,definition.count+Math.max(0,state.bossPhase-2)):1, recovery:0,
     wallWidth: 0, wallHeight: 0, wallDuration: 0, dodged: false, active: false, pulse: 0, life: 0, points: [], radius: 0, endX: b.x, endY: b.y,
+    ai: SurvivorBossAI.start({windup:kind==='tracking'?GAME_DATA.boss.combat.trackingSeconds+GAME_DATA.boss.combat.lockSeconds:Math.max(.6,definition.warning)}),
     count: Math.min(10, definition.count + definition.phaseCount * state.bossPhase)
   });
   if(kind==='leap') {move.radius=definition.radius;move.endX=p.x;move.endY=p.y;move.points=[{x:p.x,y:p.y,r:definition.radius}];}
@@ -125,7 +126,7 @@ function updateBoss(dt) {
     const interrupt=state.bossMoves.some(m=>!(m.recovery>0));clearBossMoves();if(interrupt)teacherPostureEvent('onInterrupt');
   }
   // 逐一跨過 66%、33%；一次大傷害跨兩條線也會依序演出兩次轉場。
-  const nextPhase = GAME_DATA.boss.phases.reduce((phase, row, i) => b.hp / b.maxHp <= row.threshold ? i + 1 : phase, 1);
+  const nextPhase = SurvivorBossAI.phase(GAME_DATA.boss.phases,b.hp/b.maxHp);
   if (nextPhase > state.bossPhase && state.bossPhasePause <= 0) {
     state.bossPhase++; state.bossPhasePause = BOSS_TUNING.phasePause;
     state.bossShout = BOSS_TUNING.phasePause; b.flash = 0.25;
@@ -142,19 +143,25 @@ function updateBoss(dt) {
   }
   if (b.stunTimer > 0) return;
   if (!state.bossMoves.length) {
-    state.bossRest = countdown(state.bossRest, dt);
+    b.ai=SurvivorBossAI.advance({phase:'cooldown',left:state.bossRest},{},dt).state;
+    state.bossRest=b.ai.left;
     if (state.bossRest > 0) return;
     if (state.bossRest <= 0) {
       const previousMoves = state.lastBossMoves;
       const choices=teacherChoices(BOSS_MOVES,state.bossPhase,Math.hypot(deltaX(state.player.x,b.x),deltaY(state.player.y,b.y)),targetVisible(b),GAME_DATA.boss.combat,state.lastBossMoves)
         .filter(move=>!['ring','cage'].includes(move.kind)||Math.min(state.width,state.height)>=196);
-      if (!choices.length) { state.bossRest = .5; return; }
-      const id = choices[Math.floor(Math.random() * choices.length)].id;
+      if (!choices.length) { state.bossRest = GAME_DATA.boss.phases[state.bossPhase-1].rest; return; }
+      const input={phase:state.bossPhase,distance:Math.hypot(deltaX(state.player.x,b.x),deltaY(state.player.y,b.y)),
+        angle:Math.atan2(deltaY(state.player.y,b.y),deltaX(state.player.x,b.x))-(b.aiFacing||0),visible:targetVisible(b),previous:state.lastBossMoves};
+      const id=SurvivorBossAI.choose(SurvivorBossAI.scores(choices,GAME_DATA.boss.ai.rules,input),Math.random());
+      if(!id) {state.bossRest=GAME_DATA.boss.phases[state.bossPhase-1].rest;return;}
+      b.aiFacing=Math.atan2(deltaY(state.player.y,b.y),deltaX(state.player.x,b.x));
+      b.ai={phase:'select',left:0};
       beginBossMove(id); state.lastBossMoves = [id];
       // 只搭配容易看懂的兩招，避開衝撞與收縮圈同時封路。
       if (state.bossPhase >= 2 && (["rain", "call"].includes(BOSS_MOVES.find(m => m.id === id).kind))) {
         const combo = GAME_DATA.boss.phases[state.bossPhase - 1].combo;
-        if (targetVisible(b) && combo && combo !== id && !previousMoves.includes(combo)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
+        if (targetVisible(b) && combo && combo !== id && !previousMoves.includes(combo) && GAME_DATA.boss.ai.rules.some(r=>r.moveId===combo && r.weight>0)) { beginBossMove(combo); state.lastBossMoves.push(combo); }
       }
       return; // 開始預告的這幀不扣時間，保證完整預警。
     }
@@ -162,15 +169,22 @@ function updateBoss(dt) {
   for (let i = state.bossMoves.length - 1; i >= 0; i--) {
     const move = state.bossMoves[i];
     const kind=bossKind(move),definition=bossDefinition(move),policy=GAME_DATA.boss.combat;
-    if(move.recovery>0) {move.recovery=countdown(move.recovery,dt);if(move.recovery<=0)state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);continue;}
+    if(move.recovery>0) {
+      move.ai=SurvivorBossAI.advance({phase:'recovery',left:move.recovery},{cooldown:definition.cooldown||0},dt).state;
+      move.recovery=move.ai.phase==='recovery'?move.ai.left:0;
+      if(move.recovery<=0) {state.bossRest=Math.max(state.bossRest,move.ai.left);state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);}
+      continue;
+    }
     if (!move.active) {
       if(kind==='sniper')move.angle=Math.atan2(deltaY(state.player.y,move.y),deltaX(state.player.x,move.x));
       if(kind==='tracking' && move.warning>policy.lockSeconds+1e-6) {
         move.x=state.player.x;move.y=state.player.y;move.points=[{x:move.x,y:move.y,r:move.radius}];
       }
-      move.warning = countdown(move.warning, dt);
+      move.ai=SurvivorBossAI.advance({...move.ai,left:move.warning},{active:definition.duration},dt).state;
+      move.warning=move.ai.phase==='windup'?move.ai.left:0;
       if (move.warning > 0) continue;
       move.active = true; move.life = ["dash","combo"].includes(kind) ? Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed : (move.wallDuration || bossDefinition(move).duration);
+      move.ai={phase:'active',left:move.life};
       if (["words","chalk","sniper"].includes(kind)) { fireBossFan(move); move.pulse = bossDefinition(move).pulse; }
       if (bossKind(move) === "summon") for (let n = 0; n < Math.min(10, bossDefinition(move).count + bossDefinition(move).phaseCount * state.bossPhase); n++) spawnEnemy();
       if (bossKind(move) === "ring" || bossKind(move) === "dash" || bossKind(move) === "rain") bossFeedbackShake(move);
@@ -189,7 +203,7 @@ function updateBoss(dt) {
             shiftTarget(state.player,state.player.x-Math.cos(angle),state.player.y-Math.sin(angle),policy.leapPush);
           }
         }
-        move.recovery=policy.leapRecovery;bossFeedbackShake(move);continue;
+        move.recovery=Math.max(policy.leapRecovery,definition.recovery||0);move.ai={phase:'recovery',left:move.recovery};bossFeedbackShake(move);continue;
       }
     } else if(kind==='barriers') {
       // 兩側短牆；上下均有缺口。碰撞沿用位移修正，不造成隱形傷害。
@@ -219,13 +233,18 @@ function updateBoss(dt) {
     }
     if (state.mode !== "playing" || state.boss !== b) { clearBossMoves(); return; }
     if(!state.bossMoves.includes(move)){updateHud();return;} // 反擊可能在命中接合層打斷本招。
-    move.life = countdown(move.life, dt);
+    move.ai=SurvivorBossAI.advance({phase:'active',left:move.life},{recovery:definition.recovery||0},dt).state;
+    move.life=move.ai.phase==='active'?move.ai.left:0;
     if(move.life<=0 && kind==='combo' && move.repeats>1) {
       const repeats=move.repeats-1;state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);
       beginBossMove(move.id);const next=state.bossMoves[state.bossMoves.length-1];if(next){next.repeats=repeats;next.warning=Math.max(.6,definition.warning);}
-    } else if (move.life <= 0) state.bossMovePool.push(state.bossMoves.splice(i, 1)[0]);
+    } else if (move.life <= 0) {
+      if(definition.recovery>0) {move.recovery=definition.recovery;move.ai={phase:'recovery',left:move.recovery};}
+      else {state.bossRest=Math.max(state.bossRest,definition.cooldown||0);state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);}
+    }
   }
-  if (!state.bossMoves.length) {state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;b.recoveryLeft=state.bossRest;}
+  if (!state.bossMoves.length) {state.bossRest = Math.max(state.bossRest,GAME_DATA.boss.phases[state.bossPhase - 1].rest);b.recoveryLeft=state.bossRest;}
+  if(state.bossMoves.length) b.ai={...state.bossMoves[0].ai};
   updateHud();
 }
 

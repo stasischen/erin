@@ -1640,6 +1640,136 @@ globalThis.SURVIVOR_DEFAULTS = {
     }
   ],
   "boss": {
+    "ai": {
+      "rules": [
+        {
+          "moveId": "words",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "chalk",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "dash",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "rain",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 200,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "call",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 200,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "summon",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "ring",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 200,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "chalk-wall",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "shrinking-ring",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 200,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "podium-leap",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 10000,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": true
+        },
+        {
+          "moveId": "chalk-snipe",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 10000,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": true
+        },
+        {
+          "moveId": "board-barriers",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "eraser-combo",
+          "weight": 1,
+          "minDistance": 200,
+          "maxDistance": 600,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        },
+        {
+          "moveId": "tracking-call",
+          "weight": 1,
+          "minDistance": 0,
+          "maxDistance": 200,
+          "angleWeight": 0,
+          "phaseWeight": 0,
+          "offscreen": false
+        }
+      ]
+    },
     "posture": {"window":0.2,"maximum":100,"dodgeGain":30,"recoveryGain":12,"interruptGain":22,"decay":6,"stunSeconds":2.5,"chargeBonus":0.5,"damageMultiplier":3,"heal":4},
     "name": "老師",
     "hp": 2000,

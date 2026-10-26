@@ -17,7 +17,7 @@
     ultimateSeconds:[2,30,1], cloudSeconds:[.5,10,.5], tornadoTick:[.2,3,.1], attackRadius:[80,900,10], shotRange:[80,900,10],
     warningSeconds:[.6,3,.1], phasePause:[.6,3,.1], shakeSeconds:[0,.4,.01], shakePixels:[0,6,1]
   };
-  const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5]};
+  const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5],recovery:[0,3,.1],cooldown:[0,8,.1]};
   const POSTURE_BOUNDS={window:[.05,.4,.01],maximum:[20,200,5],dodgeGain:[0,100,1],recoveryGain:[0,100,1],interruptGain:[0,100,1],decay:[0,30,1],stunSeconds:[1,5,.1],chargeBonus:[0,2,.1],damageMultiplier:[1,5,.1],heal:[0,20,1]};
   const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
@@ -145,12 +145,12 @@
     {id:'phase',label:'分階段攻擊',event:'targetInRange',trigger:['enabled','triggerDistance'],shape:['shape','radial','radius','innerRadius','length','angle','speed','count','gapDegrees'],timing:['windup','active','recovery','cooldown'],effect:['damage']},
     {id:'legacy',label:'等級攻擊（分階段關閉時）',event:'levelTimer',trigger:['level'],shape:['type','radius','speed','count','spread'],timing:['interval'],effect:['damage']}
   ];
-  const BOSS_STACKS = [{id:'move',label:'老師招式',event:'bossPhase',trigger:['minPhase','phaseCount'],shape:['kind','speed','count','spread','radius','gap','distance'],timing:['warning','duration','pulse'],effect:['damage']}];
+  const BOSS_STACKS = [{id:'move',label:'老師招式',event:'bossPhase',trigger:['minPhase','phaseCount'],shape:['kind','speed','count','spread','radius','gap','distance'],timing:['warning','duration','pulse','recovery','cooldown'],effect:['damage']}];
   function attackStacks(owner,defs) {
     return {version:1,moves:defs.map(def=>{
       const source=def.id==='phase'?owner.phaseAttack:def.id==='legacy'?owner.attack:owner;
       const move={id:def.id};
-      for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].map(key=>[key,copy(part==='timing' && def.id==='phase' ? (source.timing || source)[key] : source[key])]));
+      for(const part of ['trigger','shape','timing','effect']) move[part]=Object.fromEntries(def[part].map(key=>[key,copy(part==='timing' && def.id==='phase' ? (source.timing || source)[key] : (source[key] ?? 0))]));
       if(def.id==='phase')move.timing.inputBuffer=source.timing?.inputBuffer??.12;
       move.trigger.event=def.event;
       move.feedback=feedback((owner.feedback||{})[def.id]||{}, {cue:def.id==='phase'?'locked-warning':def.id==='legacy'?'enemy-attack':'teacher-warning',sound:'warning',shake:def.id==='move'?1:0});
@@ -174,8 +174,8 @@
       for(const part of ['trigger','shape','timing','effect']) {
         blockObject(move[part],def[part].concat(part==='trigger'?['event']:part==='timing'&&def.id==='phase'?['inputBuffer']:[]),part);
         for(const key of def[part]) {
-          if(move[part][key]===undefined) throw new Error('招式積木缺少 '+key);
-          source[key]=move[part][key];
+          if(move[part][key]===undefined && !(def.id==='move' && ['recovery','cooldown'].includes(key))) throw new Error('招式積木缺少 '+key);
+          source[key]=def.id==='move' && ['recovery','cooldown'].includes(key) && move[part][key]===undefined ? 0 : move[part][key];
         }
       }
       if(move.trigger.event!==def.event) throw new Error('招式觸發不支援');
@@ -188,6 +188,15 @@
     return result;
   }
   const enemyStacks = enemy => attackStacks(enemy,ENEMY_STACKS);
+  // 舊作品遷移：距離分組與舊老師相同，數值皆為世界單位。
+  function bossAIRules(boss) {
+    return boss.moves.map(m=>{
+      const far=['leap','sniper'].includes(m.kind), near=['rain','call','ring','cage','tracking'].includes(m.kind);
+      return {moveId:m.id,weight:1,minDistance:near||far?0:boss.combat.nearDistance,
+        maxDistance:far?10000:near?boss.combat.nearDistance:boss.combat.farDistance,
+        angleWeight:0,phaseWeight:0,offscreen:far};
+    });
+  }
   const bossStacks = move => attackStacks(move,BOSS_STACKS);
   const compileEnemy = enemy => compileAttack(enemy,ENEMY_STACKS);
   const compileBossMove = move => compileAttack(move,BOSS_STACKS);
@@ -494,11 +503,20 @@
         const m = compileBossMove(b.moves[i]); if (!m || m.id !== base.id) fail('招式識別碼不正確');
         const result = { ...base, name: name(m.name, '招式名稱', 24), kind: choice(m.kind, Object.keys(KINDS), '招式積木'), minPhase: num(m.minPhase, 1, 3, '開始階段', true), phaseCount: num(m.phaseCount, 0, 1, '每階段增加數量', true) };
         for (const key of ['warning','damage','speed','count','spread','radius','duration','pulse','gap','distance']) result[key] = num(m[key], BOSS_MOVE_BOUNDS[key][0], BOSS_MOVE_BOUNDS[key][1], key, key === 'count');
+        for(const key of ['recovery','cooldown']) result[key]=num(m[key]===undefined?0:m[key],...BOSS_MOVE_BOUNDS[key].slice(0,2),key);
         result.feedback=m.feedback;
         result.blocks=bossStacks(result);
         result.feedback=Object.fromEntries(result.blocks.moves.map(m=>[m.id,m.feedback]));
         return result;
       });
+      const ai=b.ai || {rules:bossAIRules(data.boss)};
+      if(!Array.isArray(ai.rules) || !ai.rules.length || ai.rules.length>64) fail('AI 招式清單需有 1～64 招');
+      if(new Set(ai.rules.map(r=>r.moveId)).size!==ai.rules.length) fail('AI 招式不可重複');
+      data.boss.ai={rules:ai.rules.map(r=>({moveId:choice(r.moveId,data.boss.moves.map(m=>m.id),'AI 招式'),
+        weight:num(r.weight,0,100,'AI 權重'), minDistance:num(r.minDistance,0,10000,'AI 最近距離'),maxDistance:num(r.maxDistance,0,10000,'AI 最遠距離'),
+        angleWeight:num(r.angleWeight,0,10,'AI 朝向權重'),phaseWeight:num(r.phaseWeight,0,10,'AI 階段權重'),
+        offscreen:typeof r.offscreen==='boolean'?r.offscreen:fail('AI 畫面外規則需為開關')}))};
+      if(data.boss.ai.rules.some(r=>r.minDistance>r.maxDistance)) fail('AI 最近距離不可大於最遠距離');
       // 舊波次保留全部數字；新積木編譯出的生怪欄位交給同一接合層。
       if(input.stages!==undefined) {
         if(!Array.isArray(input.stages)||input.stages.length!==data.stages.length) fail('關卡數量不正確');
@@ -544,5 +562,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_TIERS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { bossAIRules, POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_TIERS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

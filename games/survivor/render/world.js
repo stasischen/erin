@@ -24,6 +24,12 @@ function bossAirHeight() {
 
 function drawBossMoves() {
   for (const move of state.bossMoves) {
+    if(move.recovery>0) {
+      // 收招時移除危險區，只用像素亮點提示反擊機會。
+      ctx.save();ctx.fillStyle='#ffcf49';
+      const x=state.boss.x,y=state.boss.y-state.boss.r-20;
+      ctx.fillRect(x-2,y,4,14);ctx.fillRect(x-7,y+5,14,4);ctx.restore();continue;
+    }
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
     if(!move.active)warningFeedback(moveFeedback(bossDefinition(move),'move'),move.warning);
     if(bossKind(move)==='leap' || bossKind(move)==='tracking') {

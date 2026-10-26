@@ -276,7 +276,7 @@
   }
   function drawAttackStacks(host,owner,defs,key) {
     if(!owner.blocks) owner.blocks=defs===api.ENEMY_STACKS?api.enemyStacks(owner):api.bossStacks(owner);
-    const names={enabled:'使用分階段攻擊',triggerDistance:'觸發距離',radial:'子彈向四周發射（留缺口）',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',gapDegrees:'四周子彈缺口角度',level:'開始攻擊等級',minPhase:'第幾階段開始使用',phaseCount:'每個階段是否多一個目標'};
+    const names={enabled:'使用分階段攻擊',triggerDistance:'觸發距離',radial:'子彈向四周發射（留缺口）',innerRadius:'圓環內半徑',length:'直線／子彈飛行距離',angle:'扇形角度',gapDegrees:'四周子彈缺口角度',level:'開始攻擊等級',minPhase:'第幾階段開始使用',recovery:'收招停頓秒數',cooldown:'招後冷卻秒數（至少階段休息）',phaseCount:'每個階段是否多一個目標'};
     for(const [i,move] of owner.blocks.moves.entries()) {
       const def=defs[i],group=el('section',undefined,host);group.className='weapon-move';el('h3',def.label,group);
       for(const part of Object.keys(api.BLOCK_PARTS)) {
@@ -315,7 +315,18 @@
     });
   }
   function drawBoss() {
-    if(selected.boss==='phases') {
+    if(selected.boss==='ai') {
+      const p=panel('AI 規則積木');
+      el('p','權重 0 停用。依距離、朝向與血量階段加權抽招，上一組招式不連續重複。老師仍保留近中遠距離分組。階段門檻在魔王階段調整；預警、生效、收招與冷卻在各招式時機積木調整。',p);
+      draft.boss.phases.forEach((phase,i)=>{if(i)range(grid(p),phase,'threshold',[.05,.95,.01],'第 '+(i+1)+' 階段血量門檻');});
+      draft.boss.ai.rules.forEach(rule=>{
+        const box=el('fieldset',undefined,p);el('legend',draft.boss.moves.find(m=>m.id===rule.moveId).name,box);
+        if(draft.boss.ai.rules.length>1)button(box,'移出招式清單',()=>{draft.boss.ai.rules.splice(draft.boss.ai.rules.indexOf(rule),1);changed();render();});
+        for(const [key,label,bounds] of [['weight','權重（0 停用）',[0,100,1]],['minDistance','最近距離',[0,10000,10]],['maxDistance','最遠距離',[0,10000,10]],['angleWeight','朝向加權',[0,10,.1]],['phaseWeight','後期階段加權',[0,10,.1]]]) range(box,rule,key,bounds,label);
+      });
+      const missing=draft.boss.moves.filter(m=>!draft.boss.ai.rules.some(r=>r.moveId===m.id));
+      for(const move of missing)button(p,'加入 '+move.name,()=>{draft.boss.ai.rules.push(api.bossAIRules(draft.boss).find(r=>r.moveId===move.id));changed();render();});
+    } else if(selected.boss==='phases') {
     const p = panel('魔王與三個階段'), fields = grid(p); text(fields,'魔王名稱',draft.boss,'name'); range(fields,draft.boss,'hp',[500,5000,100]); range(fields,draft.boss,'speed',[0,200,5],'舊作品預設移速'); range(fields,draft.boss,'radius',[20,50,1],'身體大小');
     draft.boss.phases.forEach((phase,i) => { const box=el('fieldset',undefined,p); el('legend','第 '+(i+1)+' 階段',box); if(i) range(box,phase,'threshold',[.05,.95,.01],'血量低於比例'); range(box,phase,'speed',[0,200,5],'階段移速'); range(box,phase,'rest',[.4,8,.1],'招式休息秒數'); const holder={combo:phase.combo||''}; select(box,'範圍招式搭配的合招',holder,'combo',{'':'不合招',...Object.fromEntries(draft.boss.moves.map(m=>[m.id,m.name]))},()=>{phase.combo=holder.combo||null;changed();}); });
     const labels={nearDistance:'近距離上限',farDistance:'遠距離起點',pursuitDistance:'快走追趕起點',pursuitMultiplier:'快走速度倍率',healthPerUpgrade:'每次升級增加老師血量',leapRecovery:'跳躍落地可反擊秒數',leapPush:'跳躍落地擊退距離',trackingSeconds:'點名跟隨秒數',lockSeconds:'點名鎖定秒數',phaseWordsSpeed:'第二階段起國字速度',phaseChalkSpeed:'第二階段起粉筆速度'};
@@ -463,7 +474,7 @@
     if(tab==='weapons') return draft.weapons.map(w=>({id:w.id,name:w.name,icon:w.icon,draw:drawWeapons,practice:w.id}));
     if(tab==='cards') return [{id:'schools',name:'流派名稱',icon:'water',draw:drawSchools},...draft.cards.map((c,i)=>({id:c.id,name:c.name,icon:c.icon,note:(c.school?draft.build[c.school].name:'支援')+' · '+(c.requires.length?'↳ '+c.requires.map(id=>draft.cards.find(x=>x.id===id).name).join(' ＋ '):'起點'),draw:()=>{cardIndex=i;drawCards();},spec:{kind:'card',id:c.id}}))];
     if(tab==='enemies') return draft.enemies.map(e=>({id:e.id,name:e.name,icon:'monster',draw:drawEnemies,practice:e.id}));
-    if(tab==='boss') return [{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
+    if(tab==='boss') return [{id:'ai',name:'AI 規則',icon:'boss',draw:drawBoss},{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
     if(tab==='stages') return [{id:'pacing',name:'出怪節奏',icon:'monster',draw:drawPacing},...draft.stages.map(stage=>({id:stage.id,name:stage.name,icon:'play',draw:()=>drawStage(stage)})),{id:'elites',name:'精英怪',icon:'monster',draw:()=>drawEncounters('elites','精英怪')},{id:'chocobear',name:'巧克力大熊',icon:'boss',draw:()=>drawEncounters('chocobear','巧克力大熊')}];
     return [{id:'defaults',name:'預設設定',draw:drawDefaults},{id:'body',name:'碰撞與重量',draw:drawBodyRules},{id:'neutral',name:'中立道具',draw:drawNumbers},{id:'schoolRules',name:'流派數值',draw:drawNumbers},{id:'tuning',name:'基本玩法',draw:drawNumbers},{id:'build',name:'流派共用',draw:drawNumbers},{id:'bossTuning',name:'魔王共用',draw:drawNumbers}].map(x=>({icon:'numbers',...x}));
   }
