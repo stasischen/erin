@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const run=require('./maker-support.cjs')();
 const value=code=>JSON.parse(run(`JSON.stringify(${code})`));
-function fresh(){run(`resetGame();state.mode='playing';settingsPanel.hidden=true;state.spawnTimer=999;state.shotTimer=999;state.elapsed=0;
+function fresh(){run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;settingsPanel.hidden=true;state.spawnTimer=999;state.shotTimer=999;state.elapsed=0;
  globalThis.book=(dx=65,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,speed:0,damage:10,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});state.enemies=[book()];`);}
 function owns(ids){run(`state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,1]));`);}
 function offer(id){return run(`canOffer(UPGRADES.find(c=>c.id===${JSON.stringify(id)}))`);}

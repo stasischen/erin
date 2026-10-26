@@ -39,7 +39,7 @@ for(const id of ['chalk-wall','shrinking-ring']) {
  if(id==='chalk-wall') run('state.player.x=wallX(state.bossMoves[0]);');
  else run('state.player.x=state.bossMoves[0].x+state.bossMoves[0].radius;state.player.y=state.bossMoves[0].y;');
  const health=run('state.player.health');run('updateBoss(.01)');assert.ok(run('state.player.health')<health,id+' hurts without dash');
- run('state.player.invincible=0;activateDash()');const safe=run('state.player.health');run('updateBoss(.01)');assert.equal(run('state.player.health'),safe,id+' dash crosses safely');
+ run('state.player.invincible=.1;activateDash();tick(.05);tick(.01)');const safe=run('state.player.health');run('updateBoss(.01)');assert.equal(run('state.player.health'),safe,id+' dash crosses safely');
  run('render()');
 }
 fresh();run(`globalThis.d=SurvivorData.defaults();delete d.tuning.dashCharges;delete d.tuning.perfectWindow;d.boss.moves=d.boss.moves.filter(m=>!['chalk-wall','shrinking-ring'].includes(m.id));`);

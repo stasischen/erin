@@ -1,3 +1,4 @@
+// 打擊回饋由 feel-tiers.cjs 驗證；本檔關閉回饋，比較既有卡片戰鬥。
 // Fixed inputs → complete combat state and ordered cues/damage, against frozen pre-migration functions.
 const assert=require('node:assert/strict'),fs=require('node:fs'),legacy=require('./effect-blocks-wind-legacy.json');
 const create=require('./maker-support.cjs');
@@ -7,7 +8,7 @@ function scenario(old,setup,steps){
   if(old) {
     for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(body));
   }
-  run(`resetGame();state.mode='playing';Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;
+  run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;
     globalThis.enemy=(dx=20,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0});
     globalThis.events=[];const hit=hitBuildTarget,light=lightning;
     hitBuildTarget=(target,amount)=>{events.push(['hit',target.x,target.y,amount]);hit(target,amount);};

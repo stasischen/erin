@@ -1,3 +1,4 @@
+// 打擊回饋由 feel-tiers.cjs 驗證；本檔關閉回饋，比較既有卡片戰鬥。
 // Fixed initial states/actions/dt/draw → complete state and ordered effects.
 // Frozen source is from 4e4e055687ca54b2efc8cc33b17192348a4f5a39, before this migration.
 const assert=require('node:assert/strict'),legacy=require('./effect-blocks-neutral-legacy.json');
@@ -8,7 +9,7 @@ function scenario(old,setup,steps,draw=.05) {
  run("globalThis.currentWave=waveNeutralHit");
  if(old) for(const [name,body] of Object.entries(legacy)) if(name!=='waveNeutralHit')run(require('./slide-legacy.cjs')(body));
  run("waveNeutralHit=currentWave");
- run(`Math.random=()=>${draw};resetGame();state.mode='playing';settingsPanel.hidden=true;
+ run(`Math.random=()=>${draw};resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;settingsPanel.hidden=true;
  state.spawnTimer=999;state.shotTimer=999;state.bossSpawned=true;state.enemies=[];state.boss=null;state.upgrades={};
  globalThis.enemy=(dx=50,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0,shotCooldown:999});
  globalThis.events=[];const hit=hitBuildTarget;hitBuildTarget=(target,amount)=>{events.push(['hit',target.x,target.y,amount]);hit(target,amount);};

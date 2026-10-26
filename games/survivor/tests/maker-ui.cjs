@@ -321,3 +321,16 @@ for(const [key,[,value]] of Object.entries(postureValues))assert.equal(saved().b
 ui=setup({saved:ui.storage});choose('boss','phases');
 for(const [label,value] of Object.values(postureValues))assert.equal(Number(ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label).value),value,label);
 console.log('PASS: all ten teacher posture controls save and reload through schema');
+
+// 三級回饋／自訂與共用時機積木實際操作、儲存、重新載入。
+ui=setup();ui.ids.makerLink.fire('click');choose('weapons','candy-sword');
+ui.click('大');slider('粒子數',7);slider('輸入緩衝秒數',.14);ui.ids.save.fire('click');
+assert.equal(saved().weapons[2].feedback.primary.level,'large');
+assert.equal(saved().weapons[2].feedback.primary.particles,7);
+assert.equal(saved().weapons[2].timing.inputBuffer,.14);
+const tierStorage={...ui.storage};ui=setup({saved:tierStorage});ui.ids.makerLink.fire('click');choose('weapons','candy-sword');
+ui.click('自訂');slider('閃白強度',.4);ui.ids.save.fire('click');
+assert.equal(saved().weapons[2].feedback.primary.level,'custom');
+assert.equal(saved().weapons[2].feedback.primary.flash,.4);
+assert.equal(saved().weapons[2].feedback.primary.particles,7);
+console.log('PASS: feedback tier selection, individual override, custom mode, buffer edit and storage reload');

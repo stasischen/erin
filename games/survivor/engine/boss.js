@@ -30,7 +30,7 @@ function clearBossMoves() {
 }
 function bossHurtPlayer(damage,feedback) {
   if (!state.boss || state.boss.posture&&state.boss.posture.stun>0 || state.player.damageDisabled || state.player.invincible > 0) return;
-  feedbackImpact(feedback,false);
+  feedbackImpact(feedback,true,state.boss,state.player);
   state.player.health = Math.max(0, state.player.health - absorbSchoolHit(damage));
   state.player.invincible = INVINCIBLE_SECONDS; state.player.hitFlash = 0.16;
   playSound("hurt"); updateHud(); counterDischarge();
@@ -130,7 +130,7 @@ function updateBoss(dt) {
     state.bossPhase++; state.bossPhasePause = BOSS_TUNING.phasePause;
     state.bossShout = BOSS_TUNING.phasePause; b.flash = 0.25;
     clearBossMoves(); state.bossRest = GAME_DATA.boss.phases[state.bossPhase - 1].rest;
-    state.bossShake = BOSS_TUNING.shakeSeconds;
+    tierImpact('large',null,state.boss,{hitStop:0});
   }
   if (state.bossPhasePause > 0) { state.bossPhasePause = countdown(state.bossPhasePause, dt); updateHud(); return; }
   // 預警時老師站定；衝撞只沿預告線走，不追蹤玩家。

@@ -6,12 +6,12 @@ globalThis.e=spawnEnemy({typeId:'jaben'});e.x=state.player.x+45;e.y=state.player
 fireAtNearest();globalThis.damage=e.maxHp-e.hp;`);
 assert.ok(run('damage>0'));assert.equal(run('state.hitStop'),.05);assert.equal(run('e.impactFlash'),1);
 run('globalThis.time=state.elapsed;globalThis.hp=e.hp;tick(.025)');
-assert.equal(run('state.elapsed'),run('time'));assert.equal(run('e.hp'),run('hp'));
+assert.equal(run('state.elapsed'),run('time')+.025);assert.equal(run('e.hp'),run('hp'));
 assert.equal(run('state.hitStop'),.025);
 run('state.mode="paused";tick(.02)');assert.equal(run('state.hitStop'),.025);
 run('state.mode="playing";render()');assert.equal(run('e.impactFlash'),0);
 run('tick(.025);tick(.01)');assert.ok(run('state.elapsed>time'));
-run('meleeImpact(e,{heavy:true})');assert.ok(Math.abs(run('state.hitStop')-.075)<1e-9);assert.equal(run('state.hitShakePixels'),3);
+run('meleeImpact(e,{heavy:true})');assert.ok(Math.abs(run('state.hitStop')-.05)<1e-9);assert.equal(run('state.hitShakePixels'),2);
 run('GAME_DATA.hitJuice.enabled=false;state.hitStop=0;state.hitShake=0;meleeImpact(e,{heavy:true})');assert.equal(run('state.hitStop'),0);
 run('GAME_DATA.hitJuice.enabled=true;GAME_DATA.hitJuice.intensity=0;meleeImpact(e,{heavy:true})');assert.equal(run('state.hitStop'),0);
 run('GAME_DATA.hitJuice.intensity=2;for(let i=0;i<300;i++)meleeImpact(e,{heavy:true})');assert.ok(run('state.effects.length')<=90);
@@ -33,7 +33,7 @@ for(const id of data.enemies.map(e=>e.id)) {
   practice('globalThis.before=practiceEnemy.x;practiceStartRound()');assert.equal(practice('practiceEnemy.x'),practice('before'),id+' no teleport');
  }
 }
-console.log('PASS: melee damage/one-render white flash, real-time hit stop/pause/reset, heavy/off/zero/caps, schema migration/bounds, every trial enemy pursues without teleport');
+console.log('PASS: melee damage/one-render white flash, local hit stop/live world/pause/reset, heavy/off/zero/caps, schema migration/bounds, every trial enemy pursues without teleport');
 
 // 同一預警剩餘 1s：windup 2s → 半徑 50；改成 4s → 半徑 75；出招 → 100。
 run(`resetGame();state.mode='playing';globalThis.warningEnemy=spawnEnemy({typeId:'pudding'});

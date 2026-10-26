@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-feel-tiers",
+  "title": "統一三級打擊回饋、鏡頭震動與輸入緩衝",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-feel-tiers",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T143440Z-parent-feel-tiers.md",
+  "next": "請 Grok 重審 erin-watch 提交後的新實質 SHA：修正同一幀／揮擊逐目標累加震動與音效，採最大 trauma 與一次最強命中音效，保留逐目標局部表現。版本 20261026au；完整 test.cjs exit 0（未加 --layout），特殊攻擊補改後 feel-tiers／manual-attack／sword-combo-charge 亦通過。Godot §11 對照、測試與 Chrome layout 啟動 SIGABRT 的未完成紀錄見 docs/survivor-feel-tiers-validation.md。請 Grok 補三種尺寸群體連打操作及 layout；無待家長或 Erin 決定事項。commit、push、PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T15:03:34.008524Z",
+  "updatedBy": "codex"
+}

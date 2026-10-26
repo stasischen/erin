@@ -18,6 +18,12 @@ globalThis.SurvivorTiming = (() => {
     const c=config(source); let start=0;
     return phases.map(phase=>{const row={phase,start,seconds:c[phase]};start+=c[phase];return row;});
   }
-  return {start,advance,cancelRecovery,segments};
+  function buffer(previous,command,seconds=.12) {return {command,left:Math.max(.1,Math.min(.15,seconds))};}
+  function consume(previous,dt,ready) {
+    if(!previous)return {buffer:null,command:null};
+    if(previous.left+1e-8<dt)return {buffer:null,command:null};
+    return ready?{buffer:null,command:previous.command}:{buffer:{...previous,left:previous.left-dt},command:null};
+  }
+  return {start,advance,cancelRecovery,segments,buffer,consume};
 })();
 if(globalThis.Survivor && Survivor.engine) Survivor.engine.timing={rules:SurvivorTiming};

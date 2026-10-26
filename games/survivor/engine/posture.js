@@ -34,7 +34,7 @@ function teacherPostureEvent(trigger) {
     clearBossMoves();b.recoveryLeft=0;b.pursuing=false;
     const heal=result.events[0].actions.filter(a=>a.type==='heal').reduce((n,a)=>n+a.amount,0);
     state.player.health=Math.min(maxPlayerHealth(),state.player.health+heal);
-    b.flash=.3;state.bossShake=BOSS_TUNING.shakeSeconds;
+    b.flash=.3;tierImpact('large',state.player,b);
     skillVisual('discharge',b.x,b.y,{radius:b.r+36,color:'#fff0a5',life:.5});burst(b.x,b.y,'#fff0a5',20);playSound('posture');
   }
   updateHud();

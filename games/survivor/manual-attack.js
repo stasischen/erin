@@ -30,11 +30,13 @@ function beginManualAttack(kind, pointerId=null, point=null) {
   if(!manualMode()||state.mode!=='playing'||manualHolds[kind])return false;
   if(kind==='special'&&(state.specialCooldown>0||state.manualLeap))return false;
   manualHolds[kind]={pointerId,origin:point,angle:null,seconds:0};
+  if(inputActionLocked()){bufferAction({kind:'held',attackKind:kind});}
   // 衝刺中的按下立即出招，不必等手指放開。
   if(kind==='attack'&&state.dashTimer>0&&!state.manualDashUsed)releaseManualAttack(kind);
   return true;
 }
 function cancelManualAttack() {
+  state.inputBuffer=null;
   manualHolds.attack=null;manualHolds.special=null;
   if(state.weaponAttack&&manualMode())state.weaponAttack.charge=0;
 }
@@ -43,6 +45,11 @@ function releaseManualAttack(kind) {
   if(!hold||!manualMode()||state.mode!=='playing')return;
   const dash=state.dashTimer>0&&!state.manualDashUsed;
   const event=SurvivorAttackInput.release(kind,hold.seconds,manualAimAngle(hold),activeWeapon(),dash);
+  if(inputActionLocked()){bufferAction({kind:'attack',event});return;}
+  executeAttackInput(event);
+}
+function executeAttackInput(event) {
+  const kind=event.kind,dash=event.dash;
   state.lastAttackInput=event;
   if(kind==='special') {
     if(state.specialCooldown>0||state.manualLeap)return;
@@ -63,13 +70,14 @@ function releaseManualAttack(kind) {
   }
   updateActionControls();
 }
-function executeManualSpecial(event) {
+function executeManualSpecial(event) {return withImpactBatch(()=>manualSpecialImpacts(event));}
+function manualSpecialImpacts(event) {
   if(event.kind==='leap') {
     const swing={angle:event.angle,arc:Math.PI*.8,radius:event.range,damage:effectiveDamage()*event.damageMultiplier,push:45,heavy:true,shape:'sector',width:20};
     skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,...(moveFeedback(activeWeapon(),'special').slash?{}:{slash:false}),colors:['water'],life:.3});
     for(const t of combatTargets().filter(t=>SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,swing))) {
       const hp=t.hp;hitBuildTarget(t,swing.damage);
-      if(t.hp<hp)meleeImpact(t,{...swing,feedbackId:'special'});
+      if(t.hp<hp && state.mode==='playing')meleeImpact(t,{...swing,feedbackId:'special'});
       if(state.mode!=='playing')return;
       if(t.alive||t===state.boss){shiftTarget(t,state.player.x,state.player.y,swing.push);stunTarget(t,Math.max(t.stunTimer||0,.8));}
     }
@@ -81,7 +89,9 @@ function executeManualSpecial(event) {
         feedback:feedbackPayload(weaponFeedback({feedbackId:'special'})),rangeLeft:event.range,colors:buildAppearance().colors,schools:[],hitList:[],alive:true,push:0,charged:false,blade:event.kind==='sword-wave',bigBubble:false,autoCharged:false,boosted:false,bounces:0,fragment:false,maker:false}));
     }
   }
-  feedbackSound(moveFeedback(activeWeapon(),'special'),'shoot');
+  const feedback=moveFeedback(activeWeapon(),'special');
+  if(event.kind==='leap')queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
+  else feedbackSound(feedback,'shoot');
 }
 function advanceManualTiming(dt) {
   let a=state.manualTiming;
@@ -170,4 +180,18 @@ for(const [kind,button] of Object.entries(manualButtons)) {
 window.addEventListener('blur',cancelManualAttack);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelManualAttack();});
 
+function inputActionLocked() {
+  return (state.player.hitStop||0)>0 || !!state.player.feedbackFrozen || !!(state.manualTiming && ['recovery','cooldown'].includes(state.manualTiming.phase));
+}
+function bufferAction(command) {
+  state.inputBuffer=SurvivorTiming.buffer(state.inputBuffer,command,activeWeapon().timing.inputBuffer??.12);
+}
+function flushBufferedInput(dt) {
+  const result=SurvivorTiming.consume(state.inputBuffer,dt,!inputActionLocked());
+  state.inputBuffer=result.buffer;
+  const c=result.command;if(!c)return;
+  if(c.kind==='dash')activateDash();
+  else if(c.kind==='attack')executeAttackInput(c.event);
+  else if(c.kind==='held' && manualHolds[c.attackKind])releaseManualAttack(c.attackKind);
+}
 Survivor["manual-attack"]={rules:SurvivorAttackInput,beginManualAttack,releaseManualAttack,cancelManualAttack,tickManualAttack};

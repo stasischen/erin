@@ -55,7 +55,7 @@ function fireAtNearest(command = null) {
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
 function resolveWaterHit(shot) {
-  playSound("water");
+  queueImpact(0,'water',-1);
   if(shot.bigBubble) {
     shot.bigBubble=false;
     const weapon=GAME_DATA.weapons.find(w=>w.id==='water-ball');
@@ -110,8 +110,8 @@ function damageNumber(target, damage) {
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
-  if (encounterShield(enemy, damage)) { playSound("hit"); return; }
-  playSound("hit");
+  if (encounterShield(enemy, damage)) { damageHitSound(); return; }
+  damageHitSound();
   damage = schoolDamage(enemy, damage);
   enemy.meleeFlash=false;
   enemy.hp -= damage;
@@ -157,11 +157,11 @@ function hitBuildTarget(target, damage, attack = {}) {
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
     if(attack.charged)damage*=teacherBonuses().damage;
-    playSound("hit");
+    damageHitSound();
     damageNumber(target, damage);
     target.meleeFlash=false;
     target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
-    if (target.hp <= 0) { state.boss = null; finishRun(true); }
+    if (target.hp <= 0) { tierImpact('large',state.player,target);state.boss = null; finishRun(true); }
     else teacherRecoveryHit();
   } else if (target.alive) damageEnemy(target, damage);
 }
@@ -244,7 +244,7 @@ function updateMakerEffects(dt) {
     if (h.owner) skillVisual('splash',h.x,h.y,{radius:h.r,color:'#b68159',life:.4});
     if(state.practiceHit && targetVisible(h) && Math.hypot(deltaX(h.x,state.player.x),deltaY(h.y,state.player.y))<h.r+state.player.r) pacingHurtPlayer(h.damage,h.feedback);
     if(targetVisible(h) && !state.player.damageDisabled && state.dashTimer<=0 && state.player.invincible<=0 && Math.hypot(deltaX(h.x, state.player.x),deltaY(h.y, state.player.y))<h.r+state.player.r) {
-      feedbackImpact(h.feedback);state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
+      feedbackImpact(h.feedback,true,null,state.player);state.player.health=Math.max(0,state.player.health-absorbSchoolHit(h.damage));state.player.invincible=INVINCIBLE_SECONDS;state.player.hitFlash=.16;updateHud();counterDischarge();
       if(state.player.health<=0) finishRun(false);
     }
   }
@@ -388,6 +388,7 @@ function imminentDashThreat() {
   return false;
 }
 function activateDash() {
+  if(state.mode==='playing' && ((state.player.hitStop||0)>0 || state.player.feedbackFrozen)) {bufferAction({kind:'dash'});return;}
   if (state.mode !== "playing" || state.dashTimer > 0 || state.dashCharges <= 0) return;
   const teacherThreat=teacherDodgeThreat();
   const perfect = teacherThreat || imminentDashThreat();
@@ -405,6 +406,7 @@ function activateDash() {
   state.dashBodyPass = Math.max(gameSettings.dashSeconds, UPGRADE_TUNING.dashInvincible);
   state.dashAttack = UPGRADE_TUNING.dashAttackSeconds;
   if (perfect) {
+    tierImpact('medium',teacherThreat?state.boss:null,state.player);
     teacherPerfectDodge(teacherThreat);
     state.player.health = Math.min(maxPlayerHealth(), state.player.health + UPGRADE_TUNING.perfectHeal);
     state.dashBodyPass = Math.max(state.dashBodyPass, UPGRADE_TUNING.perfectShield);

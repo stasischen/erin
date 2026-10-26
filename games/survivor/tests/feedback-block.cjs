@@ -1,7 +1,7 @@
 // 固定作品／設定／dt → 回饋與沙盒狀態；不依賴瀏覽器上手審查。
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),createRun=require('./maker-support.cjs');
 const run=createRun(),json=expr=>JSON.parse(run(`JSON.stringify(${expr})`));
-run(`globalThis.legacyFeedback=SurvivorData.defaults();globalThis.oldJson=JSON.stringify(legacyFeedback);
+run(`globalThis.legacyFeedback=SurvivorData.defaults();delete legacyFeedback.weapons[0].feedback;delete legacyFeedback.enemies[0].feedback;globalThis.oldJson=JSON.stringify(legacyFeedback);
 globalThis.fbResult=SurvivorData.validate(legacyFeedback);`);
 assert.equal(run('fbResult.valid'),true);assert.equal(run('JSON.stringify(legacyFeedback)===oldJson'),true);
 assert.equal(run('fbResult.data.weapons[0].blocks.moves[0].feedback.hitStop'),0);

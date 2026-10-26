@@ -36,7 +36,8 @@ globalThis.SurvivorWeapons = (() => {
 
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
 function activeWeapon() { return GAME_DATA.weapons.find(w => w.id === state.weaponId) || GAME_DATA.weapons[0]; }
-function swingAtNearest(dash = false, command = null) {
+function swingAtNearest(dash = false, command = null) {return withImpactBatch(()=>swingWithImpacts(dash,command));}
+function swingWithImpacts(dash,command) {
   const target = closestEnemy(), weapon = activeWeapon();
   if (!target && !command) return;
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
@@ -63,7 +64,7 @@ function swingAtNearest(dash = false, command = null) {
   const feedbackEvent={...event,feedbackId:event.charged?'charge':dash?'dash':event.heavy?'combo':'primary'};
   const feedback=weaponFeedback(feedbackEvent);
   const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
-  skillVisual('hammer-swing',state.player.x,state.player.y,visual); feedbackSound(feedback,'shoot');
+  skillVisual('hammer-swing',state.player.x,state.player.y,visual); queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
   if (effectLevel('item-rear') && !event.spin && !event.charged) {
     const rear={...event,angle:event.angle+Math.PI};
@@ -76,7 +77,7 @@ function swingAtNearest(dash = false, command = null) {
     schoolShotHit(shot,t);
     const hpBefore=t.hp;
     hitBuildTarget(t,event.damage,{charged:event.charged});
-    if(t.hp<hpBefore) meleeImpact(t,feedbackEvent);
+    if(t.hp<hpBefore && state.mode==='playing') meleeImpact(t,feedbackEvent);
     if(state.mode!=='playing') return;
     if((t.alive || t===state.boss) && event.stun) stunTarget(t,Math.max(t.stunTimer||0,event.stun));
     if(t===state.boss || t.alive) shiftTarget(t,state.player.x,state.player.y,event.push);
@@ -105,14 +106,5 @@ Survivor.engine.weapons = {activeWeapon,swingAtNearest,rules:SurvivorWeapons};
 
 // 表現接合：只接收揮擊事件與受擊目標；不改傷害、範圍或擊退規則。
 function meleeImpact(target,event) {
-  const h=GAME_DATA.hitJuice, strength=h.enabled?h.intensity:0;
-  if(!strength) return;
-  const feedback=weaponFeedback(event), scaled=SurvivorFeedback.scale(feedback,strength,!!event.heavy);
-  const heavy=event.heavy?1.5:1;
-  target.meleeFlash=true; target.impactFlash=1; target.impactSquash=.14*strength;
-  state.hitStop=Math.max(state.hitStop||0,scaled.stop);
-  state.hitShake=Math.max(state.hitShake||0,scaled.shake);
-  state.hitShakePixels=scaled.pixels;
-  const dx=deltaX(target.x,state.player.x),dy=deltaY(target.y,state.player.y),d=Math.max(1,Math.hypot(dx,dy));
-  burst(target.x-dx/d*target.r,target.y-dy/d*target.r,'#fff0a5',Math.ceil(5*strength*heavy));
+  feedbackImpact(weaponFeedback(event),true,state.player,target);
 }

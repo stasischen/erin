@@ -63,11 +63,13 @@
 
   }
   function feedbackEditor(parent,f) {
+    select(parent,'回饋等級',f,'level',{small:'小',medium:'中',large:'大',custom:'自訂'},()=>{if(f.level!=='custom')Object.assign(f,api.FEEDBACK_TIERS[f.level],{hitStop:1,shake:1});changed();render();});
     select(parent,'預警樣式',f,'warningStyle',api.WARNING_STYLES);
     select(parent,'音效',f,'sound',api.FEEDBACK_SOUNDS);
     for(const [key,label] of [['slash','刀光'],['hint','提示']]) button(parent,label+'：'+(f[key]?'開':'關'),()=>{f[key]=!f[key];changed();render();},f[key]);
     range(parent,f,'hitStop',api.FEEDBACK_BOUNDS.hitStop,'頓幀倍率');
     range(parent,f,'shake',api.FEEDBACK_BOUNDS.shake,'震動倍率');
+    for(const [key,label] of [['stopSeconds','停頓秒數'],['particles','粒子數'],['trauma','鏡頭創傷值'],['flash','閃白強度'],['numberScale','傷害數字大小']])range(parent,f,key,api.FEEDBACK_BOUNDS[key],label);
     el('small','仍套用玩家設定的回饋強度、震動與聲音開關。',parent);
   }
   function iconPicker(parent, card) {
@@ -372,6 +374,8 @@
     const node=el('div',undefined,box);node.className='timing-timeline';node.setAttribute('aria-label','攻擊時間軸');
     timingViews.push({node,source}); refreshTimelines();
     const fields=grid(box);
+    if(source.inputBuffer===undefined)source.inputBuffer=.12;
+    range(fields,source,'inputBuffer',[.1,.15,.01],'輸入緩衝秒數');
     for(const key of Object.keys(api.TIMING_BOUNDS)) range(fields,source,key,bounds[key],key==='windup'?'起手預警秒數':key==='recovery'?'收招停頓秒數':timingLabels[key]+'秒數');
   }
   function drawWeapons() {

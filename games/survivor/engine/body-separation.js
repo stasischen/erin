@@ -88,8 +88,8 @@ function separateEnemyBodies(dt,previous,passThrough) {
     world:{width:state.worldWidth,height:state.worldHeight},
     view:{x:state.player.x,y:state.player.y,width:state.width,height:state.height},
     previous,passThrough,player:{x:state.player.x,y:state.player.y,r:state.player.r},
-    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss,mass:targetMass(e)}))});
-  state.player.x=result.player.x;state.player.y=result.player.y;
+    bodies:refs.map(e=>({x:e.x,y:e.y,r:e.r,pinned:e===state.boss || !!e.feedbackFrozen,mass:targetMass(e)}))});
+  if(!state.player.feedbackFrozen){state.player.x=result.player.x;state.player.y=result.player.y;}
   result.bodies.forEach((b,i)=>{refs[i].x=b.x;refs[i].y=b.y;});
   updateCamera();
 }
@@ -178,6 +178,11 @@ function updateTargetSlide(target,dt) {
   const o=slideObstacles(target),result=SurvivorSlide.step(target.slide,dt,target.r,o.circles,o.walls,o.bounds);
   target.x+=result.dx;target.y+=result.dy;target.slide=result.motion;clampToMap(target);
   // 浪花互撞在真正碰到時結算一次，不在發射時隔空傷害。
+  for(const event of GAME_DATA.hitJuice.enabled && GAME_DATA.hitJuice.intensity ? SurvivorFeedback.collision(result) : []) {
+    tierImpact(event.level,null,target); // 只停被擋的目標，不停也不推擋路者
+    target.impactSquash=.1;
+    burst(target.x,target.y,'#c6cbd2',4); // pixel dust, no emoji
+  }
   if(target.slideWave && result.hit>=0) {
     const other=o.refs[result.hit],rule=cardBlock('item-wall','onWaveHit').actions[1];
     target.slideWave=false;
