@@ -87,11 +87,11 @@
     if (c.effects.length < 3) { const add = el('button', '＋ 加一個積木', edit); add.type = 'button'; add.addEventListener('click', () => { c.effects.push({type:'aoe',trigger:'skill',...api.PARAMS}); changed(); render(); }); }
   }
   function cardRecipe(id) {
-    return globalThis.SurvivorEffectBlocks && SurvivorEffectBlocks.recipes.find(r=>r.feature===id && (id.startsWith('thunder-') || id.startsWith('water-') || id.startsWith('wind-') || id==='fusion-storm' || id==='fusion-dash' || id==='fusion-puddle' || ["big-water", "rapid-water", "multi-water", "onion-dash", "bubble-shield", "gem-magnet", "piercing-water", "splash-water", "auto-heal"].includes(id)));
+    return globalThis.SurvivorEffectBlocks && SurvivorEffectBlocks.recipes.find(r=>r.feature===id && (id.startsWith('item-') || id.startsWith('thunder-') || id.startsWith('water-') || id.startsWith('wind-') || id==='fusion-storm' || id==='fusion-dash' || id==='fusion-puddle' || ["big-water", "rapid-water", "multi-water", "onion-dash", "bubble-shield", "gem-magnet", "piercing-water", "splash-water", "auto-heal"].includes(id)));
   }
-  const CARD_TRIGGERS={onHealth:'計算血條上限時',onUpgrade:'選到這張卡時',onHealTick:'回血計時到時',onMeleeHit:'近戰命中後',onMove:'計算移動速度時',onPickup:'吸取寶石時',onStill:'站定不動時',onWallTick:'風牆持續時',onEnemyShot:'敵人子彈碰到風牆時',onWaterHit:'水攻擊命中時',onShotHit:'普攻命中時',onFieldTick:'流派痕跡傷害計時到時',onPulse:'每隔一段時間',onDashEnd:'衝刺結束時',onDamage:'計算傷害時',onRainTick:'下雨持續時',onChain:'跳電命中時',onSkillBlast:'泡泡炸開時',onHurt:'受傷時',onUltimate:'終極技能準備好時',onDashTrail:'衝刺沿路留下痕跡',onShot:'發動普攻時',onSummonTimer:'每隔一段時間',onDashCross:'衝刺穿過怪物時',onTimer:'每隔一段時間'};
-  const CARD_CONDITIONS={healthMissing:'血量還沒補滿',still:'站定達到等待秒數',bladeEligible:'遠程普攻仍可穿透，且不是小風刃',shotMultiple:'普攻發數達到倍數',positiveDamage:'這次傷害大於零',bubbleActive:'泡泡盾還在',wetTarget:'目標身上濕濕的',radius:'範圍內的怪物',randomTarget:'隨機一隻可攻擊的怪物',killThreshold:'擊倒數達到門檻，且這次蓄電還沒用過',segmentTouching:'碰到衝刺路線的怪物',touching:'碰到主角的怪物'};
-  const CARD_ACTIONS={'size-multiplier':'放大普攻範圍','interval-multiplier':'縮短普攻間隔',spread:'增加水球數量（近戰擴大扇形）',health:'增加血條上限',heal:'補血並限制在血條上限','attack-multiplier':'加快普攻速度及距離（近戰放大範圍）','rate-multiplier':'依移動程度加快攻速',orbit:'繞著主角旋轉',pierce:'增加穿透次數',blade:'產生小風刃（近戰改成追斬）',refund:'回充部分衝刺進度','move-multiplier':'提高移動速度','pickup-multiplier':'擴大拾取範圍',wall:'建立保護風牆','block-shot':'擋掉敵人子彈',wet:'讓怪物濕濕的',slow:'讓怪物緩速',push:'推開怪物',bubble:'取得泡泡盾',absorb:'消耗泡泡盾並擋下這次傷害','damage-multiplier':'提高傷害倍率','big-drop':'放大這次普攻、增加傷害與擊退',rain:'開始下雨，持續影響全場怪物',chain:'連鎖閃電（每跳選最近的怪物，不重複命中）','chain-modifier':'增加跳電次數，每跳保留完整傷害',stun:'讓怪物暈眩',damage:'造成傷害',field:'留下流派痕跡（依流派造成傷害或緩速）',charged:'強化這次普攻，命中後跳電',summon:'放下避雷針，定時攻擊附近怪物',cue:'閃電提示'};
+  const CARD_TRIGGERS={onWaveHit:'浪花命中時',onDeath:'擊倒怪物時',onBombDue:'糖果炸彈倒數到時',onBirdTick:'小鳥準備啄擊時',onAcquire:'取得卡片時',onOffer:'抽升級卡時',onHealth:'計算血條上限時',onUpgrade:'選到這張卡時',onHealTick:'回血計時到時',onMeleeHit:'近戰命中後',onMove:'計算移動速度時',onPickup:'吸取寶石時',onStill:'站定不動時',onWallTick:'風牆持續時',onEnemyShot:'敵人子彈碰到風牆時',onWaterHit:'水攻擊命中時',onShotHit:'普攻命中時',onFieldTick:'流派痕跡傷害計時到時',onPulse:'每隔一段時間',onDashEnd:'衝刺結束時',onDamage:'計算傷害時',onRainTick:'下雨持續時',onChain:'跳電命中時',onSkillBlast:'泡泡炸開時',onHurt:'受傷時',onUltimate:'終極技能準備好時',onDashTrail:'衝刺沿路留下痕跡',onShot:'發動普攻時',onSummonTimer:'每隔一段時間',onDashCross:'衝刺穿過怪物時',onTimer:'每隔一段時間'};
+  const CARD_CONDITIONS={waveEligible:'非零方向，且目標仍可攻擊',chance:'外部抽樣小於掉落機率',countMultiple:'先增加計數，達到指定倍數才結算獎勵',splitEligible:'不是碎片，且不是自訂積木子彈',firstClover:'首次取得帶幸運草效果的卡',volleyPresent:'本次已有可複製的水球',healthMissing:'血量還沒補滿',still:'站定達到等待秒數',bladeEligible:'遠程普攻仍可穿透，且不是小風刃',shotMultiple:'普攻發數達到倍數',positiveDamage:'這次傷害大於零',bubbleActive:'泡泡盾還在',wetTarget:'目標身上濕濕的',radius:'範圍內的怪物',randomTarget:'隨機一隻可攻擊的怪物',killThreshold:'擊倒數達到門檻，且這次蓄電還沒用過',segmentTouching:'碰到衝刺路線的怪物',touching:'碰到主角的怪物'};
+  const CARD_ACTIONS={'health-cost':'降低最大血量（保留至少一點）','collision-damage':'沿擊退路徑找第一隻可互撞怪物，兩隻各受傷並共用冷卻','bomb-drop':'掉落有上限的延遲糖果炸彈','bank-count':'每顆寶石球累積一次，成長獎勵有上限',split:'分裂兩顆碎片，每顆水球只分裂一次',reroll:'立刻增加一次重抽','rare-multiplier':'提高稀有卡抽選權重','rear-shot':'複製第一顆水球向後發射','kill-count':'累積擊倒數','size-multiplier':'放大普攻範圍','interval-multiplier':'縮短普攻間隔',spread:'增加水球數量（近戰擴大扇形）',health:'增加血條上限',heal:'補血並限制在血條上限','attack-multiplier':'加快普攻速度及距離（近戰放大範圍）','rate-multiplier':'依移動程度加快攻速',orbit:'繞著主角旋轉',pierce:'增加穿透次數',blade:'產生小風刃（近戰改成追斬）',refund:'回充部分衝刺進度','move-multiplier':'提高移動速度','pickup-multiplier':'擴大拾取範圍',wall:'建立保護風牆','block-shot':'擋掉敵人子彈',wet:'讓怪物濕濕的',slow:'讓怪物緩速',push:'推開怪物',bubble:'取得泡泡盾',absorb:'消耗泡泡盾並擋下這次傷害','damage-multiplier':'提高傷害倍率','big-drop':'放大這次普攻、增加傷害與擊退',rain:'開始下雨，持續影響全場怪物',chain:'連鎖閃電（每跳選最近的怪物，不重複命中）','chain-modifier':'增加跳電次數，每跳保留完整傷害',stun:'讓怪物暈眩',damage:'造成傷害',field:'留下流派痕跡（依流派造成傷害或緩速）',charged:'強化這次普攻，命中後跳電',summon:'放下避雷針，定時攻擊附近怪物',cue:'閃電提示'};
   function drawCardBlocks(parent,card,effect,index) {
     range(parent,effect,'power',undefined,'每級效果強度');
     el('p','數值與其他使用同一規則的卡片共用；修改後可按預覽看看。',parent);
@@ -112,8 +112,8 @@
     const defaults=api.defaults();
     for(const ref of refs) {
       const [group,key]=ref.split('.'), base=defaults[group][key];
-      const bounds=group==='schoolRules'?api.SCHOOL_BOUNDS[key]:api.TUNING_BOUNDS[key] || (key==='fieldLimit'?[1,18,1]:[base===0?0:Math.min(.01,base),Math.max(5,base*3),base>=5?1:.01]);
-      range(fields,draft[group],key,bounds,(SCHOOL_NAMES[key]||NUMBER_NAMES[key]));
+      const bounds=group==='neutralRules'?api.NEUTRAL_BOUNDS[key]:group==='schoolRules'?api.SCHOOL_BOUNDS[key]:api.TUNING_BOUNDS[key] || (key==='fieldLimit'?[1,18,1]:[base===0?0:Math.min(.01,base),Math.max(5,base*3),base>=5?1:.01]);
+      range(fields,draft[group],key,bounds,(NEUTRAL_NAMES[key]||SCHOOL_NAMES[key]||NUMBER_NAMES[key]));
     }
   }
   function drawEffect(parent, card, effect, index) {
@@ -360,12 +360,13 @@
     }
   }
 
+  const NEUTRAL_NAMES={wavePush:"浪花額外擊退距離",waveDamage:"浪花互撞傷害",waveCooldown:"浪花每隻冷卻秒", "itemsPerRun": "每場道具卡池張數", "bombChance": "炸彈掉落機率", "bombDelay": "炸彈等待秒", "bombRadius": "炸彈半徑", "bombDamage": "炸彈傷害", "birdRadius": "小鳥繞行半徑", "birdReach": "小鳥啄擊距離", "birdSeconds": "小鳥攻擊間隔秒", "birdDamage": "小鳥傷害", "bankEvery": "金庫每幾顆球成長", "bankStep": "金庫每次傷害加成", "bankCap": "金庫傷害加成上限", "splitDamage": "分裂傷害倍率", "splitAngle": "分裂角度", "magnetMultiplier": "磁鐵拾取倍率", "crownDamage": "王冠傷害加成", "crownHealth": "王冠減少最大血量", "luckyRareMultiplier": "幸運草稀有權重倍率", "cookieKills": "餅乾回血所需擊倒數"};
   function drawNumbers() {
     const defaults=api.defaults();
     if(selected.rules==='neutral') {
     const nf=grid(panel('中立道具數值'));
-    const names={wavePush:"浪花額外擊退距離",waveDamage:"浪花互撞傷害",waveCooldown:"浪花每隻冷卻秒", "itemsPerRun": "每場道具卡池張數", "bombChance": "炸彈掉落機率", "bombDelay": "炸彈等待秒", "bombRadius": "炸彈半徑", "bombDamage": "炸彈傷害", "birdRadius": "小鳥繞行半徑", "birdReach": "小鳥啄擊距離", "birdSeconds": "小鳥攻擊間隔秒", "birdDamage": "小鳥傷害", "bankEvery": "金庫每幾顆球成長", "bankStep": "金庫每次傷害加成", "bankCap": "金庫傷害加成上限", "splitDamage": "分裂傷害倍率", "splitAngle": "分裂角度", "magnetMultiplier": "磁鐵拾取倍率", "crownDamage": "王冠傷害加成", "crownHealth": "王冠減少最大血量", "luckyRareMultiplier": "幸運草稀有權重倍率", "cookieKills": "餅乾回血所需擊倒數"};
-    for(const [key,bounds] of Object.entries(api.NEUTRAL_BOUNDS)) range(nf,draft.neutralRules,key,bounds,names[key]);
+
+    for(const [key,bounds] of Object.entries(api.NEUTRAL_BOUNDS)) range(nf,draft.neutralRules,key,bounds,NEUTRAL_NAMES[key]);
     }
     if(selected.rules==='schoolRules') {
     const schoolPanel=panel('流派數值'), schoolFields=grid(schoolPanel);

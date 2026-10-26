@@ -234,3 +234,30 @@ console.log('PASS: ten wind card stacks, fold/preview persistence, shared edit a
   assert.ok(!reloaded.ids.editor.textContent.includes('原本組合：水球加大'));
 }
 console.log('PASS: nine support card stacks, fold/preview persistence, shared edit and old-work reload');
+
+// Neutral stacks expose bounded shared refs, persist old feature/power works and preview each card.
+{
+ const m=setup();m.tab('cards');
+ const edits={wall:'浪花互撞傷害',candy:'炸彈傷害',bird:'小鳥傷害',bank:'金庫每幾顆球成長',split:'分裂角度',magnet:'磁鐵拾取倍率',crown:'王冠減少最大血量',clover:'幸運草稀有權重倍率',cookie:'餅乾回血所需擊倒數'};
+ for(const id of ['wall','candy','bird','bank','split','magnet','crown','clover','rear','cookie']) {
+  m.item('item-'+id);const stacks=m.nodes().filter(n=>n.className==='card-block-stack');
+  assert.ok(stacks.length,id);assert.equal(stacks[0].open,false);
+  stacks[0].open=true;stacks[0].fire('toggle');
+  assert.ok(!stacks.some(n=>n.textContent.includes('undefined')),id);
+  assert.ok(stacks.every(n=>n.textContent.includes('動作 →')),id);
+  if(edits[id]) {
+   const row=m.nodes().find(n=>n.className==='maker-number'&&n.textContent.startsWith(edits[id]));assert.ok(row,id);
+   row.children[1].children.find(n=>n.tag==='button'&&n._text==='＋').fire('click');
+  }
+  m.click('看這個積木的效果');assert.equal(m.calls[m.calls.length-1].spec.id,'item-'+id);
+  assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
+ }
+ m.ids.save.fire('click');const data=JSON.parse(m.storage['erin-survivor-maker-v1']);
+ assert.equal(data.neutralRules.cookieKills,21);assert.equal(data.neutralRules.crownHealth,2);
+ assert.equal(data.neutralRules.bankEvery,11);assert.equal(data.cards.find(c=>c.id==='item-clover').effects[0].feature,'item-clover');
+ const reload=setup({saved:m.storage});reload.tab('cards');reload.item('item-crown');
+ assert.ok(reload.nodes().find(n=>n.className==='card-block-stack'));
+ assert.ok(!reload.ids.editor.textContent.includes('原本組合：'));
+ reload.ids.save.fire('click');assert.deepEqual(JSON.parse(reload.storage['erin-survivor-maker-v1']).neutralRules,data.neutralRules);
+}
+console.log('PASS: ten neutral card stacks, folding/preview, shared bounded edits and old-work reload');

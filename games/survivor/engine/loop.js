@@ -333,7 +333,7 @@ function tick(dt) {
     if (!gem.alive) continue;
     gem.wobble += dt * 5;
     const dx = deltaX(state.player.x, gem.x), dy = deltaY(state.player.y, gem.y), distance = Math.hypot(dx, dy);
-    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? GAME_DATA.neutralRules.magnetMultiplier : 1) * cardBlock('wind-light','onPickup').actions[0].multiplier * cardBlock('gem-magnet','onPickup').actions[0].multiplier;
+    const pullRadius = GEM_PULL_RADIUS * (effectLevel("item-magnet") ? cardBlock('item-magnet','onPickup').actions[0].multiplier : 1) * cardBlock('wind-light','onPickup').actions[0].multiplier * cardBlock('gem-magnet','onPickup').actions[0].multiplier;
     if (distance < pullRadius && distance > 0.1) { const speed = 150 + (pullRadius - distance) * 3; gem.x += dx / distance * speed * dt; gem.y += dy / distance * speed * dt; }
     clampToMap(gem);
     if (distance < state.player.r + gem.r + 3) { gem.alive = false; neutralEvent("pickup", gem.x, gem.y); grantExperience(gem.value); if (state.mode === "levelup") break; }

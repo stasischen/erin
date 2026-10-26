@@ -109,6 +109,31 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'splash-water',rules:[{trigger:'onShotHit',conditions:[{type:'radius',strict:true,radius:op('add',ref('tuning.splashBaseRadius'),op('multiply',arg('level'),ref('tuning.splashPerLevel')))}],actions:[{type:'damage',amount:op('multiply',arg('damage'),ref('build.supportSplashDamage'))}]}]},
     {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:1}]}]}
   );
+  // 中立道具：保留一次掛載、原有次序及世界單位，亂數／計數由事件傳入。
+  const nr = key => ref('neutralRules.'+key);
+  const bankBonus = op('min',nr('bankCap'),op('multiply',op('floor',op('divide',arg('gems'),nr('bankEvery'))),nr('bankStep')));
+  // 王冠沿用已完成的 modifier；積木檢視直接共用同一份公式。
+  const crown=recipes.find(r=>r.feature==='item-crown');
+  crown.rules=[
+    {trigger:'onDamage',actions:[{type:'damage-multiplier',multiplier:crown.modifiers[0].value}]},
+    {trigger:'onHealth',actions:[{type:'health-cost',amount:crown.modifiers[1].value}]}];
+  recipes.push(
+    {feature:'item-wall',rules:[{trigger:'onWaveHit',conditions:[{type:'waveEligible'}],actions:[
+      {type:'push',distance:nr('wavePush')},{type:'collision-damage',amount:nr('waveDamage'),cooldown:nr('waveCooldown')}]}]},
+    {feature:'item-candy',rules:[{trigger:'onDeath',conditions:[{type:'chance',probability:nr('bombChance')}],actions:[
+      {type:'bomb-drop',delay:nr('bombDelay'),limit:12}]},
+      {trigger:'onBombDue',conditions:[{type:'radius',includeTargetRadius:true,radius:nr('bombRadius')}],actions:[{type:'damage',amount:nr('bombDamage')}]}]},
+    {feature:'item-bird',rules:[{trigger:'onBirdTick',interval:nr('birdSeconds'),conditions:[{type:'radius',includeTargetRadius:true,radius:nr('birdReach')}],actions:[
+      {type:'orbit',radius:nr('birdRadius'),speed:2.5},{type:'damage',amount:nr('birdDamage')}]}]},
+    {feature:'item-bank',rules:[{trigger:'onPickup',conditions:[{type:'countMultiple',every:nr('bankEvery')}],actions:[{type:'bank-count',amount:1,bonus:bankBonus}]},
+      {trigger:'onDamage',actions:[{type:'damage-multiplier',multiplier:op('add',1,bankBonus)}]}]},
+    {feature:'item-split',rules:[{trigger:'onShotHit',conditions:[{type:'splitEligible'}],actions:[{type:'split',count:2,angle:nr('splitAngle'),multiplier:nr('splitDamage')}]}]},
+    {feature:'item-magnet',rules:[{trigger:'onPickup',actions:[{type:'pickup-multiplier',multiplier:nr('magnetMultiplier')}]}]},
+    {feature:'item-clover',rules:[{trigger:'onAcquire',conditions:[{type:'firstClover'}],actions:[{type:'reroll',amount:1}]},
+      {trigger:'onOffer',actions:[{type:'rare-multiplier',multiplier:nr('luckyRareMultiplier')}]}]},
+    {feature:'item-rear',rules:[{trigger:'onShot',conditions:[{type:'volleyPresent'}],actions:[{type:'rear-shot',count:1,angle:Math.PI,multiplier:1}]}]},
+    {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:1}]}]}
+  );
   const refs = new Set(['schoolRules.staticSeconds','schoolRules.staticDamage','neutralRules.crownDamage','neutralRules.crownHealth']);
   function collect(node) {
     if (!node || typeof node!=='object') return;
@@ -116,7 +141,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     Object.values(node).forEach(collect);
   }
   recipes.forEach(collect);
-  const inputs=new Set(['level','transformed','radius','damage','dt','moving']);
+  const inputs=new Set(['level','transformed','radius','damage','dt','moving','gems']);
   function value(expression, data, context={}) {
     if (typeof expression === 'number' && Number.isFinite(expression)) return expression;
     if (expression && refs.has(expression.ref)) {
@@ -133,6 +158,8 @@ globalThis.SurvivorEffectBlocks = (() => {
       if(expression.op==='ceil') return Math.ceil(args[0]);
       if(expression.op==='divide') return args[0]/args[1];
       if(expression.op==='power') return Math.pow(args[0],args[1]);
+      if(expression.op==='min') return Math.min(...args);
+      if(expression.op==='floor') return Math.floor(args[0]);
       if(expression.op==='max') return Math.max(...args);
     }
     throw new Error('Unsupported effect expression');
@@ -150,6 +177,12 @@ globalThis.SurvivorEffectBlocks = (() => {
     return rule ? resolve(rule,data,context) : null;
   }
   function matches(condition,target,player={r:0},end={x:0,y:0}) {
+    if(condition.type==='chance') return target.draw<condition.probability;
+    if(condition.type==='countMultiple') return target.number%condition.every===0;
+    if(condition.type==='splitEligible') return !target.fragment && !target.maker;
+    if(condition.type==='firstClover') return !!target.cloverAcquired;
+    if(condition.type==='volleyPresent') return target.count>0;
+    if(condition.type==='waveEligible') return target.length>0 && (target.boss || target.alive) && target.attackable;
     if(condition.type==='healthMissing') return target.health<target.maxHealth;
     if(condition.type==='still') return target.seconds>=condition.seconds;
     if(condition.type==='bladeEligible') return !target.melee && target.pierce>0 && !target.blade;
@@ -196,7 +229,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     const timers={...input.timers}, events=[];
     for (const recipe of definitions) if (input.levels[recipe.feature]) for (const rule of recipe.rules || []) {
       if (rule.trigger !== 'onTimer') {
-        if (['onHealth','onUpgrade','onHealTick','onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick','onMeleeHit','onMove','onPickup','onStill','onWallTick','onEnemyShot'].includes(rule.trigger)) continue;
+        if (['onWaveHit','onDeath','onBombDue','onBirdTick','onAcquire','onOffer','onHealth','onUpgrade','onHealTick','onChain','onSkillBlast','onHurt','onUltimate','onDashTrail','onShot','onSummonTimer','onDashCross','onWaterHit','onShotHit','onFieldTick','onPulse','onDashEnd','onDamage','onRainTick','onMeleeHit','onMove','onPickup','onStill','onWallTick','onEnemyShot'].includes(rule.trigger)) continue;
         throw new Error('Unsupported effect trigger');
       }
       const seconds=value(rule.interval,input.data);
