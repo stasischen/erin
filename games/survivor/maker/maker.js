@@ -163,6 +163,9 @@
   function drawEnemies() {
     const body=grid(panel('怪物身體碰撞'));
     const toggle=(parent,label,obj,key)=>{const b=button(parent,label+'：'+(obj[key]?'開':'關'),()=>{obj[key]=!obj[key];changed();render();});b.setAttribute('role','switch');b.setAttribute('aria-checked',String(obj[key]));};
+    const juice=grid(panel('打擊手感'));
+    toggle(juice,'打擊回饋',draft.hitJuice,'enabled');
+    range(juice,draft.hitJuice,'intensity',[0,2,.1],'打擊強度（頓幀、震動、火花與壓扁）');
     toggle(body,'碰撞只會推開，不會受傷',draft.bodyContact,'pushOnly');
     range(body,draft.bodyContact,'damageScale',[0,1,.05],'身體傷害倍率（所有小怪，Boss 除外）');
     toggle(body,'身體柔性分離',draft.bodySeparation,'enabled');

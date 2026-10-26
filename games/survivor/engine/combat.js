@@ -111,6 +111,7 @@ function damageEnemy(enemy, damage = effectiveDamage()) {
   if (encounterShield(enemy, damage)) { playSound("hit"); return; }
   playSound("hit");
   damage = schoolDamage(enemy, damage);
+  enemy.meleeFlash=false;
   enemy.hp -= damage;
   enemy.flash = HIT_FLASH_SECONDS; enemy.knockX = deltaX(enemy.x, state.player.x); enemy.knockY = deltaY(enemy.y, state.player.y); enemy.knockback = KNOCKBACK_SPEED;
   if (enemy.hp <= 0) playSound("death");
@@ -155,6 +156,7 @@ function hitBuildTarget(target, damage) {
   if (target === state.boss) {
     playSound("hit");
     damageNumber(target, damage);
+    target.meleeFlash=false;
     target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
     if (target.hp <= 0) { state.boss = null; finishRun(true); }
   } else if (target.alive) damageEnemy(target, damage);
@@ -440,7 +442,7 @@ function updateBomb(dt) {
     if (enemy.alive) { pushAway(enemy); enemy.knockback = 0; }
   }
   if (state.boss && canAttackTarget(state.boss) && Math.hypot(deltaX(state.boss.x, bomb.x), deltaY(state.boss.y, bomb.y)) <= bomb.radius + state.boss.r) {
-    state.boss.hp -= schoolDamage(state.boss, bomb.damage); state.boss.flash = HIT_FLASH_SECONDS; pushAway(state.boss); updateHud();
+    state.boss.hp -= schoolDamage(state.boss, bomb.damage); state.boss.flash = HIT_FLASH_SECONDS; state.boss.meleeFlash=false; pushAway(state.boss); updateHud();
     if (state.boss.hp <= 0) { state.boss = null; finishRun(true); }
   }
   burst(bomb.x, bomb.y, "#80eaff", 20); playSound("explosion");

@@ -8,7 +8,7 @@ globalThis.SurvivorWeapons = (() => {
     const shape=charged ? weapon.chargeShape : attack.dash ? 'line' : finisher ? weapon.comboShape : weapon.baseShape;
     const thrust=shape==='line', spin=shape==='spin';
     const scale=charged ? weapon.chargeSize : finisher || thrust ? weapon.comboSize : 1;
-    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, reverse:sword && number===2, width:weapon.thrustWidth*powers.size,
+    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size,
       recovery:finisher && !charged ? weapon.finisherRecovery : 0, step:thrust ? weapon.stepDistance : 0,
       arc:spin ? Math.PI * 2 : Math.min(charged ? Math.PI : Math.PI * 2, weapon.arcDegrees * Math.PI / 180 + powers.extraArc),
       radius:weapon.radius * powers.size * scale, damage:powers.damage * weapon.damageMultiplier * (charged ? weapon.chargeMultiplier : finisher || attack.dash ? weapon.comboMultiplier : 1), push:weapon.push + powers.push + (charged || thrust ? weapon.comboPush : 0) };
@@ -72,7 +72,9 @@ function swingAtNearest(dash = false) {
     if (t !== state.boss && !t.alive) continue;
     const shot={x:t.x,y:t.y,vx:deltaX(t.x,state.player.x),vy:deltaY(t.y,state.player.y),damage:event.damage,push:0,charged:properties.charged,schools:effectLevel('water-attack')?['water']:[],hitList:hits,melee:true,pierce:0};
     schoolShotHit(shot,t);
+    const hpBefore=t.hp;
     hitBuildTarget(t,event.damage);
+    if(t.hp<hpBefore) meleeImpact(t,event);
     if(state.mode!=='playing') return;
     if(t.alive && event.stun) t.stunTimer=Math.max(t.stunTimer||0,event.stun);
     if(t===state.boss || t.alive) shiftTarget(t,state.player.x,state.player.y,event.push);
@@ -97,3 +99,16 @@ function swingAtNearest(dash = false) {
   }
 }
 Survivor.engine.weapons = {activeWeapon,swingAtNearest,rules:SurvivorWeapons};
+
+// 表現接合：只接收揮擊事件與受擊目標；不改傷害、範圍或擊退規則。
+function meleeImpact(target,event) {
+  const h=GAME_DATA.hitJuice, strength=h.enabled?h.intensity:0;
+  if(!strength) return;
+  const heavy=event.heavy?1.5:1;
+  target.meleeFlash=true; target.impactFlash=1; target.impactSquash=.14*strength;
+  state.hitStop=Math.max(state.hitStop||0,.05*strength*heavy);
+  state.hitShake=Math.max(state.hitShake||0,.12*strength);
+  state.hitShakePixels=2*strength*heavy;
+  const dx=deltaX(target.x,state.player.x),dy=deltaY(target.y,state.player.y),d=Math.max(1,Math.hypot(dx,dy));
+  burst(target.x-dx/d*target.r,target.y-dy/d*target.r,'#fff0a5',Math.ceil(5*strength*heavy));
+}

@@ -1,25 +1,34 @@
 // 只讀揮擊事件畫圖，碰撞與傷害在 engine/weapons.js。
 function drawHammerSwing(v, progress) {
+  const heavy=v.heavy || v.boosted, width=heavy?20:11;
+  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);
+  const alpha=ctx.globalAlpha;
+  const color=BUILD_TUNING[(v.colors||['water'])[0]].color;
   if(v.thrust) {
-    ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.fillStyle='#bdefff';ctx.globalAlpha*=.6;ctx.fillRect(0,-v.width,v.radius,v.width*2);ctx.restore();
-    SurvivorIcons.draw(ctx,v.weaponId==='candy-sword'?'candy-sword':'candy-hammer',v.x+Math.cos(v.angle)*v.radius-14,v.y+Math.sin(v.angle)*v.radius-14,28);return;
-  }
-  const start=v.angle-v.arc/2, end=start+v.arc;
-  const colors=(v.colors || ['water']).map(id=>BUILD_TUNING[id].color);
-  ctx.save();ctx.lineWidth=v.boosted?8:5;
-  for(let i=0;i<colors.length;i++) {
-    const a=start+v.arc*i/colors.length,b=start+v.arc*(i+1)/colors.length;
-    ctx.fillStyle=colors[i];ctx.strokeStyle=colors[i];
-    ctx.globalAlpha*=.3;ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.arc(v.x,v.y,v.radius,a,b);ctx.closePath();ctx.fill();ctx.globalAlpha/=.3;
-    ctx.beginPath();ctx.arc(v.x,v.y,v.radius,a,b);ctx.stroke();
-  }
-  const angle=start+(end-start)*(v.reverse?1-progress:progress);
-  SurvivorIcons.draw(ctx,v.weaponId==='candy-sword'?'candy-sword':'candy-hammer',v.x+Math.cos(angle)*v.radius-14,v.y+Math.sin(angle)*v.radius-14,28);
-  if(v.colors.includes('thunder')) {
-    ctx.fillStyle='#ffef96';for(let i=0;i<5;i++){const a=start+v.arc*i/4;ctx.fillRect(Math.round(v.x+Math.cos(a)*v.radius)-2,Math.round(v.y+Math.sin(a)*v.radius)-2,4,4);}
+    // 尖細突刺光，沿出手方向伸長；不畫矩形判定區。
+    const tip=v.radius*(.65+.35*progress);
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(12,-width*.4);ctx.lineTo(tip,0);ctx.lineTo(12,width*.4);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#fff9de';ctx.lineWidth=heavy?4:2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(tip,0);ctx.stroke();
+  } else {
+    const direction=v.reverse?-1:1, head=-v.arc/2+v.arc*(v.reverse?1-(.2+.8*progress):(.2+.8*progress));
+    const tail=head-direction*Math.min(v.arc*(.2+.8*progress),1.8), outer=v.radius, inner=Math.max(1,outer-width);
+    // 多片漸細的新月殘影，只有弧線邊緣發光，中心保持透明。
+    for(let i=0;i<8;i++) {
+      const a=tail+(head-tail)*i/8,b=tail+(head-tail)*(i+1)/8;
+      ctx.fillStyle=i===7?'#fff9de':color;ctx.globalAlpha=alpha*(i+1)/8;
+      ctx.beginPath();ctx.arc(0,0,outer,a,b,direction<0);
+      ctx.arc(0,0,outer-(outer-inner)*(i+1)/8,b,a,direction>0);ctx.closePath();ctx.fill();
+    }
   }
   ctx.restore();
+  if(state.practiceHit && state.practiceHitboxes) {
+    ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.strokeStyle='#fff3a0';ctx.lineWidth=1;ctx.beginPath();
+    if(v.thrust) ctx.rect(0,-v.width,v.radius,2*v.width);
+    else {ctx.moveTo(0,0);ctx.arc(0,0,v.radius,-v.arc/2,v.arc/2);ctx.closePath();}
+    ctx.stroke();ctx.restore();
+  }
 }
+
 function drawHeldWeapon() {
   const weapon=activeWeapon(), a=state.weaponAttack;
   if(a) {

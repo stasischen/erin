@@ -192,6 +192,11 @@
         data.bodySeparation={enabled:b.enabled,radiusScale:num(b.radiusScale,.5,1.5,'身體半徑倍率'),
           playerForce:num(b.playerForce,0,1,'主角與怪物推力'),enemyForce:num(b.enemyForce,0,1,'怪物之間推力')};
       }
+      if(input.hitJuice !== undefined) {
+        const h=input.hitJuice;
+        if(!h || typeof h.enabled !== 'boolean') fail('打擊效果開關格式錯誤');
+        data.hitJuice={enabled:h.enabled,intensity:num(h.intensity,0,2,'打擊效果強度')};
+      }
       if(input.bodyContact !== undefined) {
         if(typeof input.bodyContact.pushOnly !== 'boolean') fail('碰撞開關格式錯誤');
         data.bodyContact={pushOnly:input.bodyContact.pushOnly,damageScale:num(input.bodyContact.damageScale,0,1,'身體傷害倍率')};

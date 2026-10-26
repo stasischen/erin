@@ -63,6 +63,7 @@ function resize() {
 }
 
 function resetGame() {
+  state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
   state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
@@ -139,6 +140,13 @@ function finishRun(won) {
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
 function tick(dt) {
+  if(state.mode==='playing') {
+    state.juiceClock=(state.juiceClock||0)+dt;
+    state.hitShake=countdown(state.hitShake||0,dt);
+    if(!GAME_DATA.hitJuice.enabled || !GAME_DATA.hitJuice.intensity) {state.hitStop=0;state.hitShake=0;}
+    if(state.hitStop>0) {state.hitStop=countdown(state.hitStop,dt);return;}
+    for(const t of combatTargets()) t.impactSquash=countdown(t.impactSquash||0,dt);
+  }
   if (state.mode === "playing" && state.slowMotion > 0) {
     state.slowMotion = countdown(state.slowMotion, dt);
     dt *= UPGRADE_TUNING.perfectSlowScale;
@@ -286,7 +294,7 @@ function tick(dt) {
       const boss = state.boss;
       playSound("hit");
       schoolShotHit(shot, boss);
-      boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; updateHud();
+      boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;

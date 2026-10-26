@@ -167,3 +167,10 @@ assert.deepEqual(attackData.weapons.map(w=>w.chargeSeconds),[.8,1.2,1.5]);assert
 assert.deepEqual(attackData.weapons.map(w=>w.moveRetention),[0,.5,1]);assert.deepEqual(attackData.weapons.map(w=>w.chargeEnabled),[true,true,false]);
 ui=setup({saved:ui.storage});ui.tab('numbers');assert.equal(ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='站定聚氣秒數')[2].value,1.5);
 console.log('PASS: three independent weapon combo/charge controls, movement retention and switches save and reopen');
+
+ui=setup();ui.tab('enemies');ui.click('打擊回饋：開');
+const juiceSlider=ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='打擊強度（頓幀、震動、火花與壓扁）');
+assert.ok(juiceSlider);juiceSlider.value=1.6;juiceSlider.fire('input');ui.ids.save.fire('click');
+assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).hitJuice,{enabled:false,intensity:1.6});
+ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='打擊回饋：關'));
+console.log('PASS: Maker hit juice switch/intensity persist and reopen');
