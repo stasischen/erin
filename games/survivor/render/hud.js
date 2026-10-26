@@ -30,6 +30,7 @@ function updateHud() {
 function updateActionControls() {
   Survivor.audio.sync();
   actionControls.hidden = state.mode !== "playing";
+  if (typeof updateManualControls === "function") updateManualControls();
   actionControls.style.cssText = `--action-size: ${gameSettings.actionButtonSize}px`;
   for (const [button, remaining, total, label] of [
     [dashButton, state.dashCooldown, gameSettings.dashCooldown, "衝刺"],

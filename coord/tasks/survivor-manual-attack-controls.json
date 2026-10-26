@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-manual-attack-controls",
+  "title": "手動攻擊、拖曳瞄準與武器特殊招",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-manual-attack-controls",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T071532Z-parent-manual-attack-controls.md",
+  "next": "已完成手動普攻／聚氣／拖曳瞄準、三把武器特殊招、衝刺中按普攻、Maker 自動／手動與練習場支援；預設仍自動。node games/survivor/tools/test.cjs 最終 exit 0，未跑 --layout 或瀏覽器操作。請 erin-watch 代辦指定檔案 commit、push 及 PR，再請 Grok 對完整 SHA 審查並在 1024×461、740×360 實際測試點擊、蓄力、拖曳、第二指衝刺、衝刺斬與特殊招。Godot §11 檢查、事件邊界與剩餘資料／平台差距見 docs/survivor-manual-attack-controls-validation.md。無阻擋；是否日後改成預設手動留待家長決定。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T07:23:02.622373Z",
+  "updatedBy": "codex"
+}

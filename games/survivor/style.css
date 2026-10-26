@@ -205,3 +205,12 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .weapon-picker .upgrade-workspace { grid-template-columns: 1fr; }
 .weapon-picker #upgradeRequirements { display: none; }
 .upgrade-panel.weapon-picker .upgrade-card { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 50%; border-width: 3px; }
+/* 右手動作區；四個圓鍵各有獨立 pointer capture，左半仍留給搖桿。 */
+.action-button[hidden] { display: none; }
+.action-controls.manual-controls { --manual-size: clamp(52px, 17vh, 76px); width: calc(var(--manual-size) * 2.65); height: calc(var(--manual-size) * 3.25); }
+.manual-controls .action-button { position: absolute; padding: 5px; }
+.manual-controls .attack-button { width: calc(var(--manual-size) * 1.15); height: calc(var(--manual-size) * 1.15); right: 0; bottom: calc(var(--manual-size) * 1.05); }
+.manual-controls .special-button { width: var(--manual-size); height: var(--manual-size); left: 0; top: calc(var(--manual-size) * .25); }
+.manual-controls .dash-button { width: var(--manual-size); height: var(--manual-size); right: calc(var(--manual-size) * .1); bottom: 0; }
+.manual-controls .skill-button { width: calc(var(--manual-size) * .8); height: calc(var(--manual-size) * .8); right: calc(var(--manual-size) * .1); top: 0; }
+.manual-controls .pixel-icon { width: 28px; height: 28px; }

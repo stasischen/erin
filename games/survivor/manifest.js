@@ -23,5 +23,6 @@ globalThis.SurvivorManifest = Object.freeze([
   "render/hud.js",
   "ui/levelup.js",
   "ui/settings.js",
+  "manual-attack.js",
   "input.js"
 ]);

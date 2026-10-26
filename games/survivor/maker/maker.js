@@ -226,6 +226,7 @@
   }
   function drawNumbers() {
     const defaults=api.defaults();
+    select(grid(panel('攻擊操作')),'攻擊模式',draft,'attackMode',{auto:'自動',manual:'手動'});
     const jp=panel('左搖桿'), jf=grid(jp), j=draft.joystick;
     const follow=button(jf,'搖桿跟隨：'+(j.follow?'開':'關'),()=>{j.follow=!j.follow;changed();render();});
     follow.setAttribute('role','switch'); follow.setAttribute('aria-checked',String(j.follow));

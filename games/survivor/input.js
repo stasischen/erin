@@ -35,10 +35,12 @@ window.addEventListener("keydown", (event) => {
   if (key === "Escape") togglePause();
   if (key === " ") activateDash();
   if (key === "e") activateSkill();
+  if (key === "j") beginManualAttack("attack");
+  if (key === "k") beginManualAttack("special");
 });
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
-window.addEventListener("keyup", (event) => state.keys.delete(event.key.length === 1 ? event.key.toLowerCase() : event.key));
-window.addEventListener("blur", () => { state.keys.clear(); if (state.mode === "playing") showOverlay("paused"); });
+window.addEventListener("keyup", (event) => { const key=event.key.toLowerCase(); state.keys.delete(key); if(key==="j") releaseManualAttack("attack"); if(key==="k") releaseManualAttack("special"); });
+window.addEventListener("blur", () => { state.keys.clear(); cancelManualAttack(); if (state.mode === "playing") showOverlay("paused"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); Survivor.audio.sync(); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());
 // CSS 直拿時順時針轉 90 度；把螢幕位置轉回遊戲位置（包含縮放）。

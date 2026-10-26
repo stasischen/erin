@@ -51,6 +51,7 @@
     const choice = (v, list, label) => { if (!list.includes(v)) fail(label + ' 選項不正確'); return v; };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
+      if (input.attackMode !== undefined) data.attackMode = choice(input.attackMode,['auto','manual'],'攻擊模式');
       // 舊作品的兩把武器／缺省欄位自動補齊；未知或重複 id 拒絕。
       if (input.weapons !== undefined) {
         if (!Array.isArray(input.weapons) || input.weapons.length < 2 || input.weapons.length > data.weapons.length || new Set(input.weapons.map(w=>w && w.id)).size !== input.weapons.length || input.weapons.some(w=>!w || !data.weapons.some(b=>b.id===w.id))) fail('武器清單不正確');
