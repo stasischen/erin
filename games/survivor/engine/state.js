@@ -137,18 +137,26 @@ const HERO_PIXELS = [
   ".....ooddddddoo.....",
   ".......oooooo......."
 ];
-// 只在開啟遊戲時畫兩張小圖；每幀直接貼圖，避免反覆建立像素。
-function makeHeroPicture(hurt) {
+// 用子彈的資料色盤替換身體；深色輪廓、眼睛和表情保留原色。
+// 深淺比例沿用原本水球的亮面／陰影，雙色以中線分開。
+function heroPixelColor(token, x, colors) {
+  const shade = { d: -.32, b: 0, l: .36, h: .8, c: .55 }[token];
+  if (!colors.length || shade === undefined) return HERO_COLORS[token];
+  const color = colors[Math.min(colors.length - 1, Math.floor(x / 10))];
+  const channels = color.slice(1).match(/../g).map(part => parseInt(part, 16));
+  return '#' + channels.map(value => Math.round(shade < 0 ? value * (1 + shade) : value + (255 - value) * shade).toString(16).padStart(2, '0')).join('');
+}
+function makeHeroPicture(hurt, colors = []) {
   const picture = document.createElement("canvas");
   picture.width = 20; picture.height = 24;
   const pen = picture.getContext("2d");
   HERO_PIXELS.forEach((row, y) => {
     for (let x = 0; x < row.length; x++) {
       if (row[x] === ".") continue;
-      pen.fillStyle = HERO_COLORS[row[x]]; pen.fillRect(x, y, 1, 1);
+      pen.fillStyle = heroPixelColor(row[x], x, colors); pen.fillRect(x, y, 1, 1);
     }
   });
-  function pixels(color, x, y, w, h) { pen.fillStyle = HERO_COLORS[color]; pen.fillRect(x, y, w, h); }
+  function pixels(color, x, y, w, h) { pen.fillStyle = heroPixelColor(color, x, colors); pen.fillRect(x, y, w, h); }
   if (hurt) {
     // 痛痛時閉眼，嘴巴變成小小的 O。
     for (const x of [5, 12]) {
@@ -166,6 +174,15 @@ function makeHeroPicture(hurt) {
   return picture;
 }
 const HERO_PICTURES = { happy: makeHeroPicture(false), hurt: makeHeroPicture(true) };
+// 只在配色改變時產生小圖，暫停、移動與受傷閃爍都直接重用。
+const HERO_SCHOOL_PICTURES = {};
+function heroSchoolPicture(hurt, schools) {
+  if (!schools.length) return hurt ? HERO_PICTURES.hurt : HERO_PICTURES.happy;
+  const colors = schools.map(id => BUILD_TUNING[id].color);
+  const key = colors.join(':') + ':' + hurt;
+  if (!HERO_SCHOOL_PICTURES[key]) HERO_SCHOOL_PICTURES[key] = makeHeroPicture(hurt, colors);
+  return HERO_SCHOOL_PICTURES[key];
+}
 const INVINCIBLE_SECONDS = UPGRADE_TUNING.invincibleSeconds; // 請改上面的 invincibleSeconds
 let SHOT_INTERVAL = gameSettings.shotInterval; // 請改上面的 shotInterval
 const PROJECTILE_DAMAGE = UPGRADE_TUNING.projectileDamage; // 請改上面的 projectileDamage
