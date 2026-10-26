@@ -37,6 +37,7 @@ run('shiftTarget(state.boss, 2000, 1500, 9999);'); assert.equal(run('state.boss.
 run(`resetGame(); state.mode='playing'; state.spawnTimer=999; state.shotTimer=999; state.level=8;
   state.enemies=[{x:1300,y:900,r:17,speed:0,damage:15,hp:100,maxHp:100,alive:true,wobble:0,flash:0,shotCooldown:0,typeId:'jaben'}];
   state.projectiles=[{x:1300,y:900,vx:0,vy:0,r:12,damage:35,pierce:0,hitList:[],alive:true,rangeLeft:100}]; tick(0);`);
+run('updateBookShooting(GAME_DATA.pacing.warning)');
 assert.equal(run('state.enemies[0].hp'),65); assert.equal(run('state.enemyShots.length'),1);
 run('state.enemies[0].x=100; state.bookShotTimer=0; state.enemies[0].shotCooldown=0; state.enemyShots=[]; updateBookShooting(0);');
 assert.equal(run('state.enemyShots.length'),0);

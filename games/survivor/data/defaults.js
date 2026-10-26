@@ -1116,7 +1116,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "radius": 15,
       "damage": 12,
       "hp": 70,
-      "behavior": "chase",
+      "behavior": "fast",
       "attack": {
         "type": "projectile",
         "interval": 5,
@@ -1126,6 +1126,138 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 8
+      }
+    },
+    {
+      "id": "pudding",
+      "name": "布丁",
+      "spriteId": "pudding",
+      "color": "#c99abc",
+      "speed": 38,
+      "shadowSize": 0.9,
+      "radius": 23,
+      "damage": 10,
+      "hp": 260,
+      "behavior": "tank",
+      "attack": {
+        "type": "none",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
+      }
+    },
+    {
+      "id": "mushroom",
+      "name": "蘑菇",
+      "spriteId": "mushroom-hopper",
+      "color": "#c99abc",
+      "speed": 62,
+      "shadowSize": 0.9,
+      "radius": 17,
+      "damage": 10,
+      "hp": 85,
+      "behavior": "shooter",
+      "attack": {
+        "type": "projectile",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
+      }
+    },
+    {
+      "id": "donut",
+      "name": "甜甜圈",
+      "spriteId": "donut-spinner",
+      "color": "#c99abc",
+      "speed": 60,
+      "shadowSize": 0.9,
+      "radius": 19,
+      "damage": 10,
+      "hp": 110,
+      "behavior": "charger",
+      "attack": {
+        "type": "none",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
+      }
+    },
+    {
+      "id": "pop-candy",
+      "name": "跳跳糖",
+      "spriteId": "pop-candy",
+      "color": "#c99abc",
+      "speed": 82,
+      "shadowSize": 0.9,
+      "radius": 15,
+      "damage": 10,
+      "hp": 55,
+      "behavior": "bomber",
+      "attack": {
+        "type": "none",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
+      }
+    },
+    {
+      "id": "jelly",
+      "name": "果凍",
+      "spriteId": "jelly-slime",
+      "color": "#c99abc",
+      "speed": 66,
+      "shadowSize": 0.9,
+      "radius": 20,
+      "damage": 10,
+      "hp": 95,
+      "behavior": "splitter",
+      "attack": {
+        "type": "none",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
+      }
+    },
+    {
+      "id": "fairy",
+      "name": "棉花糖仙子",
+      "spriteId": "marshmallow-fairy",
+      "color": "#c99abc",
+      "speed": 58,
+      "shadowSize": 0.9,
+      "radius": 16,
+      "damage": 10,
+      "hp": 70,
+      "behavior": "support",
+      "attack": {
+        "type": "none",
+        "interval": 3,
+        "speed": 110,
+        "damage": 6,
+        "radius": 12,
+        "count": 1,
+        "spread": 0.2,
+        "level": 2
       }
     }
   ],
@@ -1528,5 +1660,40 @@ globalThis.SURVIVOR_DEFAULTS = {
     "crownHealth": 1,
     "luckyRareMultiplier": 1.6,
     "cookieKills": 20
+  },
+  "pacing": {
+    "pattern": "alternating",
+    "density": 1,
+    "strongScale": 1.15,
+    "weakScale": 0.7,
+    "cycleSeconds": 10,
+    "eventCount": 6,
+    "eventSeconds": 10,
+    "warning": 0.9,
+    "chargeSpeed": 330,
+    "chargeSeconds": 0.65,
+    "fuseSeconds": 2,
+    "blastRadius": 85,
+    "blastDamage": 18,
+    "blastEnemyDamage": 90,
+    "shieldRadius": 150,
+    "shieldSeconds": 5,
+    "shieldHits": 1,
+    "themes": {
+      "classroom": [
+        "jelly",
+        "pop-candy"
+      ],
+      "playground": [
+        "pudding",
+        "donut"
+      ]
+    },
+    "eventPool": [
+      "ring",
+      "tide",
+      "elite-squad",
+      "candy-rain"
+    ]
   }
 };

@@ -360,6 +360,7 @@ function render() {
       if (state.schoolCombat.rain > 0) { ctx.strokeStyle='#75d7ff';ctx.lineWidth=2;for(let i=0;i<24;i++){const x=state.cameraX+(i*73)%state.width,y=state.cameraY+(state.elapsed*180+i*51)%state.height;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+10);ctx.stroke();} }
     }
     drawEncounterGround();
+    drawPacingWarnings();
     drawSupportVisuals();
     drawNeutralItems();
     for (const shot of state.projectiles) {
@@ -575,5 +576,24 @@ function drawBossZoneGuide() {
     ctx.save(); ctx.font = "bold 18px system-ui"; ctx.textAlign = "center";
     ctx.lineWidth = 5; ctx.strokeStyle = "#fff6e8"; ctx.strokeText(text,state.width/2,110);
     ctx.fillStyle = "#77419c"; ctx.fillText(text,state.width/2,110); ctx.restore();
+  }
+}
+
+// 只讀行為狀態，預警與規則分開；世界接縫由既有世界繪圖處理。
+function drawPacingWarnings() {
+  for(const e of state.enemies) {
+    if(!e.alive) continue;
+    const a=e.action, shooting=e.shotWarning>0;
+    if(!a && !shooting) continue;
+    ctx.save();ctx.strokeStyle=a && a.kind==='shield'?'#b4ecff':'#ff9a83';
+    ctx.fillStyle=a && a.kind==='blast' ? 'rgba(255,65,65,'+(.12+.2*Math.abs(Math.sin(a.warning*16)))+')' : 'rgba(255,110,90,.12)';ctx.lineWidth=3;
+    const r=a && a.kind==='blast'?GAME_DATA.pacing.blastRadius:a && a.kind==='shield'?GAME_DATA.pacing.shieldRadius:e.r+10;
+    ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    if(a && a.kind==='charge') {
+      ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds,e.y+Math.sin(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds);ctx.stroke();
+    }
+    ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff0cf';
+    ctx.fillText(a && a.kind==='blast'?'自爆 '+Math.ceil(a.warning):shooting?'準備射擊':a.kind==='shield'?'準備護盾':'準備衝撞',e.x,e.y-e.r-12);
+    ctx.restore();
   }
 }

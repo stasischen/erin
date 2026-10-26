@@ -218,13 +218,14 @@ function tick(dt) {
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
 
+  updatePacing(dt);
   updateEncounters(dt);
   state.spawnTimer -= dt;
   if (!state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
   if (!state.boss) {
     let wave = currentWaves()[0];
     for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
-    const spawnEvery = wave.every / gameSettings.spawnScale;
+    const spawnEvery = wave.every / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
     while (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer += spawnEvery; }
   }
   if (state.bossIntro > 0) {
@@ -238,8 +239,13 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
-    enemy.x += vx / distance * enemy.speed * eliteSpeed(enemy) * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
-    enemy.y += vy / distance * enemy.speed * eliteSpeed(enemy) * (enemy.behavior === "still" ? 0 : enemy.behavior === "retreat" && distance < 230 ? -1 : 1) * (enemy.stunTimer > 0 ? 0 : 1) * (enemy.slowTimer > 0 ? (enemy.makerSlow || BUILD_TUNING.slowMultiplier) : 1) * (1 + Math.floor(state.stageElapsed / 30) * UPGRADE_TUNING.enemySpeedGrowth) * dt;
+    updateEnemyBehavior(enemy,dt);
+    if(state.mode!=="playing") return;
+    if(!enemy.alive) continue;
+    const direction=enemyDirection(enemy,distance), curve=enemy.behavior==='fast' ? Math.sin(enemy.wobble)*.65 : 0;
+    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
+    enemy.x += (vx-vy*curve)/distance * speed * dt;
+    enemy.y += (vy+vx*curve)/distance * speed * dt;
     if (enemy.knockback > 0) { const k = Math.min(enemy.knockback, KNOCKBACK_SPEED) * dt; enemy.x += enemy.knockX / distance * k; enemy.y += enemy.knockY / distance * k; enemy.knockback = Math.max(0, enemy.knockback - KNOCKBACK_SPEED * dt); }
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
@@ -247,6 +253,7 @@ function tick(dt) {
     enemy.wobble += dt * 6;
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
+  separateTanks();
   for (const shot of state.projectiles) {
     if (!shot.alive) continue;
     shot.x += shot.vx * dt; shot.y += shot.vy * dt;

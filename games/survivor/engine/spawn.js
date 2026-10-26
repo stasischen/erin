@@ -1,26 +1,22 @@
 function spawnEnemy(options = {}) {
-  if (state.enemies.length >= ENEMY_LIMIT) return;
-  let wave = currentWaves()[0];
-  for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
-  const configuredTypes = [
-    { ...ENEMY_TYPES[0], speed: gameSettings.enemySpeed, hp: gameSettings.enemyHealth },
-    { ...ENEMY_TYPES[1], speed: gameSettings.secondEnemySpeed, hp: gameSettings.secondEnemyHealth }
-  ];
-  let type = Math.random() < wave.otsubon / (wave.jaben + wave.otsubon) ? configuredTypes[1] : configuredTypes[0];
-  if (options.typeId) type = configuredTypes.find(t => t.id === options.typeId) || type;
+  if (state.enemies.filter(e=>e.alive).length >= ENEMY_LIMIT) return;
+  if(options.elite && state.enemies.filter(e=>e.alive&&e.elite).length>=GAME_DATA.elites.limit) return;
+  const configuredTypes = ENEMY_TYPES.map((type,i)=> i===0 ? {...type,speed:gameSettings.enemySpeed,hp:gameSettings.enemyHealth} : i===1 ? {...type,speed:gameSettings.secondEnemySpeed,hp:gameSettings.secondEnemyHealth} : type);
+  const typeId=options.typeId || pacingType();
+  const type=configuredTypes.find(t=>t.id===typeId) || configuredTypes[0];
   const scale = options.elite ? GAME_DATA.elites.sizeScale : options.small ? .6 : 1;
   const radius = type.radius * scale;
-  const position = bossZoneSpawn(radius);
+  const position = options.small && options.position ? {...options.position} : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
-  state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
+  state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, spriteId:type.spriteId, small:!!options.small, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
   const enemy = state.enemies[state.enemies.length-1];
   if (options.elite) makeElite(enemy);
   return enemy;
 }
 
 function bookShotInterval(typeId) {
-  if (MAKER_MODE) return ENEMY_TYPES.find(e => e.id === typeId).attack.interval;
+  if (MAKER_MODE || !["jaben","otsubon"].includes(typeId)) return ENEMY_TYPES.find(e => e.id === typeId).attack.interval;
   return typeId === "otsubon" ? gameSettings.secondEnemyShotInterval : gameSettings.enemyShotInterval;
 }
 
@@ -32,7 +28,7 @@ function startBookShooting() {
 }
 
 function updateBookShooting(dt) {
-  if (state.level < (MAKER_MODE ? Math.min(...ENEMY_TYPES.map(e => e.attack.level)) : gameSettings.enemyShootLevel) || state.bossIntro > 0) return;
+  if (state.bossIntro > 0) return;
   state.bookShotTimer = Math.max(0, state.bookShotTimer - dt);
   for (const enemy of state.enemies) {
     enemy.shotCooldown = Math.max(0, enemy.shotCooldown - dt);
@@ -43,13 +39,16 @@ function updateBookShooting(dt) {
   // 每次只選一隻準備好的小兵；離開畫面的、被打倒的都不能丟字。
   const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
-  const allowed = ready.filter(e => !MAKER_MODE || (ENEMY_TYPES.find(t => t.id === e.typeId).attack.type !== "none" && state.level >= ENEMY_TYPES.find(t => t.id === e.typeId).attack.level));
+  const allowed = ready.filter(e => {
+    const type=ENEMY_TYPES.find(t=>t.id===e.typeId);
+    return type && type.attack.type!=="none" && state.level >= (MAKER_MODE || e.typeId!=="jaben" && e.typeId!=="otsubon" ? type.attack.level : gameSettings.enemyShootLevel);
+  });
   if (!allowed.length) return;
-  const enemy = allowed[Math.floor(Math.random() * allowed.length)];
-  if (enemy.elite && !enemy.shotPrepared) { enemy.shotPrepared = true; enemy.shotWarning = .8; playSound('warning'); return; }
-  if (enemy.elite && enemy.shotWarning > 0) return;
+  const enemy = allowed.find(e=>e.shotPrepared) || allowed[Math.floor(Math.random() * allowed.length)];
+  if (!enemy.shotPrepared) { enemy.shotPrepared = true; enemy.shotWarning = GAME_DATA.pacing.warning; playSound('warning'); return; }
+  if (enemy.shotWarning > 0) return;
   enemy.shotPrepared = false;
-  const attack = MAKER_MODE ? ENEMY_TYPES.find(t => t.id === enemy.typeId).attack : { type: "projectile", count: 1, spread: 0, speed: gameSettings.enemyShotSpeed, damage: gameSettings.enemyShotDamage, radius: 12 };
+  const attack = MAKER_MODE || !["jaben","otsubon"].includes(enemy.typeId) ? ENEMY_TYPES.find(t => t.id === enemy.typeId).attack : { type: "projectile", count: 1, spread: 0, speed: gameSettings.enemyShotSpeed, damage: gameSettings.enemyShotDamage, radius: 12 };
   const angle = Math.atan2(deltaY(state.player.y, enemy.y), deltaX(state.player.x, enemy.x));
   if (attack.type === "aoe") {
     // 怪物範圍攻擊先預警，落點固定，不追著玩家跑。
@@ -69,7 +68,7 @@ function updateBookShooting(dt) {
 }
 
 // 先在鏡頭外選位置，再回到環形世界；四邊永遠都可以生成。
-function offscreenSpawn(r) {
+function offscreenSpawn(r, side) {
   const gap = r + 16, left = state.cameraX, top = state.cameraY;
   const sides = [
     () => ({ x: left - gap, y: top + Math.random() * state.height }),
@@ -85,7 +84,7 @@ function offscreenSpawn(r) {
     const distance = Math.hypot(deltaX(point.x, state.player.x), deltaY(point.y, state.player.y));
     return (dx >= state.width / 2 + gap || dy >= state.height / 2 + gap) && distance >= state.player.r + r + 160;
   }
-  const point = sides[Math.floor(Math.random() * 4)]();
+  const point = sides[side === undefined ? Math.floor(Math.random() * 4) : side%4]();
   if (safe(point)) return point;
   // 特大或很小的視窗改用中心與最遠座標的組合；沒有安全空間就暫停生成。
   for (const x of [centerX, centerX + state.worldWidth / 2]) {

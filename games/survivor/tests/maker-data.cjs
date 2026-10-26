@@ -53,9 +53,9 @@ r('fireAtNearest();');assert.equal(r('state.projectiles.length'),5);assert.equal
 r('finishRun(false);');assert.equal(r.storage['erin-survivor-best-seconds-v1'],'99');
 r=custom('d.enemies[0].name="新怪物";d.enemies[0].hp=222;d.enemies[0].radius=25;d.enemies[0].behavior="still";d.enemies[0].attack.type="aoe";d.enemies[0].attack.level=2;');fresh(r);r('state.enemies=[];spawnEnemy();state.level=2;state.enemies[0].x=state.player.x+100;state.enemies[0].y=state.player.y;state.enemies[0].shotCooldown=0;');
 assert.equal(r('state.enemies[0].hp'),222);assert.equal(r('state.enemies[0].r'),25);
-r('updateBookShooting(0);');assert.equal(r('state.enemyHazards.length'),1);assert.equal(r('state.player.health'),90);r('updateMakerEffects(.85);');assert.equal(r('state.player.health'),90);r('updateMakerEffects(.05);');assert.equal(r('state.player.health'),84);
+r('updateBookShooting(0);updateBookShooting(GAME_DATA.pacing.warning);');assert.equal(r('state.enemyHazards.length'),1);assert.equal(r('state.player.health'),90);r('updateMakerEffects(.85);');assert.equal(r('state.player.health'),90);r('updateMakerEffects(.05);');assert.equal(r('state.player.health'),84);
 for(const attack of ['none','projectile','summon']){
-  r=custom(`d.enemies[0].attack.type='${attack}';d.enemies[0].attack.level=2;d.enemies[0].attack.count=3;`);fresh(r);r('state.level=2;state.enemies=state.enemies.slice(0,1);updateBookShooting(0);');
+  r=custom(`d.enemies[0].attack.type='${attack}';d.enemies[0].attack.level=2;d.enemies[0].attack.count=3;`);fresh(r);r('state.level=2;state.enemies=state.enemies.slice(0,1);updateBookShooting(0);updateBookShooting(GAME_DATA.pacing.warning);');
   assert.equal(r('state.enemyShots.length'),attack==='projectile'?3:0,attack);if(attack==='summon')assert.equal(r('state.enemies.length'),4);
 }
 r=custom('d.boss.moves[0].kind="call";d.boss.moves[0].warning=1.5;d.boss.moves[0].damage=25;d.boss.moves[0].radius=80;d.boss.moves[0].minPhase=2;d.boss.phases[1].threshold=.8;');fresh(r);
