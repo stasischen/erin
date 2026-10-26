@@ -22,8 +22,8 @@ for(const id of ['jaben','otsubon','pudding','mushroom','donut','pop-candy','jel
   assert.equal(run('e.hp'),run(`ENEMY_TYPES.find(t=>t.id==='${id}').hp`));
 }
 fresh();run(`for(let i=0;i<60;i++)spawnEnemy({typeId:'jelly'})`);assert.equal(run('state.enemies.length'),run('ENEMY_LIMIT'));
-// 射擊初次只有預警，0.9秒後才發射；畫面外取消，回來重新預告。
-enemy('mushroom',200);run('state.level=2;e.shotCooldown=0;updateBookShooting(0)');
+// 關閉新分階段系統後，舊作品的射擊初次只有預警，0.9秒後才發射；畫面外取消，回來重新預告。
+enemy('mushroom',200);run('ENEMY_TYPES.find(t=>t.id==="mushroom").phaseAttack.enabled=false;state.level=2;e.shotCooldown=0;updateBookShooting(0)');
 assert.equal(run('state.enemyShots.length'),0);assert.equal(run('e.shotWarning'),.9);
 run('updateBookShooting(.89)');assert.equal(run('state.enemyShots.length'),0);
 run('updateBookShooting(.011)');assert.equal(run('state.enemyShots.length'),1);

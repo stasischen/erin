@@ -239,6 +239,7 @@ function tick(dt) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
+    if(!targetVisible(enemy)) enemy.phaseAttack=null;
     updateEnemyBehavior(enemy,dt);
     if(state.mode!=="playing") return;
     if(!enemy.alive) continue;
@@ -298,7 +299,9 @@ function tick(dt) {
   updateBossZone(dt);
   if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {
-    const shot = state.enemyShots[i]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);
+    const shot = state.enemyShots[i];
+    if(shot.phaseShot && (shot.life=countdown(shot.life,dt))<=0) {state.enemyShotPool.push(state.enemyShots.splice(i,1)[0]);continue;}
+    shot.x += shot.vx * dt; shot.y += shot.vy * dt; clampToMap(shot);
     if (shot.source === "teacher" && (!state.boss || !targetVisible(state.boss) || !targetVisible(shot) || (shot.life -= dt) <= 0)) {
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue;
     }
@@ -306,7 +309,7 @@ function tick(dt) {
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
       if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
-    } else if (shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
+    } else if (!shot.phaseShot && shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }
   if (state.player.health <= 0) { finishRun(false); return; }
   for (const gem of state.gems) {
@@ -329,10 +332,10 @@ function tick(dt) {
   }
   // 先判斷碰撞，再減少無敵時間，避免最後一幀又被撞一次。
   if (!state.player.damageDisabled && state.player.invincible <= 0) {
-    const touchingEnemy = state.enemies.find((enemy) => enemy.alive && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
+    const touchingEnemy = state.enemies.find((enemy) => enemy.alive && (enemy.miniboss || !GAME_DATA.bodyContact.pushOnly) && Math.hypot(deltaX(enemy.x, state.player.x), deltaY(enemy.y, state.player.y)) < enemy.r + state.player.r - 2);
     const touchingBoss = state.boss && targetVisible(state.boss) && state.bossIntro <= 0 && state.bossPhasePause <= 0 && !state.bossMoves.some(move => bossKind(move) === "dash") && Math.hypot(deltaX(state.boss.x, state.player.x), deltaY(state.boss.y, state.player.y)) < state.boss.r + state.player.r - 2;
     if (touchingEnemy || touchingBoss) {
-      state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? touchingEnemy.damage : UPGRADE_TUNING.enemyDamage));
+      state.player.health = Math.max(0, state.player.health - absorbSchoolHit(touchingEnemy ? bodyContactDamage(touchingEnemy) : UPGRADE_TUNING.enemyDamage));
       counterDischarge(); if (state.mode !== "playing") return;
       state.player.invincible = INVINCIBLE_SECONDS;
       state.player.hitFlash = 0.16;
@@ -341,6 +344,7 @@ function tick(dt) {
       updateHud();
     }
   }
+  pushEnemyBodies();
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { finishRun(false); return; }

@@ -18,7 +18,28 @@
     return run.types;
   }
   function density(config,seconds) { return config.density * ((config.pattern==='steady' || Math.floor(seconds/config.cycleSeconds)%2) ? config.strongScale : config.weakScale); }
-  root.SurvivorPacing={plan,candidates,density,pick};
+  // 純狀態轉換：每次最多換一階段，避免掉幀跳過玩家應看到的預警／生效。
+  function advanceAttack(a,c,dt) {
+    const left=Math.max(0,a.left-dt);
+    if(left>1e-6) return {...a,left,entered:false};
+    const next={windup:'active',active:'recovery',recovery:'cooldown',cooldown:'ready'}[a.phase];
+    return {...a,phase:next,left:c[next]||0,entered:true};
+  }
+  function attackAngles(c,angle) {
+    if(!c.radial || c.count===1) return [angle];
+    const gap=c.gapDegrees*Math.PI/180;
+    return Array.from({length:c.count},(_,i)=>angle+gap/2+i*(Math.PI*2-gap)/(c.count-1));
+  }
+  // 同一形狀資料用於地面繪圖與主角中心命中；座標由外層換成相對世界座標。
+  function inShape(c,x,y) {
+    const d=Math.hypot(x,y);
+    if(c.shape==='line') return x>=0 && x<=c.length && Math.abs(y)<=c.radius;
+    if(c.shape==='sector') return d<=c.radius && Math.abs(Math.atan2(y,x))<=c.angle*Math.PI/360;
+    if(c.shape==='circle') return d<=c.radius;
+    if(c.shape==='ring') return d<=c.radius && d>=c.innerRadius;
+    return false;
+  }
+  root.SurvivorPacing={plan,candidates,density,pick,advanceAttack,attackAngles,inShape};
 })(globalThis);
 
 function resetPacing() { state.pacing=null; }
@@ -64,7 +85,8 @@ function updateEnemyBehavior(e,dt) {
   if(!e.fairyShieldLife) e.fairyShield=0;
   if(e.stunTimer>0 || state.bossIntro>0) return;
   const visible=targetVisible(e), distance=encounterDistance(e,state.player);
-  if(!visible) {e.action=null;return;}
+  if(!visible) {e.action=null;e.phaseAttack=null;return;}
+  if(!e.action && !(e.behavior==='support' && !e.phaseAttack && e.actionCooldown<=0) && updatePhasedAttack(e,dt)) return;
   if(e.action) {
     e.action.warning=countdown(e.action.warning,dt);
     if(e.action.warning>0) return;
@@ -97,7 +119,7 @@ function updateEnemyBehavior(e,dt) {
   if(e.action) playSound('warning');
 }
 function enemyDirection(e,distance) {
-  if(e.action || e.behavior==='still') return 0;
+  if(e.action || e.phaseAttack && !['cooldown','ready'].includes(e.phaseAttack.phase) || e.behavior==='still') return 0;
   if(['retreat','shooter','support'].includes(e.behavior)) {
     const range=e.behavior==='support'?280:230;
     return distance<range ? -1 : distance<range+60 ? 0 : 1;
@@ -126,3 +148,47 @@ function pacingHurtPlayer(damage) {
   if(state.player.health<=0) finishRun(false);
 }
 Survivor.engine.pacing={rules:SurvivorPacing,resetPacing,ensurePacing,updatePacing,updateEnemyBehavior,splitJelly};
+
+// 平台接合層：純規則回傳階段，這裡才套用傷害、投射物及聲音。
+function updatePhasedAttack(e,dt) {
+  const config=(ENEMY_TYPES.find(t=>t.id===e.typeId)||{}).phaseAttack;
+  if(!config || !config.enabled || e.miniboss) return false;
+  let a=e.phaseAttack;
+  if(!a || a.phase==='ready') {
+    if(encounterDistance(e,state.player)>config.triggerDistance) return false;
+    a={phase:'windup',left:config.windup,x:e.x,y:e.y,
+      angle:Math.atan2(deltaY(state.player.y,e.y),deltaX(state.player.x,e.x)),config:{...config},hit:false};
+    e.phaseAttack=a;playSound('warning');return true;
+  }
+  a=SurvivorPacing.advanceAttack(a,a.config,dt);e.phaseAttack=a;
+  const c=a.config;
+  if(a.phase==='active') {
+    if(c.shape==='projectiles' && a.entered) {
+      for(const angle of SurvivorPacing.attackAngles(c,a.angle)) {
+        if(state.enemyShots.filter(s=>s.source==='book').length>=UPGRADE_TUNING.enemyShotLimit) break;
+        state.enemyShots.push(takeFromPool(state.enemyShotPool,{source:'book',phaseShot:true,dodged:false,
+          x:a.x,y:a.y,vx:Math.cos(angle)*c.speed,vy:Math.sin(angle)*c.speed,
+          r:c.radius,damage:c.damage,candy:c.radial,text:'●',life:Math.min(c.active,c.length/c.speed)}));
+      }
+    } else if(c.shape!=='projectiles' && !a.hit) {
+      const dx=deltaX(state.player.x,a.x),dy=deltaY(state.player.y,a.y);
+      const x=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),y=-dx*Math.sin(a.angle)+dy*Math.cos(a.angle);
+      if(SurvivorPacing.inShape(c,x,y)) {
+        a.hit=true;pacingHurtPlayer(c.damage);
+      }
+    }
+  }
+  return !['cooldown','ready'].includes(a.phase);
+}
+function bodyContactDamage(enemy) {
+  if(enemy.miniboss) return enemy.damage;
+  return GAME_DATA.bodyContact.pushOnly ? 0 : enemy.damage*GAME_DATA.bodyContact.damageScale;
+}
+function pushEnemyBodies() {
+  if(!GAME_DATA.bodyContact.pushOnly) return;
+  for(const e of state.enemies) {
+    if(!e.alive || e.miniboss) continue;
+    const dx=deltaX(e.x,state.player.x),dy=deltaY(e.y,state.player.y),d=Math.hypot(dx,dy),gap=e.r+state.player.r;
+    if(d<gap) {e.x+=(d?dx/d:1)*(gap-d);e.y+=(d?dy/d:0)*(gap-d);clampToMap(e);}
+  }
+}

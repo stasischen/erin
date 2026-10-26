@@ -77,7 +77,7 @@ function fireBossFan(move) {
     if (state.enemyShots.filter(shot => shot.source === "teacher").length >= UPGRADE_TUNING.teacherShotLimit) break;
     const a = move.angle + (i - (move.count - 1) / 2) * spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
-      dodged: false, source: "teacher", x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+      dodged: false, phaseShot:false, source: "teacher", x: move.x, y: move.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       r: bossKind(move) === "chalk" ? 10 : 17, text: bossKind(move) === "chalk" ? "粉筆" : ["作業！", "認真！", "加油！"][i % 3],
       damage: bossDefinition(move).damage, life: 4
     }));

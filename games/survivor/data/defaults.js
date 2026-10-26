@@ -2,10 +2,33 @@
 // schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
-  "joystick": { "follow": true, "radius": 35, "deadZone": 4 },
+  "joystick": {
+    "follow": true,
+    "radius": 35,
+    "deadZone": 4
+  },
   "weapons": [
-    {"id":"water-ball","name":"水球","icon":"big-water","description":"自動發射水球，遠遠打倒敵人。","kind":"projectile"},
-    {"id":"candy-hammer","name":"棒棒糖錘","icon":"candy-hammer","description":"自動朝最近的小怪揮錘，每第四下轉一圈，受到的傷害減少 15%。","kind":"melee","interval":0.7,"arcDegrees":120,"radius":70,"damageMultiplier":1.6,"push":15,"spinEvery":4,"damageReduction":0.15}
+    {
+      "id": "water-ball",
+      "name": "水球",
+      "icon": "big-water",
+      "description": "自動發射水球，遠遠打倒敵人。",
+      "kind": "projectile"
+    },
+    {
+      "id": "candy-hammer",
+      "name": "棒棒糖錘",
+      "icon": "candy-hammer",
+      "description": "自動朝最近的小怪揮錘，每第四下轉一圈，受到的傷害減少 15%。",
+      "kind": "melee",
+      "interval": 0.7,
+      "arcDegrees": 120,
+      "radius": 70,
+      "damageMultiplier": 1.6,
+      "push": 15,
+      "spinEvery": 4,
+      "damageReduction": 0.15
+    }
   ],
   "visuals": {
     "spriteOutline": true
@@ -1158,6 +1181,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 8
+      },
+      "phaseAttack": {
+        "enabled": false,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1180,6 +1221,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 8
+      },
+      "phaseAttack": {
+        "enabled": false,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1202,6 +1261,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": true,
+        "shape": "sector",
+        "radius": 95,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 0.25,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 12,
+        "triggerDistance": 125,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1224,6 +1301,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": true,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1246,6 +1341,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": false,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1268,6 +1381,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": false,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1290,6 +1421,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": false,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 1,
+        "radial": false,
+        "gapDegrees": 70
       }
     },
     {
@@ -1312,6 +1461,24 @@ globalThis.SURVIVOR_DEFAULTS = {
         "count": 1,
         "spread": 0.2,
         "level": 2
+      },
+      "phaseAttack": {
+        "enabled": true,
+        "shape": "projectiles",
+        "radius": 10,
+        "innerRadius": 35,
+        "length": 280,
+        "angle": 110,
+        "windup": 0.9,
+        "active": 2,
+        "recovery": 0.65,
+        "cooldown": 3,
+        "damage": 6,
+        "triggerDistance": 340,
+        "speed": 140,
+        "count": 8,
+        "radial": true,
+        "gapDegrees": 70
       }
     }
   ],
@@ -1752,5 +1919,9 @@ globalThis.SURVIVOR_DEFAULTS = {
       "elite-squad",
       "candy-rain"
     ]
+  },
+  "bodyContact": {
+    "pushOnly": false,
+    "damageScale": 0.25
   }
 };

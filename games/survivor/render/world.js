@@ -366,6 +366,7 @@ function render() {
     }
     drawEncounterGround();
     drawPacingWarnings();
+    drawPhasedAttacks();
     drawSupportVisuals();
     drawNeutralItems();
     for (const shot of state.projectiles) {
@@ -396,7 +397,11 @@ function render() {
     }
     for (const shot of state.enemyShots) {
       ctx.save(); ctx.textAlign = "center";
-      if (shot.source === "book") {
+      if(shot.phaseShot) {
+        ctx.fillStyle=shot.candy?'#ffb8da':'#ed8d79';ctx.strokeStyle='#913d62';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.fillStyle='#fff3d9';ctx.fillRect(shot.x-shot.r*.45,shot.y-shot.r*.45,shot.r*.4,shot.r*.4);
+      } else if (shot.source === "book") {
         // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
         ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
         ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
@@ -425,7 +430,7 @@ function render() {
     }
     for (const field of state.makerFields) { ctx.strokeStyle = "#7b54be"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(field.x, field.y, field.effect.radius, 0, Math.PI * 2); ctx.stroke(); }
     for (const enemy of state.enemies) {
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId);
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, enemy.flash > 0, enemy.typeId, ctx, enemy.shadowSize, (enemy.airHeight || 0) + (enemy.typeId==='pudding' && enemy.phaseAttack && enemy.phaseAttack.phase==='windup' ? 12*(1-enemy.phaseAttack.left/enemy.phaseAttack.config.windup) : 0), enemy.spriteId);
       drawEncounterArmor(enemy);
       if (enemy.hp < enemy.maxHp) { ctx.fillStyle = "#fff"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30, 4); ctx.fillStyle = "#f16b68"; ctx.fillRect(enemy.x - 15, enemy.y - enemy.r - 10, 30 * enemy.hp / enemy.maxHp, 4); }
     }
@@ -603,5 +608,40 @@ function drawPacingWarnings() {
     ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff0cf';
     ctx.fillText(a && a.kind==='blast'?'自爆 '+Math.ceil(a.warning):shooting?'準備射擊':a.kind==='shield'?'準備護盾':'準備衝撞',e.x,e.y-e.r-12);
     ctx.restore();
+  }
+}
+
+// 與命中共用 config／鎖定原點及方向，不從畫面尺寸推算攻擊規則。
+function drawPhasedAttacks() {
+  for(const e of state.enemies) {
+    const a=e.phaseAttack;
+    if(!e.alive || !a || !['windup','active','recovery'].includes(a.phase)) continue;
+    ctx.save();
+    if(a.phase==='recovery') {
+      ctx.fillStyle='#e9ffff';ctx.font='bold 13px system-ui';ctx.textAlign='center';
+      ctx.fillText('反擊機會！',e.x,e.y-e.r-12);ctx.restore();continue;
+    }
+    const c=a.config,warning=a.phase==='windup';
+    ctx.strokeStyle=warning?'#e9485c':'#fff2ac';ctx.fillStyle=warning?'rgba(240,65,85,.23)':'rgba(255,180,70,.48)';ctx.lineWidth=3;ctx.lineJoin='round';
+    ctx.translate(a.x,a.y);ctx.rotate(a.angle);
+    if(c.shape==='projectiles') {
+      // 預警為子彈沿固定方向的完整掃掠範圍，含主角碰撞半徑。
+      if(warning) for(const angle of SurvivorPacing.attackAngles(c,0)) {
+        ctx.save();ctx.rotate(angle);ctx.lineCap='round';
+        ctx.globalAlpha=.24;ctx.lineWidth=2*(c.radius+state.player.r);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.min(c.length,c.speed*c.active),0);ctx.stroke();
+        ctx.globalAlpha=1;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.min(c.length,c.speed*c.active),0);ctx.stroke();ctx.restore();
+      }
+    } else {
+      ctx.beginPath();
+      if(c.shape==='line') ctx.rect(0,-c.radius,c.length,c.radius*2);
+      else if(c.shape==='sector') {const h=c.angle*Math.PI/360;ctx.moveTo(0,0);ctx.arc(0,0,c.radius,-h,h);ctx.closePath();}
+      else {ctx.arc(0,0,c.radius,0,Math.PI*2);if(c.shape==='ring') {ctx.moveTo(c.innerRadius,0);ctx.arc(0,0,c.innerRadius,0,Math.PI*2,true);}}
+      ctx.fill();ctx.stroke();
+    }
+    ctx.restore();
+    if(warning) {
+      ctx.save();ctx.strokeStyle='#fff3aa';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='#fff0cf';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('準備！',e.x,e.y-e.r-16);ctx.restore();
+    }
   }
 }

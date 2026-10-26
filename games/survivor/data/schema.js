@@ -19,6 +19,8 @@
   };
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
   const PACING_BOUNDS = {density:[.25,2,.05],strongScale:[.5,2,.05],weakScale:[.25,1,.05],cycleSeconds:[5,20,1],eventCount:[2,10,1],eventSeconds:[5,20,1],warning:[.6,3,.1],chargeSpeed:[150,450,10],chargeSeconds:[.3,1,.05],fuseSeconds:[2,2,1],blastRadius:[40,120,5],blastDamage:[0,30,1],blastEnemyDamage:[10,200,10],shieldRadius:[60,220,10],shieldSeconds:[3,12,1],shieldHits:[1,3,1]};
+  const PHASE_BOUNDS = {radius:[4,150,1],innerRadius:[0,150,1],length:[40,500,5],angle:[20,180,5],windup:[.6,3,.05],active:[.1,4,.05],recovery:[.2,3,.05],cooldown:[.5,15,.1],damage:[0,30,1],triggerDistance:[40,500,5],speed:[50,200,5],count:[1,12,1],gapDegrees:[40,160,5]};
+  const PHASE_SHAPES = {line:'直線',sector:'扇形',circle:'圓形',ring:'圓環',projectiles:'子彈型態'};
   const BEHAVIORS = {chase:'追趕',fast:'弧線快跑',tank:'擋住其他怪',shooter:'射擊後退',charger:'預警衝撞',bomber:'兩秒自爆',splitter:'分裂兩隻',support:'護盾輔助',still:'站在原地',retreat:'靠近後退'};
   const NEUTRAL_BOUNDS = {wavePush:[0,120,1],waveDamage:[0,100,1],waveCooldown:[.1,2,.1],"itemsPerRun": [1, 9, 1], "bombChance": [0, 1, 0.05], "bombDelay": [0.2, 2, 0.1], "bombRadius": [20, 150, 1], "bombDamage": [5, 150, 1], "birdRadius": [25, 120, 1], "birdReach": [20, 150, 1], "birdSeconds": [0.3, 3, 0.1], "birdDamage": [5, 80, 1], "bankEvery": [1, 30, 1], "bankStep": [0.001, 0.05, 0.001], "bankCap": [0, 1, 0.01], "splitDamage": [0.1, 1, 0.1], "splitAngle": [0.1, 1, 0.1], "magnetMultiplier": [1, 4, 0.1], "crownDamage": [0.1, 1, 0.05], "crownHealth": [1, 20, 1], "luckyRareMultiplier": [1, 3, 0.1], "cookieKills": [5, 50, 1]};
   const SCHOOL_BOUNDS = {
@@ -164,6 +166,10 @@
       // 舊的兩種怪物作品以穩定 id 補新種類，原本的名稱、行為和攻擊都保留。
       if (!Array.isArray(input.enemies) || input.enemies.length < 2 || input.enemies.length > data.enemies.length || new Set(input.enemies.map(e=>e.id)).size !== input.enemies.length || input.enemies.some(e=>!data.enemies.some(b=>b.id===e.id)) || data.enemies.slice(0,2).some(b=>!input.enemies.some(e=>e.id===b.id))) fail('怪物種類數量不正確');
       input = {...input,enemies:data.enemies.map(b=>input.enemies.find(e=>e.id===b.id)||b)};
+      if(input.bodyContact !== undefined) {
+        if(typeof input.bodyContact.pushOnly !== 'boolean') fail('碰撞開關格式錯誤');
+        data.bodyContact={pushOnly:input.bodyContact.pushOnly,damageScale:num(input.bodyContact.damageScale,0,1,'身體傷害倍率')};
+      }
       data.enemies = data.enemies.map((base, i) => {
         const e = input.enemies[i]; if (!e || e.id !== base.id) fail('怪物識別碼不正確');
         const result = { ...base, name: name(e.name, '怪物名稱', 24), hp: num(e.hp, 10, 500, '血量'), speed: num(e.speed, 0, 170, '移速'), radius: num(e.radius, 10, 35, '大小'), damage: num(e.damage, 0, 40, '碰撞傷害'), behavior: choice(e.behavior, Object.keys(BEHAVIORS), '移動方式') };
@@ -172,6 +178,13 @@
         result.shadowSize = e.shadowSize === undefined ? .9 : num(e.shadowSize, .3, 1.8, '影子寬度倍率');
         const a = e.attack;
         result.attack = { type: choice(a.type, ['none','projectile','aoe','summon'], '怪物攻擊'), interval: num(a.interval, 1, 15, '攻擊間隔'), speed: num(a.speed, 50, 200, '國字速度'), damage: num(a.damage, 0, 30, '攻擊傷害'), radius: num(a.radius, 10, 100, '攻擊大小'), count: num(a.count, 1, 5, '攻擊數量', true), spread: num(a.spread, 0, .6, '散射角度'), level: num(a.level, 2, 20, '開始攻擊等級', true) };
+        if(e.phaseAttack !== undefined) {
+          const a=e.phaseAttack;
+          if(!a || typeof a.enabled!=='boolean' || typeof a.radial!=='boolean') fail('分階段攻擊開關格式錯誤');
+          result.phaseAttack={enabled:a.enabled,radial:a.radial,shape:choice(a.shape,Object.keys(PHASE_SHAPES),'攻擊形狀')};
+          for(const [key,b] of Object.entries(PHASE_BOUNDS)) result.phaseAttack[key]=num(a[key],b[0],b[1],key,key==='count');
+          if(a.shape==='ring' && a.innerRadius>=a.radius) fail('圓環內圈需小於外圈');
+        }
         return result;
       });
       const b = { ...input.boss };
@@ -227,5 +240,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { KEY, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { KEY, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

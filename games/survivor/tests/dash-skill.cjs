@@ -52,7 +52,7 @@ run(`activateDash(); for (let i = 0; i < 3; i++) {
   state.enemies = [{x:state.player.x+28.5,y:state.player.y,r:17,speed:0,damage:15,hp:999,alive:true,wobble:0,flash:0}]; tick(.05);
 }`);
 assert.equal(run('state.player.health'), 90);
-run('tick(.05); tick(.05);'); assert.equal(run('state.player.health'), 75);
+run('tick(.05); tick(.05);'); assert.equal(run('state.player.health'), 86.25);
 // 技能固定留在放置位置，延遲一次爆開，範圍外不受傷，向爆心外擊退。
 fresh();
 run(`state.enemies = [450, 650].map(x => ({x,y:300,r:17,speed:0,damage:15,hp:300,alive:true,wobble:0,flash:0}));
