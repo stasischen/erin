@@ -79,9 +79,8 @@ function updateSchoolCombat(dt) {
   }
   c.rods = c.rods.filter(rod => rod.life > 0);
   if (schoolWindWall()) for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,state.player.x),deltaY(target.y,state.player.y)) < r.eyeRadius + target.r) shiftTarget(target,state.player.x,state.player.y,r.eyePush*dt);
-  pulse('thunder-static',r.staticSeconds,() => {
-    for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,state.player.x),deltaY(target.y,state.player.y)) < state.player.r + target.r + 3) { lightning(state.player.x,state.player.y,target.x,target.y); hitBuildTarget(target,r.staticDamage); if(state.mode!=='playing') return; }
-  });
+  applyEffectBlockTimer(dt);
+
 }
 
 function schoolDashCrossed(fromX,fromY,toX,toY) {
@@ -94,3 +93,25 @@ function schoolDashCrossed(fromX,fromY,toX,toY) {
   }
 }
 Survivor.engine['school-combat'] = { handleSchoolEvents, schoolDamage, absorbSchoolHit, updateSchoolCombat };
+
+// 接合層保留合法目標、環繞座標、既有傷害入口與勝敗停止；純規則只輸出 id。
+// WeakMap 不延長敵人生命；同一實體跨更新使用同一 id，不把物件傳入純規則。
+const effectBlockTargetIds = new WeakMap();
+let effectBlockTargetSerial = 0;
+function effectBlockTargetId(target) {
+  if (!effectBlockTargetIds.has(target)) effectBlockTargetIds.set(target,'target-'+(++effectBlockTargetSerial));
+  return effectBlockTargetIds.get(target);
+}
+function applyEffectBlockTimer(dt) {
+  const targets=combatTargets(), byId=new Map(targets.map(target=>[effectBlockTargetId(target),target]));
+  const result=SurvivorEffectBlocks.step({dt, timers:state.schoolCombat.timers,
+    levels:Object.fromEntries(SurvivorEffectBlocks.recipes.map(recipe=>[recipe.feature,effectLevel(recipe.feature)])),
+    data:GAME_DATA, player:{r:state.player.r},
+    targets:targets.map(target=>({id:effectBlockTargetId(target),dx:deltaX(target.x,state.player.x),dy:deltaY(target.y,state.player.y),r:target.r}))});
+  Object.assign(state.schoolCombat.timers,result.timers);
+  for (const event of result.events) {
+    const target=byId.get(event.targetId);
+    if (event.type==='cue') lightning(state.player.x,state.player.y,target.x,target.y);
+    if (event.type==='damage') {hitBuildTarget(target,event.amount);if(state.mode!=='playing') return;}
+  }
+}
