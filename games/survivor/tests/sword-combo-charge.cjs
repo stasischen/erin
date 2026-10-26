@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),createRun=require('./maker-support.cjs');
 const run=createRun(),json=code=>JSON.parse(run(`JSON.stringify(${code})`));
 function fresh(weapon='candy-sword') {
- run(`resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='${weapon}';state.spawnTimer=999;state.shotTimer=999;state.player.x=400;state.player.y=300;state.player.damageDisabled=true;updateCamera();globalThis.book=(dx=45,dy=0,hp=10000)=>({typeId:'jaben',behavior:'still',x:state.player.x+dx,y:state.player.y+dy,r:5,speed:0,damage:0,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});state.enemies=[book()];`);
+ run(`GAME_DATA.attackMode='auto';resetGame();state.mode='playing';settingsPanel.hidden=true;state.weaponId='${weapon}';state.spawnTimer=999;state.shotTimer=999;state.player.x=400;state.player.y=300;state.player.damageDisabled=true;updateCamera();globalThis.book=(dx=45,dy=0,hp=10000)=>({typeId:'jaben',behavior:'still',x:state.player.x+dx,y:state.player.y+dy,r:5,speed:0,damage:0,hp,maxHp:hp,alive:true,wobble:0,flash:0,shotCooldown:999});state.enemies=[book()];`);
 }
 fresh();
 // Pure rules: wrap 1,2,3,1; exact reset boundary; inputs remain unmodified.
@@ -67,6 +67,6 @@ run('d=SurvivorData.defaults();d.cards[0].effects=[{type:"aoe",trigger:"combo",c
 run('d.cards[0].effects[0].comboStep=0');assert.equal(run('SurvivorData.validate(d).valid'),false);
 // Real sword practice and card preview use actual attack state and renderer.
 const practice=createRun();practice('globalThis.frameElement={}');practice(fs.readFileSync(`${__dirname}/../practice-rules.js`,'utf8'));practice(fs.readFileSync(`${__dirname}/../practice-engine.js`,'utf8'));
-practice("practiceId='candy-sword';practiceReset();for(let i=0;i<80;i++)practiceStep(.05)");assert.equal(practice('state.weaponId'),'candy-sword');assert.ok(practice('state.swingCount')>0);assert.match(practice.elements.practiceStats.textContent,/連段.*聚氣/);
+practice("GAME_DATA.attackMode='auto';practiceId='candy-sword';practiceReset();for(let i=0;i<80;i++)practiceStep(.05)");assert.equal(practice('state.weaponId'),'candy-sword');assert.ok(practice('state.swingCount')>0);assert.match(practice.elements.practiceStats.textContent,/連段.*聚氣/);
 const preview=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id:'big-water',level:1,weaponId:'candy-sword'}}});preview('stepPreview(.26);paintPreview()');assert.ok(preview('state.enemies.some(e=>e.hp<100000)'));assert.equal(preview('state.projectiles.length'),0);
 console.log('PASS: pure combo/charge boundaries, three sword shapes and step, no-target conservation, charge waves, dash end, bubble splash/pierce/pools, pause/reset, Nth-card trigger, sword notes, Maker migration and practice/preview');

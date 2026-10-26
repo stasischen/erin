@@ -214,3 +214,10 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .manual-controls .dash-button { width: var(--manual-size); height: var(--manual-size); right: calc(var(--manual-size) * .1); bottom: 0; }
 .manual-controls .skill-button { width: calc(var(--manual-size) * .8); height: calc(var(--manual-size) * .8); right: calc(var(--manual-size) * .1); top: 0; }
 .manual-controls .pixel-icon { width: 28px; height: 28px; }
+
+/* 圓形開關配上方格像素標記；文字直接顯示目前模式。 */
+.attack-mode-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 4px 12px; margin: 6px auto 10px; border: 2px solid #8cbad0; background: #244963; color: #fff; font: inherit; font-weight: 850; }
+.mode-pixel { display: inline-grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; border: 2px solid #9df6ff; background: #162c43; box-shadow: 2px 2px 0 #071522; }
+.mode-pixel::after { content: ''; width: 10px; height: 10px; background: #69869d; box-shadow: 4px 0 #69869d, 0 4px #69869d, 4px 4px #69869d; transform: translate(-2px, -2px); }
+.attack-mode-toggle[aria-checked="true"] .mode-pixel::after { background: #9df6ff; box-shadow: 4px 0 #9df6ff, 0 4px #9df6ff, 4px 4px #9df6ff; }
+.attack-mode-toggle:focus-visible { outline: 3px solid #ffe891; outline-offset: 2px; }

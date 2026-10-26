@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261026y" />
-  <link rel="stylesheet" href="maker/style.css?v=20261026y" />
+  <link rel="stylesheet" href="style.css?v=20261026z" />
+  <link rel="stylesheet" href="maker/style.css?v=20261026z" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,6 +53,7 @@
         <section id="settingsPanel" class="settings-panel" hidden aria-label="遊戲設定">
           <h2><span data-icon="settings" aria-hidden="true"></span> 遊戲設定</h2>
           <p>調整後會自動記住這台裝置的設定。</p>
+          <button id="pauseAttackMode" class="attack-mode-toggle" type="button" role="switch" aria-label="手動攻擊" aria-checked="true"><span class="mode-pixel" aria-hidden="true"></span><span>攻擊：手動／自動</span></button>
           <h3>本局四欄位與已取得卡片</h3>
           <div id="buildSlots" class="build-slots" aria-label="本局四欄位"></div><div id="ownedPreview" class="skill-preview-host"></div>
           <details class="tree-details"><summary>技能樹、合體卡與終極卡前置條件</summary><p>卡片依作品設定等級上限；同流派 3 張變身、5 張解鎖終極；雙流派各 2 張解鎖合體。</p><div id="settingsSkillTree" class="skill-tree"></div></details>
@@ -72,6 +73,7 @@
           <div id="messageIcon" class="message-icon" aria-hidden="true"><span data-icon="onion-dash" aria-hidden="true"></span></div>
           <h2 id="messageTitle">小怪獸</h2>
           <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
+          <button id="startAttackMode" class="attack-mode-toggle" type="button" role="switch" aria-label="手動攻擊" aria-checked="true"><span class="mode-pixel" aria-hidden="true"></span><span>攻擊：手動／自動</span></button>
           <button id="makerLink" class="settings-action menu-settings" type="button"><span data-icon="maker" aria-hidden="true"></span> 自己設計</button>
           <button id="settingsButton" class="settings-action menu-settings" type="button"><span data-icon="settings" aria-hidden="true"></span> 遊戲設定</button>
           <button id="startButton" class="start-button" type="button">開始遊戲</button>
@@ -86,14 +88,14 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261026y"></script>
+  <script src="icons.js?v=20261026z"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261026y"></script>
-  <script src="data/schema.js?v=20261026y"></script>
-  <script src="preview.js?v=20261026y"></script>
-  <script src="manifest.js?v=20261026y"></script><script src="game.js?v=20261026y"></script>
-  <script src="practice-host.js?v=20261026y"></script>
-  <script src="maker/maker.js?v=20261026y"></script>
+  <script src="data/defaults.js?v=20261026z"></script>
+  <script src="data/schema.js?v=20261026z"></script>
+  <script src="preview.js?v=20261026z"></script>
+  <script src="manifest.js?v=20261026z"></script><script src="game.js?v=20261026z"></script>
+  <script src="practice-host.js?v=20261026z"></script>
+  <script src="maker/maker.js?v=20261026z"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

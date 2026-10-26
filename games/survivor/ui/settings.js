@@ -1,7 +1,35 @@
 function startAudio() { Survivor.audio.unlock(); }
 function playSound(id) { return Survivor.audio.play(id); }
 
+function updateAttackModeButtons() {
+  for (const id of ['startAttackMode', 'pauseAttackMode']) {
+    const button = document.getElementById(id);
+    if (!button) continue;
+    const manual = GAME_DATA.attackMode === 'manual';
+    button.setAttribute('aria-checked', String(manual));
+    button.setAttribute('aria-label', '手動攻擊');
+    button.title = manual ? '切換為自動攻擊' : '切換為手動攻擊';
+    button.innerHTML = '<span class="mode-pixel" aria-hidden="true"></span><span>攻擊：' + (manual ? '手動' : '自動') + '　切換</span>';
+  }
+}
+function setAttackMode(mode) {
+  if (!['manual', 'auto'].includes(mode)) return;
+  cancelManualAttack();
+  if (state.weaponAttack) state.weaponAttack.charge = 0;
+  state.keys.delete('j'); state.keys.delete('k');
+  GAME_DATA.attackMode = mode; GAME_DATA.attackModeChosen = true;
+  if (!MAKER_MODE) {
+    gameSettings.attackMode = mode; gameSettings.attackModeChosen = true; saveSettings();
+  }
+  state.shotTimer = effectiveShotInterval();
+  updateAttackModeButtons(); updateActionControls();
+}
+for (const id of ['startAttackMode', 'pauseAttackMode']) {
+  const button = document.getElementById(id);
+  if (button) button.addEventListener('click', () => setAttackMode(GAME_DATA.attackMode === 'manual' ? 'auto' : 'manual'));
+}
 function updateSettingsButtons() {
+  updateAttackModeButtons();
   for (const [id, key, icon, label] of [["soundToggle", "sound", "sound", "音效"], ["musicToggle", "music", "music", "音樂"]]) {
     const button = document.getElementById(id);
     button.innerHTML = SurvivorIcons.html(gameSettings[key] ? icon : key === "music" ? "music-off" : "mute");

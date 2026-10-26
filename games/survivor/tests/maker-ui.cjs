@@ -174,3 +174,17 @@ assert.ok(juiceSlider);juiceSlider.value=1.6;juiceSlider.fire('input');ui.ids.sa
 assert.deepEqual(JSON.parse(ui.storage['erin-survivor-maker-v1']).hitJuice,{enabled:false,intensity:1.6});
 ui=setup({saved:ui.storage});ui.tab('enemies');assert.ok(ui.nodes().some(n=>n._text==='打擊回饋：關'));
 console.log('PASS: Maker hit juice switch/intensity persist and reopen');
+
+// 攻擊切換位在數值頁頂端，明確選過自動才能跨載入保留。
+ui=setup();ui.tab('numbers');
+let attackMode=ui.nodes().find(n=>n.className==='attack-mode-toggle');
+assert.ok(attackMode);assert.equal(attackMode.attrs['aria-checked'],'true');
+attackMode.fire('click');ui.ids.save.fire('click');
+let attackSaved=JSON.parse(ui.storage['erin-survivor-maker-v1']);
+assert.equal(attackSaved.attackMode,'auto');assert.equal(attackSaved.attackModeChosen,true);
+ui=setup({saved:ui.storage});ui.tab('numbers');
+attackMode=ui.nodes().find(n=>n.className==='attack-mode-toggle');
+assert.equal(attackMode.attrs['aria-checked'],'false');
+attackMode.fire('click');ui.ids.save.fire('click');
+assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).attackMode,'manual');
+console.log('PASS: Maker top-level attack switch, explicit auto selection/save/reopen and manual return');

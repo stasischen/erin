@@ -20,6 +20,7 @@ assert.match(run('SurvivorPracticeRules.describe(SurvivorPracticeRules.model(GAM
 assert.match(run('SurvivorPracticeRules.describe(SurvivorPracticeRules.model(GAME_DATA,"candy-hammer"))'),/每 4 下旋轉/);
 assert.match(run('SurvivorPracticeRules.describe(SurvivorPracticeRules.model(GAME_DATA,"item-wall"))'),/浪花擊退 55/);
 assert.equal(run('SurvivorPracticeRules.model(GAME_DATA,"pop-candy").recovery'),0);
+run("GAME_DATA.attackMode='auto'"); // 本段驗證自動示範；手動模式另由 manual-attack 測試。
 // 真實引擎沙盒：每個清單項目能循環，無傷、無生成、無結算；確實發射／揮擊／分階段。
 run(fs.readFileSync(`${__dirname}/../practice-engine.js`,'utf8'));
 for(const id of ['water-ball','candy-hammer','candy-sword','item-wall','pudding','mushroom','fairy','donut','pop-candy']) {

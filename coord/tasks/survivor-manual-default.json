@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-manual-default",
+  "title": "預設手動攻擊與清楚的模式切換",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-manual-default",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T074112Z-parent-manual-default.md",
+  "next": "預設手動、首頁玩家模式記憶、舊玩家／Maker 設定遷移、開始／暫停／Maker 圓形像素切換及隨武器變動的普攻圖示已完成；版本 20261026z。node games/survivor/tools/test.cjs 最終 exit 0，未執行 --layout 或瀏覽器操作。請 erin-watch 代辦指定改動檔案 commit、push 與 PR，再請 Grok 審查完整 SHA，並在 1024×461、740×360 親手切換模式與操作四鍵、三種武器。驗證案例、Godot §11 檢查及平台／事件差距見 docs/survivor-manual-default-validation.md。無待決定事項；Grok 通過後請 Erin 試玩、家長最後確認。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T07:46:59.446400Z",
+  "updatedBy": "codex"
+}

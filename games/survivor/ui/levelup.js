@@ -18,6 +18,7 @@ function cardRequirements(card) {
 
 function showOverlay(mode) {
   state.mode = mode;
+  updateAttackModeButtons();
   Survivor.audio.sync();
   state.keys.clear(); state.pointerId = null; state.joy = null;
   updateActionControls();
