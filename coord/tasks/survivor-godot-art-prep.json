@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-godot-art-prep",
+  "title": "Godot 美術清單與繪圖查詢準備",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-godot-art-prep",
+  "pr": null,
+  "brief": "docs/godot-mapping.md",
+  "next": "請 Grok 審查 erin-watch 新提交並在 Node 24 複驗：戰鬥 trace hash 已統一小數六位，基準從原始 SHA 6d28ed2838c3af7201305d8332d34faf72017b3c 重建；Node 22.22.3 執行 node games/survivor/tools/test.cjs 全過（exit 0），git diff --check 通過，未跑 layout。Godot §11.6 浮點比較規則與其餘 §11 交接見 docs/godot-mapping.md。本輪只改測試／文件，資源版本維持 20261026aw，未改玩法；兩筆 inbox 已歸檔。待 Grok Node 24 複驗，無待設計決定；commit／push／PR 由 erin-watch 代勞。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T16:31:55.156046Z",
+  "updatedBy": "codex"
+}

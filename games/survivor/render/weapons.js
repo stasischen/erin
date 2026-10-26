@@ -1,5 +1,8 @@
 // 只讀揮擊事件畫圖，碰撞與傷害在 engine/weapons.js。
 function drawHammerSwing(v, progress) {
+  return SurvivorArt.paint('layer/draw-hammer-swing', null, () => drawHammerSwingPlaceholder.apply(this, arguments));
+}
+function drawHammerSwingPlaceholder(v, progress) {
   const heavy=v.heavy || v.boosted, width=heavy?20:11;
   if(v.slash===false && !(state.practiceHitboxes)) return;
   ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);
@@ -32,6 +35,9 @@ function drawHammerSwing(v, progress) {
 }
 
 function drawHeldWeapon() {
+  return SurvivorArt.paint('layer/draw-held-weapon', null, () => drawHeldWeaponPlaceholder.apply(this, arguments));
+}
+function drawHeldWeaponPlaceholder() {
   const weapon=activeWeapon(), a=state.weaponAttack;
   if(a) {
     ctx.save();ctx.strokeStyle=a.charge>=weapon.chargeSeconds?'#ffe28a':'#8bdcff';ctx.lineWidth=3;

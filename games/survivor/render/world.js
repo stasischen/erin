@@ -1,6 +1,9 @@
 // 高度只影響繪圖，地面座標仍供碰撞、鏡頭和預警使用。
 // Erin 可以改：影子寬度是身體半徑的倍率；越高，影子越小、越淡。
 function drawGroundShadow(x, y, r, height = 0, size = .9, drawingContext = ctx) {
+  return SurvivorArt.paint('layer/draw-ground-shadow', null, () => drawGroundShadowPlaceholder.apply(this, arguments));
+}
+function drawGroundShadowPlaceholder(x, y, r, height = 0, size = .9, drawingContext = ctx) {
   const air = Math.max(0, Math.min(1, height / 70));
   drawingContext.save();
   drawingContext.fillStyle = "rgba(25,34,43," + (.24 - air * .14) + ")";
@@ -10,6 +13,9 @@ function drawGroundShadow(x, y, r, height = 0, size = .9, drawingContext = ctx) 
 }
 // progress 從 0 到 1：落地前逐漸擴大。紅色預警另外畫，仍表示真正傷害範圍。
 function drawLandingShadow(x, y, r, progress, drawingContext = ctx) {
+  return SurvivorArt.paint('layer/draw-landing-shadow', null, () => drawLandingShadowPlaceholder.apply(this, arguments));
+}
+function drawLandingShadowPlaceholder(x, y, r, progress, drawingContext = ctx) {
   const remainingHeight = 70 * (1 - Math.max(0, Math.min(1, progress)));
   drawGroundShadow(x, y - r * .85, r, remainingHeight, .9, drawingContext);
 }
@@ -23,7 +29,12 @@ function bossAirHeight() {
 }
 
 function drawBossMoves() {
+  return SurvivorArt.paint('layer/draw-boss-moves', null, () => drawBossMovesPlaceholder.apply(this, arguments));
+}
+function drawBossMovesPlaceholder() {
   for (const move of state.bossMoves) {
+    // 美術是附加層；判定預警仍依原幾何畫出。
+    SurvivorArt.draw('move/boss-'+move.id,{context:ctx,x:move.x-32,y:move.y-32,width:64,height:64,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed});
     if(move.recovery>0) {
       // 收招時移除危險區，只用像素亮點提示反擊機會。
       ctx.save();ctx.fillStyle='#ffcf49';
@@ -96,6 +107,8 @@ function drawBossMoves() {
 const BACKGROUND_TILES = {};
 // 84px 大地磚、三個相近色；裝飾是扁平地面刻紋，沒有臉、眼睛或亮點。
 function backgroundTile(kind, density) {
+  const replacement = SurvivorArt.picture('background/'+kind);
+  if (replacement) return replacement;
   if (density === undefined) density = .25;
   const key = density === .25 ? kind : kind + ":" + density;
   if (BACKGROUND_TILES[key]) return BACKGROUND_TILES[key];
@@ -122,6 +135,9 @@ function backgroundTile(kind, density) {
 const OUTLINE_MASKS = new WeakMap();
 const SPRITE_TINTS = new WeakMap();
 function drawOutlinedSprite(g, sprite, x, y, w, h, tint) {
+  return SurvivorArt.paint('layer/draw-outlined-sprite', null, () => drawOutlinedSpritePlaceholder.apply(this, arguments));
+}
+function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint) {
   if(tint) {
     let colors=SPRITE_TINTS.get(sprite);
     if(!colors) {colors={};SPRITE_TINTS.set(sprite,colors);}
@@ -145,6 +161,10 @@ function drawOutlinedSprite(g, sprite, x, y, w, h, tint) {
 }
 const TEACHER_PICTURES = {};
 function teacherPicture(flash) {
+  const move=state.bossMoves[0];
+  const animation=flash?'hurt':state.boss && state.boss.posture && state.boss.posture.stun>0?'stun':move?(move.recovery>0?'recovery':move.active?'active':'windup'):'idle';
+  const replacement = SurvivorArt.picture('character/teacher', animation, state.elapsed);
+  if (replacement) return replacement;
   const key = flash ? "flash" : "normal";
   if (TEACHER_PICTURES[key]) return TEACHER_PICTURES[key];
   const picture = document.createElement("canvas"); picture.width = 52; picture.height = 68;
@@ -158,6 +178,9 @@ function teacherPicture(flash) {
 }
 
 function drawClassroom() {
+  return SurvivorArt.paint('layer/draw-classroom', null, () => drawClassroomPlaceholder.apply(this, arguments));
+}
+function drawClassroomPlaceholder() {
   const tile = backgroundTile(currentStage().background, currentStage().decorationDensity);
   const left = Math.floor(state.cameraX / 336) * 336;
   const top = Math.floor(state.cameraY / 252) * 252;
@@ -181,6 +204,9 @@ function visibleWorldOffsets() {
 }
 
 function drawHero() {
+  return SurvivorArt.paint('layer/draw-hero', null, () => drawHeroPlaceholder.apply(this, arguments));
+}
+function drawHeroPlaceholder() {
   const p = state.player;
   // 遊戲時間暫停時，彈跳與受傷閃爍也一起停下來。
   const hurt = p.invincible > 0;
@@ -204,8 +230,14 @@ function drawHero() {
     ctx.fillStyle='#f8eea8';for(let i=0;i<4;i++){const a=state.elapsed*3+i*Math.PI/2;ctx.fillRect(Math.cos(a)*29,Math.sin(a)*29,4,4);}
   }
   if (look.forms.includes('water')) ctx.globalAlpha *= .65;
+  const animation = hurt ? 'hurt' : p.moving ? 'run' : 'idle';
+  const art = SurvivorArt.picture('character/player', animation, state.elapsed);
   const sprite = SPRITES.player;
-  if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
+  if (art) {
+    const box=SurvivorArt.bounds('character/player',-20,-30,40,48);
+    drawOutlinedSprite(ctx,art,...box,p.impactFlash?'#ffffff':undefined);
+  }
+  else if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
   else {
     // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
     ctx.imageSmoothingEnabled = false;
@@ -222,7 +254,10 @@ function drawHero() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint) {
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0) {
+  return SurvivorArt.paint('layer/draw-blob', null, () => drawBlobPlaceholder.apply(this, arguments));
+}
+function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0) {
   const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
@@ -231,10 +266,10 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
   if (sprite) {
     drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
-  const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
+  const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId, animation, seconds);
   if (skin) {
     drawingContext.imageSmoothingEnabled = false;
-    drawOutlinedSprite(drawingContext, skin, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, skin, ...SurvivorArt.bounds('character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId),-r,-r,r*2,r*2), flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   drawingContext.fillStyle = flash ? "#fff" : tint || color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
@@ -250,9 +285,15 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
 
 // 只用舊版 iPad 也支援的 Canvas API；線寬至少 3px，避免手機上看不見。
 function strokeRing(x, y, radius, color, width = 3) {
+  return SurvivorArt.paint('layer/stroke-ring', null, () => strokeRingPlaceholder.apply(this, arguments));
+}
+function strokeRingPlaceholder(x, y, radius, color, width = 3) {
   ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); ctx.stroke();
 }
 function drawBolt(x, y, x2, y2) {
+  return SurvivorArt.paint('layer/draw-bolt', null, () => drawBoltPlaceholder.apply(this, arguments));
+}
+function drawBoltPlaceholder(x, y, x2, y2) {
   const dx = deltaX(x2, x), dy = deltaY(y2, y), length = Math.max(1, Math.hypot(dx, dy));
   x2 = x + dx; y2 = y + dy;
   // 固定折線，不每幀亂跳；暫停時畫面也會完全停住。
@@ -263,12 +304,18 @@ function drawBolt(x, y, x2, y2) {
   }
 }
 function drawSwirl(x, y, radius, phase) {
+  return SurvivorArt.paint('layer/draw-swirl', null, () => drawSwirlPlaceholder.apply(this, arguments));
+}
+function drawSwirlPlaceholder(x, y, radius, phase) {
   ctx.strokeStyle = "#23815e"; ctx.lineWidth = 4;
   for (let i = 0; i < 3; i++) {
     ctx.beginPath(); ctx.arc(x, y, radius * (1 - i * .23), phase + i, phase + i + Math.PI * 1.5); ctx.stroke();
   }
 }
 function drawFields() {
+  return SurvivorArt.paint('layer/draw-fields', null, () => drawFieldsPlaceholder.apply(this, arguments));
+}
+function drawFieldsPlaceholder() {
   for (const field of state.fields) {
     ctx.save();
     ctx.globalAlpha = Math.min(.3, field.life * .6); ctx.fillStyle = BUILD_TUNING[field.school].color;
@@ -286,6 +333,9 @@ function drawFields() {
   }
 }
 function drawTargetStatus(target) {
+  return SurvivorArt.paint('layer/draw-target-status', null, () => drawTargetStatusPlaceholder.apply(this, arguments));
+}
+function drawTargetStatusPlaceholder(target) {
   ctx.save();
   if (target.slowTimer > 0) {
     ctx.fillStyle = "rgba(45,166,255,.32)"; ctx.beginPath(); ctx.arc(target.x, target.y, target.r + 3, 0, Math.PI * 2); ctx.fill();
@@ -302,6 +352,9 @@ function drawTargetStatus(target) {
   ctx.restore();
 }
 function drawSupportVisuals() {
+  return SurvivorArt.paint('layer/draw-support-visuals', null, () => drawSupportVisualsPlaceholder.apply(this, arguments));
+}
+function drawSupportVisualsPlaceholder() {
   const p = state.player;
   ctx.save();
   if (effectLevel("bubble-shield")) { ctx.globalAlpha = .65; strokeRing(p.x, p.y, p.r + 9, "#267dbe"); ctx.globalAlpha = 1; }
@@ -318,9 +371,13 @@ function drawSupportVisuals() {
   ctx.restore();
 }
 function drawSkillVisuals() {
+  return SurvivorArt.paint('layer/draw-skill-visuals', null, () => drawSkillVisualsPlaceholder.apply(this, arguments));
+}
+function drawSkillVisualsPlaceholder() {
   for (const v of state.vfx) {
     ctx.save(); ctx.globalAlpha = Math.min(1, v.life / v.maxLife * 2);
     const progress = 1 - v.life / v.maxLife;
+    if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life})) {ctx.restore();continue;}
     if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
     else if (v.kind === "maker-ring") {
       ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); ctx.stroke();
@@ -350,11 +407,17 @@ function drawSkillVisuals() {
   }
 }
 function drawUltimate() {
+  return SurvivorArt.paint('layer/draw-ultimate', null, () => drawUltimatePlaceholder.apply(this, arguments));
+}
+function drawUltimatePlaceholder() {
   const schools = GAME_DATA.schools.filter(s => effectLevel(s.id+'-ultimate'));
   if (schools.length > 1) { for (const s of schools) drawOneUltimate(state.ultimateVisuals[s.id]); }
   else drawOneUltimate(state.ultimateVisual);
 }
 function drawOneUltimate(v) {
+  return SurvivorArt.paint('layer/draw-one-ultimate', null, () => drawOneUltimatePlaceholder.apply(this, arguments));
+}
+function drawOneUltimatePlaceholder(v) {
   if (!v) return;
   ctx.save(); ctx.globalAlpha = Math.min(1, v.life * 4);
   if (v.school === "water") {
@@ -377,6 +440,7 @@ function drawOneUltimate(v) {
 }
 
 function render() {
+  SurvivorArt.lookup("scene/world");
   updateCamera();
   ctx.save();
   if(state.zoom) {
@@ -404,49 +468,13 @@ function render() {
     drawNeutralItems();
     for (const shot of state.projectiles) {
       if (!shot.alive) continue;
-      const colors = shot.colors || ['water'];
-      ctx.fillStyle = BUILD_TUNING[colors[0]].color;
-      if (colors.length > 1) { const gradient=ctx.createLinearGradient(shot.x-shot.r,shot.y,shot.x+shot.r,shot.y);gradient.addColorStop(0,BUILD_TUNING[colors[0]].color);gradient.addColorStop(1,BUILD_TUNING[colors[1]].color);ctx.fillStyle=gradient; } ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      if (shot.schools && shot.schools.includes("wind")) {
-        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
-        ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
-        for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
-      }
-      if ((shot.colors || shot.schools || []).includes("thunder") || shot.charged) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
-      if (shot.transformed) { ctx.strokeStyle='#e7ffef';ctx.lineWidth=2;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+7,0,Math.PI*2);ctx.stroke(); }
-      if (shot.piercing) {
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
-        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
-        ctx.beginPath(); ctx.moveTo(shot.x - shot.vx / speed * (shot.r + 5), shot.y - shot.vy / speed * (shot.r + 5));
-        ctx.lineTo(shot.x - shot.vx / speed * (shot.r + 15), shot.y - shot.vy / speed * (shot.r + 15)); ctx.stroke();
-      }
+      drawProjectileArt(shot);
     }
     for (const gem of state.gems) {
-      ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
-      ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
+      drawGemArt(gem);
     }
     for (const shot of state.enemyShots) {
-      ctx.save(); ctx.textAlign = "center";
-      if(shot.phaseShot) {
-        ctx.fillStyle=shot.candy?'#ffb8da':'#ed8d79';ctx.strokeStyle='#913d62';ctx.lineWidth=2;
-        ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r,0,Math.PI*2);ctx.fill();ctx.stroke();
-        ctx.fillStyle='#fff3d9';ctx.fillRect(shot.x-shot.r*.45,shot.y-shot.r*.45,shot.r*.4,shot.r*.4);
-      } else if (shot.source === "book") {
-        // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
-        ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
-        ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
-        ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
-      } else if (shot.text === "粉筆") {
-        ctx.translate(shot.x, shot.y); ctx.rotate(Math.atan2(shot.vy, shot.vx));
-        ctx.fillStyle = "#fff"; ctx.strokeStyle = "#b42f54"; ctx.lineWidth = 2;
-        ctx.fillRect(-10, -4, 20, 8); ctx.strokeRect(-10, -4, 20, 8);
-      } else {
-        ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
-      }
-      ctx.restore();
+      drawEnemyShotArt(shot);
     }
     if (state.boss) {
       const b = state.boss, x = b.x, y = b.y;
@@ -454,7 +482,7 @@ function render() {
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
-      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale);
+      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds('character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale));
       if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
         const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
         ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);
@@ -475,7 +503,7 @@ function render() {
       const jitter=windup?Math.sin(state.elapsed*85)*2*progress:0;
       const tint=enemy.impactFlash?'#ffffff':phase==='active'&&a.entered?'#ffffff':windup?'#ef8890':recovery?'#939da7':undefined;
       ctx.save();ctx.translate(enemy.x+jitter,enemy.y);ctx.scale(1+squash,1-squash);ctx.translate(-enemy.x,-enemy.y);
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint);
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint,enemy.stunTimer>0?'stun':enemy.impactFlash?'hurt':phase || 'run',state.elapsed);
       ctx.restore();
       if(windup || recovery) drawAttackMarker(enemy,windup?'!':'star');
       drawEncounterArmor(enemy);
@@ -505,16 +533,7 @@ function render() {
     }
     drawHero(); drawHeldWeapon();
     for (const effect of state.effects) {
-      const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
-      if (effect.kind === "water-hit") {
-        ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
-        ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
-      }
-      else if (effect.kind === "number") { ctx.font = `bold ${15*(effect.numberScale||1)}px system-ui`; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
-      else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
-      else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
-      else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
-      ctx.globalAlpha = 1;
+      drawParticleArt(effect);
     }
   ctx.restore();
   }
@@ -550,6 +569,9 @@ function bossGuide() {
   return { x: state.width / 2 + dx * scale, y: state.height / 2 + dy * scale, angle: Math.atan2(dy, dx) };
 }
 function drawBossGuide() {
+  return SurvivorArt.paint('layer/draw-boss-guide', null, () => drawBossGuidePlaceholder.apply(this, arguments));
+}
+function drawBossGuidePlaceholder() {
   if (state.mode !== "playing" && state.mode !== "paused" && state.mode !== "levelup") return;
   const guide = bossGuide();
   if (guide) {
@@ -602,6 +624,9 @@ Object.defineProperties(globalThis.Survivor.render.world, {
 
 // 同一個環狀圓的可見副本：紫霧、圈線及扣血判定都以最短距離為準。
 function drawBossZone() {
+  return SurvivorArt.paint('layer/draw-boss-zone', null, () => drawBossZonePlaceholder.apply(this, arguments));
+}
+function drawBossZonePlaceholder() {
   const z = state.bossZone;
   if (!state.boss || !z) return;
   const x = state.player.x + deltaX(z.x, state.player.x), y = state.player.y + deltaY(z.y, state.player.y);
@@ -628,6 +653,9 @@ function bossZoneGuide() {
   return { x: state.width/2 + ux * distance, y: state.height/2 + uy * distance, angle: Math.atan2(dy,dx) };
 }
 function drawBossZoneGuide() {
+  return SurvivorArt.paint('layer/draw-boss-zone-guide', null, () => drawBossZoneGuidePlaceholder.apply(this, arguments));
+}
+function drawBossZoneGuidePlaceholder() {
   if (!["playing", "paused", "levelup"].includes(state.mode) || !state.bossZone || !state.boss) return;
   const z = state.bossZone, guide = bossZoneGuide();
   ctx.save();
@@ -648,6 +676,9 @@ function drawBossZoneGuide() {
 
 // 只讀行為狀態，預警與規則分開；世界接縫由既有世界繪圖處理。
 function drawPacingWarnings() {
+  return SurvivorArt.paint('layer/draw-pacing-warnings', null, () => drawPacingWarningsPlaceholder.apply(this, arguments));
+}
+function drawPacingWarningsPlaceholder() {
   for(const e of state.enemies) {
     if(!e.alive) continue;
     const a=e.action, shooting=e.shotWarning>0;
@@ -669,6 +700,9 @@ function drawPacingWarnings() {
 // 與命中共用 config／鎖定原點及方向，不從畫面尺寸推算攻擊規則。
 // 地面預警是招式表現；精確碰撞範圍只供練習場開關使用。
 function drawAttackMarker(e,kind) {
+  return SurvivorArt.paint('layer/draw-attack-marker', null, () => drawAttackMarkerPlaceholder.apply(this, arguments));
+}
+function drawAttackMarkerPlaceholder(e,kind) {
   if(!enemyFeedback(e).hint) return;
   const x=Math.round(e.x),y=Math.round(e.y-e.r-24);
   ctx.save();ctx.fillStyle=kind==='!'?'#ffe2a0':'#fff2b3';
@@ -677,10 +711,14 @@ function drawAttackMarker(e,kind) {
   ctx.restore();
 }
 function drawPhasedAttacks() {
+  return SurvivorArt.paint('layer/draw-phased-attacks', null, () => drawPhasedAttacksPlaceholder.apply(this, arguments));
+}
+function drawPhasedAttacksPlaceholder() {
   for(const e of state.enemies) {
     const a=e.phaseAttack;
     if(!e.alive || !a || !['windup','active'].includes(a.phase)) continue;
     if(a.phase==='active' && !enemyFeedback(e).slash && !state.practiceHitboxes)continue;
+    SurvivorArt.draw('move/enemy-'+e.typeId,{context:ctx,x:a.x-24,y:a.y-24,width:48,height:48,animation:a.phase,time:state.elapsed});
     const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,SurvivorTiming.segments(c)[0].seconds))):1;
     ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle);
     ctx.strokeStyle='#ed7e89';ctx.fillStyle=warning?'rgba(240,65,85,.32)':'rgba(245,87,93,.72)';ctx.lineWidth=2;
@@ -710,6 +748,9 @@ function drawPhasedAttacks() {
 
 // 螢幕座標的非文字預警，與出怪共用倒數；不跟著鏡頭捲走。
 function drawWaveEventWarning() {
+  return SurvivorArt.paint('layer/draw-wave-event-warning', null, () => drawWaveEventWarningPlaceholder.apply(this, arguments));
+}
+function drawWaveEventWarningPlaceholder() {
   const run=state.pacing;
   if(PREVIEW_MODE || state.boss || state.bossIntro>0 || !run || !(run.warning>0)) return;
   const kind=run.queue.length && run.queue[0].kind;
@@ -728,4 +769,73 @@ function drawWaveEventWarning() {
     if(s===3) ctx.fillRect(0,h-edge,w,edge);
   }
   ctx.restore();
+}
+
+function drawProjectileArt(shot) {
+  return SurvivorArt.paint('projectile/water', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active'}}, () => {
+      const colors = shot.colors || ['water'];
+      ctx.fillStyle = BUILD_TUNING[colors[0]].color;
+      if (colors.length > 1) { const gradient=ctx.createLinearGradient(shot.x-shot.r,shot.y,shot.x+shot.r,shot.y);gradient.addColorStop(0,BUILD_TUNING[colors[0]].color);gradient.addColorStop(1,BUILD_TUNING[colors[1]].color);ctx.fillStyle=gradient; } ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (shot.schools && shot.schools.includes("wind")) {
+        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+        ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
+        for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
+      }
+      if ((shot.colors || shot.schools || []).includes("thunder") || shot.charged) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
+      if (shot.transformed) { ctx.strokeStyle='#e7ffef';ctx.lineWidth=2;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+7,0,Math.PI*2);ctx.stroke(); }
+      if (shot.piercing) {
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r + 4, 0, Math.PI * 2); ctx.stroke();
+        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
+        ctx.beginPath(); ctx.moveTo(shot.x - shot.vx / speed * (shot.r + 5), shot.y - shot.vy / speed * (shot.r + 5));
+        ctx.lineTo(shot.x - shot.vx / speed * (shot.r + 15), shot.y - shot.vy / speed * (shot.r + 15)); ctx.stroke();
+      }
+  });
+}
+
+function drawGemArt(gem) {
+  return SurvivorArt.paint('pickup/gem', {context:ctx,...{x:gem.x-7,y:gem.y-7,width:14,height:14,time:state.elapsed}}, () => {
+      ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
+      ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
+  });
+}
+
+function drawEnemyShotArt(shot) {
+  return SurvivorArt.paint('projectile/enemy', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active'}}, () => {
+      ctx.save(); ctx.textAlign = "center";
+      if(shot.phaseShot) {
+        ctx.fillStyle=shot.candy?'#ffb8da':'#ed8d79';ctx.strokeStyle='#913d62';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.fillStyle='#fff3d9';ctx.fillRect(shot.x-shot.r*.45,shot.y-shot.r*.45,shot.r*.4,shot.r*.4);
+      } else if (shot.source === "book") {
+        // 小兵是橘色方紙上的單字；老師仍是粉紅色詞句。
+        ctx.fillStyle = "#fff3cc"; ctx.strokeStyle = "#a85c13"; ctx.lineWidth = 2;
+        ctx.fillRect(shot.x - 12, shot.y - 12, 24, 24); ctx.strokeRect(shot.x - 12, shot.y - 12, 24, 24);
+        ctx.font = "bold 20px system-ui"; ctx.textBaseline = "middle"; ctx.fillStyle = "#713809"; ctx.fillText(shot.text, shot.x, shot.y);
+      } else if (shot.text === "粉筆") {
+        ctx.translate(shot.x, shot.y); ctx.rotate(Math.atan2(shot.vy, shot.vx));
+        ctx.fillStyle = "#fff"; ctx.strokeStyle = "#b42f54"; ctx.lineWidth = 2;
+        ctx.fillRect(-10, -4, 20, 8); ctx.strokeRect(-10, -4, 20, 8);
+      } else {
+        ctx.font = "bold 16px system-ui"; ctx.fillStyle = "#b42f54"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeText(shot.text, shot.x, shot.y); ctx.fillText(shot.text, shot.x, shot.y);
+      }
+      ctx.restore();
+  });
+}
+
+function drawParticleArt(effect) {
+  return SurvivorArt.paint(SurvivorArt.lookup('effect/'+effect.kind)?'effect/'+effect.kind:'effect/particle', {context:ctx,...{x:effect.x-16,y:effect.y-16,width:32,height:32,time:effect.maxLife-effect.life,animation:'active'}}, () => {
+      const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
+      if (effect.kind === "water-hit") {
+        ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
+        ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
+      }
+      else if (effect.kind === "number") { ctx.font = `bold ${15*(effect.numberScale||1)}px system-ui`; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
+      else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
+      ctx.globalAlpha = 1;
+  });
 }

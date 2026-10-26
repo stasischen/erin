@@ -129,15 +129,8 @@ const ENEMY_TYPES = GAME_DATA.enemies;
 const WAVES = GAME_DATA.waves;
 const STAGES = GAME_DATA.stages;
 
-const SPRITES = { player: null, jaben: null, otsubon: null }; // 填入 assets 裡的 PNG 檔名；null 使用內建圖案
-for (const name of Object.keys(SPRITES)) {
-  const filename = SPRITES[name];
-  if (!filename) continue;
-  SPRITES[name] = null; // 載入完成前（或載入失敗）繼續使用內建圖案
-  const picture = new Image();
-  picture.onload = () => { SPRITES[name] = picture; };
-  picture.src = `assets/${filename}`;
-}
+// 相容舊的程式介面；新美術請改 art-manifest.js，不再另行載入圖片。
+const SPRITES = { player: null, jaben: null, otsubon: null };
 // ✏️ Erin 可以改水星人的顏色；每個字是一個像素，句點是透明。
 const HERO_COLORS = { o: "#183b70", d: "#2464bb", b: "#388de6", l: "#78cfff", h: "#d6f6ff", w: "#ffffff", p: "#142e57", c: "#98dffa" };
 const HERO_PIXELS = [

@@ -1,5 +1,7 @@
 // Fixed classic-script order shared by the browser, VM tests and cache checker.
 globalThis.SurvivorManifest = Object.freeze([
+  "art-manifest.js",
+  "render/art.js",
   "render/monsters.js",
   "engine/schools.js",
   "engine/effect-blocks.js",

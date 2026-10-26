@@ -12,6 +12,14 @@ for (const file of files) {
   assert.match(file, /^(?:engine\/|render\/|ui\/)?[a-z-]+\.js$/);
   assert.ok(fs.existsSync(path.join(root, file)), `missing ${file}`);
 }
+// 美術路徑也由同一份清單加入離線快取；換圖不必手改 sw.js。
+const artContext = vm.createContext({});
+vm.runInContext(fs.readFileSync(path.join(root, 'art-manifest.js'), 'utf8'), artContext);
+const artFiles = [...new Set(Object.values(artContext.SurvivorArtManifest.assets).map(a=>a.sheet).filter(Boolean))];
+for (const file of artFiles) {
+  assert.match(file, /^art\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.png$/);
+  assert.ok(fs.existsSync(path.join(root,file)), `art file missing: ${file}`);
+}
 const writing = process.argv.includes('--write');
 for (const file of ['index.html', 'preview.html', 'preview.js', 'practice.html', 'practice-host.js']) {
   const target = path.join(root, file), before = fs.readFileSync(target, 'utf8');
@@ -23,7 +31,7 @@ const swPath = path.join(repo, 'sw.js');
 let sw = fs.readFileSync(swPath, 'utf8');
 if (writing) {
   sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = 'erin-games-${version}';`);
-  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files].map(file => `games/survivor/${file}`);
+  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles].map(file => `games/survivor/${file}`);
   for (const file of dependencies) if (!sw.includes(`'${file}'`)) {
     sw = sw.replace('const PRECACHE_URLS = [', `const PRECACHE_URLS = [\n  '${file}',`);
   }
@@ -32,7 +40,7 @@ if (writing) {
 const cacheContext = vm.createContext({self: {addEventListener() {}}});
 vm.runInContext(sw + '\nglobalThis.cacheName = CACHE_NAME; globalThis.urls = PRECACHE_URLS;', cacheContext);
 assert.equal(cacheContext.cacheName, `erin-games-${version}`, 'CACHE_NAME differs from version.json');
-for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files]) {
+for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles]) {
   assert.ok(cacheContext.urls.includes(`/erin/games/survivor/${file}`), `not precached: ${file}`);
 }
 for (const url of cacheContext.urls) {
