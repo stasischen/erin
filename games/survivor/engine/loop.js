@@ -46,6 +46,7 @@ function resize() {
   fitVisibleViewport();
   // 旋轉或工具列改變高度時，放開舊搖桿，避免沿舊座標繼續走。
   state.pointerId = null; state.joy = null; state.keys.clear();
+  if (typeof cancelManualAttack === "function") cancelManualAttack();
   // client 尺寸不含外框，也不受整個容器旋轉影響。
   const rect = canvas.getBoundingClientRect();
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -63,6 +64,8 @@ function resize() {
 }
 
 function resetGame() {
+  if (typeof cancelManualAttack === "function") cancelManualAttack();
+  state.specialCooldown=0; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
   state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
   state.stageIndex = 0; state.stageElapsed = 0; state.stageTransition = 0;
   resetEncounters();
@@ -205,6 +208,8 @@ function tick(dt) {
   state.dashGhosts = state.dashGhosts.filter(g => (g.life -= dt) > 0);
   if (dashTime > 0) state.dashGhosts.push({x:oldX,y:oldY,life:.22});
   state.skillCooldown = countdown(state.skillCooldown, dt);
+  if (typeof tickManualAttack === "function") tickManualAttack(dt);
+  if (state.mode !== "playing") return;
   updateActionControls();
   if (dashTime > 0) schoolDashCrossed(oldX,oldY,state.player.x,state.player.y);
   if (dashTime > 0) leaveDashTrail(state.player.x, state.player.y, Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY)), oldX, oldY);
@@ -222,7 +227,7 @@ function tick(dt) {
 
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
-  state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving);
+  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
@@ -243,8 +248,8 @@ function tick(dt) {
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= dt;
-  if (dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
-  if (state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
+  if (GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
+  if (GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
     if (!enemy.alive) continue;
     const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);

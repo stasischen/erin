@@ -36,16 +36,16 @@ globalThis.SurvivorWeapons = (() => {
 
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
 function activeWeapon() { return GAME_DATA.weapons.find(w => w.id === state.weaponId) || GAME_DATA.weapons[0]; }
-function swingAtNearest(dash = false) {
+function swingAtNearest(dash = false, command = null) {
   const target = closestEnemy(), weapon = activeWeapon();
-  if (!target) return;
+  if (!target && !command) return;
   const c = state.schoolCombat, r = GAME_DATA.schoolRules;
   const sequence=SurvivorEffectBlocks.attack(state.weaponAttack,weapon,state.swingCount);
   const number = sequence.event.number;
   const properties = SurvivorSchools.shot(c ? c.shots + 1 : number,c ? c.kills : 0,c ? c.chargedUsed : 0,{drop:effectLevel('water-drop'),charge:effectLevel('thunder-charge')},r);
   const boosted = state.dashAttack > 0 && state.dashTimer <= 0;
   const look = buildAppearance();
-  const event = SurvivorWeapons.swing(weapon,number,SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY),{
+  const event = SurvivorWeapons.swing(weapon,number,command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY),{
     extraArc:effectLevel('multi-water') * UPGRADE_TUNING.extraShotAngle,
     size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * (1+effectLevel('big-water')*UPGRADE_TUNING.waterSizePerLevel) * (1+effectLevel('wind-attack')*BUILD_TUNING.windSpeed) * (1+effectLevel('piercing-water')*.1) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
     damage:effectiveDamage()*properties.damage*(boosted ? UPGRADE_TUNING.dashAttackDamage : 1),push:properties.push
@@ -53,7 +53,7 @@ function swingAtNearest(dash = false) {
   const targets = combatTargets();
   const hits = targets.filter(t=>SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,event));
   // 目標太遠不空揮，也不消耗蓄電、第四下或衝刺強化。
-  if (!hits.length) return;
+  if (!hits.length && !command) return;
   state.swingCount++;
   state.weaponAttack=sequence.state; state.lastWeaponAttack=sequence.event; state.attackRecovery=event.recovery;
   triggerMakerEffects('combo',state.player.x,state.player.y,number);
@@ -63,7 +63,7 @@ function swingAtNearest(dash = false) {
   const visual = {...event,colors:look.colors.slice(),boosted,life:.24};
   skillVisual('hammer-swing',state.player.x,state.player.y,visual); playSound('shoot');
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
-  if (effectLevel('item-rear') && !event.spin) {
+  if (effectLevel('item-rear') && !event.spin && !(command && event.charged)) {
     const rear={...event,angle:event.angle+Math.PI};
     skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,colors:look.colors.slice(),boosted,life:.24});
     for(const t of targets) if(!hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,rear)) hits.push(t);

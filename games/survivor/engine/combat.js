@@ -22,10 +22,10 @@ function closestEnemy() {
   return target;
 }
 
-function fireAtNearest() {
-  if (activeWeapon().kind === "melee") { swingAtNearest(); return; }
+function fireAtNearest(command = null) {
+  if (activeWeapon().kind === "melee") { swingAtNearest(!!(command && command.dash), command); return; }
   const target = closestEnemy();
-  if (!target || state.projectiles.length >= PROJECTILE_LIMIT) return;
+  if ((!target && !command) || state.projectiles.length >= PROJECTILE_LIMIT) return;
   const sequence=SurvivorEffectBlocks.attack(state.weaponAttack,activeWeapon());
   state.weaponAttack=sequence.state; state.lastWeaponAttack=sequence.event;
   const bigBubble=sequence.event.finisher && !sequence.event.charged;
@@ -42,14 +42,15 @@ function fireAtNearest() {
   const properties = SurvivorSchools.shot(c ? c.shots : 1,c ? c.kills : 0,c ? c.chargedUsed : 0,{drop:effectLevel('water-drop'),charge:effectLevel('thunder-charge')},r);
   if (properties.charged) c.chargedUsed = Math.floor(c.kills / r.chargeKills);
   const look = buildAppearance();
-  const angle = SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
+  const angle = command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
   playSound("shoot");
   const count = 1 + effectLevel("multi-water");
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
-    const spread = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle, a = angle + spread;
+    const offset = (i - (count - 1) / 2) * UPGRADE_TUNING.extraShotAngle;
+    const spread = command && autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
     state.projectiles.push(takeFromPool(state.projectilePool, { x: state.player.x, y: state.player.y, vx: Math.cos(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), vy: Math.sin(a) * PROJECTILE_SPEED * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), r: state.player.r * 2 / 3 * (autoCharged ? weapon.chargeSize : bigBubble ? weapon.comboSize : 1) * properties.size * (transformed("water") ? 1 + r.waterFormSize : 1) * (1 + effectLevel("big-water") * UPGRADE_TUNING.waterSizePerLevel) * (boosted ? UPGRADE_TUNING.dashAttackSize : 1), damage: effectiveDamage() * (autoCharged ? weapon.chargeMultiplier : bigBubble ? weapon.comboMultiplier : 1) * properties.damage * (boosted ? UPGRADE_TUNING.dashAttackDamage : 1), boosted, bigBubble, autoCharged, piercing: autoCharged || effectLevel("piercing-water") > 0, pierce: (autoCharged ? 99 : 0) + effectLevel("piercing-water") + (effectLevel("wind-blade") ? 1 : 0), colors: look.colors, transformed:look.forms.includes(look.main), push:properties.push, charged:properties.charged, blade:false, schools: ["water", "wind", "thunder"].filter((school) => (effectLevel(`${school}-attack`) || school === "water" && (effectLevel("water-skill") || effectLevel("fusion-puddle")))), rangeLeft: BUILD_TUNING.shotRange * (1 + effectLevel("wind-attack") * BUILD_TUNING.windSpeed), hitList: [], alive: true, bounces:0, fragment:false, maker: false }));
   }
-  prepareNeutralShots(angle);
+  if (!(command && autoCharged)) prepareNeutralShots(angle);
 }
 
 // 命中時在水球位置留下水花；即使粒子很多也保留這個提示。
@@ -404,7 +405,7 @@ function activateDash() {
     burst(state.player.x, state.player.y, "#fff5a3", 14); updateHud();
   }
   if (!state.player.damageDisabled) state.player.invincible = Math.max(state.player.invincible, UPGRADE_TUNING.dashInvincible);
-  playSound("dash"); updateActionControls();
+  state.manualDashUsed=false; playSound("dash"); updateActionControls();
 }
 function activateSkill() {
   if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;

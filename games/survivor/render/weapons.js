@@ -37,6 +37,7 @@ function drawHeldWeapon() {
     if(weapon.comboEnabled && a.number) {ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(String(a.number)+' / '+weapon.comboEvery,state.player.x-12,state.player.y-state.player.r-14);}
     ctx.restore();
   }
+  if(typeof drawManualAim === 'function') drawManualAim();
   if(weapon.kind!=='melee') return;
   SurvivorIcons.draw(ctx,weapon.icon,state.player.x+state.player.facing*20-10,state.player.y-5,24);
 }

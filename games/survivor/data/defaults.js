@@ -2,6 +2,7 @@
 // schoolRules 的單位與範圍見 docs/survivor-school-redesign-validation.md。
 globalThis.SURVIVOR_DEFAULTS = {
   "schemaVersion": 1,
+  "attackMode": "auto",
   "joystick": {
     "follow": true,
     "radius": 35,
