@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-feedback-block",
+  "title": "小怪獸：共用回饋積木與預覽工具",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/survivor-feedback-block",
+  "pr": null,
+  "brief": "coord/inbox/done/20261026T112942Z-parent-feedback-block.md",
+  "next": "請 Grok 審查 erin-watch 提交的實質 SHA，並在 1024×461、740×360 親手操作共用回饋欄位、玩家開關、兩種沙盒工具及前後殘影；逐頁確認預覽不蓋住＋鍵／右側開關，查看十中立道具與五風卡的專屬說明。指定 node games/survivor/tools/test.cjs 最後完整一輪全部通過（exit 0），未跑 --layout。版本 20261026ak，交接見 docs/survivor-feedback-block-validation.md。Godot §11：白名單資料、秒／世界單位、純強度換算及固定輸入輸出已處理；外部 JSON／完整事件匯流排及素材匯出留後續。無阻擋決定，手感待 Erin 試玩；commit、push、PR 由 erin-watch 代辦。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-10-26T11:40:54.287858Z",
+  "updatedBy": "codex"
+}

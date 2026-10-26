@@ -2,10 +2,27 @@
 (function () {
   'use strict';
   let active = null, refreshTimer = null;
+  const debugMemory={};
   function effectDescription(e, data, level) {
+    const r=data.schoolRules, q=data.neutralRules;
     const t = data.tuning, b = data.build, n = Math.min(5, level * (e.power || 1));
     if (e.feature) {
       const recipes = {
+        'wind-blade':()=>`水球多穿過一隻怪，產生最遠 ${r.windBladeRange} 格、傷害 ${Math.round(r.windBladeDamage*100)}% 的小風刃；近戰改成追斬。`,
+        'wind-gust':()=>`每 ${r.gustSeconds} 秒，把 ${r.gustRadius} 格內的怪推開 ${r.gustPush} 格。`,
+        'wind-refund':()=>`衝刺結束回充 ${r.refundCharge} 格衝刺。`,
+        'wind-light':()=>`移速增加 ${Math.round(r.lightSpeed*n*100)}%，拾取範圍增加 ${Math.round(r.lightMagnet*n*100)}%。`,
+        'wind-eye':()=>`站定 ${r.eyeWait} 秒，產生 ${r.eyeRadius} 格風牆，擋子彈並每秒推開 ${r.eyePush} 格。`,
+        'item-wall':()=>`普攻浪花推開 ${q.wavePush} 格；撞到另一隻怪時兩隻各受 ${q.waveDamage} 傷害，互撞冷卻 ${q.waveCooldown} 秒。`,
+        'item-candy':()=>`打倒怪有 ${Math.round(q.bombChance*100)}% 機率掉糖果炸彈，${q.bombDelay} 秒後炸開 ${q.bombRadius} 格，造成 ${q.bombDamage} 傷害。`,
+        'item-bird':()=>`小鳥在 ${q.birdRadius} 格外繞行，每 ${q.birdSeconds} 秒啄 ${q.birdReach} 格內的怪，造成 ${q.birdDamage} 傷害。`,
+        'item-bank':()=>`每撿 ${q.bankEvery} 顆經驗球，傷害增加 ${q.bankStep*100}%，最多增加 ${q.bankCap*100}%。`,
+        'item-split':()=>`飛行水球命中後分裂兩顆碎片，各造成 ${q.splitDamage*100}% 傷害；碎片只分裂一次，近戰本體不分裂。`,
+        'item-magnet':()=>`經驗球拾取範圍變成 ${q.magnetMultiplier} 倍。`,
+        'item-crown':()=>`傷害增加 ${q.crownDamage*100}%，最大血量減少 ${q.crownHealth}（至少保留 1 點）。`,
+        'item-clover':()=>`立即多 1 次重抽，稀有卡抽選權重變成 ${q.luckyRareMultiplier} 倍。`,
+        'item-rear':()=>`每次普攻向後方多射一發；近戰改成後方揮擊。`,
+        'item-cookie':()=>`持有後每打倒 ${q.cookieKills} 隻怪，回復 1 點血，回復不超過血量上限。`,
         'big-water': () => `水球變大 ${Math.round(t.waterSizePerLevel*n*100)}%，打得更痛。`,
         'rapid-water': () => `水球連發更快，約每 ${Math.max(.12,t.shotInterval*(1-t.fireRateReduction*n)).toFixed(2)} 秒一發。`,
         'multi-water': () => `一次發射 ${1+n} 顆水球。`,
@@ -41,7 +58,7 @@
         'thunder-super': () => `跳電多 ${data.schoolRules.superconductorJumps} 跳，每跳保留完整傷害。`,
         'fusion-dash': () => `衝刺留下電痕，在 ${b.chainRadius} 格內跳電。`
       };
-      return recipes[e.feature] ? recipes[e.feature]() : '使用原本的卡片組合。';
+      return recipes[e.feature] ? recipes[e.feature]() : (data.cards.find(c=>c.id===e.feature)||{}).description || '這個效果尚未提供說明。';
     }
     const trigger = {hit:'打中時',skill:'按技能時',dash:'衝刺時',interval:`每 ${e.interval} 秒`}[e.trigger];
     const words = {
@@ -75,18 +92,23 @@
   function stop() {
     clearTimeout(refreshTimer);
     if (!active) return;
+    if(active.frame.contentWindow && active.frame.contentWindow.captureDebugBefore)active.frame.contentWindow.captureDebugBefore();
+    debugMemory[JSON.stringify(active.spec)]={options:active.frame._debugOptions,before:active.frame._debugBefore};
     if (active.observer) active.observer.disconnect();
     active.host.textContent = ''; active = null;
   }
   function mount(host, data, spec, force = false) {
     if (!host) return;
     if (!force && active && active.host===host && active.data===data && JSON.stringify(active.spec)===JSON.stringify(spec)) return;
+    const debugOptions=active && active.debugOptions,debugBefore=active && active.debugBefore;
     stop();
     const title = document.createElement('strong'); title.textContent = '效果展示・' + (spec.kind === 'move' ? data.boss.moves.find(m=>m.id===spec.id).name : spec.id==='heal' ? '回血' : data.cards.find(c=>c.id===spec.id).name);
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
+    const remembered=debugMemory[JSON.stringify(spec)]||{};
+    frame._debugOptions=remembered.options || debugOptions;frame._debugBefore=remembered.before || debugBefore;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261026aj', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261026ak', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {
@@ -97,6 +119,8 @@
   function refresh() {
     if (!active) return;
     const {host,data,spec} = active;
+    if(active.frame.contentWindow && active.frame.contentWindow.captureDebugBefore) active.frame.contentWindow.captureDebugBefore();
+    active.debugOptions=active.frame._debugOptions;active.debugBefore=active.frame._debugBefore;
     clearTimeout(refreshTimer); refreshTimer = setTimeout(() => mount(host,data,spec,true),120);
   }
   const base = new URL('.', document.currentScript.src).href;

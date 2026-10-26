@@ -45,14 +45,14 @@ function updateBookShooting(dt) {
   });
   if (!allowed.length) return;
   const enemy = allowed.find(e=>e.shotPrepared) || allowed[Math.floor(Math.random() * allowed.length)];
-  if (!enemy.shotPrepared) { enemy.shotPrepared = true; enemy.shotWarning = GAME_DATA.pacing.warning; playSound('warning'); return; }
+  if (!enemy.shotPrepared) { enemy.shotPrepared = true; enemy.shotWarning = GAME_DATA.pacing.warning; feedbackSound(enemyFeedback(enemy,'legacy'),'warning'); return; }
   if (enemy.shotWarning > 0) return;
   enemy.shotPrepared = false;
   const attack = MAKER_MODE || !["jaben","otsubon"].includes(enemy.typeId) ? ENEMY_TYPES.find(t => t.id === enemy.typeId).attack : { type: "projectile", count: 1, spread: 0, speed: gameSettings.enemyShotSpeed, damage: gameSettings.enemyShotDamage, radius: 12 };
   const angle = Math.atan2(deltaY(state.player.y, enemy.y), deltaX(state.player.x, enemy.x));
   if (attack.type === "aoe") {
     // 怪物範圍攻擊先預警，落點固定，不追著玩家跑。
-    if (state.enemyHazards.length < 8) state.enemyHazards.push({ x: state.player.x, y: state.player.y, r: attack.radius, damage: attack.damage, warning: .9 });
+    if (state.enemyHazards.length < 8) state.enemyHazards.push({ x: state.player.x, y: state.player.y, r: attack.radius, damage: attack.damage, warning: .9,feedback:feedbackPayload(enemyFeedback(enemy,'legacy')) });
   } else if (attack.type === "summon") {
     for (let n = 0; n < attack.count; n++) spawnEnemy();
   } else for (let n = 0; n < attack.count; n++) {
@@ -60,7 +60,7 @@ function updateBookShooting(dt) {
     const a = angle + (n - (attack.count - 1) / 2) * attack.spread;
     state.enemyShots.push(takeFromPool(state.enemyShotPool, {
       dodged: false, phaseShot:false, source: "book", life: 8, x: enemy.x, y: enemy.y, vx: Math.cos(a) * attack.speed, vy: Math.sin(a) * attack.speed,
-      text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: attack.radius, damage: attack.damage
+      text: BOOK_CHARACTERS[Math.floor(Math.random() * BOOK_CHARACTERS.length)], r: attack.radius, damage: attack.damage,feedback:feedbackPayload(enemyFeedback(enemy,'legacy'))
     }));
   }
   enemy.shotCooldown = bookShotInterval(enemy.typeId);

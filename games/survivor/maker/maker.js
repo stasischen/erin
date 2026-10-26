@@ -49,6 +49,14 @@
     if (iconOnly) for (const [b,id] of [[minus,'minus'],[plus,'plus']]) { b.textContent=''; b.innerHTML=SurvivorIcons.html(id); b.className='encounter-adjust'; }
 
   }
+  function feedbackEditor(parent,f) {
+    select(parent,'預警樣式',f,'warningStyle',api.WARNING_STYLES);
+    select(parent,'音效',f,'sound',api.FEEDBACK_SOUNDS);
+    for(const [key,label] of [['slash','刀光'],['hint','提示']]) button(parent,label+'：'+(f[key]?'開':'關'),()=>{f[key]=!f[key];changed();render();},f[key]);
+    range(parent,f,'hitStop',api.FEEDBACK_BOUNDS.hitStop,'頓幀倍率');
+    range(parent,f,'shake',api.FEEDBACK_BOUNDS.shake,'震動倍率');
+    el('small','仍套用玩家設定的回饋強度、震動與聲音開關。',parent);
+  }
   function iconPicker(parent, card) {
     const picker = el('details', undefined, parent);
     const summary = el('summary', '挑選圖示', picker);
@@ -224,7 +232,7 @@
       const def=defs[i],group=el('section',undefined,host);group.className='weapon-move';el('h3',def.label,group);
       for(const part of Object.keys(api.BLOCK_PARTS)) {
         const fields=blockPanel(group,key+'-'+move.id+'-'+part,part),values=move[part];
-        if(part==='feedback') {el('p',move.id==='phase'?'鎖定方向與危險範圍；起手提示音，收招可以反擊。':'沿用原本的預警、攻擊圖像與音效。',fields);continue;}
+        if(part==='feedback') {feedbackEditor(fields,move.feedback);continue;}
         if(part==='trigger') el('p',move.id==='phase'?'距離內開始預警，方向與原點鎖定。':move.id==='legacy'?'達到等級且間隔到時；分階段攻擊啟用時不重複出招。':'到達老師階段後，依原有招式順序使用。',fields);
         if(move.id==='phase' && part==='timing') {drawTiming(fields,values,api.PHASE_BOUNDS);continue;}
         for(const field of def[part]) {
@@ -328,7 +336,7 @@
         el('h3',api.WEAPON_STACKS[i].label,group);
         for(const part of Object.keys(partNames)) {
           const fields=blockPanel(group,w.id+'-'+move.id+'-'+part,part),values=move[part];
-          if(part==='feedback') {el('p',move.id==='special'?{leap:'跳躍落地刀光、頓幀與震動', 'sword-wave':'前方劍波與出招音效','water-fan':'扇形水球與出招音效'}[w.specialKind]:w.kind==='melee'?'命中刀光、頓幀與震動；出招音效':'水球與水花；出招音效',fields);el('small','沿用玩家的打擊回饋與聲音設定。',fields);continue;}
+          if(part==='feedback') {feedbackEditor(fields,move.feedback);continue;}
           if(move.id==='primary' && part==='timing') drawTiming(fields,values.phases,api.TIMING_BOUNDS);
           for(const field of api.WEAPON_STACKS[i][part]) {
             if(values[field]===undefined) continue;

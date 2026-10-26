@@ -280,7 +280,7 @@ function tick(dt) {
       if (enemy.alive && canAttackTarget(enemy) && !shot.hitList.includes(enemy) && Math.hypot(deltaX(enemy.x, shot.x), deltaY(enemy.y, shot.y)) < enemy.r + shot.r) {
         shot.hitList.push(enemy);
         schoolShotHit(shot, enemy);
-        damageEnemy(enemy, shot.damage);
+        damageEnemy(enemy, shot.damage);feedbackImpact(shot.feedback);
         if (!enemy.alive) splitNeutralShot(shot);
         for (const school of shot.schools || []) schoolEffect(school, enemy, school === "wind" ? state.player.x : enemy.x, school === "wind" ? state.player.y : enemy.y, shot.damage, shot.hitList);
         if (state.mode !== "playing") return;
@@ -299,7 +299,7 @@ function tick(dt) {
       const boss = state.boss;
       playSound("hit");
       schoolShotHit(shot, boss);
-      boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
+      feedbackImpact(shot.feedback);boss.hp -= schoolDamage(boss, shot.damage); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;
@@ -323,8 +323,8 @@ function tick(dt) {
     }
     if (schoolWindWall() && cardBlockMatches(cardBlock('wind-eye','onEnemyShot').conditions[0],shot,state.player.x,state.player.y)) { state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]); continue; }
     if (Math.hypot(deltaX(shot.x, state.player.x), deltaY(shot.y, state.player.y)) < state.player.r + shot.r) {
-      if (state.practiceHit) pacingHurtPlayer(shot.damage || 0);
-      if (!state.player.damageDisabled && state.player.invincible <= 0) { state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
+      if (state.practiceHit) pacingHurtPlayer(shot.damage || 0,shot.feedback);
+      if (!state.player.damageDisabled && state.player.invincible <= 0) { feedbackImpact(shot.feedback);state.player.health = Math.max(0, state.player.health - absorbSchoolHit(shot.damage === undefined ? UPGRADE_TUNING.teacherShotDamage : shot.damage)); counterDischarge(); if (state.mode !== "playing") return; state.player.hitFlash = 0.16; state.player.invincible = INVINCIBLE_SECONDS; if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(35); playSound("hurt"); updateHud(); }
       state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
     } else if (!shot.phaseShot && shot.source !== "teacher" && ((shot.life = (shot.life === undefined ? 8 : shot.life) - dt) <= 0)) state.enemyShotPool.push(state.enemyShots.splice(i, 1)[0]);
   }

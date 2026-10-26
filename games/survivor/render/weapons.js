@@ -1,8 +1,10 @@
 // 只讀揮擊事件畫圖，碰撞與傷害在 engine/weapons.js。
 function drawHammerSwing(v, progress) {
   const heavy=v.heavy || v.boosted, width=heavy?20:11;
+  if(v.slash===false && !(state.practiceHitboxes)) return;
   ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);
   const alpha=ctx.globalAlpha;
+  if(v.slash===false) ctx.globalAlpha=0;
   const color=BUILD_TUNING[(v.colors||['water'])[0]].color;
   if(v.thrust) {
     // 尖細突刺光，沿出手方向伸長；不畫矩形判定區。
@@ -21,7 +23,7 @@ function drawHammerSwing(v, progress) {
     }
   }
   ctx.restore();
-  if(state.practiceHit && state.practiceHitboxes) {
+  if(state.practiceHitboxes) {
     ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.strokeStyle='#fff3a0';ctx.lineWidth=1;ctx.beginPath();
     if(v.thrust) ctx.rect(0,-v.width,v.radius,2*v.width);
     else {ctx.moveTo(0,0);ctx.arc(0,0,v.radius,-v.arc/2,v.arc/2);ctx.closePath();}
@@ -33,8 +35,8 @@ function drawHeldWeapon() {
   const weapon=activeWeapon(), a=state.weaponAttack;
   if(a) {
     ctx.save();ctx.strokeStyle=a.charge>=weapon.chargeSeconds?'#ffe28a':'#8bdcff';ctx.lineWidth=3;
-    if(weapon.chargeEnabled && a.charge>0) {ctx.beginPath();ctx.arc(state.player.x,state.player.y,state.player.r+9,-Math.PI/2,-Math.PI/2+Math.PI*2*a.charge/weapon.chargeSeconds);ctx.stroke();}
-    if(weapon.comboEnabled && a.number) {ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(String(a.number)+' / '+weapon.comboEvery,state.player.x-12,state.player.y-state.player.r-14);}
+    if(weapon.chargeEnabled && a.charge>0 && moveFeedback(weapon,'charge').hint) {ctx.beginPath();ctx.arc(state.player.x,state.player.y,state.player.r+9,-Math.PI/2,-Math.PI/2+Math.PI*2*a.charge/weapon.chargeSeconds);ctx.stroke();}
+    if(weapon.comboEnabled && a.number && moveFeedback(weapon,'combo').hint) {ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(String(a.number)+' / '+weapon.comboEvery,state.player.x-12,state.player.y-state.player.r-14);}
     ctx.restore();
   }
   if(typeof drawManualAim === 'function') drawManualAim();

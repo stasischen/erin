@@ -23,6 +23,7 @@ function bossAirHeight() {
 function drawBossMoves() {
   for (const move of state.bossMoves) {
     ctx.save(); ctx.strokeStyle = "#c8354b"; ctx.fillStyle = move.active ? "rgba(220,65,83,.38)" : "rgba(220,65,83,.15)"; ctx.lineWidth = 3;
+    if(!move.active)warningFeedback(moveFeedback(bossDefinition(move),'move'),move.warning);
     if (bossKind(move) === "wall") {
       const x = wallX(move); ctx.lineWidth = 20;
       ctx.strokeStyle = move.active ? "#fff5dd" : "rgba(235,83,101,.55)";
@@ -66,6 +67,7 @@ function drawBossMoves() {
         ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.x + Math.cos(angle) * 170, move.y + Math.sin(angle) * 170); ctx.stroke();
       }
     } else { ctx.beginPath(); ctx.arc(move.x, move.y, 50, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    if(!moveFeedback(bossDefinition(move),'move').hint){ctx.restore();continue;}
     const name = BOSS_MOVES.find(row => row.id === move.id).name;
     ctx.font = "bold 17px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
     ctx.strokeText(name + (move.active ? "！" : "…"), move.x, move.y - 44); ctx.fillStyle = "#9e253c"; ctx.fillText(name + (move.active ? "！" : "…"), move.x, move.y - 44);
@@ -618,13 +620,14 @@ function drawPacingWarnings() {
     if(!a && !shooting) continue;
     ctx.save();ctx.strokeStyle=a && a.kind==='shield'?'#b4ecff':'#ff9a83';
     ctx.fillStyle=a && a.kind==='blast' ? 'rgba(255,65,65,'+(.12+.2*Math.abs(Math.sin(a.warning*16)))+')' : 'rgba(255,110,90,.12)';ctx.lineWidth=3;
+    const feedback=enemyFeedback(e,'legacy');warningFeedback(feedback,(a&&a.warning)||e.shotWarning||0);
     const r=a && a.kind==='blast'?GAME_DATA.pacing.blastRadius:a && a.kind==='shield'?GAME_DATA.pacing.shieldRadius:e.r+10;
     ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
     if(a && a.kind==='charge') {
       ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds,e.y+Math.sin(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds);ctx.stroke();
     }
     ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff0cf';
-    ctx.fillText(a && a.kind==='blast'?'自爆 '+Math.ceil(a.warning):shooting?'準備射擊':a.kind==='shield'?'準備護盾':'準備衝撞',e.x,e.y-e.r-12);
+    if(feedback.hint) ctx.fillText(a && a.kind==='blast'?'自爆 '+Math.ceil(a.warning):shooting?'準備射擊':a.kind==='shield'?'準備護盾':'準備衝撞',e.x,e.y-e.r-12);
     ctx.restore();
   }
 }
@@ -632,6 +635,7 @@ function drawPacingWarnings() {
 // 與命中共用 config／鎖定原點及方向，不從畫面尺寸推算攻擊規則。
 // 地面預警是招式表現；精確碰撞範圍只供練習場開關使用。
 function drawAttackMarker(e,kind) {
+  if(!enemyFeedback(e).hint) return;
   const x=Math.round(e.x),y=Math.round(e.y-e.r-24);
   ctx.save();ctx.fillStyle=kind==='!'?'#ffe2a0':'#fff2b3';
   if(kind==='!') {ctx.fillRect(x-2,y,4,10);ctx.fillRect(x-2,y+13,4,4);}
@@ -642,15 +646,17 @@ function drawPhasedAttacks() {
   for(const e of state.enemies) {
     const a=e.phaseAttack;
     if(!e.alive || !a || !['windup','active'].includes(a.phase)) continue;
+    if(a.phase==='active' && !enemyFeedback(e).slash && !state.practiceHitboxes)continue;
     const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,SurvivorTiming.segments(c)[0].seconds))):1;
     ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle);
     ctx.strokeStyle='#ed7e89';ctx.fillStyle=warning?'rgba(240,65,85,.32)':'rgba(245,87,93,.72)';ctx.lineWidth=2;
+    const feedback=enemyFeedback(e);if(warning)warningFeedback(feedback,a.left);
     if(c.shape==='projectiles') {
       if(warning) for(const angle of SurvivorPacing.attackAngles(c,0)) {
         ctx.save();ctx.rotate(angle);const length=Math.min(c.length,c.speed*c.active);
         ctx.globalAlpha=.18;ctx.lineWidth=2*c.radius;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();
         ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length*progress,0);ctx.stroke();
-        if(state.practiceHit && state.practiceHitboxes) {ctx.strokeStyle='#fff5ae';ctx.globalAlpha=.2;ctx.lineWidth=2*(c.radius+state.player.r);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();}
+        if(state.practiceHitboxes) {ctx.strokeStyle='#fff5ae';ctx.globalAlpha=.2;ctx.lineWidth=2*(c.radius+state.player.r);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();}
         ctx.restore();
       }
     } else {
@@ -662,7 +668,7 @@ function drawPhasedAttacks() {
       };
       path(1);ctx.save();ctx.globalAlpha=.2;ctx.fill();ctx.restore();ctx.stroke();
       path(progress);ctx.fill();
-      if(state.practiceHit && state.practiceHitboxes) {path(1);ctx.strokeStyle='#fff5ae';ctx.lineWidth=1;ctx.stroke();}
+      if(state.practiceHitboxes) {path(1);ctx.strokeStyle='#fff5ae';ctx.lineWidth=1;ctx.stroke();}
     }
     ctx.restore();
   }

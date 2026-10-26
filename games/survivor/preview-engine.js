@@ -76,6 +76,7 @@ function resetPreview() {
   }
 }
 function stepPreview(dt) {
+  dt=SurvivorDebugTools.step(dt);if(!dt){paintPreview();return;}
   previewTime += dt;
   if (previewTime >= 3) resetPreview();
   if (!previewFired && previewTime >= .25) {
@@ -123,7 +124,7 @@ function stepPreview(dt) {
     state.enemies.forEach(e=>{e.x+=(e.homeX-e.x)*blend;e.y+=(e.homeY-e.y)*blend;e.knockback=0;});
   }
   spacePreviewTargets();
-  paintPreview();
+  SurvivorDebugTools.sample();paintPreview();
 }
 // 保留擊退／拉近，但不讓拉近或衝刺把主角和假怪擠在一起。
 function spacePreviewTargets() {
@@ -139,7 +140,7 @@ function spacePreviewTargets() {
   });
 }
 function paintPreview() {
-  render();
+  render();SurvivorDebugTools.draw();
   if (previewFeatures.includes('item-clover')) {ctx.fillStyle='#fff1b9';ctx.font='12px sans-serif';ctx.fillText('重抽 '+state.rerollsRemaining+' 次 · 稀有 ×'+GAME_DATA.neutralRules.luckyRareMultiplier,6,18);}
   if (previewSpec.id === 'heal' || previewFeatures.some(id=>['bubble-shield','auto-heal','item-crown','item-cookie'].includes(id))) {
     ctx.fillStyle='#142331';ctx.fillRect(4,4,90,16);
@@ -160,4 +161,4 @@ window.setPreviewVisible = visible => {
   previewRequest = visible && !document.hidden ? requestAnimationFrame(previewFrame) : null;
 };
 document.addEventListener('visibilitychange',()=>{state.mode='playing';window.setPreviewVisible(previewVisible);});
-resetPreview(); paintPreview(); window.setPreviewVisible(previewVisible);
+resetPreview(); SurvivorDebugTools.mount(); paintPreview(); window.setPreviewVisible(previewVisible);

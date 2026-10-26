@@ -60,12 +60,14 @@ function swingAtNearest(dash = false, command = null) {
   if(state.mode!=='playing') return;
   if (c) { c.shots++; if (properties.charged) c.chargedUsed = Math.floor(c.kills/r.chargeKills); }
   if (boosted) state.dashAttack = 0;
-  const visual = {...event,colors:look.colors.slice(),boosted,life:.24};
-  skillVisual('hammer-swing',state.player.x,state.player.y,visual); playSound('shoot');
+  const feedbackEvent={...event,feedbackId:event.charged?'charge':dash?'dash':event.heavy?'combo':'primary'};
+  const feedback=weaponFeedback(feedbackEvent);
+  const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
+  skillVisual('hammer-swing',state.player.x,state.player.y,visual); feedbackSound(feedback,'shoot');
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
   if (effectLevel('item-rear') && !event.spin && !(command && event.charged)) {
     const rear={...event,angle:event.angle+Math.PI};
-    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,colors:look.colors.slice(),boosted,life:.24});
+    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
     for(const t of targets) if(!hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,rear)) hits.push(t);
   }
   for (const t of hits) {
@@ -74,7 +76,7 @@ function swingAtNearest(dash = false, command = null) {
     schoolShotHit(shot,t);
     const hpBefore=t.hp;
     hitBuildTarget(t,event.damage);
-    if(t.hp<hpBefore) meleeImpact(t,event);
+    if(t.hp<hpBefore) meleeImpact(t,feedbackEvent);
     if(state.mode!=='playing') return;
     if(t.alive && event.stun) t.stunTimer=Math.max(t.stunTimer||0,event.stun);
     if(t===state.boss || t.alive) shiftTarget(t,state.player.x,state.player.y,event.push);
@@ -105,11 +107,12 @@ Survivor.engine.weapons = {activeWeapon,swingAtNearest,rules:SurvivorWeapons};
 function meleeImpact(target,event) {
   const h=GAME_DATA.hitJuice, strength=h.enabled?h.intensity:0;
   if(!strength) return;
+  const feedback=weaponFeedback(event), scaled=SurvivorFeedback.scale(feedback,strength,!!event.heavy);
   const heavy=event.heavy?1.5:1;
   target.meleeFlash=true; target.impactFlash=1; target.impactSquash=.14*strength;
-  state.hitStop=Math.max(state.hitStop||0,.05*strength*heavy);
-  state.hitShake=Math.max(state.hitShake||0,.12*strength);
-  state.hitShakePixels=2*strength*heavy;
+  state.hitStop=Math.max(state.hitStop||0,scaled.stop);
+  state.hitShake=Math.max(state.hitShake||0,scaled.shake);
+  state.hitShakePixels=scaled.pixels;
   const dx=deltaX(target.x,state.player.x),dy=deltaY(target.y,state.player.y),d=Math.max(1,Math.hypot(dx,dy));
   burst(target.x-dx/d*target.r,target.y-dy/d*target.r,'#fff0a5',Math.ceil(5*strength*heavy));
 }
