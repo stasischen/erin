@@ -2352,3 +2352,224 @@ SURVIVOR_DEFAULTS.weapons.forEach(w => {
 
 SURVIVOR_DEFAULTS.enemies.forEach(e => {e.feedback={phase:{level:'small',hitStop:1,shake:1},legacy:{level:'small',hitStop:1,shake:1}};});
 SURVIVOR_DEFAULTS.boss.moves.forEach(m => {m.feedback={move:{level:'small',hitStop:1,shake:1}};});
+
+// ✏️ Erin 可以改：王的試煉初值；距離為世界單位，時間為秒。
+SURVIVOR_DEFAULTS.gallery = {
+  "schemaVersion": 1,
+  "arenaRadius": 620,
+  "entrySeconds": 2,
+  "wallStun": 2,
+  "hazardLimit": 16,
+  "summonLimit": 8,
+  "bosses": [
+    {
+      "id": "gatekeeper",
+      "name": "巨斧守門人",
+      "artId": "character/gatekeeper",
+      "hp": 1800,
+      "radius": 34,
+      "speed": 85,
+      "phases": [
+        {
+          "threshold": 1,
+          "speed": 1
+        },
+        {
+          "threshold": 0.5,
+          "speed": 1.25
+        }
+      ],
+      "moves": [
+        {
+          "id": "shield",
+          "name": "盾牌重擊",
+          "minPhase": 1,
+          "weight": 1,
+          "blocks": {
+            "trigger": "onSelect",
+            "shape": {
+              "type": "sector",
+              "radius": 105,
+              "angle": 100
+            },
+            "timing": {
+              "windup": 0.95,
+              "active": 0.18,
+              "recovery": 0.8,
+              "cooldown": 0.5
+            },
+            "actions": [
+              {
+                "type": "damage",
+                "amount": 12
+              },
+              {
+                "type": "move",
+                "speed": 0
+              }
+            ],
+            "feedback": {
+              "level": "medium",
+              "warning": "ground",
+              "pose": "shield"
+            }
+          }
+        },
+        {
+          "id": "axe",
+          "name": "巨斧兩段橫掃",
+          "minPhase": 1,
+          "weight": 1,
+          "blocks": {
+            "trigger": "onSelect",
+            "shape": {
+              "type": "sector",
+              "radius": 165,
+              "angle": 150
+            },
+            "timing": {
+              "windup": 1,
+              "active": 0.2,
+              "recovery": 0.55,
+              "cooldown": 0.7
+            },
+            "actions": [
+              {
+                "type": "damage",
+                "amount": 15
+              },
+              {
+                "type": "move",
+                "speed": 0
+              }
+            ],
+            "feedback": {
+              "level": "medium",
+              "warning": "ground",
+              "pose": "axe"
+            }
+          }
+        },
+        {
+          "id": "leap",
+          "name": "跳躍重壓",
+          "minPhase": 1,
+          "weight": 1,
+          "blocks": {
+            "trigger": "onSelect",
+            "shape": {
+              "type": "circle",
+              "radius": 100,
+              "angle": 360
+            },
+            "timing": {
+              "windup": 1.2,
+              "active": 0.45,
+              "recovery": 1,
+              "cooldown": 0.7
+            },
+            "actions": [
+              {
+                "type": "damage",
+                "amount": 18
+              },
+              {
+                "type": "move",
+                "speed": 0
+              }
+            ],
+            "feedback": {
+              "level": "medium",
+              "warning": "ground",
+              "pose": "leap"
+            }
+          }
+        },
+        {
+          "id": "spin",
+          "name": "旋風斬",
+          "minPhase": 2,
+          "weight": 1,
+          "blocks": {
+            "trigger": "onSelect",
+            "shape": {
+              "type": "circle",
+              "radius": 110,
+              "angle": 360
+            },
+            "timing": {
+              "windup": 1.1,
+              "active": 3,
+              "recovery": 1,
+              "cooldown": 0.8
+            },
+            "actions": [
+              {
+                "type": "damage",
+                "amount": 10
+              },
+              {
+                "type": "move",
+                "speed": 65
+              }
+            ],
+            "feedback": {
+              "level": "medium",
+              "warning": "ground",
+              "pose": "spin"
+            }
+          }
+        },
+        {
+          "id": "charge",
+          "name": "持盾衝鋒",
+          "minPhase": 2,
+          "weight": 1,
+          "blocks": {
+            "trigger": "onSelect",
+            "shape": {
+              "type": "line",
+              "radius": 45,
+              "angle": 0
+            },
+            "timing": {
+              "windup": 1.25,
+              "active": 2,
+              "recovery": 1,
+              "cooldown": 0.8
+            },
+            "actions": [
+              {
+                "type": "damage",
+                "amount": 16
+              },
+              {
+                "type": "move",
+                "speed": 440
+              }
+            ],
+            "feedback": {
+              "level": "medium",
+              "warning": "ground",
+              "pose": "charge"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "hazard": {
+    "kind": "fire",
+    "radius": 80,
+    "duration": 3,
+    "interval": 0.6,
+    "damage": 8,
+    "slow": 0.6
+  }
+};
+
+// 與武器／老師相同的五種積木外殼；招式內容仍是可序列化資料。
+SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
+  const s=m.blocks;
+  m.blocks={version:1,moves:[{id:'move',trigger:{event:s.trigger},shape:s.shape,timing:s.timing,effect:{damage:s.actions[0].amount,speed:s.actions[1].speed},feedback:s.feedback}]};
+}));

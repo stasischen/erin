@@ -17,6 +17,7 @@ function cardRequirements(card) {
 
 
 function showOverlay(mode) {
+  const trialPanel=document.getElementById('trialPanel');if(trialPanel)trialPanel.hidden=true;
   state.mode = mode;
   const pauseBuild=document.getElementById("pauseBuild");
   if(pauseBuild) pauseBuild.hidden=mode!=="paused";

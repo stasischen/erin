@@ -315,7 +315,25 @@
     });
   }
   function drawBoss() {
-    if(selected.boss==='ai') {
+    if(selected.boss==='gallery') {
+      const p=panel('王的試煉 · 圓形競技場'),g=draft.gallery;
+      range(p,g,'arenaRadius',[420,1200,20],'競技場半徑');range(p,g,'entrySeconds',[1,5,.1],'入口預警秒數');range(p,g,'wallStun',[1,5,.1],'撞牆暈眩秒數');
+      range(p,g,'hazardLimit',[1,32,1],'危險區上限');range(p,g,'summonLimit',[1,16,1],'召喚物上限');
+      const hazard=el('fieldset',undefined,p);el('legend','共用地面危險區積木（供後續 Boss 使用）',hazard);
+      select(hazard,'種類',g.hazard,'kind',{poison:'毒池',ice:'冰面',fire:'火圈'});
+      for(const [key,bounds,label] of [['radius',[20,200,5],'範圍'],['duration',[.1,15,.1],'持續秒數'],['interval',[.1,3,.1],'傷害間隔'],['damage',[0,40,1],'傷害'],['slow',[.2,1,.05],'剩餘速度']])range(hazard,g.hazard,key,bounds,label);
+      for(const b of g.bosses) {
+        const box=el('fieldset',undefined,p);el('legend',b.name,box);text(box,'名稱',b,'name');range(box,b,'hp',[500,5000,100],'血量');range(box,b,'radius',[20,50,1],'大小');range(box,b,'speed',[0,200,5],'追擊速度');
+        range(box,b.phases[1],'threshold',[.05,.95,.01],'第二階段血量低於比例');range(box,b.phases[1],'speed',[.5,2,.05],'第二階段速度倍率');
+        for(const m of b.moves) {
+          const field=el('fieldset',undefined,box);el('legend',m.name,field);const s=m.blocks.moves[0];
+          range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');
+          range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(s.shape.type==='sector')range(field,s.shape,'angle',[0,360,5],'扇形角度');
+          for(const [key,bounds,label] of [['windup',[.6,3,.05],'預警'],['active',[.1,4,.05],'出手'],['recovery',[.2,3,.05],'收招'],['cooldown',[.1,8,.1],'冷卻']])range(field,s.timing,key,bounds,label+'秒數');
+          range(field,s.effect,'damage',[0,40,1],'傷害');range(field,s.effect,'speed',[0,600,10],'招式移速');
+        }
+      }
+    } else if(selected.boss==='ai') {
       const p=panel('AI 規則積木');
       el('p','權重 0 停用。依距離、朝向與血量階段加權抽招，上一組招式不連續重複。老師仍保留近中遠距離分組。階段門檻在魔王階段調整；預警、生效、收招與冷卻在各招式時機積木調整。',p);
       draft.boss.phases.forEach((phase,i)=>{if(i)range(grid(p),phase,'threshold',[.05,.95,.01],'第 '+(i+1)+' 階段血量門檻');});
@@ -474,7 +492,7 @@
     if(tab==='weapons') return draft.weapons.map(w=>({id:w.id,name:w.name,icon:w.icon,draw:drawWeapons,practice:w.id}));
     if(tab==='cards') return [{id:'schools',name:'流派名稱',icon:'water',draw:drawSchools},...draft.cards.map((c,i)=>({id:c.id,name:c.name,icon:c.icon,note:(c.school?draft.build[c.school].name:'支援')+' · '+(c.requires.length?'↳ '+c.requires.map(id=>draft.cards.find(x=>x.id===id).name).join(' ＋ '):'起點'),draw:()=>{cardIndex=i;drawCards();},spec:{kind:'card',id:c.id}}))];
     if(tab==='enemies') return draft.enemies.map(e=>({id:e.id,name:e.name,icon:'monster',draw:drawEnemies,practice:e.id}));
-    if(tab==='boss') return [{id:'ai',name:'AI 規則',icon:'boss',draw:drawBoss},{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
+    if(tab==='boss') return [{id:'gallery',name:'王的試煉',icon:'boss',draw:drawBoss},{id:'ai',name:'AI 規則',icon:'boss',draw:drawBoss},{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
     if(tab==='stages') return [{id:'pacing',name:'出怪節奏',icon:'monster',draw:drawPacing},...draft.stages.map(stage=>({id:stage.id,name:stage.name,icon:'play',draw:()=>drawStage(stage)})),{id:'elites',name:'精英怪',icon:'monster',draw:()=>drawEncounters('elites','精英怪')},{id:'chocobear',name:'巧克力大熊',icon:'boss',draw:()=>drawEncounters('chocobear','巧克力大熊')}];
     return [{id:'defaults',name:'預設設定',draw:drawDefaults},{id:'body',name:'碰撞與重量',draw:drawBodyRules},{id:'neutral',name:'中立道具',draw:drawNumbers},{id:'schoolRules',name:'流派數值',draw:drawNumbers},{id:'tuning',name:'基本玩法',draw:drawNumbers},{id:'build',name:'流派共用',draw:drawNumbers},{id:'bossTuning',name:'魔王共用',draw:drawNumbers}].map(x=>({icon:'numbers',...x}));
   }

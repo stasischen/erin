@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261026aw" />
-  <link rel="stylesheet" href="maker/style.css?v=20261026aw" />
+  <link rel="stylesheet" href="style.css?v=20261027a" />
+  <link rel="stylesheet" href="maker/style.css?v=20261027a" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,6 +33,10 @@
         <button id="dashButton" aria-label="衝刺" class="action-button dash-button" type="button"><span aria-hidden="true"><span data-icon="dash" aria-hidden="true"></span></span></button>
       </div>
       <div id="overlay" class="overlay">
+        <section id="trialPanel" class="trial-panel" hidden aria-label="王的試煉選單">
+          <h2 id="trialTitle">王的試煉</h2><div id="trialChoices" class="trial-choices"></div>
+          <button id="trialBack" class="settings-action" type="button" aria-label="回開始畫面" title="回開始畫面"><span data-icon="home" aria-hidden="true"></span></button>
+        </section>
         <section id="upgradePanel" class="upgrade-panel" hidden aria-label="選擇升級">
           <h2 id="upgradeHeading">升級了！選一張卡</h2>
           <p>點圖示看效果・雙點確認｜1、2、3</p>
@@ -69,6 +73,7 @@
           <div id="messageIcon" class="message-icon" aria-hidden="true"><span data-icon="onion-dash" aria-hidden="true"></span></div>
           <h2 id="messageTitle">小怪獸</h2>
           <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
+          <button id="trialEntry" class="settings-action trial-entry" type="button" aria-label="王的試煉" title="王的試煉"><span data-icon="boss" aria-hidden="true"></span></button>
           <button id="makerLink" class="settings-action menu-settings" type="button"><span data-icon="maker" aria-hidden="true"></span> 自己設計</button>
           <button id="settingsButton" class="settings-action menu-settings gear-button" type="button" aria-label="設定" title="設定"><span data-icon="settings" aria-hidden="true"></span></button>
           <div id="pauseBuild" class="pause-build" hidden>
@@ -88,14 +93,14 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261026aw"></script>
+  <script src="icons.js?v=20261027a"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="data/defaults.js?v=20261026aw"></script>
-  <script src="data/schema.js?v=20261026aw"></script>
-  <script src="preview.js?v=20261026aw"></script>
-  <script src="manifest.js?v=20261026aw"></script><script src="game.js?v=20261026aw"></script>
-  <script src="practice-host.js?v=20261026aw"></script>
-  <script src="maker/maker.js?v=20261026aw"></script>
+  <script src="data/defaults.js?v=20261027a"></script>
+  <script src="data/schema.js?v=20261027a"></script>
+  <script src="preview.js?v=20261027a"></script>
+  <script src="manifest.js?v=20261027a"></script><script src="game.js?v=20261027a"></script>
+  <script src="practice-host.js?v=20261027a"></script>
+  <script src="maker/maker.js?v=20261027a"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>

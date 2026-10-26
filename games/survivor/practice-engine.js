@@ -238,3 +238,7 @@ document.addEventListener('visibilitychange',()=>practiceVisibility(!document.hi
 practiceSize();practiceReset();SurvivorDebugTools.mount();practiceButtons();practiceVisibility(true);
 
 window.setPracticeActive=function(active){practiceVisibility(active);if(active&&practiceMini)practiceMenu(false);};
+
+const practiceTrials=document.getElementById('practiceTrials');
+practiceTrials.innerHTML=SurvivorIcons.html('boss');
+practiceTrials.onclick=()=>{if(window.parent && window.parent.openSurvivorTrials){const open=window.parent.openSurvivorTrials;if(frameElement._practiceClose)frameElement._practiceClose();open(GAME_DATA);}};

@@ -36,7 +36,7 @@ function bossHurtPlayer(damage,feedback) {
   playSound("hurt"); updateHud(); counterDischarge();
   if (state.mode === "playing" && state.player.health <= 0) finishRun(false);
 }
-function bossDefinition(move) { return BOSS_MOVES.find(row => row.id === move.id); }
+function bossDefinition(move) { if(state.trial)return trialMoveDefinition(move); return BOSS_MOVES.find(row => row.id === move.id); }
 function bossKind(move) { return move.kind || (bossDefinition(move) || {}).kind; }
 function beginBossMove(id) {
   const definition = BOSS_MOVES.find(row => row.id === id);
@@ -114,6 +114,7 @@ function ringPoints(move) {
 }
 function wallX(move) { return move.x + (move.active ? Math.min(move.wallWidth, ((move.wallDuration || bossDefinition(move).duration) - move.life) * bossDefinition(move).speed) : 0); }
 function updateBoss(dt) {
+  if(state.trial) {updateTrial(dt);return;}
   state.bossShake = countdown(state.bossShake, dt); state.bossShout = countdown(state.bossShout, dt);
   const b = state.boss;
   if (!b || state.bossIntro > 0) { clearBossMoves(); return; }

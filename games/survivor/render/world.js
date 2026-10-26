@@ -32,6 +32,7 @@ function drawBossMoves() {
   return SurvivorArt.paint('layer/draw-boss-moves', null, () => drawBossMovesPlaceholder.apply(this, arguments));
 }
 function drawBossMovesPlaceholder() {
+  if(state.trial) {drawTrialMoves();return;}
   for (const move of state.bossMoves) {
     // 美術是附加層；判定預警仍依原幾何畫出。
     SurvivorArt.draw('move/boss-'+move.id,{context:ctx,x:move.x-32,y:move.y-32,width:64,height:64,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed});
@@ -161,6 +162,7 @@ function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint) {
 }
 const TEACHER_PICTURES = {};
 function teacherPicture(flash) {
+  if(state.trial)return trialPicture();
   const move=state.bossMoves[0];
   const animation=flash?'hurt':state.boss && state.boss.posture && state.boss.posture.stun>0?'stun':move?(move.recovery>0?'recovery':move.active?'active':'windup'):'idle';
   const replacement = SurvivorArt.picture('character/teacher', animation, state.elapsed);
@@ -191,6 +193,7 @@ function drawClassroomPlaceholder() {
 // 只繪製鏡頭可能看見的相鄰世界；包含影子、落點、粒子和招式。
 // 每邊大於可見範圍 2.5 倍，同一個身體不會同時出現在畫面兩側。
 function visibleWorldOffsets() {
+  if(state.trial)return [{x:0,y:0}];
   const axis = (camera, visible, size) => {
     const offsets = [0], margin = 1024;
     if (camera < margin) offsets.push(-size);
@@ -452,6 +455,7 @@ function render() {
   if(camera.rotation){ctx.translate(state.width/2,state.height/2);ctx.rotate(camera.rotation);ctx.translate(-state.width/2,-state.height/2);}
   ctx.translate(-state.cameraX+camera.x,-state.cameraY+camera.y);
   drawClassroom();
+  if(state.trial)drawTrialArena();
   drawBossZone();
   for (const offset of visibleWorldOffsets()) {
   ctx.save(); ctx.translate(offset.x, offset.y);
@@ -482,12 +486,12 @@ function render() {
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
-      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds('character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale));
+      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(state.trial?state.trial.definition.artId:'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale));
       if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
         const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
         ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);
       }
-      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
+      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${state.trial?state.trial.definition.name:GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
     }
     for (const hazard of state.enemyHazards) {
       if (hazard.owner) { ctx.fillStyle='rgba(74,46,39,.22)'; ctx.beginPath(); ctx.arc(hazard.x,hazard.y,hazard.r,0,Math.PI*2); ctx.fill(); }
@@ -584,7 +588,7 @@ function drawBossGuidePlaceholder() {
     if(state.boss.pursuing) {ctx.rotate(-guide.angle);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('快走追上',0,40);}
     ctx.restore();
   }
-  if (state.boss && state.bossIntro > 0) {
+  if (!state.trial && state.boss && state.bossIntro > 0) {
     ctx.save();ctx.translate(state.width/2,state.height/2-50/(state.zoom||1));ctx.scale(1/(state.zoom||1),1/(state.zoom||1)); ctx.font = "bold 24px system-ui"; ctx.textAlign = "center";
     ctx.strokeStyle = "#fff3cc"; ctx.lineWidth = 6; ctx.strokeText(GAME_DATA.boss.name + "來了！", 0, 0);
     ctx.fillStyle = "#713809"; ctx.fillText(GAME_DATA.boss.name + "來了！", 0, 0); ctx.restore();
