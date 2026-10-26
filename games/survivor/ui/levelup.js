@@ -118,7 +118,7 @@ function applyUpgrade(index, choices = state.pendingChoices) {
   }
   const before = { ...state.upgrades };
   if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
-  else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor)); } }
+  else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + cardBlock('bubble-shield','onUpgrade').actions[0].amount); } }
   neutralEvent('acquire', state.player.x, state.player.y, card.id);
   state.player.health = Math.min(state.player.health, maxPlayerHealth());
   if (state.schoolRun && !state.schoolRun.starter && card.school) state.schoolRun.starter = card.school;
