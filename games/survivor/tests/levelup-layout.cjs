@@ -52,6 +52,36 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   // 等新頁確實載入遊戲，而非沿用上一頁 execution context。
   for(let i=0;i<100;i++){try{if(await evaluate("typeof showUpgradeChoices==='function' && document.readyState==='complete'"))break;}catch{}await new Promise(resolve=>setTimeout(resolve,20));}
   assert.equal(await evaluate("window.Survivor.engine.loop.resetGame === resetGame && window.Survivor.ui.levelup.showUpgradeChoices === showUpgradeChoices"),true,'共用清單與命名空間確實載入');
+  // 真實 PNG 載入／裁格／鏡像／閃白；只查測試美術，正式角色不替換。
+  assert.equal(await evaluate(`(async()=>{
+    const id='sample/player-directions';
+    let east;
+    for(let n=0;n<100;n++){east=SurvivorArt.picture(id,'idle',0,{direction:'E'});if(east)break;await new Promise(r=>setTimeout(r,20));}
+    if(!east)throw Error('三方向測試圖未載入');
+    const color=(canvas,x,y)=>Array.from(canvas.getContext('2d').getImageData(x,y,1,1).data).join(',');
+    const west=SurvivorArt.picture(id,'idle',0,{direction:'W'}),north=SurvivorArt.picture(id,'idle',0,{direction:'N'}),south=SurvivorArt.picture(id,'idle',0,{direction:'S'});
+    if(color(east,51,30)!=='237,125,158,255'||color(west,12,30)!=='237,125,158,255'||color(west,51,30)==='237,125,158,255')throw Error('E／鏡像 W 裁格錯誤');
+    if(color(north,30,25)!=='100,183,210,255'||color(south,30,25)!=='131,217,237,255')throw Error('S／N 方向列錯誤');
+    const white=SurvivorArt.picture(id,'hurt',0,{direction:'W',tint:'#ffffff'});
+    if(color(white,30,20)!=='255,255,255,255')throw Error('圖片受擊閃白失效');
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=64;
+    SurvivorArt.draw(id,{context:canvas.getContext('2d'),x:0,y:0,width:64,height:64,direction:'W'});
+    if(color(canvas,12,30)!=='237,125,158,255')throw Error('實際繪圖未使用方向與顯示大小');
+    // Opaque artwork must not fill the real safe gap in a ring warning.
+    const ring=document.createElement('canvas');ring.width=ring.height=96;
+    const size=SurvivorArtManifest.assets[id].displaySize;delete SurvivorArtManifest.assets[id].displaySize;
+    try {
+      SurvivorArt.draw(id,{context:ring.getContext('2d'),...SurvivorArt.shapeOptions({type:'ring',radius:32,thickness:12,gap:Math.PI/2},{x:48,y:48}),direction:'E'});
+      if(ring.getContext('2d').getImageData(76,48,1,1).data[3]!==0||ring.getContext('2d').getImageData(48,20,1,1).data[3]===0)throw Error('不透明換皮填掉安全缺口');
+      const rays=document.createElement('canvas');rays.width=rays.height=96;
+      const alias='move/fixture-rays';SurvivorArtManifest.assets[alias]=JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));SurvivorArtManifest.assets[alias].vfx={rotateWithAim:true};
+      try {
+        SurvivorArt.paint(alias,{context:rays.getContext('2d'),regions:[-Math.PI/4,Math.PI/4].map(angle=>SurvivorArt.shapeOptions({type:'line',length:40,radius:2},{x:48,y:48},angle))},()=>{});
+        if(rays.getContext('2d').getImageData(76,48,1,1).data[3]!==0||rays.getContext('2d').getImageData(65,65,1,1).data[3]===0)throw Error('換皮填掉彈幕缺口或旋轉錯誤');
+      }finally{delete SurvivorArtManifest.assets[alias];}
+    } finally {SurvivorArtManifest.assets[id].displaySize=size;}
+    return true;
+  })()`),true,'美術 v2 真實像素與鏡像');
   await evaluate("startGame();true");
   assert.equal(await evaluate(`(()=>{
     if(!state.pickingWeapon||state.pendingChoices.length!==3)throw Error('缺少武器選擇');

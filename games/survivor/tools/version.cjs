@@ -1,5 +1,5 @@
 // Edit version.json, then run: node games/survivor/tools/version.cjs --write
-// CI / review check (no writes): node games/survivor/tools/version.cjs
+// Local review check (no writes): node games/survivor/tools/version.cjs
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..'), repo = path.resolve(root, '../..');
 const {version} = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
@@ -15,7 +15,8 @@ for (const file of files) {
 // 美術路徑也由同一份清單加入離線快取；換圖不必手改 sw.js。
 const artContext = vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(root, 'art-manifest.js'), 'utf8'), artContext);
-const artFiles = [...new Set(Object.values(artContext.SurvivorArtManifest.assets).map(a=>a.sheet).filter(Boolean))];
+vm.runInContext(fs.readFileSync(path.join(root, 'render/art.js'), 'utf8'), artContext);
+const artFiles = Array.from(artContext.SurvivorArt.sheetPaths());
 for (const file of artFiles) {
   assert.match(file, /^art\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.png$/);
   assert.ok(fs.existsSync(path.join(root,file)), `art file missing: ${file}`);

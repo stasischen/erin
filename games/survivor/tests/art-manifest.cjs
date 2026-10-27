@@ -8,7 +8,7 @@ for(const [id,a] of Object.entries(data.assets)) {
   if(['character/gatekeeper','character/frost-twin','character/fire-twin','character/winged'].includes(id)) {assert.equal(a.sheet,'art/characters/'+id.split('/')[1]+'.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
   else assert.equal(a.sheet,null);
   const d=plain(`SurvivorArt.lookup(${JSON.stringify(id)},'run',99)`);
-  assert.equal(d.frame,0);assert.deepEqual(d.frameSize,a.frameSize);
+  assert.equal(d.frame,id==='sample/player-directions'?1:0);assert.deepEqual(d.frameSize,a.frameSize);
 }
 run(`globalThis.testArt=JSON.parse(JSON.stringify(SurvivorArtManifest));
  testArt.assets['character/player'].animations.active={frames:[2,4,6],fps:10,loop:false};`);

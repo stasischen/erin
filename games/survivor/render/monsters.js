@@ -10,9 +10,9 @@
     dandelion:'蒲公英', 'moss-rock':'青苔石頭', 'firefly-lantern':'螢火蟲燈', 'little-cloud':'小雲朵'
   };
   const cache = {};
-  function picture(id, animation='idle', seconds=0) {
+  function picture(id, animation='idle', seconds=0, context={}) {
     if (!Object.prototype.hasOwnProperty.call(labels, id)) return null;
-    const replacement = root.SurvivorArt && root.SurvivorArt.picture('character/'+id,animation,seconds);
+    const replacement = root.SurvivorArt && root.SurvivorArt.picture('character/'+id,animation,seconds,context);
     if (replacement) return replacement;
     if (cache[id]) return cache[id];
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 24;
