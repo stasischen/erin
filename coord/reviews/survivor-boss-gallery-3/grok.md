@@ -1,42 +1,42 @@
-verdict: changes
-e396d9ebcf6afbdd0acd7170bb120fdc1733b1b8
+verdict: approve
+15b7b4b420de212d5589e2adfc06bbf133137df3
 
-PR #104，20261027k；獨立審查工作階段（非作者）。本輪新增可重現的 Maker P2；原方向鍵 changes 全文保留於 grok-input-changes.md，該問題已在 k 版獨立重驗修正。
+PR #104，版本 20261028b；不同工作階段的非作者 Mac 整張 PR 最終審查。此判定不是 Dot 對自己 patch 的批准，也不以 Luna 的局部 patch 審查取代整 PR 審查。
 
-## [P2] 後半場連斬刀數誤用舊布林開關，無法編輯數值
+## 來源與完整程式審查
 
-位置：`games/survivor/maker/maker.js:44` 的 range 特例，以及同檔 sequence.phaseCount 的數值欄位呼叫。
+實際受測／公開候選 source 為 13851b6fd7c9f7683231b36c9e2613c30f050909。至本次被審 HEAD 只有 coord/handoff/latest.md 與正式任務卡的狀態／證據彙整，已看完整差異；161 個 source/test/cache 檔 SHA-256 逐 byte 相同，工作樹原先乾淨。已重看相對 main 2652f7603294068631b068223bc770c23d33a61a 的累積差異，包含 defaults/schema/migration、trial-blocks、gallery/encounters、loop/state/posture/combat/weakpoint、render/art-manifest/assets、input、Maker、HUD/CSS、manifest/cache/version 與測試／文件。沒有待修的阻擋問題。
 
-range 只要看到 key 為 phaseCount 就建立 0／1 switch；本卡新增的 sequence.phaseCount 卻是 1～8 的整數刀數，預設為 5。兩種不同語意使用同名 key，導致後半場刀數被顯示為「後半場連斬刀數：開」，沒有數值滑桿或加減控制，不能編輯／保存合法的 7／8 連段作品。此問題來自本卡新增的 Maker 呼叫與舊 helper 的碰撞，與已修正的鍵盤問題不同。
+四／五刀由共用狀態機鎖定開招刀數並逐刀產生預警／傷害；半血嚴格小於 50%，既有連段不因中途跨半血加刀。逐刀閃避信用、預設兩格衝刺回充與第四次完美閃避破架勢取消後續刀均有實際引擎回歸。背後換位限制在實牆內、消失不可被攻擊、白閃在刺擊前、苦無發射與側滑的事件順序已核對。真正 posture-break 訊號且紅弱點命中的 charged 才額外乘 1.5，與 critical3 合計輸入傷害 4.5，不再重乘老師3。紀錄只接受有效成功且更快的值，逐王與 normal/Maker 分流；入口／暫停不計時、慢動作不縮短活動秒數。
 
-### 實際證據與獨立重現
+方向鍵釋放的鍵名修正已核對真註冊事件回歸。Maker 舊0／1 phaseCount switch與新1～8刀數 slider已分開，數值／增減／保存／重讀／恢復的實際控件證據與舊開關回歸通過。HUD保留 normal armor 公式，試煉逐actor血條與存活者身份分開，保留身體架勢／弱點預警；normal結算刷新走真正 showOverlay 接點。
 
-Dot 在正確 k 候選的真實雲端 Chrome、1024×461 frame，經「自己設計 → 老師 → 王的試煉 → 雙刃刺客 → 四拍雙刃連斬」讀到：
+HUD首patch綁 base9ae7e85ef8aadd33dab6458746e596c3cafa2ead、12960 bytes、SHA256 55fa253feb96798966e3daf1eb0bef8c0b737b13f1daf76ff410112058c8d777。normal結算補件綁 base842f021183223a7b7b961bd61d9c81b6a975fb82、3495 bytes、SHA256 380960603244a4c541b9ad9be79f30b81350cfc9ce05bc82cffc675dc4226508。已獨立核對精確patch、pre/postimage及機械升版；Luna獨審／套用紀錄與before-fail/after-pass證據一致。主控沒有另補邏輯後自批。Maker專用finishRun分支未改，本補件不冒稱該分支已實測。
 
-- 前半場：數值 slider，值 4。
-- 後半場：button／role=switch，文字「後半場連斬刀數：開」，沒有數值 5 或增加／減少控制。
-- 在基線即停止，沒有修改草稿或儲存，因此保存／重讀及清理測項未執行；不是授權缺件或使用者操作失敗。
+## Mac 獨立測試
 
-審查員另在私有 VM 載入原始 Maker 程式，重用既有 DOM harness 的 setup，只以正常開啟設計室／切頁事件建立控件，沒有修改 source、test 或 draft。獨立渲染結果與上述真 DOM 一致：
+本審查工作階段已在受測 source 執行 node games/survivor/tools/test.cjs --layout，exit0，73個測試檔／123行PASS，含真Chrome layout及production finishRun/showOverlay回歸；161檔測前後hash一致，git diff --check通過。完整日誌留Mac私有目錄。先前j/k/a各輪結果保留為歷史，不拿來冒充b；本次後續僅coord／審查metadata變動且hash相同，沒有無意義重跑整套。沒有新增GitHub CI測試。
 
-```text
-前半場：input type=range value=4 min=1 max=8 step=1
-後半場數值控件數：0
-後半場：button role=switch text=後半場連斬刀數：開 aria-checked=true
-後半場增加／減少按鈕：無
-舊「每個階段是否多一個目標」：仍為 switch
-```
+## Dot 確切候選功能證據與判定
 
-這不是只測 schema 的推論：已重現實際 Maker 渲染輸出，並核對到 helper 無條件以 key 名稱選布林分支。測試只跑此定點，沒有重跑相同全套或用 Mac 畫面代替 Dot 正式驗收。
+已讀取並核實13851b6／20261028b綁定的正式結果、來源／request／manifest／bundle與收件紀錄，保留原始失敗／未完成／格式隔離歷史。公開候選固定PR/SHA，所有草稿操作皆在隔離namespace；不接觸正式站、原作品或安全設定。
 
-### 修正與重審要求
+- 初輪b：真實1024×461、740×360、1180×820 iframe的HUD幾何、canvas滿框及控制分離有直接證據；雙子HUD bottom106。Maker五值先後半8再前半7、armor.25／critical4／charge1.8，真UI保存／reload／reset／reload恢復通過。當輪兩次刺客未通關，維持incomplete，沒有追溯改PASS。
+- normal完整一局：UI auto、固定糖果大劍、pause-assisted，未改Maker或戰鬥數值，真刺客勝利；最佳52.56秒，reload保留，其餘王為—。不是default-manual或不中斷難度測試；較早主動退出probe不是死亡。
+- Fixture A：CUSTOM僅共用recoveryGain12→100，從真正Maker Play載入全稿。四個Boss encounter×三真實尺寸共12格操作／真正架勢暈眩。1024刺客真紅窗，切manual後新按J750ms充放並實際命中。雙子1024兩actor各自受傷／暈眩，Fire死亡後只留Ice93%；740及1180只證明Ice暈眩，不宣稱Fire也測過。Maker真勝利13.01／reload，正常仍52.56／reload。原結果enum不合法隔離，Dot格式重發後正式收件；實質欄位完全相同，不在本機改raw。這是fixture_a_only，whole_pr=false。
+- Fixture B：真1024×461，CUSTOM只連斬windup2／active.5及三招damage1；HP1600、count4/5、架勢、位移與選招未改。HP100時四組、HP47時五組各自red→orange→整組收招，停止攻擊／Space、posture0，不把玩家1/3當刀數。開放場地背後重現→白閃→橙刺直接觀察；近牆另捕消失→場內重現→白閃→受擊，該次橙刺未拍，不冒稱全捕。苦無有扇形預警、五枚彈體及後續側滑；不聲稱肉眼證明同幀微序。這是fixture_b_visual_only，whole_pr=false。
+- A/B均UI Reset→Save→reload逐項核對恢復，manual1、normal52.56與Maker13.01保留；沒有pending edits／live run，自己的測試tab已關閉。
 
-請原作者同分支最小修正，區分舊 phaseCount 的 0／1 布林語意與 sequence.phaseCount 的 1～8 數值語意。須保留舊開關，讓新控件顯示 5，具備正確 range／加減行為；不要僅因 key 同名將新刀數轉布林。
+正式卡要求三尺寸實際打過每個Boss並觸發架勢暈眩，沒有要求每格default-manual通關。上述真normal勝利與紀錄、CUSTOM完整12格／紅窗／招式可見鏈路，加上獨立Mac預設規則與真引擎回歸，共同滿足本卡功能gate。沒有把CUSTOM調值宣稱預設節奏／平衡已驗收，也沒有以作者局部scope結果自行批准整PR。精確4.5×、嚴格半血與跨半血鎖定、精準暫停計時及較快才覆寫由Mac對應測試證明，不以浮字／肉眼補造數學證據。
 
-補真 DOM／控件事件回歸：由基線 4／5，先把後半場設 8，再把前半場設 7，經 UI 儲存並重新載入確認 7／8，最後 UI 恢復預設、儲存重載確認 4／5；同時核對舊布林仍為 switch。不可直接寫 draft 或只以純 schema roundtrip 代替。修正後升版、Mac 完整含 --layout 通過，再交新完整 SHA 與固定候選重審。
+## 限制與非阻擋小毛病
 
-## 前輪結果與目前 gate
+1180×820為真iframe；外層1180×757須捲動看上下，不是原生fullscreen，也不冒稱全尺寸同時可見。雲端以暫停輔助操作，未證明不中斷default-manual難度或Erin的平衡感受。近牆橙刺單幀未捕、發射先於滑動的同幀微序及clamp精確算術由既有Mac測試補足。normal老師／熊結算用production-path回歸與三尺寸Chrome工程證據，不冒稱Dot實打普通波次。Godot未實機執行。
 
-原鍵盤 P2 在 e396 的事件路徑已修正；該 SHA 的獨立 Mac 完整 --layout 為 119 PASS、160 檔 hash 相符，屬前輪程式檢查證據，沒有覆蓋本次發現的後半場刀數控件。舊 j 的 Dot incomplete 與原 changes 歷史均保留。
+影步active旁文顯示.12，range可及性值.1；此generic滑桿步進.05的表示差異在起始與清理相同，該值未被編輯，無資料被改的證據。作為非阻擋可用性觀察保留，不擅改來源。沒有已確認且待修的產品缺陷。
 
-本輪 Maker changes 是具體產品缺陷，不等同普通戰鬥已完成；Dot gameplay、半血／破架勢／勝利與其他未測項仍 pending，不使用舊版本、Mac smoke 或本次定點補成 PASS。審查員只寫自己的審查檔，不修改實作、測試、卡片或主控交接，不 approve／merge；交回原作者修正。
+## 歷史與合併條件
+
+前輪Maker changes原件保留於grok-maker-changes.md；方向鍵changes在grok-input-changes.md。新結果解除目前功能缺證，不抹除舊j/k與各輪限制。AGENTS／workflow的本輪家長授權與非作者角色分工已核實；不擴張安全設定或後續卡範圍。
+
+此approve綁上述完整HEAD。接下來只可提交本審查／歷史存檔，重新核對新HEAD僅review metadata且161檔不變，再依既有家長六卡授權match-head merge。共用作者帳號拒絕GitHub正式approval時須誠實以獨立session PR留言記錄；不冒充GitHub approval。合併後等確切mergeSHA的既有Pages成功，實際開正式首頁／遊戲確認20261028b；未完成部署核對前不得宣稱已上線，不開下一卡。
