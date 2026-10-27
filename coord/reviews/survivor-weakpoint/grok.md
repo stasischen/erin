@@ -1,37 +1,26 @@
-verdict: changes
-06ec4fc8b2a31b0150a710fb1e72782d5552193f
+verdict: approve
+206f285bf9aac1800613b88dd27daffcac2a8d6b
 
-獨立審查工作階段（非本卡作者）；PR #103，本輪僅程式與 Mac 自動測試，尚未進行 UI 驗收。
+獨立審查工作階段（非本卡作者）；PR #103，20261027i。首輪 changes 原文保留於 grok-first-changes.md；Git 歷史亦保留原審查提交。
 
-## [P2] 保留撞牆與架勢崩潰的獨立事件來源
+## 程式與 Mac 完整測試
 
-位置：`games/survivor/engine/weakpoint.js:94`，以及 `engine/gallery.js` 的撞牆處理。
+- 重讀本卡規格、驗收文件、首輪實作及修正差異，核對共用規則／來源事件、三條 Boss 扣血路徑、倍率不疊乘、方向與部位、美術錨點、Maker/schema、版本與快取清單。
+- 對上述完整 SHA 獨立執行 `node games/survivor/tools/test.cjs --layout`，exit 0、114 PASS；測前後 SHA 不變。沒有重生基準，也沒有無故重跑相同來源全套。
+- 首輪真實 charge 撞牆重現已修正：架勢 0、共用 stun 2，AND 為 [true,false]／closed；只選破架勢也 closed。真正 teacherPostureEvent 破架勢可開啟，TTL 到期後殘留 shared stun 不會再生來源。新增真引擎測試覆蓋兩事件順序、普通 stun、AND／OR、到期、凍結與清除。
+- 真實傷害及回饋事件測試驗護甲 0.2、弱點 3 倍、金屬 small／架勢 large 音效與批次優先級；聲音結論以事件斷言為依據。
 
-`posture-break` 目前只判斷 `body.posture.stun > 0`，但守門人撞牆也將同一個 `posture.stun` 設成撞牆暈眩時間。因此只撞牆、架勢完全沒有累積，也會同時成立 `wall-stun` 與 `posture-break`。Maker 選「全部成立」會失去意義；僅選「架勢崩潰」的自訂弱點也會被撞牆誤開。請由真正的架勢崩潰事件保留可區別的訊號，不要由共用暈眩狀態推定原因，並補上實際引擎的回歸測試。
+## 獨立 UI 實玩
 
-獨立重現（repo 根目錄執行）：
+使用本機原始來源，沒有拿公開 preview 或 Dot smoke 代替；三尺寸為 1024×461、740×360、1180×820。沒有改動作者程式或測試。
 
-```js
-const run = require('./games/survivor/tests/maker-support.cjs')();
-run(`startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;
-state.player.damageDisabled=true;
-const cfg=state.trial.definition.weakpoint;
-cfg.parts=[{...cfg.parts[1],mode:'all',
-  conditions:[{type:'wall-stun'},{type:'posture-break'}]}];
-const b=state.boss;b.posture={value:0,stun:0};
-b.x=state.trial.arena.x+state.trial.arena.radius-b.r-1;
-b.y=state.trial.arena.y;
-state.bossMoves=[{id:'charge',kind:'charge',
-  ai:{phase:'active',left:1},angle:0,origin:{x:b.x,y:b.y},
-  target:{x:b.x+70,y:b.y}}];
-updateTrial(.05);updateBossWeakpoints(.15);`);
-console.log(run('JSON.stringify({posture:state.boss.posture,weakpoints:state.boss.weakpoints})'));
-```
+- 主遊戲、選武器、暫停／返回、Maker 與試煉入口可操作；三尺寸遊戲舞台、HUD、動作區沒有阻擋操作的重疊，小尺寸 Maker／展示內容可捲動。console 未見 JavaScript error。
+- 老師「跳上講台 → 試這隻」可觀察落地收招與核心。實際命中顯示護甲 7、開啟後 105；為核對真正破架勢，另透過 Maker 把滿條與收招累積調成一次命中可觸發，觀察到放電與核心重新預告，沒有九倍傷害。
+- 守門人預設戰鬥可看到背面弧與正面護甲小浮字；另用合法 Maker 作品把傷害設 0、放長提示／部位時間，持盾衝鋒撞牆後出現暈眩與全角核心，開啟窗口內實際近戰顯示 263、泡泡炸彈顯示 300，並可正常擊倒返回成功選單。正反來源精確傷害另由真引擎測試核對。
+- 預告淡黃、開啟綠色、closing 橘色快閃及 closed 消失皆從原始畫面確認；另將老師開啟時間縮為合法的 0.5 秒，讓同一輪展示完整呈現四階段。沒有靠寫入遊戲內部狀態造畫面。
+- Maker 護甲 0.25／弱點 4 倍可儲存並重讀；指定「跳上講台收招後」及「收招時」的 AND 組合也可保存、重讀並從當前草稿進練習。其他部位／移除及非法資料的互動已在完整 Maker UI 測試核對。實玩用的本機草稿最後恢復預設並儲存。
+- 雙子霜火、羽翼古神的入口、HUD、預警、移動與原傷害回歸，沒有多出本卡弱點／護甲。
 
-實際：`posture={value:0,stun:2}`、`core.phase="open"`、`core.matches=[true,true]`。預期：只成立撞牆，這個 AND 部位應保持關閉；僅選破架勢也應保持關閉，真正破架勢仍須能開啟。
+## 範圍與交接
 
-## 檢查範圍與結果
-
-- 核對任務卡、PR、弱點規格與驗證文件；檢查 defaults/schema/Maker、美術錨點與提示、三條 Boss 扣血路徑、來源方向、架勢倍率、觸發與計時接合、既有測試調整與版本號。
-- 在上述完整 SHA 的 Mac 工作目錄獨立執行 `node games/survivor/tools/test.cjs --layout`：exit 0，113 個 PASS。既有測試沒有覆蓋撞牆／破架勢來源分離；通過不抵銷上面的實際重現。
-- 本輪沒有修改實作、卡片或測試；沒有 UI 驗收、最終 approve 或合併。修正後需針對新完整 SHA 重審，UI 驗收另依主控安排進行。
+本卡沒有新的阻擋問題，通過本輪審查。上述 SHA 的實質來源若再改動，必須重審；僅新增本次審查紀錄的提交需核對為 review-only。家長既有授權下才執行指定 HEAD 的 merge，並另核對 Pages merge SHA 與 production 版本。本機主控未提交的兩份狀態文件保留，不代提交、不清除。截圖與完整日誌存於 repo 外，不公開私人執行資料。
