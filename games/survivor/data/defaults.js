@@ -2591,3 +2591,17 @@ SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
   const shape=m.blocks.moves[0].shape;
   m.ai={minDistance:m.id==='charge'?70:0,maxDistance:ranged?600:shape.radius+18,angleWeight:0,phaseWeight:0,offscreen:true};
 }));
+
+// ✏️ Erin 可以改：共用弱點積木。角度為朝向的相對度數；時間單位為秒。
+SURVIVOR_DEFAULTS.boss.weakpoint = {
+ version:1, armorMultiplier:.2, criticalMultiplier:3, warning:.15, closing:.25,
+ parts:[{id:'core',anchor:'weakpoint',radiusScale:1,angleDegrees:0,arcDegrees:360,mode:'any',duration:1.5,
+ conditions:[{type:'recovery'},{type:'posture-break'}]}]
+};
+SURVIVOR_DEFAULTS.gallery.bosses.find(b=>b.id==='gatekeeper').weakpoint = {
+ version:1, armorMultiplier:.2, criticalMultiplier:3, warning:.15, closing:.25,
+ parts:[{id:'back',anchor:'weakpoint',radiusScale:1,angleDegrees:180,arcDegrees:120,mode:'any',duration:2,
+ conditions:[{type:'behind'}]},
+ {id:'core',anchor:'weakpoint',radiusScale:1,angleDegrees:0,arcDegrees:360,mode:'any',duration:2,
+ conditions:[{type:'wall-stun'},{type:'posture-break'}]}]
+};

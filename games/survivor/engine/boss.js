@@ -208,7 +208,7 @@ function updateBoss(dt) {
             shiftTarget(state.player,state.player.x-Math.cos(angle),state.player.y-Math.sin(angle),policy.leapPush);
           }
         }
-        move.recovery=Math.max(policy.leapRecovery,definition.recovery||0);move.ai={phase:'recovery',left:move.recovery};bossFeedbackShake(move);continue;
+        move.recovery=Math.max(policy.leapRecovery,definition.recovery||0);move.ai={phase:'recovery',left:move.recovery};noteBossRecovery(b,move.id,move.recovery);bossFeedbackShake(move);continue;
       }
     } else if(kind==='barriers') {
       // 兩側短牆；上下均有缺口。碰撞沿用位移修正，不造成隱形傷害。
@@ -244,6 +244,7 @@ function updateBoss(dt) {
       const repeats=move.repeats-1;state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);
       beginBossMove(move.id);const next=state.bossMoves[state.bossMoves.length-1];if(next){next.repeats=repeats;next.warning=Math.max(.6,definition.warning);}
     } else if (move.life <= 0) {
+      noteBossRecovery(b,move.id,definition.recovery||.6);
       if(definition.recovery>0) {move.recovery=definition.recovery;move.ai={phase:'recovery',left:move.recovery};}
       else {state.bossRest=Math.max(state.bossRest,definition.cooldown||0);state.bossMovePool.push(state.bossMoves.splice(i,1)[0]);}
     }

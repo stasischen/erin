@@ -55,10 +55,10 @@ assert.ok(run('drawCalls.some(c=>c[0]==="fillText" && c[1]==="老師來了！")'
 assert.ok(run('drawCalls.some(c=>c[0]==="rotate" && c[1]===bossGuide().angle)'));
 run('state.boss.x=state.player.x+70; state.boss.y=state.player.y; hitBuildTarget(state.boss,35);');
 assert.equal(run('state.boss.hp'),2000);
-run('state.bossIntro=0; hitBuildTarget(state.boss,35);'); assert.equal(run('state.boss.hp'),1965);
+run('state.bossIntro=0; hitBuildTarget(state.boss,35);'); assert.equal(run('state.boss.hp'),1993); // 新護甲：35×0.2；可見性保護不變。
 assert.equal(run('bossGuide()'),null);
 run('state.player.x+=800; updateCamera(); hitBuildTarget(state.boss,35);');
-assert.equal(run('state.boss.hp'),1965);
+assert.equal(run('state.boss.hp'),1993);
 // 可見的正常敵人仍會受傷，連鎖不超過每跳 100 距離。
 fresh({'thunder-attack':1}); run('state.enemies=[book(state.player.x+20),book(state.player.x+121)]; schoolEffect("thunder",state.enemies[0],state.enemies[0].x,state.enemies[0].y,35);');
 assert.equal(run('state.enemies[1].hp'),10000);

@@ -31,6 +31,8 @@ function teacherPostureEvent(trigger) {
   const old=b.posture||SurvivorPosture.initial();b.posture=result.state;
   if(old.value<GAME_DATA.boss.posture.maximum*.75&&b.posture.value>=GAME_DATA.boss.posture.maximum*.75)playSound('warning');
   if(result.events.length) {
+    // 只有真的 posture-broken 事件才提供原因；撞牆／普通暈眩共用 stun 不能冒充。
+    if(result.events.some(event=>event.type==='posture-broken'))triggerBossWeakpoint(b,'posture-break',b.posture.stun);
     clearBossMoves();b.recoveryLeft=0;b.pursuing=false;
     const heal=result.events[0].actions.filter(a=>a.type==='heal').reduce((n,a)=>n+a.amount,0);
     state.player.health=Math.min(maxPlayerHealth(),state.player.health+heal);

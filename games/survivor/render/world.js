@@ -177,7 +177,7 @@ function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint, outline) {
   g.drawImage(sprite, x, y, w, h);
 }
 function actorArtContext(body,action,timing) {
-  const aim=body===state.player?{x:state.faceX,y:state.faceY}:action&&Number.isFinite(action.angle)?{x:Math.cos(action.angle),y:Math.sin(action.angle)}:{x:deltaX(state.player.x,body.x),y:deltaY(state.player.y,body.y)};
+  const aim=body===state.player?{x:state.faceX,y:state.faceY}:action&&Number.isFinite(action.angle)?{x:Math.cos(action.angle),y:Math.sin(action.angle)}:Number.isFinite(body.facingAngle)?{x:Math.cos(body.facingAngle),y:Math.sin(body.facingAngle)}:{x:deltaX(state.player.x,body.x),y:deltaY(state.player.y,body.y)};
   return {aim,...SurvivorArt.phaseContext(action,timing)};
 }
 function bossArtContext(move) {
@@ -521,6 +521,7 @@ function render() {
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
       drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(state.trial?state.trial.definition.artId:'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale,{displayScale:scale}),undefined,SurvivorArt.lookup(state.trial?state.trial.definition.artId:'character/teacher').outline);
+      drawBossWeakpoints(b,hop);
       if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
         const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
         ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);

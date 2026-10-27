@@ -91,7 +91,7 @@ function updateSchoolCombat(dt) {
     if (rod.timer <= 0) {
       rod.timer += rodBlock.interval;
       skillVisual('sparkle',rod.x,rod.y,{radius:20,color:BUILD_TUNING.thunder.color,life:.5});
-      for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,rod.x),deltaY(target.y,rod.y)) <= rodBlock.radius) { lightning(rod.x,rod.y,target.x,target.y); hitBuildTarget(target,rodBlock.damage); if(state.mode!=='playing') return; }
+      for (const target of combatTargets()) if (Math.hypot(deltaX(target.x,rod.x),deltaY(target.y,rod.y)) <= rodBlock.radius) { lightning(rod.x,rod.y,target.x,target.y); hitBuildTarget(target,rodBlock.damage,{source:rod}); if(state.mode!=='playing') return; }
     }
   }
   c.rods = c.rods.filter(rod => rod.life > 0);
@@ -143,12 +143,12 @@ function cardBlockMatches(condition,target,x,y,end) {
   return SurvivorEffectBlocks.matches(condition,{dx:deltaX(target.x,x),dy:deltaY(target.y,y),r:target.r},state.player,end);
 }
 
-function applyCardTargetActions(rule,target) {
+function applyCardTargetActions(rule,target,source=state.player) {
   for(const action of rule.actions) {
     if(action.type==='wet') target.wetTimer=action.duration;
     else if(action.type==='slow') {target.slowTimer=action.duration;target.makerSlow=action.multiplier;}
     else if(action.type==='stun') stunTarget(target,action.duration);
-    else if(action.type==='damage') { hitBuildTarget(target,action.amount); if(state.mode!=='playing')return; }
+    else if(action.type==='damage') { hitBuildTarget(target,action.amount,{source}); if(state.mode!=='playing')return; }
     else throw new Error('Unsupported target action');
   }
 }

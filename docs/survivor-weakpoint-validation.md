@@ -1,0 +1,55 @@
+# 弱點積木與護甲驗收
+
+正式卡：`coord/tasks/survivor-weakpoint.json`，規格：`coord/tasks/specs/survivor-weakpoint.md`。本卡只套老師與巨斧守門人，不修改後續 Boss 或競技場尺寸／距離帶。
+
+## 規則與時序
+
+- 共用純規則在 `engine/weakpoint.js` 的 `SurvivorWeakpoints`，亦由 `SurvivorEffectBlocks.weakpoint` 匯出；`step` 收前狀態、設定、條件與 dt，回傳狀態／事件，`resolve` 回傳一次傷害倍率與部位 id。
+- 預設一般部位只受 0.2 倍傷害（Maker 0.15～0.25），已開弱點 3 倍（Maker 1～6）。掛新積木時，舊架勢蓄力傷害倍率不再疊乘；架勢仍提供既有聚氣加速。移除新積木的作品保留舊架勢規則。
+- 命中一律讀「命中前」弱點狀態：這一擊打滿架勢仍受原護甲，之後先預告，再讓後續命中取得爆擊；浮字使用實扣傷害。
+- 每部位的條件可組合任一／全部成立：收招、指定招式收招後、背後、撞牆暈眩、破架勢、環境、誘餌。環境／誘餌由共用 `triggerBossWeakpoint(body,type,seconds)` 接合，本卡不另造場景機關。
+- 條件從不成立變為成立時，先預告 0.15 秒；開啟期間由部位 duration 決定，末 0.25 秒進 closing 暖色快閃後關閉。持續同一條件不會每幀續滿，解除再成立或另一個新條件事件可重新預告並刷新；角色 hitstop 與暫停都不偷跑。
+- 收招與 cooldown／普通休息／普通暈眩分開。老師舊招沒有獨立 recovery 時，完成一招會發一次 0.6 秒的收招訊號；既有 AI 休息與移動沒有更改。指定招式以完成／進收招的 move id 配對。
+
+| 角色／部位 | 預設條件 | 角度 | 開啟期間 |
+| --- | --- | --- | --- |
+| 老師核心 | 收招或破架勢 | 全角 | 1.5 秒 |
+| 守門人背後 | 背對主角 | 相對朝向 180°，弧 120° | 2 秒 |
+| 守門人核心 | 撞牆或破架勢 | 全角 | 2 秒 |
+
+弱點透過 `art-manifest.js` 具名 `weakpoint` 錨點定位；與角色共用 bounds、pivot、displaySize、scale、鏡像查詢，部位半徑以世界單位表示，角色身體碰撞不變。提示也走 `effect/weakpoint` 美術入口，窄弧部位顯示可命中的方向；不使用 emoji 或文字橫幅。
+
+投射物、近戰、泡泡炸彈、場、連鎖、Maker 範圍、終極與中立道具共用 `hitBuildTarget`。方向取各傷害事件的來源：投射物入射方向、爆炸／場中心、連鎖上一跳；不拿玩家移動後的位置代替。環繞接縫轉成同一個世界相對座標；來源恰在中心時不猜成背擊。護甲採 small 金屬聲／火花、弱點採 large 回饋，批次優先級避免後來的一般 hit／水聲蓋掉。
+
+## Mac Studio 驗證
+
+首輪凍結來源版本 20261027h 的完整指令：`node games/survivor/tools/test.cjs --layout`，exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。不新增或使用 GitHub CI。完整日誌與截圖留 repo 外，公開只記指令、結果與 SHA。
+
+- `tests/weakpoint.cjs`：七種條件、AND／OR、時序、開啟／關閉前提示、解除再觸發、角度／部位、命中前狀態、不疊九倍、暫停／hitstop、接縫、鏡像與顯示錨點、合法資料 round trip 與非法值拒絕。
+- `tests/weakpoint-combat.cjs`：真實投射物／炸彈／場／連鎖／Maker 來源方向，100 傷害對護甲為 20、對已開背後為 300；50 HP 不再被該炸彈秒殺而剩 30，20 HP 才擊倒；金屬 small／弱點 large 聲效優先，真正撞牆與未掛積木 Boss 回歸。
+- `tests/weakpoint-event-sources.cjs`：實際 charge 撞牆與 `teacherPostureEvent` 真正產生的 `posture-broken` 分開；只撞牆、只破架勢、普通暈眩、兩事件同幀或先後有效窗口的 AND／OR、來源到期／closing／去重／hitstop／暫停，以及明確清除、轉階段、入口、移除積木與新場景。測試建立各事件當下的身體狀態，走真引擎產生器，不直接偽造 flags 或 stub 規則輸出。
+- `tests/maker-ui.cjs`：新增弱點頁的實際數值／條件／部位操作、兩隻 Boss 分別保存、重讀、當前草稿進練習、非法時序阻擋儲存、移除／重裝。
+- `tests/levelup-layout.cjs`：十尺寸真 Chrome DPR3／觸控回歸，另讀實際 Canvas 像素驗 warning 暖色、open 發光、closing 暖色、closed 不殘留。
+- 舊測試只按新增護甲更新具體傷害預期：boss-range 的 35→7、teacher-offscreen 的 1→0.2 或已開弱點 3、dash-skill 的 100 炸彈對 20 HP 擊倒。舊 teacher-posture 的 charged-only 契約明確在移除新積木時驗證；新積木的普攻／蓄力同樣三倍另測。沒有重生原 Canvas、戰鬥或 frozen legacy 基準。
+
+## 獨立 session 三尺寸實玩
+
+尺寸依序為 1024×461、740×360、1180×820，各自確認填滿全螢幕、HUD 與按鈕不重疊、console 無錯誤。
+
+1. 主遊戲與 Maker 原入口／武器操作仍可用；Maker → 魔王 → 弱點積木可讀老師與守門人設定。
+2. 老師招式頁選跳上講台 → 試這隻，觀察落地收招預告／發光／關閉前快閃；在開啟前與亮起後命中，對照護甲小火花／金屬聲與弱點大回饋／浮字。
+3. 王的試煉選巨斧守門人，等盾牌／巨斧固定朝向後繞背攻擊，前方命中仍有護甲。把衝鋒引到牆，觀察暈眩後核心預告及全角開啟，結束後回到護甲。
+4. Maker 把護甲調為 0.25、弱點倍率 4、條件換指定招式或 AND 組合，儲存重讀後試玩；返回、暫停、重新開始不得沿用舊弱點窗口。
+5. 守門人以外兩種既有試煉仍維持原戰鬥、入口與預警；不以新積木變更 boss3／4／5 卡內容。
+
+人工操作由獨立 reviewer 記自己的完整 SHA 與結果；作者不以自測冒充獨立審查。Dot 正式瀏覽器收件能力仍由主控另確認，這份清單可給驗通後的候選版驗收使用，不能拿已上線舊版當本卡通過。
+
+## Godot §11
+
+§11.1：弱點設定只有可序列化數字、id、條件陣列，schema 白名單與舊作品補值；尚未全面抽成獨立 JSON。§11.2／11.3：純 `step/resolve` 與 weakpoint-warning/open/closing/closed 事件保留為引擎邊界，接合層才讀寫實體、音訊、Canvas。§11.4：具名正規化錨點、顯示縮放與世界命中半徑分開。§11.5：新增金屬聲保留 ZzFX 合成參數，沒有 WAV／OGG 匯出。§11.6：固定輸入／秒／來源座標對預期事件、倍率、HP。§11.7：純規則不讀 CSS、DPR、DOM 或視窗大小，競技場沿用原固定世界尺寸；尚未執行 Godot。
+
+## PR103 第一輪 changes 修正（20261027i）
+
+獨立審查指出：守門人撞牆也設定 `posture.stun`，所以舊接合把純撞牆誤當破架勢，使 AND 或單選破架勢錯開。現在 `posture-break` 只在真正 `posture-broken` 事件出現時記錄自己的有效期；`wall-stun` 仍由撞牆事件記錄，普通／共用暈眩本身不是原因。原因各自計時，新的來源可與尚有效的舊來源組合；相同持續來源不每幀續滿，來源到期不從殘留 stun 再生。入口、轉階段、移除積木與 `clearBossWeakpoints` 清除窗口及原因，換場景則建立新身體；碰撞原本的暈眩行為保留。原 changes 審查與證據保留，修正版仍需獨立重審。
+
+修正版 20261027i 最終完整 Mac Studio `node games/survivor/tools/test.cjs --layout`：exit 0、114 PASS；測前後 34 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。沒有更新任何 frozen legacy／Canvas／戰鬥基準，人工 UI 與最終判定仍交獨立審查。
