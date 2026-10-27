@@ -1,5 +1,25 @@
 # 目前交接
 
+## 當前：PR104 l Maker 修正待重審（優先於全部歷史）
+
+- 本輪 `20261027l` 只修新 sequence.phaseCount 的1～8數值控件與舊0／1布林同名碰撞，Boss預設／難度不變；真Chrome五參數UI保存／重載／重置回歸已通過，Mac完整含--layout已exit0／121PASS、160檔hash一致，準備同PR交新SHA重審。
+- k候選的215檔發布／119PASS屬下方歷史；該候選Maker在基線發現後半刀數錯畫switch，Dot未修改／保存，所以沒有清理動作。原review及原始結果保留，不把k code_ready或舊API smoke當本次UI通過。
+- Maker草稿常設授權已由Dot自己的可信原生對話確認；每次仍核對PR／完整SHA／namespace並清理。普通gameplay原生範圍澄清仍pending，不重複索授權或繞過；本輪實作者不送Dot。
+- 正式站仍20261027i，PR104未合併；boss4／5未開工。家長曾短暫回報開始按鈕無反應，隨即自行確認可操作；原因未定、未為此改碼。
+- 下方舊「目前／未開工／已完成」等章節依當時狀態保留，以本摘要及最末修正SHA為準。
+
+## 歷史：k 候選發布與授權快照（原主控更新）
+
+PR104 的 20261027k／e396d9ebcf6afbdd0acd7170bb120fdc1733b1b8 已獨立重審 code_ready，原方向鍵放開 P2 已關閉；Mac 完整含 --layout 雙方119 PASS、160檔hash一致。尚未approve／merge；正式站仍20261027i，boss4／5未開工。
+
+新固定候選：https://stasischen.github.io/erin-preview/pr-104/e396d9ebcf6afbdd0acd7170bb120fdc1733b1b8/games/survivor/ 。preview commit13b9d16f607c11dda7e8c927b2f6eddc8f019f83，Pages run40539336971 success，manifest SHA2567eaa2f2c3c93f710bd44d0f3b7f9748a2013a1e8935d5e1da418a5209c056786；公開215檔HTTP/hash核對通過，舊145檔與歷史候選全部保留。這是發布工程證據，不是Dot k戰鬥驗收。
+
+家長已給所有測試版隔離Maker草稿常設修改／保存／重讀／恢復預設授權，Dot也以自己的可信原生對話確認包含後續版本、無須逐候選重問；不含正式站／原作品／repo程式碼／安全設定／合併。舊j Maker補件已真實完成清理，但不算k證據。新k的Maker五參數保存／重載／重置／重載已獨立送件，僅Maker UI，不重試被拒的遊戲操作。
+
+一般試玩仍受Dot原生工具範圍限制：其自動審核曾以Maker-only拒絕下一次繼續遊戲，Dot已另向家長提出正常試玩／移動／攻擊／衝刺／暫停續玩／必要重試的直接確認。主控不重複發問、不繞過拒絕；普通gameplay範圍未確認前不派k完整戰鬥。舊j三次失敗及兩次pause-first cycles都保留changes／incomplete_evidence，沒有勝利／halfHP／真破架勢證據，不能混算為k通過。私人原始結果、交換ID與session對照仍留本機。
+
+---
+
 ## 當前摘要（優先於下方歷史，2026-10-28）
 
 - 目前是 PR104／survivor-boss-gallery-3，`20261027k` 修正既有方向鍵 keyup 鍵名配對，Mac 全套與實際輸入 smoke 已完成，受測修正 SHA `016802981eac2f80f14fa19b7fcdb236777cdb74` 待重審（PR 最新 HEAD 另含純交接提交，仍須核對）；不是刺客新增回歸，不能據此推論 Dot 陣亡原因。
@@ -125,3 +145,12 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 ### k 版受測修正 SHA
 
 `016802981eac2f80f14fa19b7fcdb236777cdb74`／`20261027k`，PR104 同分支。之後僅更新本交接及卡片 SHA／狀態，160個受測程式／測試／快取檔保持逐byte相同；重審與後續公開候選應鎖PR最新完整HEAD。實作者已完成本次必要提交／push交接後停筆，由主控安排重審與新候選，不把舊j結果當k驗收。
+
+
+## PR104 l：Maker 後半場刀數修正交重審
+
+- 版本20261027l；range helper僅對實際0～1 bounds的舊phaseCount建立布林switch，新sequence.phaseCount的1～8維持原數值滑桿與加減事件。不改schema、Boss預設、難度或新機制。
+- production-renderer事件與真Chrome DOM/AX均驗：baseline後半場slider=5、min1/max8/step1；input到7→點增加到8，再前半場設7；刺客護甲0.25、弱點4、蓄力額外1.8，UI存檔→整頁reload重開五值皆在；UI恢復預設（自動保存）→reload回4/5、0.2/3/1.5。老師／守門人保留原值，舊0/1開關及其保存行為不變。沒有直接修改draft代替UI。
+- Mac完整 `node games/survivor/tools/test.cjs --layout` exit0／121行PASS、`git diff --check` PASS；160個程式／測試／快取檔測前後SHA256完全相同，舊frozen基準未重生。完整log與原始證據留本機，這是Mac工程證據，不是Dot對新固定候選的正式驗收。
+- 更正先前「7刀／1.8工程smoke」：當時工具直接構造後半phaseCount7（前半4）與倍率1.8，保存API→新Maker VM載入→startTrial後讀definition。只證明資料／API接合，沒操作Maker控件、沒驗前7後8五參數循環、也沒實際打出七刀；先前未標明層次，回報範圍過寬，於此窄化。原對話工具輸出及一般UI原JSON不重寫，不補造前輪raw。
+- k候選215檔發布／119PASS與Maker基線changes均保留歷史；Dot在基線即停、沒修改／保存，所以無清理。Maker原生常設授權已確認，普通gameplay原生澄清仍pending；不重問或繞過，不自行送Dot。正式站i、boss4/5未開工。

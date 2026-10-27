@@ -9,12 +9,12 @@
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "PR104版本20261027k／受測修正SHA016802981eac2f80f14fa19b7fcdb236777cdb74待獨立重審；Mac完整含--layout exit0/119PASS、真事件與Chrome四箭頭停步smoke通過。最新PR HEAD另含純交接提交，重審仍核對完整HEAD；160個受測檔相同。舊j Dot changes/incomplete_evidence保留，重審後再發布新候選交Dot正式測；隔離Maker草稿已有常設授權，仍核對候選/namespace/清理與原生平台判定。",
+  "next": "PR104版本20261027l Maker phaseCount數值控件小修完成，Mac完整含--layout exit0/121PASS、160檔hash一致；真Chrome DOM/AX及7/8/.25/4/1.8 UI保存/重載/恢復回4/5/.2/3/1.5通過，舊0/1開關及其他王不變。待同PR新SHA獨立重審（SHA記latest），之後主控再發布新候選交Dot；k基線Maker changes與舊API smoke窄化更正保留。普通gameplay原生澄清pending，不自行送件、不接下一卡。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T16:08:19.568423+00:00",
+  "updated": "2026-10-27T16:49:44.895377+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

@@ -364,3 +364,24 @@ assert.equal(ui.ids.makerStatus.className,'error');assert.equal(JSON.parse(ui.st
 slider('弱點開啟秒數',2.5);ui.click('移除弱點積木');ui.ids.save.fire('click');assert.equal(saved().boss.weakpoint,null);
 ui.click('加入弱點積木');ui.ids.save.fire('click');assert.equal(saved().boss.weakpoint.criticalMultiplier,3);
 console.log('PASS: weakpoint Maker numbers / AND / after-move / multiple parts / separate Boss settings / save reload / current draft trial / invalid timing / remove reinstall');
+
+// 同名phaseCount依範圍語意分開：舊0/1開關、新1..8連斬數值；全程走渲染控件事件。
+ui=setup();ui.ids.makerLink.fire('click');choose('boss','gallery');
+const fieldNode=label=>ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);
+const back=fieldNode('後半場連斬刀數');assert.ok(back);assert.equal(back.type,'range');assert.equal(back.value,5);assert.equal(back.min,1);assert.equal(back.max,8);assert.equal(back.step,1);
+assert.equal(ui.nodes().some(n=>n.attrs.role==='switch'&&n._text.startsWith('後半場連斬刀數')),false);
+slider('後半場連斬刀數',7);ui.nodes().find(n=>n.attrs['aria-label']==='後半場連斬刀數 增加').fire('click');assert.equal(back.value,8);
+slider('前半場連斬刀數',7);choose('boss','weakpoint');
+function assassinFields(){const box=ui.nodes().find(n=>n.tag==='fieldset'&&n.children.some(c=>c.tag==='legend'&&c._text==='雙刃刺客'));assert.ok(box);return ui.nodes(box);}
+for(const [label,value]of [['普通部位傷害倍率',.25],['弱點傷害倍率',4],['破架勢蓄力額外倍率',1.8]]){const n=assassinFields().find(n=>n.tag==='input'&&n.attrs['aria-label']===label);assert.ok(n);n.value=value;n.fire('input');}
+ui.ids.save.fire('click');const customWork=saved();const customBoss=customWork.gallery.bosses.find(b=>b.id==='assassin');assert.deepEqual([customBoss.moves[0].blocks.moves[0].effect.sequence.count,customBoss.moves[0].blocks.moves[0].effect.sequence.phaseCount,customBoss.weakpoint.armorMultiplier,customBoss.weakpoint.criticalMultiplier,customBoss.weakpoint.postureChargeMultiplier],[7,8,.25,4,1.8]);
+assert.deepEqual(customWork.boss.weakpoint,defaults.boss.weakpoint);assert.deepEqual(customWork.gallery.bosses[0].weakpoint,defaults.gallery.bosses[0].weakpoint);
+ui=setup({saved:ui.storage});ui.ids.makerLink.fire('click');choose('boss','gallery');assert.equal(fieldNode('前半場連斬刀數').value,7);assert.equal(fieldNode('後半場連斬刀數').value,8);choose('boss','weakpoint');
+for(const [label,value]of [['普通部位傷害倍率',.25],['弱點傷害倍率',4],['破架勢蓄力額外倍率',1.8]])assert.equal(assassinFields().find(n=>n.attrs['aria-label']===label).value,value);
+choose('boss',defaults.boss.moves[0].id);
+const legacySwitch=()=>ui.nodes().find(n=>n.attrs.role==='switch'&&n._text.startsWith('每個階段是否多一個目標'));assert.ok(legacySwitch());
+const initial=defaults.boss.moves[0].phaseCount;legacySwitch().fire('click');ui.ids.save.fire('click');assert.equal(saved().boss.moves[0].phaseCount,initial?0:1);legacySwitch().fire('click');ui.ids.save.fire('click');assert.equal(saved().boss.moves[0].phaseCount,initial);
+ui.ids.reset.fire('click');ui=setup({saved:ui.storage});ui.ids.makerLink.fire('click');choose('boss','gallery');assert.equal(fieldNode('前半場連斬刀數').value,4);assert.equal(fieldNode('後半場連斬刀數').value,5);choose('boss','weakpoint');
+for(const [label,value]of [['普通部位傷害倍率',.2],['弱點傷害倍率',3],['破架勢蓄力額外倍率',1.5]])assert.equal(assassinFields().find(n=>n.attrs['aria-label']===label).value,value);
+assert.deepEqual(saved().boss.weakpoint,defaults.boss.weakpoint);assert.deepEqual(saved().gallery.bosses[0].weakpoint,defaults.gallery.bosses[0].weakpoint);
+console.log('PASS: Maker renderer control events: numeric 5 / bounds1..8 / plus, 7-8 and five parameters save-reload-reset-reload, teacher/gatekeeper unchanged and legacy phaseCount switch0/1');

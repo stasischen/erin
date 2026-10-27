@@ -1,6 +1,6 @@
 # 雙刃刺客：實作與驗收
 
-正式卡：[survivor-boss-gallery-3](../coord/tasks/specs/survivor-boss-gallery-3.md)。機制初版 `20261027j`；`20261027k` 僅修既有方向鍵放開的鍵名配對並補事件路徑測試，Boss／難度不變。競技場半徑與 AI 距離帶沿用 hotfix，沒有新波次或擴場。Mac 工程測試不等同獨立審查或 Dot 雲端驗收。
+正式卡：[survivor-boss-gallery-3](../coord/tasks/specs/survivor-boss-gallery-3.md)。機制初版 `20261027j`；`20261027k` 僅修既有方向鍵放開的鍵名配對並補事件路徑測試，Boss／難度不變；`20261027l` 只讓新1～8後半場刀數維持數值控件、保留舊0／1開關。競技場半徑與 AI 距離帶沿用 hotfix，沒有新波次或擴場。Mac 工程測試不等同獨立審查或 Dot 雲端驗收。
 
 ## 正常試玩
 
@@ -33,3 +33,10 @@ Maker → 老師／怪物 → 王的試煉：可調各王血量、階段門檻�
 - §11.7：純規則只使用世界單位／秒，不讀 DOM 或 CSS；版面與輸入換算、存檔在接合層，既有 viewport／鏡頭／世界大小的耦合保留，未全面重構。
 
 Mac 完整命令：`node games/survivor/tools/test.cjs --layout`，另跑 `git diff --check`。完整日誌、截圖留 repo 外；獨立 session 與 Dot 對確切 PR／SHA 的證據尚須另外取得。
+
+
+## Maker 回歸與前輪說明更正
+
+先前「7刀／1.8倍工程 smoke」實際以工具直接構造作品的後半場 phaseCount=7（前半仍4）及額外倍率1.8，呼叫保存 API、重建 Maker VM、進試煉後讀取 definition。它驗資料／存讀 API／接合，不是操作 Maker 控件，也沒有實際打出七刀、前7／後8或本次五參數 UI 循環；先前未說明層次，範圍過寬，於此窄化更正。原始對話工具輸出與作者一般 UI smoke 原件保留，不重寫成先前已驗證 UI。
+
+l 版另有 production-renderer 控件事件回歸及真 Chrome DOM／AX 檢查：後半場 role=slider、預設5、min1/max8/step1；input設7再點增加到8，再前半設7，刺客護甲0.25／弱點4／破架勢蓄力1.8，按存檔、整頁reload重開確認五值；按UI恢復預設（自動保存）、reload確認4／5、0.2／3／1.5。老師與守門人保持原值、舊phaseCount仍為0／1 switch。此為Mac工程證據，新的固定候選仍待獨立重審與Dot正式驗收。

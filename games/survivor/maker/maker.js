@@ -41,11 +41,12 @@
     return row;
   }
   function range(parent, object, key, limits, label, iconOnly = false) {
-    if (key === 'phaseCount') {
+    const bounds = limits || api.BOUNDS[key];
+    if (key === 'phaseCount' && bounds && bounds[0] === 0 && bounds[1] === 1) {
       const toggle = button(parent, (label || labels[key] || key) + (object[key] ? '：開' : '：關'), () => { object[key] = object[key] ? 0 : 1; changed(); render(); });
       toggle.setAttribute('role', 'switch'); toggle.setAttribute('aria-checked', String(!!object[key])); return;
     }
-    const bounds = limits || api.BOUNDS[key], row = el('div', undefined, parent); row.className = 'maker-number';
+    const row = el('div', undefined, parent); row.className = 'maker-number';
     el('span', label || labels[key] || key, row);
     const controls = el('div', undefined, row), value = el('output', String(object[key]), controls);
     const slider = el('input', undefined, row); slider.type = 'range'; slider.className = 'maker-slider';

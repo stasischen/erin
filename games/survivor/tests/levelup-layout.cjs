@@ -253,6 +253,38 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   await call('Input.dispatchKeyEvent',{type:'keyUp',key:'e',code:'KeyE'});
   await evaluate(`(()=>{const d=document.querySelector('.practice-dock iframe').contentDocument;d.querySelector('#practicePause').click();d.querySelector('#practiceExit').click();return true;})()`);
   assert.equal(await evaluate("!document.querySelector('.practice-dock') && document.querySelector('[data-tab=enemies]').getAttribute('aria-pressed')==='true'"),true);
+  if(width===1024&&height===461){
+    // 真 Chrome DOM/AX 與控制項事件；不可用直接改 draft/schema 代替 Maker 操作。
+    const openGallery="document.querySelector('[data-tab=boss]').click();document.querySelector('[data-item=gallery]').click();true";
+    await evaluate("document.querySelector('#reset').click();true");await evaluate(openGallery);
+    const baseline=await evaluate(`(()=>{const n=document.querySelector('input[aria-label="後半場連斬刀數"]');return n&&{tag:n.tagName,type:n.type,value:Number(n.value),min:Number(n.min),max:Number(n.max),step:Number(n.step)};})()`);
+    assert.deepEqual(baseline,{tag:'INPUT',type:'range',value:5,min:1,max:8,step:1});
+    const ax=await call('Accessibility.getFullAXTree');
+    assert.ok(ax.nodes.some(n=>n.role&&n.role.value==='slider'&&n.name&&n.name.value==='後半場連斬刀數'&&n.value&&Number(n.value.value)===5),'後半場必須是真 slider AX role/value');
+    assert.equal(await evaluate("[...document.querySelectorAll('[role=switch]')].some(n=>n.textContent.startsWith('後半場連斬刀數'))"),false);
+    // input 先到7，再真plus click到8，之後front input到7；用UI順序保持合法。
+    await evaluate(`(()=>{const back=document.querySelector('input[aria-label="後半場連斬刀數"]');back.value=7;back.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('button[aria-label="後半場連斬刀數 增加"]').click();if(Number(back.value)!==8)throw Error('plus 未增加至8');const front=document.querySelector('input[aria-label="前半場連斬刀數"]');front.value=7;front.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('[data-item=weakpoint]').click();return true;})()`);
+    // 老師名稱以實際owner legend查找，不依賴資料私有物件。
+    const teacherName=await evaluate("[...document.querySelectorAll('#editor fieldset > legend')].map(n=>n.textContent).find(n=>n!=='雙刃刺客'&&n!=='巨斧守門人'&&!n.startsWith('弱點部位'))");
+    const controls=async()=>evaluate(`(()=>{const owner=name=>[...document.querySelectorAll('#editor fieldset')].find(n=>[...n.children].some(c=>c.tagName==='LEGEND'&&c.textContent===name));const values=name=>Object.fromEntries([...owner(name).querySelectorAll('input')].filter(n=>['普通部位傷害倍率','弱點傷害倍率','破架勢蓄力額外倍率'].includes(n.getAttribute('aria-label'))).map(n=>[n.getAttribute('aria-label'),Number(n.value)]));return {assassin:values('雙刃刺客'),teacher:values(${JSON.stringify(teacherName)}),gatekeeper:values('巨斧守門人')};})()`);
+    const weakBaseline=await controls();
+    await evaluate(`(()=>{const f=[...document.querySelectorAll('#editor fieldset')].find(n=>[...n.children].some(c=>c.tagName==='LEGEND'&&c.textContent==='雙刃刺客'));for(const [label,value]of [['普通部位傷害倍率',.25],['弱點傷害倍率',4],['破架勢蓄力額外倍率',1.8]]){const n=f.querySelector('input[aria-label="'+label+'"]');n.value=value;n.dispatchEvent(new Event('input',{bubbles:true}));}document.querySelector('#save').click();return true;})()`);
+    async function reloadMaker(){
+      const nextLoaded=new Promise(resolve=>{loadedPage={sessionId,resolve};});await call('Page.reload');await nextLoaded;
+      for(let i=0;i<100;i++){try{if(await evaluate("document.readyState==='complete'&&!!document.querySelector('#makerLink')&&typeof window.openSurvivorMaker==='function'"))break;}catch{}await new Promise(r=>setTimeout(r,20));}
+      await touch('#makerLink');await evaluate(openGallery);
+    }
+    await reloadMaker();
+    assert.deepEqual(await evaluate(`['前半場連斬刀數','後半場連斬刀數'].map(label=>Number(document.querySelector('input[aria-label="'+label+'"]').value))`),[7,8]);
+    await evaluate("document.querySelector('[data-item=weakpoint]').click();true");const persisted=await controls();assert.deepEqual(persisted.assassin,{'普通部位傷害倍率':.25,'弱點傷害倍率':4,'破架勢蓄力額外倍率':1.8});assert.deepEqual(persisted.teacher,weakBaseline.teacher);assert.deepEqual(persisted.gatekeeper,weakBaseline.gatekeeper);
+    // 舊老師phaseCount仍為switch，真點兩次驗0/1來回，然後用UI reset保存。
+    await evaluate("document.querySelector('[data-item=words]').click();true");
+    const oldSwitch="[...document.querySelectorAll('#editor [role=switch]')].find(n=>n.textContent.startsWith('每個階段是否多一個目標'))";
+    const old=await evaluate(`(()=>{const n=${oldSwitch};if(!n)throw Error('舊phaseCount開關缺少');return n.getAttribute('aria-checked');})()`);
+    await evaluate(`(${oldSwitch}).click();true`);assert.equal(await evaluate(`(${oldSwitch}).getAttribute('aria-checked')`),String(old!=='true'));await evaluate(`(${oldSwitch}).click();true`);assert.equal(await evaluate(`(${oldSwitch}).getAttribute('aria-checked')`),old);
+    await evaluate("document.querySelector('#reset').click();true");await reloadMaker();assert.deepEqual(await evaluate(`['前半場連斬刀數','後半場連斬刀數'].map(label=>Number(document.querySelector('input[aria-label="'+label+'"]').value))`),[4,5]);await evaluate("document.querySelector('[data-item=weakpoint]').click();true");assert.deepEqual(await controls(),weakBaseline);
+    console.log('PASS: Chrome Maker AX slider5/bounds1..8, input+plus then7/8 and .25/4/1.8 save/reload/reset/reload; teacher/gatekeeper and legacy0/1 switch unchanged');
+  }
   console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker全分頁末端與名稱欄／練習場全螢幕／選單捲動／真實多指衝刺與鍵盤／怪物拉桿即時預覽與試這隻`);
   } finally {
    loadedPage=null;
