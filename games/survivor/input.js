@@ -36,7 +36,7 @@ window.addEventListener("keydown", (event) => {
   if (key === "k") beginManualAttack("special");
 });
 window.addEventListener("keydown", (event) => { if (state.mode === "levelup" && /^[123]$/.test(event.key)) { event.preventDefault(); applyUpgrade(Number(event.key) - 1); } });
-window.addEventListener("keyup", (event) => { const key=event.key.toLowerCase(); state.keys.delete(key); if(key==="j") releaseManualAttack("attack"); if(key==="k") releaseManualAttack("special"); });
+window.addEventListener("keyup", (event) => { const key=event.key.length===1?event.key.toLowerCase():event.key; state.keys.delete(key); if(key==="j") releaseManualAttack("attack"); if(key==="k") releaseManualAttack("special"); });
 window.addEventListener("blur", () => { state.keys.clear(); cancelManualAttack(); if (state.mode === "playing") showOverlay("paused"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state.mode === "playing") showOverlay("paused"); Survivor.audio.sync(); });
 window.addEventListener("contextmenu", (event) => event.preventDefault());

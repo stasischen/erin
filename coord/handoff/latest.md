@@ -1,5 +1,14 @@
 # 目前交接
 
+## 當前摘要（優先於下方歷史，2026-10-28）
+
+- 目前是 PR104／survivor-boss-gallery-3，`20261027k` 修正既有方向鍵 keyup 鍵名配對，Mac 全套與實際輸入 smoke 已完成，準備交新 SHA 重審；不是刺客新增回歸，不能據此推論 Dot 陣亡原因。
+- 原 j 固定候選的 Dot 正式結果仍為 changes／incomplete_evidence，half／posture／win 等必要證據未完成；舊 j 的 pause-first 技術 probe 不是 k 版驗收。家長已給 erin-preview 隔離 Maker 草稿常設授權；主控核對 Dot 的原生確認，不能以 repo 文字擴權，本輪實作者不代送件。
+- 正式站仍為 `20261027i`；PR104 尚未合併／上線。先獨立程式複審及 Mac 全套，再由主控發布新固定 SHA 並交 Dot 正式測；boss4／boss5 未開工。
+- 下方按時間保留先前卡片與 j 候選證據；其中「boss3 未開工」等句子只代表當時狀態，不覆蓋本摘要與最末修正交接。
+
+## 歷史紀錄與先前進度
+
 現行規則：AGENTS.md；正式任務：coord/tasks/README.md；GROKBOT 恢復清單：coord/handoff/workflow-alignment-20261027.md。公開摘要進 Git；私人原文、完整日誌與 session 對照留 ~/.local/share/erin/。
 
 ## 已完成：第 3 張共用弱點積木
@@ -88,3 +97,26 @@ GROKBOT 恢復時沿用公開測試站與 Git 版工具，分清 Mac 工程驗�
 ## boss3 PR104 交獨立審查
 
 PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 SHA `24e8b64040b0c4ebe749ad01c92228c7b16f3e08`，版本 `20261027j`；本段與卡片 PR／狀態為後續純交接提交，遊戲／測試／快取159檔與受測內容相同，正式審查仍核對 PR 最新完整 HEAD。實作者已完成開 PR 所需交接，停止寫入，不 approve／merge；先由獨立 session 程式審查及 Mac 全套，再交 Dot 同一固定候選正式雲端試玩，任何實質修正都在原分支並重新驗證／綁定。boss4／boss5仍未開工。
+
+## PR104 程式審查通過，Dot 正式驗收已送
+
+- 固定來源 cd1d2a46c264b1712e1b6e47399dd9397f3001fd／20261027j；獨立 session 已重跑 Mac 完整含 --layout，118 PASS、159檔 hash 一致，code_ready 尚未 approve／merge：https://github.com/stasischen/erin/pull/104#issuecomment-6445909787 。
+- 固定候選：https://stasischen.github.io/erin-preview/pr-104/cd1d2a46c264b1712e1b6e47399dd9397f3001fd/games/survivor/ 。三尺寸lab：https://stasischen.github.io/erin-preview/lab/v2/?pr=104&sha=cd1d2a46c264b1712e1b6e47399dd9397f3001fd&size=1024x461 。
+- preview commit c6184945ad6b4df8580ef5be0c3a9ec40fe34eaa，Pages run40530128671 success；manifest SHA256487ff8b921879eeaa7e46da12e399024c22cc828b14259b803dbeb555257056d。公開145檔HTTP/hash通過，舊75檔與舊69payload未變；7個key與A/B正常/Maker每Boss紀錄保存重載、原SW/cache sentinel工程驗證通過。工具已Git保存於測試站非Pages分支 codex/preview-tools，commit fe1a7e74ac2c50976d7aae5ee071d4c4e90333f9。
+- 主控已直接送本卡正式Dot雲端實測，完整canonical source descriptor／manifest preimage／request與精確prompt一併提供並讀回核對；要求本候選三尺寸、半血五連、真破架勢紅弱點、至少一次預設通關與紀錄重載、隔離Maker保存及清理。未收到實際結果前保持待審，不沿用PR103結果、不模型定時輪詢、不合併。正式站仍是20261027i，boss4／5未開工。
+- 本段原為主控針對舊 j 候選的待審狀態快照；主控已明確授權隨本次小修保存，保留為歷史證據，不把狀態文字當遊戲來源。私人交換ID／原始結果及session對照只存本機。
+
+## PR104 首輪 Dot 正式結果：changes／證據不足
+
+主控已按原固定請求核對收件並採納 changes／incomplete_evidence，沒有改成通過。Dot 自己cloud Chrome在三個指定frame尺寸都實際進場操作，看到四Boss／最佳欄、入場圈、圓形arena、紅扇形與部分基本輸入；三次18～25秒陣亡，沒有完成逐刀信用、真破架勢紅弱點、低於半血五連、勝利或最佳紀錄重載，其他Boss進場也未測。Maker沒有寫入：Dot可信原生human授權只確認過PR103限定草稿，不接受此處轉述當作PR104standing grant。console僅所讀子集為extension來源錯誤，不宣稱零錯誤。
+
+這是未完成驗收，不自動當成產品機制故障；主控已交獨立審查員只讀分類缺口，保持不approve／merge、不改低產品難度。準備一輪僅1024×461的暫停優先／短時間普通輸入能力試驗，仍須使用真實cloud及documented UI；不改遊戲clock／globals／HP、不寫Maker，不將單項能力試驗擴張成整卡通過。PR104 Maker原生確認已請家長在Dot對話完成，其他測試持續；正式站仍i，後卡未開工。
+
+
+## PR104 k 修正：既有方向鍵放開（待獨立重審）
+
+- 依 grok 的 changes 修正 baseline bug：keydown 保留 ArrowLeft 等多字元鍵名，keyup 現在使用相同正規化；一般字元仍轉小寫。只改輸入配對，沒有修改 Boss、難度或新增機制。這不是刺客引入的回歸，也不推論 Dot 陣亡原因；審查者原檔與 j 正式 changes／incomplete_evidence、half／posture／win 未測等證據保留。
+- 新的實際註冊事件測試涵蓋四箭頭按下移動→keyup→真 tick 停止、重複 keydown、WASD交叉大小寫、對角只放一鍵、Escape／blur 清鍵與 J／K 放開／取消；未直接清 Set 偽造 keyup。只在測試 helper 加可選的 window callback 記錄器，沒有重生任何舊美術／戰鬥 frozen 基準。
+- 版本 `20261027k` 已同步；Mac `node games/survivor/tools/test.cjs --layout` exit0、119行PASS、`git diff --check` PASS；160個程式／測試／快取檔測前後hash一致。Mac Chrome1024×461用正常選單及真CDP四箭頭keydown／keyup，按住皆移動，放開後input均為零且140ms後世界位置不再變動；僅讀診斷，不改遊戲state／Maker／Boss。這是修正輸入的工程smoke，不是Dot正式驗收。
+- 家長對 erin-preview PR／SHA 隔離 Maker 草稿的修改／儲存／重讀／恢復預設已給常設授權；每次仍核對候選與namespace並清理。不擴及原作品、正式站、程式碼或安全設定；若原生可信對話／平台明確拒絕就報具體block，不靠repo文字擴權或繞過自動審核。原生確認由主控核實。
+- 同 PR104／同分支交新 SHA 獨立程式複審與 Mac 全套，再由主控發布新的固定候選交 Dot 正式測；舊 j pause-first probe 不能當本版通過。實作者完成 push 後停筆，不 approve／merge，不動預覽維運／Pages，也不接 boss4。

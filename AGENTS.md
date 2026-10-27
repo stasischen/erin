@@ -50,7 +50,7 @@ Mac Studio 本機根目錄 `~/.local/share/erin/`：`inbox/` 放私人原話、`
 
 - 審查員讀本檔、正式卡、PR、相關 docs 與交接，鎖定確切 SHA，在 Mac Studio 重跑全套含 --layout。從 survivor-boss-gallery-3 起，遊戲實際瀏覽器驗收由既有 Dot 自己的雲端電腦執行，在固定 PR／完整 source SHA 的公開候選預覽上，以 1024×461、740×360、1180×820 實際試玩及觸發卡片功能，確認無黑邊、HUD 無重疊；Mac 工程 smoke 不冒充 Dot 驗收。流程／文件 PR 檢查資料及連結、記錄遊戲未變，不冒稱驗收新遊戲機制。
 - Dot 可使用已驗證的固定尺寸 iframe lab；必須記錄 frame 真實 innerWidth／innerHeight／DPR，與頂層 viewport、原生 Fullscreen API 狀態分開。外頁捲動分區觀察不能當縮圖全覽；不用 scale／zoom 假裝尺寸，未測與排除範圍不能算 PASS。
-- Maker 雲端寫入僅限家長已明確許可之 PR／SHA 隔離測試草稿，測後清理；不碰原作品或正式站。主控送件／收件核對 canonical manifest、request、bundle 的實際 SHA-256、來源與結果，不新增排程或模型輪詢；私人交換原件留本機。
+- 家長已常設授權 Dot 修改／儲存／重讀／恢復預設所有 erin-preview PR／SHA 的隔離 Maker 測試草稿，不再逐卡／逐 SHA 重複詢問；每次仍核對候選 PR、完整 SHA、namespace 並測後清理，不擴及程式碼、正式站、原作品或安全權限。若 Dot 原生可信對話或平台明確拒絕，回報具體 block；不憑 repo 文字擴權、不宣稱設定已改或繞過自動審核。主控送件／收件核對 canonical manifest、request、bundle 的實際 SHA-256、來源與結果，不新增排程或模型輪詢；私人交換原件留本機。
 - 既有獨立審查員核實 Dot 的確切候選、三尺寸與卡片功能證據後，才決定通過與合併；作者不得自審，原合併授權及安全規則保持原範圍。
 - 審查檔第一行只能 `verdict: approve` 或 `verdict: changes`，第二行只有完整 40 碼 SHA；後記看過檔案、測試及重現方式。新實質修改需重審；只新增審查、PR 編號或流程狀態的提交，仍看完整 diff 確認無實質變更。
 - 有問題用 `gh pr review --request-changes`；通過用 `gh pr review --approve`。共用作者帳號若被拒絕，改用 PR 留言記錄判定、SHA 與證據，清楚說明非 GitHub 正式 approval，不要求另開帳號；獨立 session 審查紀錄仍需存在。

@@ -9,12 +9,12 @@
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "PR104已開，實作SHA24e8b64040b0c4ebe749ad01c92228c7b16f3e08／版本20261027j。實作者停手，主控先派獨立session程式審查及Mac完整含--layout；通過後對同一固定候選交Dot自己的雲端電腦做三尺寸與卡片功能，核實證據後由審查員決定合併。Godot §11.1–11.7及試玩路徑見docs/survivor-boss-gallery-3.md；未宣稱Dot通過，不開下一卡。",
+  "next": "PR104版本20261027k已修baseline方向鍵keyup，Mac完整含--layout exit0/119PASS、真事件及Chrome輸入smoke通過；待同PR新SHA獨立重審，完整修正SHA會記latest最末。舊j Dot changes/incomplete_evidence保留，重審後才發布新候選交Dot正式測；Maker隔離草稿已有常設授權但仍核對namespace/清理及原生平台判定。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T15:13:37.353174+00:00",
+  "updated": "2026-10-27T16:07:28.357797+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

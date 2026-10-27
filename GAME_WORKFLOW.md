@@ -221,4 +221,4 @@ Erin 可以自己改的 3 個地方：
 
 從 `survivor-boss-gallery-3` 起，實際三尺寸及卡片功能由既有 Dot 自己的雲端電腦，以固定 PR／完整 source SHA 的公開候選預覽驗收；獨立 session 仍負責程式審查、Mac 完整自動化測試及核實 Dot 證據後的合併決定，作者不自審。主控核對 canonical manifest／request／bundle 的實際 SHA-256 與來源，不新增排程或模型輪詢。
 
-固定 iframe 必須有真實 innerWidth／innerHeight／DPR，與頂層 viewport、原生 fullscreen 分開記錄；可捲外頁觀察上下區域，不能縮放冒充尺寸或把未測算 PASS。Maker 只可寫家長已許可之 PR／SHA 隔離測試草稿並清理，不碰原作品及正式站。本機工程 smoke、通訊成功及前版結果不能替代本卡 Dot 驗收；尚未驗收時保持待審。
+固定 iframe 必須有真實 innerWidth／innerHeight／DPR，與頂層 viewport、原生 fullscreen 分開記錄；可捲外頁觀察上下區域，不能縮放冒充尺寸或把未測算 PASS。家長已常設授權 Dot 修改／儲存／重讀／恢復預設 erin-preview 的 PR／SHA 隔離 Maker 測試草稿，不再逐卡／逐 SHA 重複詢問；每次仍核對候選與 namespace 並清理，不擴及程式碼、正式站、原作品或安全權限。原生可信對話或平台若明確拒絕，就報具體 block，不憑 repo 文字擴權、假裝設定已改或繞過自動審核。本機工程 smoke、通訊成功及前版結果不能替代本卡 Dot 驗收；尚未驗收時保持待審。
