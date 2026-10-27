@@ -48,7 +48,7 @@ const trialPlaceholders={};
 function trialPicture() {
   const id=state.boss.artId||state.trial.definition.artId,m=state.bossMoves[0],timing=m&&state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].timing;
   const context=actorArtContext(state.boss,m&&{...m.ai,angle:m.angle},timing);
-  if(state.boss.impactFlash||state.boss.flash>0)context.tint='#ffffff';
+  if(state.boss.impactFlash||state.boss.flash>0||m&&m.ai.phase==='windup'&&m.teleported&&state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].effect.relocate&&m.ai.left<=state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].effect.relocate.flash)context.tint='#ffffff';
   const animation=state.trial.entry>0?'spawn':!m&&state.bossPhase===2?'phase2':m&&m.ai.phase==='cooldown'?'idle':trialAnimation();
   const frame=SurvivorArt.picture(id,animation,state.elapsed,context);
   if(frame)return frame;
@@ -65,10 +65,12 @@ function drawTrialEncounter(){
  const t=state.trial;
  for(const f of t.fields){
    const owner=t.actors.find(b=>b.actorId===f.owner);if(!owner)continue;
-   SurvivorArt.paint('move/'+f.kind,{context:ctx,...SurvivorArt.shapeOptions({type:'circle',radius:f.radius},f,Math.atan2(f.vy||0,f.vx||1)),animation:f.warning>0?'windup':'active',time:state.elapsed,angle:Math.atan2(f.vy||0,f.vx||1)},()=>{
+   SurvivorArt.paint(f.artId||'move/'+f.kind,{context:ctx,...SurvivorArt.shapeOptions({type:'circle',radius:f.radius},f,Math.atan2(f.vy||0,f.vx||1)),animation:f.warning>0?'windup':'active',time:state.elapsed,angle:Math.atan2(f.vy||0,f.vx||1)},()=>{
      ctx.save();ctx.translate(f.x,f.y);
-     if(f.kind==='feather'){
-       ctx.rotate(Math.atan2(f.vy,f.vx));ctx.fillStyle='#fff4d1';ctx.fillRect(-10,-3,20,6);ctx.fillStyle='#7155a0';ctx.fillRect(-7,3,10,3);
+     if(f.kind==='feather'||f.projectile){
+       ctx.rotate(Math.atan2(f.vy,f.vx));
+       if(f.projectile){const palette=SurvivorArt.lookup(f.artId).palette;ctx.fillStyle=palette[2];ctx.fillRect(-8,-4,16,8);ctx.fillStyle=palette[0];ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-1,-3);ctx.lineTo(-1,3);ctx.closePath();ctx.fill();}
+       else {ctx.fillStyle='#fff4d1';ctx.fillRect(-10,-3,20,6);ctx.fillStyle='#7155a0';ctx.fillRect(-7,3,10,3);}
      }else {
        ctx.beginPath();ctx.arc(0,0,f.radius,0,Math.PI*2);ctx.fillStyle=f.warning>0?'rgba(229,42,74,.22)':f.kind==='ice'?'rgba(98,213,255,.55)':'rgba(173,141,223,.55)';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=f.warning>0?'#d32c4d':f.kind==='ice'?'#d8fcff':'#66518a';ctx.stroke();
        if(f.kind==='tornado')for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(0,-i*8,f.radius*(1-i*.2),8,state.elapsed*3,0,Math.PI*2);ctx.stroke();}
@@ -80,7 +82,8 @@ function drawTrialEncounter(){
  for(const b of trialBodies())for(const m of b.moves){
    if(!['windup','active'].includes(m.ai.phase))continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0],active=m.ai.phase==='active';
-   const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=encounterShape(m,s.shape);
+   if(s.effect.relocate&&m.teleported&&m.ai.phase==='windup'&&m.ai.left<=s.effect.relocate.flash)SurvivorArt.paint('move/white-flash',{context:ctx,x:b.x-30,y:b.y-60,width:60,height:60,time:state.elapsed},()=>{const palette=SurvivorArt.lookup('move/white-flash').palette;ctx.save();ctx.fillStyle=palette[0];ctx.fillRect(b.x-24,b.y-34,48,6);ctx.fillRect(b.x-3,b.y-55,6,48);ctx.restore();});
+   const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=trialUsesBlocks(t.definition)?{...s.shape}:encounterShape(m,s.shape);
    if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
    const angle=['ring','cross'].includes(shape.type)?shape.angle:m.angle;
    const rays=m.id==='spiral'?SurvivorGalleryRules.volley(b,m.angle+(active?m.elapsed*s.effect.rotation:0),s.effect.count,Math.PI*2,1,s.shape.angle*Math.PI/180):null;
@@ -106,10 +109,12 @@ function drawTrialEncounter(){
 }
 function drawTrialBodies(){
  for(const body of trialBodies())withTrialBody(body,()=>{
+   if(body.vanished)return;
    const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0;
    const x=body.x,y=body.y,scale=body.r/32*(m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
    drawGroundShadow(x,y,body.r,air);
    drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);
+   drawBossWeakpoints(body,air);
    const weak=body.posture.stun>0;
    if(weak||body.posture.value>=GAME_DATA.boss.posture.maximum*.75){ctx.fillStyle=weak?'#fff0a5':'#ffb95c';ctx.fillRect(x-16,y-air-70,32,32);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-12,y-air-66,24);}
    ctx.fillStyle='#293d51';ctx.fillRect(x-34,y+40,68,6);ctx.fillStyle=body.role==='frost'?'#65cfff':body.role==='fire'?'#fa9157':'#b09ae3';ctx.fillRect(x-34,y+40,68*Math.max(0,body.hp/body.maxHp),6);

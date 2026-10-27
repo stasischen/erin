@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm'), path = require('node:path');
-const {files, source} = require('./load-game.cjs');
+const {files} = require('./load-game.cjs');
 const root = path.resolve(__dirname, '..'), run = require('./maker-support.cjs')();
 assert.equal(run('window.Survivor === globalThis.Survivor'), true);
 for (const file of files) {
@@ -43,5 +43,7 @@ for (const file of ['manifest.js', ...files]) {
   assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}',`,'')), /not precached/, file);
 }
 assert.throws(()=>checkCache(s=>s.replace(/const CACHE_NAME = '[^']+';/,"const CACHE_NAME = 'stale';")), /CACHE_NAME/);
-assert.ok(source().includes('function tick(dt)'));
+// Tick keeps the classic/public API identity while accepting an optional independent clock.
+assert.equal(run('typeof tick'),'function');
+assert.equal(run('Survivor.engine.loop.tick === tick'),true);
 console.log('PASS: classic browser/VM manifest order; namespace live compatibility; five required sizes / viewport changes; consolidated styles; missing cache entries and stale version rejection');

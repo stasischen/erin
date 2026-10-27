@@ -139,7 +139,7 @@ function startGame() {
 }
 
 function finishRun(won) {
-  if(state.trial) {trialMenu(won?"挑戰成功！":"再試一次！");return;}
+  if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
     const progress = { weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
@@ -159,9 +159,11 @@ function finishRun(won) {
 
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
-function tick(dt) {return withImpactBatch(()=>tickImpacts(dt));}
-function tickImpacts(dt) {
+function tick(dt,clockDt=dt) {return withImpactBatch(()=>tickImpacts(dt,clockDt));}
+function tickImpacts(dt,clockDt=dt) {
   const inputDt=dt;
+  // 試煉用活動中的真實 dt；不含入口預警／暫停，不因完美閃避慢動作縮短紀錄。
+  if(state.mode==='playing'&&state.trial&&state.trial.entry<=0)state.trial.elapsed+=Math.max(0,clockDt);
   if(state.mode==='playing') {
     state.juiceClock=(state.juiceClock||0)+dt;
     state.hitShake=countdown(state.hitShake||0,dt);
@@ -431,7 +433,7 @@ function renderLoop(now=0) {
 }
 
 function scheduleFrame() { if (frameRequest !== null) return; frameRequest = requestAnimationFrame(frame); }
-function frame(now) { Survivor.audio.sync(); frameRequest = null; const dt = Math.min(MAX_DT, Math.max(0, (now - state.lastTime) / 1000)); state.lastTime = now; tick(dt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }
+function frame(now) { Survivor.audio.sync(); frameRequest = null; const clockDt = Math.max(0, (now - state.lastTime) / 1000), dt = Math.min(MAX_DT, clockDt); state.lastTime = now; tick(dt,clockDt); if (state.mode === "playing" || state.mode === "transition") scheduleFrame(); }
 function togglePause() { if (!settingsPanel.hidden || state.mode === "levelup") return; if (state.mode === "playing") { if (frameRequest !== null) { cancelAnimationFrame(frameRequest); frameRequest = null; } showOverlay("paused"); } else if (state.mode === "paused") { state.mode = "playing"; overlay.classList.add("hidden"); SurvivorIcons.set(pauseButton, "settings"); updateActionControls(); state.lastTime = performance.now(); scheduleFrame(); } }
 
 

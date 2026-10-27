@@ -48,7 +48,10 @@ globalThis.SurvivorWeakpoints = (() => {
     }
     return {multiplier: config.armorMultiplier, kind: 'armor', partId: null};
   }
-  return {inArc, matches, step, resolve};
+  function charge(result,config,charged,broken) {
+    return {...result,multiplier:result.multiplier*(result.kind==='critical'&&charged&&broken?(config.postureChargeMultiplier||1):1)};
+  }
+  return {inArc, matches, step, resolve, charge};
 })();
 SurvivorEffectBlocks.weakpoint = SurvivorWeakpoints;
 
@@ -62,7 +65,8 @@ function bossWeakpointPoints(body, config) {
   const id=bossWeakpointArt(body),context={angle:body.facingAngle||0,displayScale:body.r/32};
   const art = SurvivorArt.lookup(id,'idle',0,SurvivorArtManifest,context), points = {};
   const scale=body.r/32;
-  const [x,y,width,height]=SurvivorArt.bounds(id,body.x-26*scale,body.y-34*scale,52*scale,68*scale,context);
+  const frame=body.trialActor?[body.x-32*scale,body.y-36*scale,64*scale,64*scale]:[body.x-26*scale,body.y-34*scale,52*scale,68*scale];
+  const [x,y,width,height]=SurvivorArt.bounds(id,...frame,context);
   for (const part of config.parts) {
     const anchor = art.anchors && art.anchors[part.anchor];
     if (!anchor) continue;
@@ -108,8 +112,9 @@ function resolveBossWeakpoint(body, attack = {}) {
   const origin = attack.source || state.player;
   const source = {x: body.x + deltaX(origin.x, body.x), y: body.y + deltaY(origin.y, body.y)};
   const hit=attack.point?{...attack.point,x:body.x+deltaX(attack.point.x,body.x),y:body.y+deltaY(attack.point.y,body.y)}:body;
-  return SurvivorWeakpoints.resolve(config, body.weakpoints, body, source, body.facingAngle || 0,
+  const result=SurvivorWeakpoints.resolve(config, body.weakpoints, body, source, body.facingAngle || 0,
     bossWeakpointPoints(body, config), hit);
+  return SurvivorWeakpoints.charge(result,config,!!attack.charged,!!(body.weakpointSignals&&body.weakpointSignals['posture-break']>0));
 }
 function weakpointImpact(body, result, attacker = state.player) {
   if (result.kind === 'normal') return;

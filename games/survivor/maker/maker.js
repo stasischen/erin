@@ -317,11 +317,13 @@
   function drawWeakpointEditor() {
     const host=panel('共用弱點積木');
     el('p','普通部位只受護甲倍率傷害並發出小金屬火花；弱點先預告、亮起、關閉前快閃，命中使用大回饋。角度相對 Boss 朝向，180 度是背後。',host);
-    const owners=[{owner:draft.boss,base:SURVIVOR_DEFAULTS.boss},...draft.gallery.bosses.filter(b=>b.id==='gatekeeper').map(owner=>({owner,base:SURVIVOR_DEFAULTS.gallery.bosses.find(b=>b.id===owner.id)}))];
+    const owners=[{owner:draft.boss,base:SURVIVOR_DEFAULTS.boss},...draft.gallery.bosses.filter(b=>SURVIVOR_DEFAULTS.gallery.bosses.find(base=>base.id===b.id).weakpoint).map(owner=>({owner,base:SURVIVOR_DEFAULTS.gallery.bosses.find(b=>b.id===owner.id)}))];
     for(const {owner,base} of owners) {
       const box=el('fieldset',undefined,host);el('legend',owner.name,box);
       if(!owner.weakpoint){button(box,'加入弱點積木',()=>{owner.weakpoint=api.copy(base.weakpoint);changed();render();});continue;}
       const config=owner.weakpoint;
+      if(config.artId!==undefined)select(box,'弱點美術',config,'artId',{'effect/weakpoint':'青綠弱點','effect/weakpoint-red':'紅色弱點'});
+      if(config.postureChargeMultiplier!==undefined){range(box,config,'postureChargeMultiplier',[1,2,.1],'破架勢蓄力額外倍率');el('p','只有真正破架勢且弱點打開的蓄力命中才額外套一次；不另乘老師暈眩傷害倍率。',box);}
       button(box,'移除弱點積木',()=>{owner.weakpoint=null;changed();render();});
       const names={armorMultiplier:'普通部位傷害倍率',criticalMultiplier:'弱點傷害倍率',warning:'弱點開啟預告秒數',closing:'弱點關閉提示秒數'};
       for(const [key,bounds] of Object.entries(api.WEAKPOINT_BOUNDS))range(box,config,key,bounds,names[key]);
@@ -364,10 +366,14 @@
         for(const m of b.moves) {
           const field=el('fieldset',undefined,box);el('legend',m.name,field);const s=m.blocks.moves[0];
           range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');
-          range(field,m.ai,'minDistance',[0,10000,10],'AI 最近距離');range(field,m.ai,'maxDistance',[0,10000,10],'AI 最遠距離');
+          range(field,m.ai,'minDistance',[0,10000,10],'AI 最近距離');range(field,m.ai,'maxDistance',[0,10000,10],'AI 最遠距離');range(field,m.ai,'phaseWeight',[0,10,.1],'AI 第二階段加權');
           range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(['sector','ring'].includes(s.shape.type))range(field,s.shape,'angle',[0,360,5],s.shape.type==='ring'?'安全缺口角度':'扇形角度');
           for(const [key,bounds,label] of [['windup',[.6,3,.05],'預警'],['active',[.1,4,.05],'出手'],['recovery',[.2,3,.05],'收招'],['cooldown',[.1,8,.1],'冷卻']])range(field,s.timing,key,bounds,label+'秒數');
           range(field,s.effect,'damage',[0,40,1],'傷害');range(field,s.effect,'speed',[0,600,10],'招式移速');
+          if(s.effect.sequence){range(field,s.effect.sequence,'count',[1,8,1],'前半場連斬刀數');range(field,s.effect.sequence,'phaseCount',[1,8,1],'後半場連斬刀數');el('p','每刀固定使用預警＋出手秒數；只有整組最後才收招。連段開始鎖定刀數，中途半血仍完成原節拍。',field);}
+          if(s.effect.relocate)for(const [key,bounds,label]of [['distance',[40,160,2],'背後換位距離'],['vanish',[.1,1,.05],'消失秒數'],['flash',[.2,.5,.05],'白閃預警秒數']])range(field,s.effect.relocate,key,bounds,label);
+          if(s.effect.projectiles)for(const [key,bounds,label]of [['count',[1,15,1],'每扇苦無數量'],['speed',[60,400,10],'苦無速度'],['life',[.5,5,.1],'苦無壽命秒數'],['radius',[3,12,1],'苦無半徑']])range(field,s.effect.projectiles,key,bounds,label);
+          if(s.effect.slide)range(field,s.effect.slide,'speed',[0,300,10],'橫向滑步速度');
           if(s.effect.duration!==undefined){
             if(['nova','cross'].includes(m.id))range(field,s.shape,'thickness',[2,40,1],'環／光束半寬');
             if(['frost-dash','tornado','feathers','spiral'].includes(m.id))range(field,s.effect,'duration',[.1,10,.1],'危險區／羽毛壽命秒數');

@@ -261,8 +261,8 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .trial-panel { max-height:90%; overflow:auto; padding:16px; border:4px solid #364354; background:#fff0d5; border-radius:18px; text-align:center; }
 .trial-panel[hidden] { display:none; }
 .trial-panel h2 { margin:0 0 12px; }
-.trial-choices { display:flex; justify-content:center; gap:16px; margin:16px; }
-.trial-choice { display:flex; flex-direction:column; align-items:center; gap:8px; background:none; border:0; font:inherit; color:#293d51; cursor:pointer; }
+.trial-choices { display:flex; justify-content:center; flex-wrap:wrap; gap:16px; margin:16px; }
+.trial-choice { max-width:130px; overflow-wrap:anywhere; display:flex; flex-direction:column; align-items:center; gap:8px; background:none; border:0; font:inherit; color:#293d51; cursor:pointer; }
 .trial-choice img { width:84px; height:84px; padding:10px; border-radius:50%; border:4px solid #694f5d; background:#c8af8e; image-rendering:pixelated; }
 .trial-choice:focus-visible { outline:4px solid #865ac9; border-radius:12px; }
 .trial-entry { border-radius:50%; width:52px; height:52px; padding:8px; }

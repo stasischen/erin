@@ -2,13 +2,14 @@
 
 現行規則：AGENTS.md；正式任務：coord/tasks/README.md；GROKBOT 恢復清單：coord/handoff/workflow-alignment-20261027.md。公開摘要進 Git；私人原文、完整日誌與 session 對照留 ~/.local/share/erin/。
 
-## 待獨立審查：第 3 張共用弱點積木
+## 已完成：第 3 張共用弱點積木
 
-- 家長已同意接著做弱點卡；分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，待重審版本 20261027i。
+- 分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，正式站已上線 20261027i。獨立程式複驗與三尺寸人工 UI 完成，PR103 已合併。
 - 共用弱點 block、老師／守門人護甲與部位、Maker 編輯與保存、具名美術錨點已完成。投射物／炸彈／場／連鎖等都走同一傷害入口；一般部位預設 0.2，開啟弱點 3，不與舊架勢疊成 9 倍。
 - 開啟前預告、開啟發光及關閉前快閃，條件可 AND／OR；環境／誘餌是可接事件，不新增機關。保留競技場尺寸、AI距離帶、前方蓄力與其他 Boss。
 - 首輪版本 20261027h 完整 Mac Studio `node games/survivor/tools/test.cjs --layout` exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。六組 Canvas／153 戰鬥 trace／所有 frozen legacy 基準沒有重生。作者開 PR 即停手，交獨立 session 鎖定 SHA 重審，不能自審／自併。
-- PR #103：https://github.com/stasischen/erin/pull/103 ，實作被測 SHA d5e6ce3c3f93e5be83b70f2e80df7e94c19fa36a。後續只提交本卡 PR 編號與公開交接，主控應查最新完整 HEAD；作者已停手，尚未審查／合併／上線，正式網站仍是 20261027g。
+- PR #103：https://github.com/stasischen/erin/pull/103 ，修正版被測及獨立 Mac 複驗 SHA 206f285bf9aac1800613b88dd27daffcac2a8d6b；完整含 --layout 自行重跑 114 PASS，原撞牆重現通過。三尺寸原始來源 UI／Maker／老師及守門人／其他 Boss 回歸完成，沒有新阻擋問題。
+- 最終 review-only HEAD e6730b4711814b93705e81a631ede0813e220b21，merge 2652f7603294068631b068223bc770c23d33a61a；Pages run 40510298449 completed/success，審查員實際開正式站並重開守門人確認 20261027i，SW／弱點／架勢檔與被測來源逐 byte 相同。共用作者帳號拒絕正式 approve，已如實留下獨立 session 判定及部署驗證於 PR 留言。
 - 驗收與 Godot §11 差距：docs/survivor-weakpoint-validation.md。新聲音保留 ZzFX 參數，尚未匯出 WAV／OGG、未執行 Godot。
 
 ## 已完成：第 2 張美術清單 v2
@@ -29,7 +30,7 @@
 
 ## 接下來
 
-家長已同意第 3 張 survivor-weakpoint，現在製作中；本卡結束回報後再等家長決定 boss3，後續仍照 boss3、boss4、boss5 順序，一次一張。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。
+第 3 張 survivor-weakpoint 已合併上線，主控回報後等家長決定是否開始 boss3；目前未開工。後續仍照 boss3、boss4、boss5 順序，一次一張。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。
 
 PR102 合併後的卡片 done 與交接快照隨本次已授權 weakpoint 分支提交；不追加到已合併分支、不直接推 main、不另開只有快照的 PR。舊 watcher 維持停用。
 
@@ -41,8 +42,44 @@ PR102 合併後的卡片 done 與交接快照隨本次已授權 weakpoint 分支
 
 ## Dot 瀏覽器複審導入狀態
 
-家長希望 Dot 接手瀏覽器實測；主控已安排只針對公開已上線 20261027g、1024×461 的單輪能力驗證，結果由主控追蹤確認。現行 Mac 完整測試、獨立三尺寸驗收及合併權維持，候選版預覽與 Dot 能力驗通後才調整分工；此為導入狀態，不是已啟用的新硬性門檻。公開紀錄不放私人交換資訊、request ID、session 對照或截圖。
+家長已同意正式串接，並明確要求 Dot 使用自己的雲端電腦／雲端 browser，不使用連接的 Windows／Mac executor。舊 Windows Chrome 批准逾時只代表接錯執行端後沒有 UI 證據；不再要求家長於 Windows 批准 Chrome。完整自動化測試仍在 Mac Studio，不使用 GitHub CI 測試。
+
+「下一張卡」先依下一張尚未開工的 boss3 記錄為正式試行起點；PR103 已依原流程完成驗收，公開候選快照另供雲端接線／三尺寸能力 smoke。這個 smoke 不等於完整弱點功能驗收，不授權合併；未測／工具不可用不能當作通過。不新增定時模型輪詢或自動叫醒。
 
 ## PR103 第一輪修正版已交重審
 
-獨立 changes：撞牆與破架勢讀同一個 shared stun，造成 AND／單選破架勢誤開；原紀錄在 coord/reviews/survivor-weakpoint/grok.md 及審查提交保留。實作者已接回同分支，將破架勢改由真正 posture-broken 事件建立獨立有效期，撞牆來源保持獨立，入口／轉階段／移除積木／新場景清除來源；原碰撞暈眩不變。新增真引擎事件組合與到期回歸已通過，修正版 20261027i 已在 Mac Studio 凍結來源跑完整 `node games/survivor/tools/test.cjs --layout`：exit0、114 PASS，測前後34個程式／測試檔hash一致，`git diff --check`通過。只推原PR103，作者已停手；交原獨立session對最新完整SHA重審及安排UI，尚未通過重審、合併或上線。
+獨立 changes：撞牆與破架勢讀同一個 shared stun，造成 AND／單選破架勢誤開；原文保留於 coord/reviews/survivor-weakpoint/grok-first-changes.md 及 Git 歷史，最終 approve 在 grok.md。實作者已在同分支改由真正 posture-broken 事件建立獨立有效期，撞牆來源保持獨立；原碰撞暈眩不變。修正版完整含 --layout exit0、114 PASS，測前後34檔 hash 一致；原獨立 session 另行重跑同一完整 SHA 也114 PASS，原重現與雙來源時序矩陣通過。三尺寸 UI 最終通過、已合併部署，與另行 Dot smoke 的不完整結果分開記錄。
+
+## 公開測試站已建置
+
+- 站點：https://stasischen.github.io/erin-preview/ ，獨立公開 repo https://github.com/stasischen/erin-preview 。Pages source 為 codex/previews；發布 commit f2f085be2dc9567c66ae7e0923bc894b790ffa9f，Pages run 40503705865 completed/success。沒有新增 GitHub CI workflow，測試／打包在 Mac Studio。
+- 固定候選：https://stasischen.github.io/erin-preview/pr-103/206f285bf9aac1800613b88dd27daffcac2a8d6b/games/survivor/ ，版本 20261027i。首頁明示測試版、PR、完整來源 SHA 與正式站外連，不在遊戲內加標籤改 viewport／HUD。
+- 只在發布副本隔離五個儲存 key（包含舊資料遷移），停用該副本的 SW 註冊／PWA 安裝；不取消正式 SW、不刪正式 cache。其餘戰鬥／render 邏輯逐 byte 相同；來源／部署 hash 與完整差異在候選 preview-manifest.json、adapter-diff.patch，manifest SHA256 eba8a2e92c51586439c8a3b86c025faa5e97b54a8e929ed31131b5fa8f2ca14d。
+- 71 檔共891027 bytes；Mac 本機驗開始／移動、Maker 保存／設定／紀錄、A-B 與 legacy 隔離，五個正式 key 與既有 SW/cache sentinel 未變，無404／console／JS error。公開後另核對 manifest 與69個 payload HTTP200／bytes/hash，並實際開頁確認可載入；這些是 Mac 工程 smoke，不冒稱 Dot 雲端實測。
+- 可重現生成器、驗證器及說明用 Git 保存在測試站 repo 的非發布分支 codex/preview-tools，commit 18d74731a6d7e1e1f487db2b1bb57f85161af02c。Pages payload 不包含工具／測試、coord、完整日誌或截圖。已發布候選不可覆寫；新來源 SHA 或 adapter 版本使用新網址。
+- 主控已用受審查的來源端直連工具自行送出 cloud-only smoke，並自行核對採納實際回覆，不再請其他專案中轉。原始結果為 changes／incomplete_evidence：Dot 回報自己的雲端 Linux／Chrome CDP，實際開始／移動／攻擊衝刺及只讀 Maker，只有1180×757 DPR1；指定三尺寸與 Maker 保存尚未完成。此擷取範圍有 extension 來源錯誤、未見遊戲來源 warn/error，不能稱零錯誤。
+- 另一次有界 browser 層能力補查也已收件採納 changes／capability_unavailable：browser capability IDs 為空，沒有原生 viewport override，三尺寸未測；沒有安裝、改權限或回退本機。兩份原始結果與採納收據都保留本機，不覆寫成通過，也不當成遊戲缺陷。
+- 固定 iframe 尺寸 lab v2 已追加發布：https://stasischen.github.io/erin-preview/lab/v2/?pr=103&sha=206f285bf9aac1800613b88dd27daffcac2a8d6b&size=1024x461 。發布 commit a29910eb83606b52b550b46a51042ba749d95413，Pages run 40514255891 success；原71檔未變，線上69個遊戲 payload 與4個 lab 檔 hash 全數吻合。Mac 工程驗三尺寸、實際操作、上下導覽、原生 fullscreen 防誤計與資料隔離通過；另實際開公開頁核對1024×461 frame／canvas 與版本i。外頁導覽解決來源遊戲攔截 wheel 的觀察問題，沒有更動遊戲。
+- Dot 實際回覆 changes／incomplete_evidence：自己的 cloud Chrome 在1024×461、740×360、1180×820 frame 基本操作與 HUD 檢查均回報 pass，1180×820 如實分區捲動觀察；native top-level resize／fullscreen、Maker 保存與完整弱點驗收仍未測。主控核對作者、房間、request／source／manifest／bundle 及原始已發布 prompt bytes 相符；但原回覆把視覺 rows 放進檔案驗證用 coverage，正式 normalizer 拒收，尚未採納。原始回覆完整保留本機；已直接提供固定 source manifest preimage、request.json、原始 bundle 精確 bytes 與公開版本定位，請 Dot 實際重算並在同一請求另回格式修正版，把視覺 rows 原樣移到 viewport_results、保留 changes；不用重跑已完成 UI、不捏造 hash 旗標。修訂實際回覆已收件並通過原 normalizer，三尺寸原文、execution／console／excluded 與 changes 判定未變；Dot 已獨立重算 endpoint manifest1784 bytes、bundle7037 bytes 及 request ID，完整性缺件已關閉。採納的是 changes／incomplete_evidence，沒有把排除範圍變成已測或 approve。頂層 browser 尺寸、frame 尺寸及原生 fullscreen 分開記錄，1180×820 需分區觀察並註明外頁捲動；不能用縮圖／zoom 冒充。家長已明確回覆「允許隔離測試草稿」；僅限此 PR／SHA 的公開預覽 Maker 修改、儲存、重讀、恢復預設，不碰正式站、原作品或程式碼。主控已另外送出單輪 Dot 雲端 Maker 保存測試：老師倍率0.2／3 →0.25／4，保存後重載核對，再恢復預設並重載核對；遇到非預期既有作品先停止，不覆寫。完整 canonical manifest／request 與原 prompt 一次隨送件提供並讀回核對。Dot 已在自己的 cloud Chrome 完成且回覆 approve，主控用原 work-dir 正式收件採納，並再次核對線上固定候選 manifest hash；授權也由 Dot 在可信使用者對話直接確認。老師0.25／4保存重載仍在、守門人維持0.2／3，恢復預設後兩者重載均為0.2／3，測試值已清除。此 approve 僅限兩個倍率的可見保存循環，沒有直接檢視所有儲存 bytes；console 所讀子集只有 extension 錯誤，不能稱整頁零錯誤。舊三尺寸 changes 與其 native resize／fullscreen、全弱點驗收等排除範圍保留，不擴張成整卡／正式站／merge 批准。
+- 發布注意：本候選 manifest 也固定了共用根目錄 index.html、README.md、.nojekyll 的 hash，追加 lab 時保留這些原檔；未來新增候選前須處理共用根目錄與固定 manifest 的關係，不能覆寫舊檔造成舊候選證據失效。
+- 既有請求留原房間／ID完成，不跨房重送；新房間的 synthetic 讀寫已驗，獨立通知仍待驗收才切新任務。原始請求、固定版本、hash、實際回覆／採納收據、私人交換位置與 session 對照留本機。
+
+GROKBOT 恢復時沿用公開測試站與 Git 版工具，分清 Mac 工程驗證、Dot 雲端 smoke 與完整卡片驗收；不能把舊 Windows 結果或通訊成功當成雲端瀏覽器通過。公開紀錄不放私人交換位置、request ID、session 對照、截圖或完整日誌。PR103 合併後 done／部署／接線摘要先留本機，隨下一條家長授權分支提交；不追加已合併分支、不為寫狀態直接推 main。
+
+## PR103 給家長的回報
+
+弱點／護甲積木已上線 20261027i，老師收招或破架勢、守門人背後或撞牆時會露出可攻擊的弱點。進試煉或 Maker 練習，觀察預告、發光及關閉前快閃，再比較護甲小回饋和弱點大回饋。Mac 完整114 PASS、三尺寸獨立實玩與部署確認都通過，沒有新的阻擋問題；Godot 尚未實機執行，環境／誘餌目前只提供共用事件入口。下一張 boss3 尚未開始，會在家長指示後套用已送測的 Dot 雲端流程。
+
+## boss3 已獲授權開工
+
+家長回覆「好開工」，本輪只做 survivor-boss-gallery-3（雙刃刺客）；由最新 origin/main 2652f7603294068631b068223bc770c23d33a61a 建 codex/survivor-boss3。前版 PR103 done／部署與 Dot 接線證據快照隨此授權分支保存。實作先完成完整 Mac 測試與 PR，之後實作者停手，由獨立 session 程式審查、Dot 自己的雲端電腦實際三尺寸與卡片功能試玩；測試站與正式站隔離，不能把前版 smoke 當本版驗收。boss4／boss5 尚未開工。
+
+
+## boss3 實作完成，準備交 PR
+
+- 本輪只有 `survivor-boss-gallery-3`，版本 `20261027j`；沿用競技場及其他王，新增雙刃刺客四／半血五連、逐刀完美閃避、背後影步白閃、苦無側滑、真破架勢紅弱點及可調的額外蓄力傷害。連段跨半血鎖住原刀數，有效暈眩／破架勢仍能打斷。
+- 共用弱點開啟是3倍，只有刺客真正破架勢的 charged 命中再乘1.5，總4.5倍，不疊老師暈眩3倍。每王最快通關分一般／Maker兩個紀錄map；只成功且更快更新，暫停與入口不計、真實活動時鐘獨立於模擬dt上限。新兩個storage key及預覽隔離接面見實作文件。
+- Mac `node games/survivor/tools/test.cjs --layout` 完整exit0（118行PASS），`git diff --check` PASS；159個遊戲／測試／快取檔測前後SHA-256完全相同，既有美術與戰鬥基準沿用並通過。完整日誌與圖片留repo外。
+- 作者正常UI工程smoke在1024×461、740×360、1180×820通過：王冠選單四王與最佳時間列、刺客入場、移動／衝刺／按住放開攻擊／暫停續玩，Canvas滿版、HUD控件不重疊。只見既有本機favicon.ico404，無遊戲資源錯誤或JS例外；這不是獨立審查或Dot驗收，未聲稱作者UI已打贏或完成半血／破架勢。
+- 正常試玩、半血／架勢操作、Maker設定與保存重載、Godot §11.1–11.7適用項目與差距見 `docs/survivor-boss-gallery-3.md`。純規則與真引擎已驗每刀信用、5刀衝刺資源、貼牆換位、白閃先於傷害、先射後滑、倍率及紀錄隔離；Godot未實機執行、手感平衡待實玩。
+- 家長授權的Dot雲端分工已最小對齊AGENTS／GAME_WORKFLOW／本卡brief與DECISIONS；後續由獨立session先程式審查與Mac全套，再對同固定候選交Dot雲端正式三尺寸／卡片驗收。Maker須有該PR／SHA草稿許可並清理，正式站／原作品不碰。尚無本版Dot通過或合併判定；開PR後實作者停手，boss4／boss5不開工。

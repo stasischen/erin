@@ -2,7 +2,7 @@
 
 這份流程用來把遊戲點子變成可以放進 `games/` 的小遊戲。重點不是讓 AI 一次做完，而是讓 Erin 先說清楚想法，再一步一步測試、修改、分享。
 
-Agent 的分工、Git、測試、審查、授權與交接以 [AGENTS.md](AGENTS.md) 為準。正式任務只讀 `coord/tasks/`，不從 `/tmp/erin-queue/` 接卡；私人原話、截圖與完整日誌放本機 `~/.local/share/erin/`。所有測試在 Mac Studio 執行（含 `--layout`），不新增 GitHub CI；一張 PR 結束後由主控主動回報並問家長下一步，不自動接卡。
+Agent 的分工、Git、測試、審查、授權與交接以 [AGENTS.md](AGENTS.md) 為準。正式任務只讀 `coord/tasks/`，不從 `/tmp/erin-queue/` 接卡；私人原話、截圖與完整日誌放本機 `~/.local/share/erin/`。實作者與獨立審查 session 的完整自動化測試都在 Mac Studio 執行（含 `--layout`），不新增 GitHub CI；一張 PR 結束後由主控主動回報並問家長下一步，不自動接卡。
 
 ## 製作原則
 
@@ -216,3 +216,9 @@ Erin 可以自己改的 3 個地方：
 - 賽車道具戰
 - 寵物養成進階版
 - 多關卡冒險
+
+## Dot 雲端瀏覽器試行
+
+從 `survivor-boss-gallery-3` 起，實際三尺寸及卡片功能由既有 Dot 自己的雲端電腦，以固定 PR／完整 source SHA 的公開候選預覽驗收；獨立 session 仍負責程式審查、Mac 完整自動化測試及核實 Dot 證據後的合併決定，作者不自審。主控核對 canonical manifest／request／bundle 的實際 SHA-256 與來源，不新增排程或模型輪詢。
+
+固定 iframe 必須有真實 innerWidth／innerHeight／DPR，與頂層 viewport、原生 fullscreen 分開記錄；可捲外頁觀察上下區域，不能縮放冒充尺寸或把未測算 PASS。Maker 只可寫家長已許可之 PR／SHA 隔離測試草稿並清理，不碰原作品及正式站。本機工程 smoke、通訊成功及前版結果不能替代本卡 Dot 驗收；尚未驗收時保持待審。

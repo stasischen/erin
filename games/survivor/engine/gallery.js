@@ -60,7 +60,7 @@ function startTrial(id) {
   if(globalThis.SurvivorPreview)SurvivorPreview.stop();
   resetGame();
   const arena={x:trialSettings().arenaRadius+200,y:trialSettings().arenaRadius+200,radius:trialSettings().arenaRadius};
-  state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,previous:[],events:[]};
+  state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,elapsed:0,custom:MAKER_MODE||!!trialDraft,previous:[],events:[]};
   state.player.x=arena.x;state.player.y=arena.y;
   state.boss={...SurvivorTrialRules.entry(arena,definition.radius),r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
   initTrialEncounter();
@@ -81,10 +81,13 @@ function trialMenu(message='王的試煉',data=null) {
   overlay.classList.remove('hidden');messageCard.hidden=true;settingsPanel.hidden=true;upgradePanel.hidden=true;panel.hidden=false;
   document.getElementById('trialTitle').textContent=message;updateActionControls();updateHud();
   const choices=document.getElementById('trialChoices');choices.innerHTML='';
+  const records=loadTrialRecords(MAKER_MODE||!!trialDraft);
   for(const b of trialSettings().bosses) {
     const button=document.createElement('button');button.type='button';button.className='trial-choice';button.setAttribute('aria-label',b.name);button.title=b.name;
     const image=document.createElement('img');image.src=SurvivorArt.lookup(b.artId).sheet;image.alt='';button.appendChild(image);
-    const name=document.createElement('span');name.textContent=b.name;button.appendChild(name);button.onclick=()=>startTrial(b.id);choices.appendChild(button);
+    const name=document.createElement('span');name.textContent=b.name;button.appendChild(name);
+    const best=document.createElement('small');best.textContent=records[b.id]?`最佳 ${records[b.id].toFixed(2)} 秒`:'最佳 —';button.appendChild(best);
+    button.onclick=()=>startTrial(b.id);choices.appendChild(button);
   }
 }
 window.openSurvivorTrials=data=>trialMenu('王的試煉',data);
