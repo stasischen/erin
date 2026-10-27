@@ -2,7 +2,7 @@
 
 ## 當前摘要（優先於下方歷史，2026-10-28）
 
-- 目前是 PR104／survivor-boss-gallery-3，`20261027k` 修正既有方向鍵 keyup 鍵名配對，Mac 全套與實際輸入 smoke 已完成，準備交新 SHA 重審；不是刺客新增回歸，不能據此推論 Dot 陣亡原因。
+- 目前是 PR104／survivor-boss-gallery-3，`20261027k` 修正既有方向鍵 keyup 鍵名配對，Mac 全套與實際輸入 smoke 已完成，受測修正 SHA `016802981eac2f80f14fa19b7fcdb236777cdb74` 待重審（PR 最新 HEAD 另含純交接提交，仍須核對）；不是刺客新增回歸，不能據此推論 Dot 陣亡原因。
 - 原 j 固定候選的 Dot 正式結果仍為 changes／incomplete_evidence，half／posture／win 等必要證據未完成；舊 j 的 pause-first 技術 probe 不是 k 版驗收。家長已給 erin-preview 隔離 Maker 草稿常設授權；主控核對 Dot 的原生確認，不能以 repo 文字擴權，本輪實作者不代送件。
 - 正式站仍為 `20261027i`；PR104 尚未合併／上線。先獨立程式複審及 Mac 全套，再由主控發布新固定 SHA 並交 Dot 正式測；boss4／boss5 未開工。
 - 下方按時間保留先前卡片與 j 候選證據；其中「boss3 未開工」等句子只代表當時狀態，不覆蓋本摘要與最末修正交接。
@@ -120,3 +120,8 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 版本 `20261027k` 已同步；Mac `node games/survivor/tools/test.cjs --layout` exit0、119行PASS、`git diff --check` PASS；160個程式／測試／快取檔測前後hash一致。Mac Chrome1024×461用正常選單及真CDP四箭頭keydown／keyup，按住皆移動，放開後input均為零且140ms後世界位置不再變動；僅讀診斷，不改遊戲state／Maker／Boss。這是修正輸入的工程smoke，不是Dot正式驗收。
 - 家長對 erin-preview PR／SHA 隔離 Maker 草稿的修改／儲存／重讀／恢復預設已給常設授權；每次仍核對候選與namespace並清理。不擴及原作品、正式站、程式碼或安全設定；若原生可信對話／平台明確拒絕就報具體block，不靠repo文字擴權或繞過自動審核。原生確認由主控核實。
 - 同 PR104／同分支交新 SHA 獨立程式複審與 Mac 全套，再由主控發布新的固定候選交 Dot 正式測；舊 j pause-first probe 不能當本版通過。實作者完成 push 後停筆，不 approve／merge，不動預覽維運／Pages，也不接 boss4。
+
+
+### k 版受測修正 SHA
+
+`016802981eac2f80f14fa19b7fcdb236777cdb74`／`20261027k`，PR104 同分支。之後僅更新本交接及卡片 SHA／狀態，160個受測程式／測試／快取檔保持逐byte相同；重審與後續公開候選應鎖PR最新完整HEAD。實作者已完成本次必要提交／push交接後停筆，由主控安排重審與新候選，不把舊j結果當k驗收。
