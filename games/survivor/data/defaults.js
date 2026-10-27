@@ -2605,3 +2605,20 @@ SURVIVOR_DEFAULTS.gallery.bosses.find(b=>b.id==='gatekeeper').weakpoint = {
  {id:'core',anchor:'weakpoint',radiusScale:1,angleDegrees:0,arcDegrees:360,mode:'any',duration:2,
  conditions:[{type:'wall-stun'},{type:'posture-break'}]}]
 };
+
+// ✏️ Erin 可以改：連擊、背後換位、彈幕與側滑都是共用效果積木，秒／世界距離。
+SURVIVOR_DEFAULTS.gallery.bosses.push({
+ id:'assassin',name:'雙刃刺客',artId:'character/assassin',hp:1600,radius:28,speed:100,
+ phases:[{threshold:1,speed:1},{threshold:.5,speed:1.15}],
+ weakpoint:{version:1,armorMultiplier:.2,criticalMultiplier:3,warning:.15,closing:.25,
+  artId:'effect/weakpoint-red',postureChargeMultiplier:1.5,
+  parts:[{id:'core',anchor:'weakpoint',radiusScale:1,angleDegrees:0,arcDegrees:360,mode:'any',duration:2.2,conditions:[{type:'posture-break'}]}]},
+ moves:[
+  {id:'blade-combo',name:'四拍雙刃連斬',minPhase:1,weight:1,ai:{minDistance:0,maxDistance:148,angleWeight:0,phaseWeight:0,offscreen:true},
+   blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:'sector',radius:130,angle:100},timing:{windup:.85,active:.1,recovery:.9,cooldown:.5},effect:{damage:12,speed:0,sequence:{count:4,phaseCount:5}},feedback:{level:'medium',warning:'ground',pose:'blade-combo'}}]}},
+  {id:'shadowstep',name:'影步背刺',minPhase:1,weight:1,ai:{minDistance:0,maxDistance:600,angleWeight:0,phaseWeight:2,offscreen:true},
+   blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:'sector',radius:110,angle:32},timing:{windup:1.1,active:.12,recovery:1,cooldown:.5},effect:{damage:18,speed:0,relocate:{mode:'behind',distance:72,vanish:.35,flash:.25}},feedback:{level:'medium',warning:'ground',pose:'shadowstep'}}]}},
+  {id:'kunai-slide',name:'苦無與橫向滑步',minPhase:1,weight:1,ai:{minDistance:0,maxDistance:600,angleWeight:0,phaseWeight:0,offscreen:true},
+   blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:'sector',radius:200,angle:70},timing:{windup:.9,active:.5,recovery:.7,cooldown:.5},effect:{damage:10,speed:0,projectiles:{count:5,speed:230,life:2,radius:6,artId:'move/kunai'},slide:{speed:130}},feedback:{level:'medium',warning:'ground',pose:'kunai-slide'}}]}}
+ ]
+});

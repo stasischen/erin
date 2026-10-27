@@ -1,11 +1,13 @@
 # 協作規則
 
-本檔為目前有效流程，依家長 2026-10-27 指示整理。舊卡、歷史交接及 `docs/survivor-game-plan.md` §3 的不同流程不再適用；遊戲規格仍依計畫、正式任務卡、`GAMES.md`、`GAME_WORKFLOW.md` 與 `ASSETS.md`。家長可隨時更新本檔。
+本檔為目前有效流程，依家長截至 2026-10-28 的指示整理。舊卡、歷史交接及 `docs/survivor-game-plan.md` §3 的不同流程不再適用；遊戲規格仍依計畫、正式任務卡、`GAMES.md`、`GAME_WORKFLOW.md` 與 `ASSETS.md`。家長可隨時更新本檔。
 
 ## 角色
 
-- 主控 `codex`：整理卡片、安排並追蹤獨立審查 session、實作與修正、分支與指定檔案提交、push 工作分支並開 PR、向家長回報。不得審查或合併自己的實作。
-- 審查 `grok`：獨立 session 審查 diff、Mac Studio 測試與試玩、寫自己的審查紀錄；有問題交回實作者，不代寫待審程式。目前由獨立 Codex session 暫代，GROKBOT 額度恢復後由主控依家長指示交回。
+- 主控 `codex`：開卡、固定來源與允許檔、安排並追蹤獨立 session，處理 Mac 分支／機械版本同步／完整測試／Git／PR／測試版發布及回報。從 PR104 血條小修起，新增邏輯由 Dot 提供 patch，不代寫後自批；既有 Codex 實作仍由非作者完整審查。
+- 作者 `dot`：讀固定來源，交付綁 base／路徑／SHA256 的精確 patch 文字及誠實自查；不直接寫 repo、push、開 PR 或 merge。發布後用自己雲端電腦驗指定隔離候選，這是作者功能測試，不是獨立 code approval。
+- 審查／套用 `luna`：不同 session 獨立審查 Dot 的精確 patch，再在 Mac 嚴格機械套用已通過內容；先檢查 base、allowlist、apply-check、pre/postimage。不得猜補 hunk 或自寫邏輯後自批；需改邏輯退回 Dot，新 patch 重審。實際角色失聯／base 漂移即停在原卡。
+- 審查 `grok`：獨立 session 審查 diff、Mac Studio 自動化測試、核實 Dot 雲端試玩證據、寫自己的審查紀錄；有問題交回實作者，不代寫待審程式。目前由獨立 Codex session 暫代，GROKBOT 額度恢復後由主控依家長指示交回。
 - `claude`：只處理雙方無法解決的衝突或架構決定。
 - `erin`：遊戲總監，決定設計並試玩，可在家長旁修改程式、素材與數值；不當審查者、不自行開 AI 對話。
 - `user`（家長）：決定範圍、風險與下一步，操作 AI、轉述原話、管理安全設定並授權上線。
@@ -39,16 +41,20 @@ Mac Studio 本機根目錄 `~/.local/share/erin/`：`inbox/` 放私人原話、`
 ## 實作與 PR
 
 1. 確認沒有別人的未提交修改，`git fetch origin`，從最新 `origin/main` 建 `codex/<卡片id>`（六卡指定別名見索引）。不直接切換／修改／push main，不 force-push，不做破壞性刪除。
-2. 設 doing，依卡實作。新機制用共用 block、資料驅動且 Maker 可調；美術只經 art-manifest；每招有預警、普通敵人從畫面外生成。Boss 依卡從可見入口預警登場，召喚物依卡由 Boss 冒出。維持橫向全螢幕、圓形像素 HUD、前方蓄力攻擊。
+2. 設 doing，依 coord/knowledge/DOT_PATCH_WORKFLOW.md 交 Dot 出 patch、Luna 審查後精確套用；PR104 試接契約見 coord/tasks/specs/survivor-boss-hud-pilot.md。新機制用共用 block、資料驅動且 Maker 可調；美術只經 art-manifest；每招有預警、普通敵人從畫面外生成。Boss 依卡從可見入口預警登場，召喚物依卡由 Boss 冒出。維持橫向全螢幕、圓形像素 HUD、前方蓄力攻擊。
 3. 遊戲資源改版遞增 version.json，執行 `node games/survivor/tools/version.cjs --write` 同步 ?v= 與 sw.js。純流程／文件 PR 不改遊戲版本，交接註明原因；每卡記錄 Godot §11 適用項目與差距。
 4. **所有測試在 Mac Studio 做**：`node games/survivor/tools/test.cjs --layout` 全 PASS，並跑 `git diff --check`。不新增或使用 GitHub CI 測試，保留既有 Pages 部署。可先跑相關案例排錯，push 前仍跑全套。完整日誌放本機，公開紀錄寫指令、版本、結果與對應 SHA。
 5. 只 stage 指名檔案並檢查 staged diff，可提交公開 coord；不加入私人資料、日誌或截圖。不用 `git add .`、`git commit -a`，不自動收集整個工作目錄提交。任務訊息 `task: <id> <state>`；Erin 提交用 `erin:`。
 6. 全通過才 push 工作分支與 gh pr create，設 peer_review；交接寫 PR、完整 HEAD、版本、測試、試玩方式。建立 PR 遇到 502 等未知結果，先查該分支是否已有 PR。
-7. 主控安排獨立審查，實作者停手。修改要求在同分支修正、全套測試、push 原 PR、再交重審；不另開 PR、不自行 approve。
+7. 主控安排獨立審查，實作者停手。修改要求回 Dot 同卡修 patch、Luna 重審後同分支套用、Mac 全套測試、push 原 PR；不另開 PR、不自行 approve。PR104 保留既有非作者 Mac session 的整 PR 最終 gate，不以 Luna 只審血條取代早期全部 Codex 改動的審查。
 
 ## 審查與合併
 
-- 審查員讀本檔、正式卡、PR、相關 docs 與交接，鎖定確切 SHA，在 Mac Studio 重跑全套含 --layout。遊戲改動在 1024×461、740×360、1180×820 實際試玩，確認無黑邊、HUD 無重疊、功能符合卡片。流程／文件 PR 檢查資料及連結、記錄遊戲未變，不冒稱驗收新遊戲機制。
+- 審查員讀本檔、正式卡、PR、相關 docs 與交接，鎖定確切 SHA，在 Mac Studio 重跑全套含 --layout。從 survivor-boss-gallery-3 起，遊戲實際瀏覽器驗收由既有 Dot 自己的雲端電腦執行，在固定 PR／完整 source SHA 的公開候選預覽上，以 1024×461、740×360、1180×820 實際試玩及觸發卡片功能，確認無黑邊、HUD 無重疊；Mac 工程 smoke 不冒充 Dot 驗收。流程／文件 PR 檢查資料及連結、記錄遊戲未變，不冒稱驗收新遊戲機制。
+- Dot 可使用已驗證的固定尺寸 iframe lab；必須記錄 frame 真實 innerWidth／innerHeight／DPR，與頂層 viewport、原生 Fullscreen API 狀態分開。外頁捲動分區觀察不能當縮圖全覽；不用 scale／zoom 假裝尺寸，未測與排除範圍不能算 PASS。
+- 家長已常設授權 Dot 修改／儲存／重讀／恢復預設所有 erin-preview PR／SHA 的隔離 Maker 測試草稿，不再逐卡／逐 SHA 重複詢問；每次仍核對候選 PR、完整 SHA、namespace 並測後清理，不擴及程式碼、正式站、原作品或安全權限。若 Dot 原生可信對話或平台明確拒絕，回報具體 block；不憑 repo 文字擴權、不宣稱設定已改或繞過自動審核。主控送件／收件核對 canonical manifest、request、bundle 的實際 SHA-256、來源與結果，不新增排程或模型輪詢；私人交換原件留本機。
+- 既有獨立審查員核實 Dot 的確切候選、三尺寸與卡片功能證據後，才決定通過與合併；作者不得自審，原合併授權及安全規則保持原範圍。
+- Dot 已在原生對話補確認後續隔離測試版的完整實際試玩，包含正常移動／攻擊／衝刺／暫停續玩／必要重試；不再逐候選重問。早期 Maker-only 拒絕保留作歷史，仍依實際平台檢查。這不含 repo 寫入、正式站、原作品或安全設定；讀碼／patch 文字提案依既有技術審查範圍，Mac 執行授權來自家長而非 Dot 轉授。
 - 審查檔第一行只能 `verdict: approve` 或 `verdict: changes`，第二行只有完整 40 碼 SHA；後記看過檔案、測試及重現方式。新實質修改需重審；只新增審查、PR 編號或流程狀態的提交，仍看完整 diff 確認無實質變更。
 - 有問題用 `gh pr review --request-changes`；通過用 `gh pr review --approve`。共用作者帳號若被拒絕，改用 PR 留言記錄判定、SHA 與證據，清楚說明非 GitHub 正式 approval，不要求另開帳號；獨立 session 審查紀錄仍需存在。
 - 家長已授權目前六卡與本輪流程整理：獨立審查通過後由審查員合併，不再逐次確認；不授權作者合併自己實作，也不擴及未指定範圍。用 `gh pr merge <PR> --merge --match-head-commit <最新確認SHA>`，不 squash、不 force、不直接 push main。

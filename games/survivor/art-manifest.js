@@ -235,3 +235,8 @@ for(const id of ['gust','lightning','sparkle','discharge','hammer-swing','maker-
 // 命中部位使用具名錨點，與角色 hitboxAnchor 分開；座標為來源影格 0～1。
 for (const id of ['character/teacher','character/gatekeeper']) SurvivorArtManifest.assets[id].anchors={weakpoint:[.5,.5]};
 SurvivorArtManifest.assets['effect/weakpoint']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/gust'])),sheet:null,mode:'procedural'};
+
+// 原創雙刃刺客及可替換的積木提示；碰撞／招式計時不從圖像推導。
+SurvivorArtManifest.assets['character/assassin']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['character/gatekeeper'])),sheet:'art/characters/assassin.png',placeholder:{body:'#776b98',outline:'#272638',eyes:'#fff5df'},anchors:{weakpoint:[.5,.5]}};
+for(const id of ['blade-combo','shadowstep','kunai-slide','kunai','white-flash'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['move/feather'])),sheet:null,palette:id==='white-flash'?['#ffffff','#fff0c5','#3f344e']:['#fff0d5','#655582','#302c41']};
+SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/weakpoint'])),palette:['#ff4568','#fff0a5','#ffb85b']};

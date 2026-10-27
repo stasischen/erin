@@ -90,3 +90,20 @@
 - 家長指定本對話為主控，負責獨立 session 派審、追蹤與交接；暫代審查在 GROKBOT 恢復後交回，不要求新 GitHub 帳號。
 - 一張 PR 完成後主動回報並提出預計下一步、問家長意見；不自行開始下一卡。舊 watcher 已停用並備份，協作規則更新範圍已獲家長授權。
 - 詳細路徑變更、備份、撤回的舊建議與恢復步驟見 coord/handoff/workflow-alignment-20261027.md；PR #100 已審查合併且線上版本 20261027e。
+
+
+## Dot 雲端三尺寸正式試行（2026-10-27）
+
+家長已授權下一張卡採用既有 Dot 自己的雲端電腦，並明確指示 boss3 開工。本卡起由 Dot 針對固定 PR／完整 SHA 候選執行三尺寸與卡片功能；主控核對 canonical manifest／request／bundle 實際 hash，獨立 session 在 Mac 跑完整自動化並核實 Dot 證據後判定，作者仍不得自審或合併。iframe 真尺寸與頂層／原生 fullscreen 分開，未測不能轉 PASS；Maker 限家長已許可候選的隔離草稿並清理。不新增排程、模型輪詢或新的合併權，本版尚未宣稱 Dot 驗收通過；私人原件與完整證據留本機。
+
+
+## 測試版 Maker 隔離草稿常設授權（2026-10-28）
+
+家長已直接確認通知 Dot 同意，並明確指示之後測試版自動授權 Dot 修改。範圍為所有 erin-preview PR／完整 SHA namespace 內的隔離 Maker 測試草稿修改、儲存、重讀及恢復預設；每次仍核對候選及隔離範圍、清理測試值，不再逐卡／逐 SHA 反覆詢問。不擴及 repo 程式碼、正式站、原作品、安全權限或合併權；若 Dot 原生可信對話或平台明確拒絕，報具體 block，不憑 repo 文字擴權、宣稱設定已改或繞過自動審核。這是家長明確授權的 B 級流程對齊，取代先前逐候選草稿許可的問法；實際原生確認仍由主控核實。
+
+
+## Dot patch → Luna 審查套用新流程（2026-10-28）
+
+依家長「流程給Dot評估、OK就導入」的明確授權，已完成兩輪具體評估：首輪缺檔案／驗收與Mac角色就緒判changes，補齊固定來源和真正Luna只讀就緒後，Dot確認可進入精確patch獨立審查。自PR104 Boss血條修正試接：主控開卡，Dot提供patch文字，Luna先獨立審查再在Mac精確套用，Mac保留完整含layout測試／Git／PR／預覽發布，Dot自己雲端驗指定候選，非作者Mac最終gate後merge與Pages確認。Dot自測不算獨立code approval；Luna若寫邏輯需另審。原PR104全部Codex實作仍由既有獨立Mac審查。無GitHub CI、排程或模型輪詢，一次一張卡，現有PR修正不另開PR。
+
+Dot另已在可信原生對話確認後續隔離候選完整實際測試常設範圍，先前Maker-only缺口解除但舊拒絕／未完成證據不改寫；平台實際檢查仍適用，不擴大到正式站／原作品／repo寫入／安全設定。完整細節見DOT_PATCH_WORKFLOW.md及同PR的survivor-boss-hud-pilot契約，原始結果與session身份仍只留本機。

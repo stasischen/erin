@@ -23,6 +23,8 @@ const VFX_TUNING = { limit: 48, lightningSeconds: 0.22 };
 const BUILD_SLOTS = { attack: "普攻", skill: "技能", dash: "衝刺", passive: "被動" };
 const SETTINGS_KEY = "erin-survivor-settings-v3";
 const PLAYER_SETTINGS_KEY = "erin-survivor-player-settings-v1";
+const TRIAL_RECORD_KEY = "erin-survivor-trial-best-seconds-v1";
+const MAKER_TRIAL_RECORD_KEY = "erin-survivor-maker-trial-best-seconds-v1";
 const RECORD_KEY = MAKER_MODE ? "erin-survivor-maker-best-seconds-v1" : "erin-survivor-best-seconds-v1";
 const SETTING_DEFAULTS = {
   playerSpeed: UPGRADE_TUNING.playerSpeed, playerHealth: UPGRADE_TUNING.playerHealth,
@@ -120,6 +122,24 @@ function loadBestRecord() {
   try { const value = Number(localStorage.getItem(RECORD_KEY)); return Number.isFinite(value) && value > 0 ? value : 0; } catch (_) { return 0; }
 }
 let bestRecord = PREVIEW_MODE ? 0 : loadBestRecord();
+const trialRecordMemory={normal:null,maker:null};
+function loadTrialRecords(custom=false) {
+  const mode=custom?'maker':'normal';
+  if(trialRecordMemory[mode])return {...trialRecordMemory[mode]};
+  let saved={};
+  try {if(!PREVIEW_MODE)saved=JSON.parse(localStorage.getItem(custom?MAKER_TRIAL_RECORD_KEY:TRIAL_RECORD_KEY)||'{}');}catch(_){}
+  const valid=saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{};
+  trialRecordMemory[mode]=Object.fromEntries(GAME_DATA.gallery.bosses.filter(b=>Object.hasOwn(valid,b.id)&&typeof valid[b.id]==='number'&&Number.isFinite(valid[b.id])&&valid[b.id]>0).map(b=>[b.id,valid[b.id]]));
+  return {...trialRecordMemory[mode]};
+}
+function saveTrialRecord(id,seconds,won,custom=false) {
+  const before=loadTrialRecords(custom),next=SurvivorTrialBlocks.record(before,id,seconds,won);
+  if(next[id]===before[id])return next;
+  trialRecordMemory[custom?'maker':'normal']=next;
+  try {if(!PREVIEW_MODE)localStorage.setItem(custom?MAKER_TRIAL_RECORD_KEY:TRIAL_RECORD_KEY,JSON.stringify(next));}catch(_){}
+  return {...next};
+}
+
 let PLAYER_SPEED = gameSettings.playerSpeed; // 請改上面的 playerSpeed
 let PLAYER_HEALTH = gameSettings.playerHealth; // 請改上面的 playerHealth
 const ENEMY_LIMIT = UPGRADE_TUNING.enemyLimit; // 請改上面的 enemyLimit

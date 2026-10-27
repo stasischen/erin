@@ -108,7 +108,7 @@
     const remembered=debugMemory[JSON.stringify(spec)]||{};
     frame._debugOptions=remembered.options || debugOptions;frame._debugBefore=remembered.before || debugBefore;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261027i', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261028b', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

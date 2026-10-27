@@ -48,7 +48,7 @@ run('globalThis.work=SurvivorData.defaults()');
 assert.equal(run('SurvivorData.validate(work).valid'),true);
 assert.deepEqual(json('SurvivorData.validate(work).data.gallery'),json('work.gallery'));
 run('work.gallery.bosses=work.gallery.bosses.slice(0,1)');
-assert.equal(run('SurvivorData.validate(work).data.gallery.bosses.length'),3);
+assert.equal(run('SurvivorData.validate(work).data.gallery.bosses.length'),4);
 run('work=SurvivorData.defaults();work.gallery.bosses[1].moves[0].weight=0;work.gallery.bosses[2].moves[0].blocks.moves[0].timing.windup=2');
 assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[1].moves[0].weight'),0);
 assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[2].moves[0].blocks.moves[0].timing.windup'),2);

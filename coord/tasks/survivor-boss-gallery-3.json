@@ -5,16 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：雙刃刺客",
-  "state": "todo",
-  "branch": null,
-  "pr": null,
+  "state": "peer_review",
+  "branch": "codex/survivor-boss3",
+  "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "等待前卡合併與家長指示；依正式規格實作，Mac Studio 全套含 --layout 通過後開 PR 交獨立 session。",
+  "next": "受測/公開source13851b6／20261028b的Mac雙方123PASS/161hash、Dot normalauto52.56/reload、CUSTOM A12格stun/redmanual/twins/13.01隔離、B四五刀/shadow/wall/kunai可見鏈路均作用域收件。A格式重發實質未變、A/B非code/wholePR批准；全部UIreset-save-reload恢復/manual1/52.56及13.01在，無pending。此提交只coord且161受測檔不變，交既有非作者Mac全PR最終判定/鐵則/限制；通過才match-head merge與正式Pages核b。尚未merge，下一卡未開，詳latest。",
   "reviewers": [
+    "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T08:57:37Z",
+  "updated": "2026-10-27T23:46:36.237698+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

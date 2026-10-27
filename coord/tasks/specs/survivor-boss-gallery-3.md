@@ -2,7 +2,7 @@
 
 任務：`survivor-boss-gallery-3`。由既有 boss3.md 整理為可公開規格；本檔與對應 JSON 是正式來源，舊 /tmp 副本不再驅動開工。
 
-實作者與獨立審查員均在 Mac Studio 跑完整 `node games/survivor/tools/test.cjs --layout`；不新增 GitHub CI。一次一張，開 PR 後交獨立 session 審查，合併上線後回報並等家長決定下一步。
+實作者與獨立審查員均在 Mac Studio 跑完整 `node games/survivor/tools/test.cjs --layout`；不新增 GitHub CI。瀏覽器實玩依現行 AGENTS.md 由既有 Dot 自己的雲端電腦，針對固定 PR／完整 SHA 候選執行，獨立 session 核實證據後判定。一次一張，開 PR 後交獨立 session 審查，合併上線後回報並等家長決定下一步。
 
 ## 王的試煉競技場
 沿用第 1 張建立的獨立圓形競技場（實心牆、Boss 從邊緣／入口預警登場、鏡頭在場內跟隨並遵守全螢幕視野、沒有一般波次）。本卡的 Boss 招式可利用牆（例如冰牆、龍捲風封邊、撞牆暈眩）。
@@ -26,7 +26,7 @@
 ## 測試與版本
 - 每個新積木與每隻 Boss 的選招／階段切換都要有純函式測試。
 - 升版本號；實作者與審查員都在 Mac Studio 跑 `node games/survivor/tools/test.cjs --layout`，全部 PASS。
-- 審查者在 740×360、1024×461、1180×820 實際打過每隻 Boss（含觸發架勢暈眩）。
+- Dot 在 740×360、1024×461、1180×820 實際打過每隻 Boss（含觸發架勢暈眩），獨立審查員核實確切候選及證據；未測不得當通過。
 
 ## 架構（追加）
 - 本 Boss 使用 survivor-boss-ai 的共用狀態機與 AI 規則積木，美術透過 survivor-godot-art-prep 的美術清單（asset manifest）與美術查詢函式，不直接寫死繪圖。

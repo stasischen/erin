@@ -102,7 +102,7 @@ function teacherDodgeThreat() {
 }
 function teacherPerfectDodge(threat) {
   if(threat&&threat.owner&&state.trial&&state.trial.actors){const body=trialBodies().find(b=>b.actorId===threat.owner);if(body&&body!==state.boss)return withTrialBody(body,()=>teacherPerfectDodge(threat));}
-  if(!threat)return;
+  if(!threat||threat.dodged)return;
   threat.dodged=true;state.player.perfectFlash=.35;
   teacherPostureEvent('onPerfectDodge');playSound('perfect');
 }

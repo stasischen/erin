@@ -19,6 +19,7 @@ function cardRequirements(card) {
 function showOverlay(mode) {
   const trialPanel=document.getElementById('trialPanel');if(trialPanel)trialPanel.hidden=true;
   state.mode = mode;
+  if (mode !== "paused") updateBossHealthHud();
   const pauseBuild=document.getElementById("pauseBuild");
   if(pauseBuild) pauseBuild.hidden=mode!=="paused";
   if(mode==="paused") {updateHud();renderSkillTree(document.getElementById("settingsSkillTree"));}
