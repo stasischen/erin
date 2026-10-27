@@ -7,7 +7,7 @@
 - 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；目標版本 20261027f。
 - 方向／鏡像、atlas 排版、逐幀／階段動畫、顯示大小、外框與 VFX 設定已完成；正式角色仍沿用原美術，新增圖只供驗證。詳細交接：docs/survivor-art-manifest-v2-validation.md。
 - Mac Studio 全套 node games/survivor/tools/test.cjs --layout：exit 0、109 PASS；含十尺寸真實 PNG 像素／鏡像／白閃與既有操作。六組原 Canvas hash／153 戰鬥 trace 基準未更新且全部相同，git diff --check 通過。
-- PR 待建立；主控開 PR 後停手交既有獨立審查 session。審查須看確切 HEAD、自行重跑測試、三尺寸實玩原遊戲及暫換 sample 資產確認新欄位；通過才依授權合併與檢查 Pages。
+- PR #102 已建立：https://github.com/stasischen/erin/pull/102 。實作提交 819f842，主控已停手交既有獨立審查 session；確切被審 HEAD 以 PR 查詢為準。審查須看確切 HEAD、自行重跑測試、三尺寸實玩原遊戲及暫換 sample 資產確認新欄位；通過才依授權合併與檢查 Pages。
 - 本 PR 同時收錄流程維護合併後的 done 與部署快照，沒有更改協作規則。
 
 ## 最近已完成

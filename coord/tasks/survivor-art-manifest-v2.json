@@ -7,14 +7,14 @@
   "title": "美術清單 v2：方向、動畫、顯示與特效",
   "state": "peer_review",
   "branch": "codex/survivor-artv2",
-  "pr": null,
+  "pr": 102,
   "brief": "coord/tasks/specs/survivor-art-manifest-v2.md",
-  "next": "Mac Studio 全套含 --layout 109 PASS；開 PR 後交獨立審查三尺寸與暫換方向測試圖；Godot §11 及範圍見驗證文件。",
+  "next": "PR #102 待獨立審查；Mac Studio 全套含 --layout 109 PASS。三尺寸實玩與暫換方向圖／動畫／VFX後，通過才合併。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T09:43:23Z",
+  "updated": "2026-10-27T09:48:03Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-trial-hotfix"
