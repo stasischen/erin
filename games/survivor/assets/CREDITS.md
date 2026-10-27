@@ -18,3 +18,7 @@
 ## 王的試煉：霜火雙子與羽翼古神
 
 `art/characters/frost-twin.png`、`fire-twin.png`、`winged.png` 為本專案原創 16×16 像素圖，無外部素材。可編輯原稿：`tools/gallery-art.py`（沿用 `tools/gatekeeper-art.py` 的 PNG 格式）；同一幀套用動作變形，逐幀動畫尚未製作。穩定美術 id、尺寸與錨點見 `art-manifest.js`。
+
+## 美術清單 v2 方向測試圖
+
+`art/samples/player-directions.png` 為本專案原創程式佔位圖，無外部素材、人物照片或遊戲截圖。每格 64×64，S/E/N 三列、idle/run/hurt 三欄，W 鏡像 E；整張含 margin／spacing 為 198×198。可編輯原稿與可重現產生器：`tools/player-directions-art.py`；只供清單與繪圖驗證，不預設替換正式主角。

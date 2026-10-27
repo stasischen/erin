@@ -1,22 +1,21 @@
 # 目前交接
 
-更新：2026-10-27T09:03:03Z。現行規則：[AGENTS.md](../../AGENTS.md)；變更與 GROKBOT 恢復步驟：[流程調整紀錄](workflow-alignment-20261027.md)。本檔為公開現況摘要，完整對話與私人原件留本機。
+現行規則：AGENTS.md；正式任務：coord/tasks/README.md；GROKBOT 恢復清單：coord/handoff/workflow-alignment-20261027.md。公開摘要進 Git；私人原文、完整日誌與 session 對照留 ~/.local/share/erin/。
 
-## 已完成的遊戲版本
+## 進行中：第 2 張美術清單 v2
 
-- PR [#100](https://github.com/stasischen/erin/pull/100) 已合併；被審 SHA `beea986d3a7e7adb2c78bfb34abfa8839ac22ed2`，merge SHA `11613a82642a33d793b083ca29af1892d3bf5f1a`。
-- 線上版本 `20261027e`；[Pages 部署成功](https://github.com/stasischen/erin/actions/runs/40473926886)，審查員實際開啟首頁與遊戲確認版本。
-- Mac Studio 實作與獨立審查各跑完整套件含 --layout；審查 108 PASS、三尺寸實玩完成。審查證據見 [grok.md](../reviews/survivor-trial-hotfix/grok.md) 與 [PR 留言](https://github.com/stasischen/erin/pull/100#issuecomment-6437185882)。
-- 手感：Boss 貼近會偏用近戰，拉開距離較容易看到衝鋒；未發現阻擋合併缺陷。
+- 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；目標版本 20261027f。
+- 方向／鏡像、atlas 排版、逐幀／階段動畫、顯示大小、外框與 VFX 設定已完成；正式角色仍沿用原美術，新增圖只供驗證。詳細交接：docs/survivor-art-manifest-v2-validation.md。
+- Mac Studio 全套 node games/survivor/tools/test.cjs --layout：exit 0、109 PASS；含十尺寸真實 PNG 像素／鏡像／白閃與既有操作。六組原 Canvas hash／153 戰鬥 trace 基準未更新且全部相同，git diff --check 通過。
+- PR 待建立；主控開 PR 後停手交既有獨立審查 session。審查須看確切 HEAD、自行重跑測試、三尺寸實玩原遊戲及暫換 sample 資產確認新欄位；通過才依授權合併與檢查 Pages。
+- 本 PR 同時收錄流程維護合併後的 done 與部署快照，沒有更改協作規則。
 
-## 正在處理
+## 最近已完成
 
-- 卡：`coord-workflow-alignment`；分支 `codex/coord-workflow-alignment`。流程維護 [PR #101](https://github.com/stasischen/erin/pull/101) 已建立，實作提交 dc88e0e。主控已完成整理與測試並停手，交獨立審查 session；被審完整 HEAD 由 PR 核對，不能以短 SHA 代替。
-- 公開 coord 繼續進 Git；私人原話、截圖、完整日誌、完整對話與備份放 `~/.local/share/erin/`。舊 watcher 已停用；六卡正式來源已改為 [tasks/README.md](../tasks/README.md)。
-- 本輪不改遊戲資源，遊戲版本保持 20261027e；Godot §11 不適用，沒有改資料、規則、美術或引擎。
+- PR #100：hotfix；被審 beea986d3a7e7adb2c78bfb34abfa8839ac22ed2，merge 11613a82642a33d793b083ca29af1892d3bf5f1a。Mac 完整測試與三尺寸實玩通過，Pages run 40473926886 success，線上 20261027e。手感：貼近偏近戰，拉開較容易看到衝鋒。
+- PR #101：流程整理；被審 e8f31ebb31da7d9ca3e4052702389081464e4858，審查檔提交後確認 8c87acd9c45c7d1530f8ebcbbcd8689b990623bc，merge 24fe7b41bc4b9a4e821608d13d5dcca2f3556d3f。獨立完整 108 PASS、502 備份 hash／六卡原件／服務狀態核對通過，Pages run 40479105869 success，遊戲版本保持 20261027e。
+- 公開 coord 留 Git；舊 watcher 停用且卸載，不自動接卡；正式來源不再讀 /tmp/erin-queue/。各自審查紀錄在 coord/reviews/，同作者帳號以 PR 留言如實記錄獨立判定。
 
-## 下一步
+## 接下來
 
-Mac Studio 完整 `node games/survivor/tools/test.cjs --layout` 已 exit 0、108 PASS；備份 502 hash、七卡與連結、忽略規則、遊戲未變及服務停用檢查通過。主控開維護 PR 後安排獨立審查；依家長既有授權，通過後由審查員合併、確認 Pages 仍為 20261027e，再主動回報並問家長意見。
-
-遊戲下一卡為 [survivor-art-manifest-v2](../tasks/survivor-art-manifest-v2.json)（舊 artv2.md）；尚未開工。需等家長同意開始，再從最新 origin/main 建 codex/survivor-artv2。後續 weakpoint → boss3 → boss4 → boss5 一次一張。GROKBOT 恢復後由主控交接，不讓家長手動搬提示與結果。
+主控追蹤 artv2 審查，有修改回同分支與同 PR；合併部署後主動向家長回報改動、試玩、測試、版本與小毛病，再問下一步。第 3 張 survivor-weakpoint 尚未開工；需等家長決定才開始。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。

@@ -217,3 +217,17 @@ globalThis.SurvivorArtManifest = {
  for(const [id,color] of [['frost-twin','#65cfff'],['fire-twin','#fa9157'],['winged','#b09ae3']])SurvivorArtManifest.assets['character/'+id]={...JSON.parse(JSON.stringify(template)),sheet:'art/characters/'+id+'.png',placeholder:{body:color,outline:'#333044',eyes:'#ffdd80'}};
  for(const id of ['frost-dash','nova','cross','icefall','meteor','dive','feathers','spiral','tornado','ice','feather'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(template)),sheet:null,mode:'procedural'};
 })();
+
+// v2 的選填欄位不改舊條目；示範圖不替換正式角色，玩法及原外觀保持不變。
+SurvivorArtManifest.schemaVersion=2;
+SurvivorArtManifest.assets['sample/player-directions']={
+  sheet:null,frameSize:[64,64],pivot:[.5,.75],hitboxAnchor:[.5,.75],mode:'sprite',
+  directions:4,directionOrder:['S','E','N'],mirror:{W:'E'},
+  layout:{cols:3,rows:3,margin:1,spacing:2},displaySize:[64,64],scale:1,
+  palette:['#83d9ed','#26313c','#4069a7'],outline:{color:'#26313c',width:1},
+  source:{generator:'tools/player-directions-art.py',kind:'original test fixture'},
+  animations:{idle:{sheet:'art/samples/player-directions.png',frames:[0],fps:0,loop:true},run:{sheet:'art/samples/player-directions.png',frames:[1],fps:0,loop:true},hurt:{sheet:'art/samples/player-directions.png',frames:[2],fps:0,loop:false}}
+};
+for(const id of ['gust','lightning','sparkle','discharge','hammer-swing','maker-ring','burst','impact','perfect-dodge']) {
+  if(!SurvivorArtManifest.assets['effect/'+id])SurvivorArtManifest.assets['effect/'+id]=JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/particle']));
+}

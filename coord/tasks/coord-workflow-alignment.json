@@ -3,18 +3,18 @@
   "id": "coord-workflow-alignment",
   "title": "協作流程整理：公開紀錄、正式佇列與 GROKBOT 交接",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/coord-workflow-alignment",
   "pr": 101,
   "brief": "coord/handoff/workflow-alignment-20261027.md",
-  "next": "PR #101 待獨立 session 審查；主控停手，通過後按授權合併並確認 Pages 仍為 20261027e。",
+  "next": "PR #101 已合併、Pages 成功，遊戲仍為 20261027e；主控回報並等家長決定 artv2 是否開工。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "medium",
-  "updated": "2026-10-27T09:07:49Z",
+  "updated": "2026-10-27T09:15:58Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-trial-hotfix"

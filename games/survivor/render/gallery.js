@@ -30,7 +30,7 @@ function drawTrialMoves() {
     if(!['windup','active'].includes(m.ai.phase))continue;
     const def=t.definition.moves.find(d=>d.id===m.id),shape={...def.blocks.moves[0].shape};
     if(m.id==='charge')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
-    SurvivorArt.paint('move/gatekeeper-'+m.id,{context:ctx,x:b.x-40,y:b.y-40,width:80,height:80,animation:m.ai.phase==='windup'?'windup':'active',time:state.elapsed},()=>{
+    SurvivorArt.paint('move/gatekeeper-'+m.id,{context:ctx,x:b.x-40,y:b.y-40,width:80,height:80,animation:m.ai.phase==='windup'?'windup':'active',time:state.elapsed,angle:m.angle,...SurvivorArt.phaseContext(m.ai,def.blocks.moves[0].timing)},()=>{
       ctx.save();drawTrialShape(shape,m.id==='leap'?m.target:b,m.angle,m.ai.phase==='active');
       // 舉盾／舉斧、旋轉武器：圖形動作與地面範圍同時蓄力，無文字橫幅。
       ctx.translate(b.x,b.y);ctx.rotate(m.angle+(m.id==='spin'?state.elapsed*10:0));
@@ -45,7 +45,11 @@ function drawTrialMoves() {
 
 const trialPlaceholders={};
 function trialPicture() {
-  const id=state.boss.artId||state.trial.definition.artId,frame=SurvivorArt.picture(id,trialAnimation(),state.elapsed);
+  const id=state.boss.artId||state.trial.definition.artId,m=state.bossMoves[0],timing=m&&state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].timing;
+  const context=actorArtContext(state.boss,m&&{...m.ai,angle:m.angle},timing);
+  if(state.boss.impactFlash||state.boss.flash>0)context.tint='#ffffff';
+  const animation=state.trial.entry>0?'spawn':!m&&state.bossPhase===2?'phase2':m&&m.ai.phase==='cooldown'?'idle':trialAnimation();
+  const frame=SurvivorArt.picture(id,animation,state.elapsed,context);
   if(frame)return frame;
   let trialPlaceholder=trialPlaceholders[id];
   if(!trialPlaceholder) {
@@ -60,7 +64,7 @@ function drawTrialEncounter(){
  const t=state.trial;
  for(const f of t.fields){
    const owner=t.actors.find(b=>b.actorId===f.owner);if(!owner)continue;
-   SurvivorArt.paint('move/'+f.kind,null,()=>{
+   SurvivorArt.paint('move/'+f.kind,{context:ctx,x:f.x-f.radius,y:f.y-f.radius,width:f.radius*2,height:f.radius*2,radius:f.radius,animation:f.warning>0?'windup':'active',time:state.elapsed,angle:Math.atan2(f.vy||0,f.vx||1)},()=>{
      ctx.save();ctx.translate(f.x,f.y);
      if(f.kind==='feather'){
        ctx.rotate(Math.atan2(f.vy,f.vx));ctx.fillStyle='#fff4d1';ctx.fillRect(-10,-3,20,6);ctx.fillStyle='#7155a0';ctx.fillRect(-7,3,10,3);
@@ -75,7 +79,7 @@ function drawTrialEncounter(){
  for(const b of trialBodies())for(const m of b.moves){
    if(!['windup','active'].includes(m.ai.phase))continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0],active=m.ai.phase==='active';
-   SurvivorArt.paint('move/'+m.id,null,()=>{
+   SurvivorArt.paint('move/'+m.id,{context:ctx,x:b.x-s.shape.radius,y:b.y-s.shape.radius,width:s.shape.radius*2,height:s.shape.radius*2,animation:m.ai.phase,time:state.elapsed,angle:m.angle,...SurvivorArt.phaseContext(m.ai,s.timing)},()=>{
      const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=encounterShape(m,s.shape);
      if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
      if(['nova','cross'].includes(m.id)){
@@ -101,7 +105,7 @@ function drawTrialBodies(){
    const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0;
    const x=body.x,y=body.y,scale=body.r/32*(m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
    drawGroundShadow(x,y,body.r,air);
-   drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale));
+   drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);
    const weak=body.posture.stun>0;
    if(weak||body.posture.value>=GAME_DATA.boss.posture.maximum*.75){ctx.fillStyle=weak?'#fff0a5':'#ffb95c';ctx.fillRect(x-16,y-air-70,32,32);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-12,y-air-66,24);}
    ctx.fillStyle='#293d51';ctx.fillRect(x-34,y+40,68,6);ctx.fillStyle=body.role==='frost'?'#65cfff':body.role==='fire'?'#fa9157':'#b09ae3';ctx.fillRect(x-34,y+40,68*Math.max(0,body.hp/body.maxHp),6);

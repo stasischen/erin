@@ -35,7 +35,7 @@ function drawBossMovesPlaceholder() {
   if(state.trial) {drawTrialMoves();return;}
   for (const move of state.bossMoves) {
     // 美術是附加層；判定預警仍依原幾何畫出。
-    SurvivorArt.draw('move/boss-'+move.id,{context:ctx,x:move.x-32,y:move.y-32,width:64,height:64,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed});
+    SurvivorArt.draw('move/boss-'+move.id,{context:ctx,x:move.x-32,y:move.y-32,width:64,height:64,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed,...bossArtContext(move)});
     if(move.recovery>0) {
       // 收招時移除危險區，只用像素亮點提示反擊機會。
       ctx.save();ctx.fillStyle='#ffcf49';
@@ -135,10 +135,10 @@ function backgroundTile(kind, density) {
 // 把不透明輪廓染成深色後快取；每幀只畫四個偏移，不讀取像素或使用濾鏡。
 const OUTLINE_MASKS = new WeakMap();
 const SPRITE_TINTS = new WeakMap();
-function drawOutlinedSprite(g, sprite, x, y, w, h, tint) {
+function drawOutlinedSprite(g, sprite, x, y, w, h, tint, outline) {
   return SurvivorArt.paint('layer/draw-outlined-sprite', null, () => drawOutlinedSpritePlaceholder.apply(this, arguments));
 }
-function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint) {
+function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint, outline) {
   if(tint) {
     let colors=SPRITE_TINTS.get(sprite);
     if(!colors) {colors={};SPRITE_TINTS.set(sprite,colors);}
@@ -148,24 +148,38 @@ function drawOutlinedSpritePlaceholder(g, sprite, x, y, w, h, tint) {
     }
     sprite=colors[tint];
   }
-  if (GAME_DATA.visuals.spriteOutline) {
-    let mask = OUTLINE_MASKS.get(sprite);
+  if (GAME_DATA.visuals.spriteOutline && outline!==false) {
+    const color=outline&&outline.color||"#26313c",width=outline&&outline.width!==undefined?outline.width:1;
+    let masks=OUTLINE_MASKS.get(sprite);if(!masks){masks={};OUTLINE_MASKS.set(sprite,masks);}
+    let mask = masks[color];
     if (!mask) {
       mask = document.createElement("canvas"); mask.width = sprite.width; mask.height = sprite.height;
       const ink = mask.getContext("2d"); ink.drawImage(sprite, 0, 0);
-      ink.globalCompositeOperation = "source-in"; ink.fillStyle = "#26313c";
-      ink.fillRect(0, 0, mask.width, mask.height); OUTLINE_MASKS.set(sprite, mask);
+      ink.globalCompositeOperation = "source-in"; ink.fillStyle = color;
+      ink.fillRect(0, 0, mask.width, mask.height); masks[color]=mask;
     }
-    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) g.drawImage(mask, x+dx, y+dy, w, h);
+    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) if(width>0)g.drawImage(mask, x+dx*width, y+dy*width, w, h);
   }
   g.drawImage(sprite, x, y, w, h);
+}
+function actorArtContext(body,action,timing) {
+  const aim=body===state.player?{x:state.faceX,y:state.faceY}:action&&Number.isFinite(action.angle)?{x:Math.cos(action.angle),y:Math.sin(action.angle)}:{x:deltaX(state.player.x,body.x),y:deltaY(state.player.y,body.y)};
+  return {aim,...SurvivorArt.phaseContext(action,timing)};
+}
+function bossArtContext(move) {
+  const d=bossDefinition(move),kind=bossKind(move),phase=move.recovery>0?'recovery':move.active?'active':'windup';
+  const active=['dash','combo'].includes(kind)?Math.hypot(deltaX(move.endX,move.x),deltaY(move.endY,move.y))/d.speed:move.wallDuration||d.duration;
+  const timing={windup:kind==='tracking'?GAME_DATA.boss.combat.trackingSeconds+GAME_DATA.boss.combat.lockSeconds:Math.max(.6,d.warning),active,recovery:kind==='leap'?Math.max(GAME_DATA.boss.combat.leapRecovery,d.recovery||0):d.recovery};
+  return actorArtContext(state.boss||state.player,{phase,left:phase==='windup'?move.warning:phase==='recovery'?move.recovery:move.life,angle:move.angle},timing);
 }
 const TEACHER_PICTURES = {};
 function teacherPicture(flash) {
   if(state.trial)return trialPicture();
   const move=state.bossMoves[0];
   const animation=flash?'hurt':state.boss && state.boss.posture && state.boss.posture.stun>0?'stun':move?(move.recovery>0?'recovery':move.active?'active':'windup'):'idle';
-  const replacement = SurvivorArt.picture('character/teacher', animation, state.elapsed);
+  const context=move?bossArtContext(move):actorArtContext(state.boss||state.player);
+  if(flash)context.tint='#ffffff';
+  const replacement = SurvivorArt.picture('character/teacher', animation, state.elapsed,context);
   if (replacement) return replacement;
   const key = flash ? "flash" : "normal";
   if (TEACHER_PICTURES[key]) return TEACHER_PICTURES[key];
@@ -219,7 +233,7 @@ function drawHeroPlaceholder() {
   ctx.save(); ctx.translate(Math.round(p.x), Math.round(p.y));
   if(p.perfectFlash>0) {ctx.fillStyle='#fff5a3';for(const [dx,dy] of [[-22,0],[22,0],[0,-24],[0,24]])ctx.fillRect(dx-3,dy-3,6,6);ctx.strokeStyle='#fff5a3';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,p.r+8,0,Math.PI*2);ctx.stroke();}
   if (hurt && p.hitFlash <= 0 && Math.floor(state.elapsed / 0.09) % 2 === 0) ctx.globalAlpha = 0.45;
-  ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(p.facing, 1);
+  ctx.translate(0, -Math.round(hop)); ctx.rotate(sway); ctx.scale(SurvivorArt.lookup('character/player').directions>1?1:p.facing, 1);
   const look = buildAppearance(), color = BUILD_TUNING[look.main].color;
   if (look.forms.length || state.schoolCombat && state.schoolCombat.bubble || schoolWindWall()) {
     ctx.strokeStyle = state.schoolCombat && state.schoolCombat.bubble ? '#b4efff' : color; ctx.lineWidth = 3;
@@ -233,12 +247,13 @@ function drawHeroPlaceholder() {
     ctx.fillStyle='#f8eea8';for(let i=0;i<4;i++){const a=state.elapsed*3+i*Math.PI/2;ctx.fillRect(Math.cos(a)*29,Math.sin(a)*29,4,4);}
   }
   if (look.forms.includes('water')) ctx.globalAlpha *= .65;
-  const animation = hurt ? 'hurt' : p.moving ? 'run' : 'idle';
-  const art = SurvivorArt.picture('character/player', animation, state.elapsed);
+  const action=state.manualTiming,context=actorArtContext(p,action);
+  const animation = hurt ? 'hurt' : state.dashTimer>0?'dodge':action&&['windup','active','recovery'].includes(action.phase)?action.phase:p.moving ? 'run' : 'idle';
+  const art = SurvivorArt.picture('character/player', animation, state.elapsed,context);
   const sprite = SPRITES.player;
   if (art) {
     const box=SurvivorArt.bounds('character/player',-20,-30,40,48);
-    drawOutlinedSprite(ctx,art,...box,p.impactFlash?'#ffffff':undefined);
+    drawOutlinedSprite(ctx,art,...box,p.impactFlash?'#ffffff':undefined,SurvivorArt.lookup('character/player').outline);
   }
   else if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
   else {
@@ -257,10 +272,10 @@ function drawHeroPlaceholder() {
   ctx.restore();
 }
 
-function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0) {
+function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0, artContext = {}) {
   return SurvivorArt.paint('layer/draw-blob', null, () => drawBlobPlaceholder.apply(this, arguments));
 }
-function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0) {
+function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0, artContext = {}) {
   const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
@@ -269,10 +284,11 @@ function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", d
   if (sprite) {
     drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
-  const skin = SurvivorMonsters.picture(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId, animation, seconds);
+  const artId='character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
+  const skin = SurvivorMonsters.picture(artId.slice(10), animation, seconds, artContext);
   if (skin) {
     drawingContext.imageSmoothingEnabled = false;
-    drawOutlinedSprite(drawingContext, skin, ...SurvivorArt.bounds('character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId),-r,-r,r*2,r*2), flash ? "#ffffff" : tint); drawingContext.restore(); return;
+    drawOutlinedSprite(drawingContext, skin, ...SurvivorArt.bounds(artId,-r,-r,r*2,r*2,artContext), flash ? "#ffffff" : tint,SurvivorArt.lookup(artId)&&SurvivorArt.lookup(artId).outline); drawingContext.restore(); return;
   }
   if (flash) drawingContext.globalAlpha = 0.55 + Math.abs(Math.sin(performance.now() / 25)) * 0.45;
   drawingContext.fillStyle = flash ? "#fff" : tint || color; drawingContext.strokeStyle = "#87522f"; drawingContext.lineWidth = 3;
@@ -373,14 +389,16 @@ function drawSupportVisualsPlaceholder() {
   }
   ctx.restore();
 }
-function drawSkillVisuals() {
+function drawSkillVisuals(layer) {
   return SurvivorArt.paint('layer/draw-skill-visuals', null, () => drawSkillVisualsPlaceholder.apply(this, arguments));
 }
-function drawSkillVisualsPlaceholder() {
+function drawSkillVisualsPlaceholder(layer) {
   for (const v of state.vfx) {
+    const art=SurvivorArt.lookup('effect/'+v.kind);
+    if(layer&&((art&&art.vfx.zLayer)||'actor')!==layer)continue;
     ctx.save(); ctx.globalAlpha = Math.min(1, v.life / v.maxLife * 2);
     const progress = 1 - v.life / v.maxLife;
-    if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life})) {ctx.restore();continue;}
+    if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life,phaseElapsed:v.maxLife-v.life,phaseDuration:v.maxLife,radius:v.radius,angle:v.angle||0,origin:{x:v.x,y:v.y},target:Number.isFinite(v.x2)?{x:v.x2,y:v.y2}:undefined})) {ctx.restore();continue;}
     if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
     else if (v.kind === "maker-ring") {
       ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); ctx.stroke();
@@ -461,6 +479,7 @@ function render() {
   ctx.save(); ctx.translate(offset.x, offset.y);
     drawBossMoves();
     drawFields();
+    drawSkillVisuals('ground');
     if (state.schoolCombat) {
       for (const rod of state.schoolCombat.rods) { ctx.fillStyle='#d8b7ff';ctx.fillRect(rod.x-2,rod.y-25,4,25);drawBolt(rod.x-6,rod.y-27,rod.x+6,rod.y-15); }
       if (state.schoolCombat.rain > 0) { ctx.strokeStyle='#75d7ff';ctx.lineWidth=2;for(let i=0;i<24;i++){const x=state.cameraX+(i*73)%state.width,y=state.cameraY+(state.elapsed*180+i*51)%state.height;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+10);ctx.stroke();} }
@@ -487,7 +506,7 @@ function render() {
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32;
-      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(state.trial?state.trial.definition.artId:'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale));
+      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(state.trial?state.trial.definition.artId:'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale,{displayScale:scale}),undefined,SurvivorArt.lookup(state.trial?state.trial.definition.artId:'character/teacher').outline);
       if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
         const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
         ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);
@@ -508,7 +527,7 @@ function render() {
       const jitter=windup?Math.sin(state.elapsed*85)*2*progress:0;
       const tint=enemy.impactFlash?'#ffffff':phase==='active'&&a.entered?'#ffffff':windup?'#ef8890':recovery?'#939da7':undefined;
       ctx.save();ctx.translate(enemy.x+jitter,enemy.y);ctx.scale(1+squash,1-squash);ctx.translate(-enemy.x,-enemy.y);
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint,enemy.stunTimer>0?'stun':enemy.impactFlash?'hurt':phase || 'run',state.elapsed);
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint,enemy.stunTimer>0?'stun':enemy.impactFlash?'hurt':phase || 'run',state.elapsed,{...actorArtContext(enemy,a),displayScale:enemy.r/((ENEMY_TYPES.find(e=>e.id===enemy.typeId)||{}).radius||enemy.r)});
       ctx.restore();
       if(windup || recovery) drawAttackMarker(enemy,windup?'!':'star');
       drawEncounterArmor(enemy);
@@ -528,7 +547,7 @@ function render() {
       ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); ctx.stroke();
     }
     drawUltimate();
-    drawSkillVisuals();
+    drawSkillVisuals('actor');
     for (const shot of state.projectiles) if (shot.boosted) {
       ctx.strokeStyle="#fff4a0";ctx.lineWidth=4;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+5,0,Math.PI*2);ctx.stroke();
     }
@@ -540,6 +559,7 @@ function render() {
     for (const effect of state.effects) {
       drawParticleArt(effect);
     }
+    drawSkillVisuals('overlay');
   ctx.restore();
   }
   ctx.restore(); // 搖桿是螢幕座標，不跟著鏡頭捲動。
@@ -724,7 +744,7 @@ function drawPhasedAttacksPlaceholder() {
     const a=e.phaseAttack;
     if(!e.alive || !a || !['windup','active'].includes(a.phase)) continue;
     if(a.phase==='active' && !enemyFeedback(e).slash && !state.practiceHitboxes)continue;
-    SurvivorArt.draw('move/enemy-'+e.typeId,{context:ctx,x:a.x-24,y:a.y-24,width:48,height:48,animation:a.phase,time:state.elapsed});
+    SurvivorArt.draw('move/enemy-'+e.typeId,{context:ctx,x:a.x-24,y:a.y-24,width:48,height:48,animation:a.phase,time:state.elapsed,angle:a.angle,...SurvivorArt.phaseContext(a)});
     const c=a.config,warning=a.phase==='windup',progress=warning?Math.max(0,Math.min(1,1-a.left/Math.max(.001,SurvivorTiming.segments(c)[0].seconds))):1;
     ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle);
     ctx.strokeStyle='#ed7e89';ctx.fillStyle=warning?'rgba(240,65,85,.32)':'rgba(245,87,93,.72)';ctx.lineWidth=2;
@@ -778,7 +798,7 @@ function drawWaveEventWarningPlaceholder() {
 }
 
 function drawProjectileArt(shot) {
-  return SurvivorArt.paint('projectile/water', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active'}}, () => {
+  return SurvivorArt.paint('projectile/water', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active',aim:{x:shot.vx,y:shot.vy}}}, () => {
       const colors = shot.colors || ['water'];
       ctx.fillStyle = BUILD_TUNING[colors[0]].color;
       if (colors.length > 1) { const gradient=ctx.createLinearGradient(shot.x-shot.r,shot.y,shot.x+shot.r,shot.y);gradient.addColorStop(0,BUILD_TUNING[colors[0]].color);gradient.addColorStop(1,BUILD_TUNING[colors[1]].color);ctx.fillStyle=gradient; } ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
@@ -809,7 +829,7 @@ function drawGemArt(gem) {
 }
 
 function drawEnemyShotArt(shot) {
-  return SurvivorArt.paint('projectile/enemy', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active'}}, () => {
+  return SurvivorArt.paint('projectile/enemy', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active',aim:{x:shot.vx,y:shot.vy}}}, () => {
       ctx.save(); ctx.textAlign = "center";
       if(shot.phaseShot) {
         ctx.fillStyle=shot.candy?'#ffb8da':'#ed8d79';ctx.strokeStyle='#913d62';ctx.lineWidth=2;
@@ -832,7 +852,7 @@ function drawEnemyShotArt(shot) {
 }
 
 function drawParticleArt(effect) {
-  return SurvivorArt.paint(SurvivorArt.lookup('effect/'+effect.kind)?'effect/'+effect.kind:'effect/particle', {context:ctx,...{x:effect.x-16,y:effect.y-16,width:32,height:32,time:effect.maxLife-effect.life,animation:'active'}}, () => {
+  return SurvivorArt.paint(SurvivorArt.lookup('effect/'+effect.kind)?'effect/'+effect.kind:'effect/particle', {context:ctx,...{x:effect.x-16,y:effect.y-16,width:32,height:32,time:effect.maxLife-effect.life,animation:'active',phaseElapsed:effect.maxLife-effect.life,phaseDuration:effect.maxLife}}, () => {
       const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
       if (effect.kind === "water-hit") {
         ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();

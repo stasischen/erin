@@ -1,6 +1,6 @@
 # Survivor 美術與 Godot 移植對照
 
-本卡只準備美術接合，沒有開始移植或更改玩法。依據：`coord/inbox/done/20261026T154905Z-parent-godot-art-prep.md`。版本：20261026aw。
+本卡只準備美術接合，沒有開始移植或更改玩法。依據：`coord/inbox/done/20261026T154905Z-parent-godot-art-prep.md`。初版：20261026aw；美術清單 v2：20261027f。
 
 ## 換一張圖
 
@@ -18,7 +18,7 @@
 | id | `character/player`、`character/gummy-bear`、`move/boss-dash`、`effect/gust`、`icon/dash` 等穩定字串 | Resource key／StringName |
 | sheet | 相對遊戲根的本地 PNG；null 沿用程式佔位圖 | Texture2D，`res://art/...` |
 | frameSize | 每格寬、高，原始像素；背景固定 336×252 | AtlasTexture.region.size |
-| animations | 必備 idle / run / windup / active / recovery / hurt / stun | SpriteFrames animation 名稱 |
+| animations | 必備 idle / run / hurt；其他動畫選填，依下節規則回退 | SpriteFrames animation 名稱 |
 | frames | 從 0 起，從左到右再往下一列的格子索引 | SpriteFrames.add_frame(AtlasTexture) |
 | fps | 每秒幀數；0 為固定第一格 | animation_speed；靜態圖停在第 0 幀 |
 | loop | true 循環；false 停在末幀 | animation_loop |
@@ -26,11 +26,53 @@
 | hitboxAnchor | 0～1，圖的配置錨點；只用於對齊，不能改變命中框 | 視覺子節點與碰撞根節點的相對原點 |
 | mode | sprite 可換 PNG；procedural 是保留幾何與複合畫面的查詢邊界，sheet 必須 null | 顯示腳本／預警繪圖節點 |
 
-`lookup(id, animation, seconds, manifest)` 為純查詢，傳回複製的描述；不讀時鐘、不載圖、不動狀態。秒數由遊戲傳入，負值／非有限值當 0。非循環超時停在末幀，未知動畫用 idle，未知 id 傳回 null。`bounds` 算顯示矩形；位移是 `顯示尺寸 × (hitboxAnchor - pivot)`。主角原圖 20×24，顯示 40×48、左上 (-20,-30)，兩個錨點均為 [.5,.625]；老師 52×68；怪物 24×24。顯示尺寸及碰撞半徑維持舊值。
+`lookup(id, animation, seconds, manifest)` 為純查詢，傳回複製的描述；不讀時鐘、不載圖、不動狀態。秒數由遊戲傳入，負值／非有限值當 0。非循環超時停在末幀，未知動畫依下節回退，未知 id 傳回 null。`bounds` 算顯示矩形；沒有覆寫大小時，位移是 `顯示尺寸 × (hitboxAnchor - pivot)`；有 displaySize 時保留舊 hitboxAnchor 世界錨點，再依新尺寸與 pivot 放圖。主角原圖 20×24，顯示 40×48、左上 (-20,-30)，兩個錨點均為 [.5,.625]；老師 52×68；怪物 24×24。顯示尺寸及碰撞半徑維持舊值。
 
-`render/art.js` 才負責圖片載入、切格快取、drawImage、HTML 圖示。人物切格後仍經既有外框／染色／彈跳變換。怪物查詢也供 Maker 預覽共用。預設所有 sheet 為 null，保持現有色盤、圖示、幾何與繪圖順序。
+`render/art.js` 才負責圖片載入、切格快取、drawImage、HTML 圖示。人物切格後仍經既有外框／染色／彈跳變換。怪物查詢也供 Maker 預覽共用。現有角色／特效維持原清單與程式佔位圖；四個試煉 Boss 沿用既有 PNG。新增的 sample/player-directions 只供驗證，不預設替換主角；原色盤、幾何與繪圖順序保留。
 
 `layer/*` 是複合繪圖邊界（地面陰影、整群場地、HUD 輔助等），不是一張可覆蓋整群物件的 PNG。角色、水球／敵方彈、寶石、各種 VFX 是可替換的個別美術入口。`scene/world` 包含剩餘 inline UI、血條與幾何標記；這些仍由 procedural 層繪製，移植時重寫平台畫法。背景 PNG 必須維持固定地磚尺寸以保留拼接。
+
+## v2 選填欄位與換圖契約（20261027f）
+
+查詢器接受 schemaVersion 1／2；既有條目不必補新欄位。`lookup(id, animation, seconds, manifest, context)` 是純函式；`picture(id, animation, seconds, context)` 才載圖。context 可傳 direction（S/E/N/W 等）、aim {x,y} 或 angle（世界弧度），以及 phaseElapsed／phaseDuration（秒）。沒有新增欄位或 phaseDuration 時，舊 fps 裁格行為不變。
+
+| 選填欄位 | 預設／行為 |
+|---|---|
+| directions | 1；可用 1／4／8；世界 +x 向 E、+y 向 S，零向量回 S |
+| directionOrder | 實體方向列順序；四向預設 S/E/N/W，八向預設 S/SE/E/NE/N/NW/W/SW |
+| mirror | 如 {W: 'E'}，W 使用 E 的格子並水平鏡像；拒絕循環，不再疊加角色原本的左右翻轉 |
+| layout | cols／rows 為格數；margin／spacing 為原圖像素、預設 0；未指定時依圖寬高推算 |
+| animations.*.frames | 陣列：多方向時每方向一列，索引是該列的欄位；物件 {S:[...],E:[...]}：各方向使用整張圖的絕對索引 |
+| displaySize／scale | 顯示世界寬高／正數倍率；未填沿用呼叫端舊大小。保留原世界錨點，碰撞仍用原邏輯半徑；角色、怪物、Boss 與共用 draw 接口都讀清單，舊寫死尺寸只作未設定時的相容初值 |
+| animations.*.sheet | 覆寫該動畫的 PNG；省略用資產 sheet，明確 null 回程式圖。所有動畫 sheet 都由同一個 sheetPaths 查詢加入離線快取 |
+| frameDurations | 每幀秒數，正數陣列，長度須等於該動畫每方向格數；省略時使用 fps（預設 0）。idle/run 預設循環，其他預設不循環，loop 可覆寫 |
+| syncToPhase | windup／active／recovery（含 active_2 等變體）預設 true；傳入邏輯階段總秒數與已過秒數，按比例選視覺幀。未提供總時長時用原秒數／fps，不反向觸發傷害 |
+| palette／source | 選填色票及來源資訊，查詢回傳深複製；palette 為十六進位色票陣列／物件，source 為字串／純字串物件。只作美術中繼資料，不改流派／傷害 |
+| outline | 省略沿用全域一像素外框；false 取消此資產外框，或 {color:'#26313c',width:1}；全域關閉仍優先。圖片也套用既有受擊白閃 |
+
+支援 death、spawn、phase2、dodge 及 active_2 等合法名稱。缺變體先找基本動畫；death/stun → hurt、dodge → run、spawn/phase2/windup/active/recovery → idle，最後用 idle。載入失敗、格子超出圖片時回程式佔位圖。沒有新增死亡延遲、碰撞框或動畫完成時的戰鬥事件。
+
+### 預警與特效換皮
+
+move/* 若要放圖，須將 mode 改為 sprite；layer/* 複合邊界仍保留原程式繪圖。vfx 選填：
+
+- fitTo：bounds（預設呼叫端矩形）、radius（半徑直徑）、path（origin 到 target 的長條）、native（原生格子 × scale）。
+- rotateWithAim：預設 false，true 使用 angle 或 path 方向；所有角度只旋轉美術。
+- zLayer：ground／actor／overlay；預設 actor，保持既有順序。一般技能特效可放在角色前後；招式 paint 以 ground 決定在原警示前畫，其餘在原警示後畫，但原地面範圍／缺口函式都仍執行。
+- blend：source-over（預設）、lighter、multiply、screen；alpha 為 0–1，預設 1，與既有淡出相乘。
+- progressMode：time（預設秒數）、phase（依提供的階段比例選幀）、grow（依比例長大）、fade（依比例淡出）。
+
+補齊 effect/gust、lightning、sparkle、discharge、hammer-swing、maker-ring、burst、impact、perfect-dodge；預設 sheet 仍 null。命中形狀與預警幾何沒有改成圖片輪廓。每動畫獨立圖片、外框、混色與裁格快取只在美術層處理。
+
+### 64×64 方向試作
+
+sample/player-directions 的檔案是 art/samples/player-directions.png：每格 64×64，三列 S/E/N、三欄 idle/run/hurt，W 鏡像 E；含 1px margin 與 2px spacing，整張 198×198。這是原創程式佔位圖，不是正式角色或截圖。`python3 games/survivor/tools/player-directions-art.py` 重產，帶 --check 只比對不寫檔。
+
+### Godot 匯入建議
+
+方向可命名為 idle_S、run_E、active_2_N 等 SpriteFrames 動畫；W 共用 E 並設 AnimatedSprite2D.flip_h。不要再在父節點套第二次水平鏡像。每個動畫的 sheet/layout 對應自己的 AtlasTexture region；displaySize／scale 與 offset 放視覺子節點，CollisionShape2D 保持邏輯尺寸。flip_h、offset、speed_scale 的行為依 [AnimatedSprite2D 官方文件](https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html)。
+
+frameDurations 為秒；可設 SpriteFrames animation_speed=1，逐幀相對 duration 使用同一秒值，再以 speed_scale = 視覺總秒數／邏輯階段秒數 對齊階段；idle/run 保持自己的 fps。這是依 [SpriteFrames 官方秒數公式](https://docs.godotengine.org/en/stable/classes/class_spriteframes.html) 推導的匯入方式，尚未實際匯入 Godot。vfx 的 fitTo／rotateWithAim／zLayer／blend／alpha／progressMode 建議對應視覺子節點縮放／旋轉／繪圖層／材質／透明度／階段進度；不建立傷害回呼。
 
 ## 時機和美術的責任
 
