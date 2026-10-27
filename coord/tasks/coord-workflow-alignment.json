@@ -6,15 +6,15 @@
   "state": "peer_review",
   "repo": "erin",
   "branch": "codex/coord-workflow-alignment",
-  "pr": null,
+  "pr": 101,
   "brief": "coord/handoff/workflow-alignment-20261027.md",
-  "next": "Mac Studio 全套含 --layout 108 PASS，備份與卡片連結核對通過；開 PR 後由獨立 session 審查流程與公開範圍。",
+  "next": "PR #101 待獨立 session 審查；主控停手，通過後按授權合併並確認 Pages 仍為 20261027e。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "medium",
-  "updated": "2026-10-27T09:07:04Z",
+  "updated": "2026-10-27T09:07:49Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-trial-hotfix"

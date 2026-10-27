@@ -11,7 +11,7 @@
 
 ## 正在處理
 
-- 卡：`coord-workflow-alignment`；分支 `codex/coord-workflow-alignment`。流程維護 PR 待填入編號，主控已完成整理與測試；獨立審查 session 已收到停止寫入通知，完成後由主控派審。
+- 卡：`coord-workflow-alignment`；分支 `codex/coord-workflow-alignment`。流程維護 [PR #101](https://github.com/stasischen/erin/pull/101) 已建立，實作提交 dc88e0e。主控已完成整理與測試並停手，交獨立審查 session；被審完整 HEAD 由 PR 核對，不能以短 SHA 代替。
 - 公開 coord 繼續進 Git；私人原話、截圖、完整日誌、完整對話與備份放 `~/.local/share/erin/`。舊 watcher 已停用；六卡正式來源已改為 [tasks/README.md](../tasks/README.md)。
 - 本輪不改遊戲資源，遊戲版本保持 20261027e；Godot §11 不適用，沒有改資料、規則、美術或引擎。
 
