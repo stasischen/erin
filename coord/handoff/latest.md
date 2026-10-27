@@ -1,5 +1,21 @@
 # 目前交接
 
+## PR104血條patch已由Luna獨審／精確套用，122PASS待固定預覽與整版驗收（最新）
+
+Dot邏輯patch以base9ae7e85ef8aadd33dab6458746e596c3cafa2ead／SHA25655fa253feb96798966e3daf1eb0bef8c0b737b13f1daf76ff410112058c8d777綁定，由Luna本人先在私有快照獨立審查，再在Mac精確套用五檔且postimage全符；公開審查見coord/reviews/survivor-boss-gallery-3/luna-patch.md。移除試煉Boss身體HP條、改共用上方HUD，冰火雙子各自HP與身份可分辨，保留身體弱點／架勢和原玩法；沒有私修Dot邏輯。
+
+版本由Mac機械同步20261028a，完整node games/survivor/tools/test.cjs --layout exit0，73個test檔、122行PASS（含新boss-hud和真Chrome layout），161個source/test/cache測前後與目前一致；機械版本差異七檔另記，流程文件另列。這不是三尺寸BossHUD已量測或Dot雲端正式通過。下一步發布不可變候選，既有非作者Mac對整PR104重審，Dot自己雲端驗新候選的三尺寸、刺客完整卡片功能及Maker；所有gate通過才原PR merge。正式站仍20261027i，boss4／5未開工，舊j/k證據不混算。Godot§11：共用資料／渲染分層與資產路徑保留，未作Godot實機。
+
+---
+
+## 新流程已獲具體ready並啟用；血條patch進Luna獨審（最新）
+
+Dot已針對固定base9ae7e85ef8aadd33dab6458746e596c3cafa2ead確認ready，完整讀取14個源並交回5檔精確血條patch。其approve僅允許進獨立審查，不是自審code或UI／PR／合併通過。主控已核對12960byte patch／SHA256、5檔pre/postimage與私有index精確apply，真實worktree尚未套用。Luna已接獨立審查，通過後才交筆機械套用；有問題原樣退Dot同卡修，不讓Luna發明邏輯後自批。
+
+依家長條件授權已同步AGENTS／GAME_WORKFLOW／決策與詳細新流程；本次文件先保留未提交，避免改動Dot綁定base，等patch處理後與同PR指定檔案提交。Mac測試與公開固定候選／Dot雲端三尺寸實測仍未完成，既有非作者Mac保留整PR104最終gate。正式站仍i，PR104未合併，boss4／5未開始。舊待評估或授權pending段落依當時歷史保留，以本摘要為準。
+
+---
+
 ## Dot首評已核實，試接輸入與Mac角色已補齊（最新）
 
 Dot實際首評changes：概念分工可行、可讀固定源並產生patch文字，但缺精確HP允許檔／驗收及Mac角色就緒，不能當流程已導入。已補coord/tasks/specs/survivor-boss-hud-pilot.md，同PR104不開並行新卡；只改HUD顯示與有意義的回歸測試，版本另由Mac同步。獨立Luna已實際完成只讀就緒檢查並可接審查／精確apply；目前沒有patch可審或套。既有Mac審查員定點確認l Maker數值控件P2及舊smoke更正收斂，完整121PASS仍是作者證據，完整整版審查留最終組合SHA。

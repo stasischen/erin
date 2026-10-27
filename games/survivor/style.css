@@ -270,3 +270,21 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .experience-wrap[hidden], .status[hidden], .level-label[hidden], .trial-confirm[hidden] { display:none; }
 .trial-confirm { text-align:center; padding:16px; background:#142b40; color:#eef8ff; border:2px solid #8cbad0; }
 .trial-confirm-actions { display:flex; justify-content:center; gap:16px; }
+
+/* Fixed encounter HP: two actor rows fit above combat; pointer input passes through. */
+.boss-hud {
+  top: calc(max(10px, var(--safe-top)) + 44px);
+  width: min(420px, calc(100% - max(12px, var(--safe-left)) - max(12px, var(--safe-right))));
+  height: auto; min-height: 40px; padding: 4px 8px; pointer-events: none;
+}
+.boss-summary, .boss-health-rows { flex: 1; min-width: 0; }
+.boss-summary, .boss-health-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(48px, 1.1fr);
+  align-items: center; gap: 6px; height: 18px; font-size: 12px; line-height: 16px;
+}
+.boss-health-rows { display: grid; gap: 4px; }
+.boss-summary[hidden], .boss-health-rows[hidden] { display: none; }
+.boss-summary strong, .boss-health-name {
+  min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.boss-health-row .boss-track, .boss-summary .boss-track { min-width: 0; width: 100%; }

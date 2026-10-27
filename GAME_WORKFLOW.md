@@ -4,6 +4,10 @@
 
 Agent 的分工、Git、測試、審查、授權與交接以 [AGENTS.md](AGENTS.md) 為準。正式任務只讀 `coord/tasks/`，不從 `/tmp/erin-queue/` 接卡；私人原話、截圖與完整日誌放本機 `~/.local/share/erin/`。實作者與獨立審查 session 的完整自動化測試都在 Mac Studio 執行（含 `--layout`），不新增 GitHub CI；一張 PR 結束後由主控主動回報並問家長下一步，不自動接卡。
 
+## Survivor：Dot patch 與 Mac 審查發布
+
+家長指定的新流程已由 Dot 核對具體契約可執行，自 PR104 血條修正試接：主控開卡／鎖 base 和檔案 → Dot 出精確 patch → Luna 獨立審查並機械套用 → Mac 完整測試、版本同步、Git／PR／固定預覽發布 → Dot 自己雲端實測 → 非作者 Mac 最終 gate／合併／Pages 版本確認。審查先於套用；Dot 不需 GitHub 寫入權，Luna 不自創邏輯後自批。授權邊界、來源／patch hash 與失敗退回方式見 [詳細流程](coord/knowledge/DOT_PATCH_WORKFLOW.md)。既有 PR104 全部 Codex 改動仍保留原獨立 Mac 審查，不只看血條。Dot 流程評估通過不是 patch／遊戲已通過；每一輪未測項仍須明列。
+
 ## 製作原則
 
 - 第一版先做「可以玩」，不要一開始就追求完整美術。

@@ -1,7 +1,62 @@
 let lastSlotMarkup = "";
+// Read presentation data only; never change encounter actors or legacy armor.
+function bossHudEntries() {
+  if (!['playing', 'paused', 'settings', 'levelup'].includes(state.mode)) return [];
+  if (state.trial) return trialBodies().filter(body => body.hp > 0).map((body, index) => ({
+    id: String(body.actorId || state.trial.definition.id || index),
+    name: state.trial.definition.name + (body.role === 'frost' ? ' · 冰' : body.role === 'fire' ? ' · 火' : ''),
+    ratio: Math.max(0, Math.min(1, body.hp / body.maxHp))
+  }));
+  const body = state.miniboss || state.boss;
+  if (!body) return [];
+  return [{
+    id: state.miniboss ? 'miniboss' : 'boss',
+    name: state.miniboss ? GAME_DATA.chocobear.name + (body.armor > 0 ? ' · 糖衣盔甲' : '') : GAME_DATA.boss.name,
+    ratio: Math.max(0, (body.hp + (body.armor || 0)) / (body.maxHp + (body.maxArmor || 0)))
+  }];
+}
+
+function updateBossHealthHud() {
+  const entries = bossHudEntries();
+  const summary = document.getElementById('bossSummary');
+  const rows = document.getElementById('bossHealthRows');
+  bossHud.hidden = entries.length === 0;
+  if (summary) summary.hidden = !!state.trial || entries.length === 0;
+  if (rows) {
+    rows.hidden = !state.trial || entries.length === 0;
+    // Rebuild only when the actor roster changes; HP updates reuse each row.
+    const roster = state.trial ? JSON.stringify(entries.map(entry => entry.id)) : '[]';
+    if (rows.dataset.roster !== roster) {
+      rows.innerHTML = '';
+      rows.dataset.roster = roster;
+      if (state.trial) for (const entry of entries) {
+        const row = document.createElement('div');
+        row.className = 'boss-health-row'; row.dataset.actorId = entry.id;
+        const name = document.createElement('strong');
+        name.className = 'boss-health-name';
+        const track = document.createElement('div');
+        track.className = 'boss-track'; track.setAttribute('role', 'progressbar');
+        track.setAttribute('aria-valuemin', '0'); track.setAttribute('aria-valuemax', '100');
+        const fill = document.createElement('div'); fill.className = 'boss-health-fill';
+        track.appendChild(fill); row.appendChild(name); row.appendChild(track); rows.appendChild(row);
+      }
+    }
+    if (state.trial) entries.forEach((entry, index) => {
+      const row = rows.children[index], name = row.children[0], track = row.children[1];
+      name.textContent = entry.name; name.title = entry.name;
+      track.setAttribute('aria-label', entry.name + ' 血量');
+      track.setAttribute('aria-valuenow', String(Math.round(entry.ratio * 100)));
+      track.children[0].style.width = `${entry.ratio * 100}%`;
+    });
+  }
+  // Keep the legacy nodes/accessors and armor formula for normal-mode callers.
+  const first = entries[0];
+  document.getElementById('bossName').textContent = first ? first.name : '';
+  bossHealthFill.style.width = first ? `${first.ratio * 100}%` : '0%';
+}
+
+
 function updateHud() {
-  const shownBoss = state.miniboss || state.boss;
-  document.getElementById("bossName").textContent = state.miniboss ? GAME_DATA.chocobear.name + (state.miniboss.armor > 0 ? ' · 糖衣盔甲' : '') : state.trial ? state.trial.definition.name : GAME_DATA.boss.name;
   const maxHealth = maxPlayerHealth();
   const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;
@@ -41,8 +96,7 @@ function updateHud() {
     const icon=stunned?'weakpoint':'posture';
     if(gauge.dataset.icon!==icon){gauge.dataset.icon=icon;gauge.innerHTML='<span aria-hidden="true">'+SurvivorIcons.html(icon)+'</span>';}
   }
-  bossHud.hidden = !shownBoss;
-  if (shownBoss) bossHealthFill.style.width = `${Math.max(0, (shownBoss.hp + (shownBoss.armor || 0)) / (shownBoss.maxHp + (shownBoss.maxArmor || 0))) * 100}%`;
+  updateBossHealthHud();
 }
 
 

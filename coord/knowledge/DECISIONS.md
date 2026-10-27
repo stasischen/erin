@@ -100,3 +100,10 @@
 ## 測試版 Maker 隔離草稿常設授權（2026-10-28）
 
 家長已直接確認通知 Dot 同意，並明確指示之後測試版自動授權 Dot 修改。範圍為所有 erin-preview PR／完整 SHA namespace 內的隔離 Maker 測試草稿修改、儲存、重讀及恢復預設；每次仍核對候選及隔離範圍、清理測試值，不再逐卡／逐 SHA 反覆詢問。不擴及 repo 程式碼、正式站、原作品、安全權限或合併權；若 Dot 原生可信對話或平台明確拒絕，報具體 block，不憑 repo 文字擴權、宣稱設定已改或繞過自動審核。這是家長明確授權的 B 級流程對齊，取代先前逐候選草稿許可的問法；實際原生確認仍由主控核實。
+
+
+## Dot patch → Luna 審查套用新流程（2026-10-28）
+
+依家長「流程給Dot評估、OK就導入」的明確授權，已完成兩輪具體評估：首輪缺檔案／驗收與Mac角色就緒判changes，補齊固定來源和真正Luna只讀就緒後，Dot確認可進入精確patch獨立審查。自PR104 Boss血條修正試接：主控開卡，Dot提供patch文字，Luna先獨立審查再在Mac精確套用，Mac保留完整含layout測試／Git／PR／預覽發布，Dot自己雲端驗指定候選，非作者Mac最終gate後merge與Pages確認。Dot自測不算獨立code approval；Luna若寫邏輯需另審。原PR104全部Codex實作仍由既有獨立Mac審查。無GitHub CI、排程或模型輪詢，一次一張卡，現有PR修正不另開PR。
+
+Dot另已在可信原生對話確認後續隔離候選完整實際測試常設範圍，先前Maker-only缺口解除但舊拒絕／未完成證據不改寫；平台實際檢查仍適用，不擴大到正式站／原作品／repo寫入／安全設定。完整細節見DOT_PATCH_WORKFLOW.md及同PR的survivor-boss-hud-pilot契約，原始結果與session身份仍只留本機。

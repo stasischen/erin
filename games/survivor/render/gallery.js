@@ -117,7 +117,6 @@ function drawTrialBodies(){
    drawBossWeakpoints(body,air);
    const weak=body.posture.stun>0;
    if(weak||body.posture.value>=GAME_DATA.boss.posture.maximum*.75){ctx.fillStyle=weak?'#fff0a5':'#ffb95c';ctx.fillRect(x-16,y-air-70,32,32);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-12,y-air-66,24);}
-   ctx.fillStyle='#293d51';ctx.fillRect(x-34,y+40,68,6);ctx.fillStyle=body.role==='frost'?'#65cfff':body.role==='fire'?'#fa9157':'#b09ae3';ctx.fillRect(x-34,y+40,68*Math.max(0,body.hp/body.maxHp),6);
    ctx.fillStyle='#fff0a5';ctx.fillRect(x-34,y+49,68*body.posture.value/GAME_DATA.boss.posture.maximum,3);
  });
 }

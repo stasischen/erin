@@ -9,12 +9,13 @@
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "PR104 l Maker作者121PASS/160hash與真Chrome五參數回歸；獨立定點已確認P2收斂，完整新組合待審。家長指定Boss血條作Dot patch→Luna審查套用pilot，首評changes要求具體檔案/驗收與Mac角色就緒，已補契約coord/tasks/specs/survivor-boss-hud-pilot.md待Dot重評；尚未採用或套patch。普通隔離gameplay常設原生範圍已由Dot補件確認，不重問。主控保留Git/測試/預覽，既有非作者Mac保留整PR104 gate；不開boss4。",
+  "next": "20261028a：Dot血條精確patch由Luna獨立approve並exactapply，五postimage符合，機械7檔版本同步；Mac完整--layout exit0/73tests/122PASS、161檔hash前後一致。主控提交後發布固定候選，交既有非作者Mac整PR重審及Dot自己雲端三尺寸/刺客全功能/Maker驗收；未宣稱UI通過或merge。前j/k未完成與Maker修正歷史保留，不開boss4。Godot§11：共用資料HUD／像素資產不變，未跑Godot實機。",
   "reviewers": [
+    "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T17:34:26.602804+00:00",
+  "updated": "2026-10-27T17:59:21.609182+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"
