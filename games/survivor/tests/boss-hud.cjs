@@ -78,3 +78,50 @@ assert.equal(nodes.bossHealthFill.style.width, '25%');
 state.mode = 'ready'; update();
 assert.equal(nodes.bossHud.hidden, true); assert.equal(nodes.bossName.textContent, '');
 console.log('PASS: actor HP identity, twin survivor, roster reuse, single bosses, pause/retry/exit cleanup, legacy armor, no state mutation');
+
+// Load the real manifest/lifecycle. Never replace finishRun/showOverlay or call
+// updateBossHealthHud after ending: the production transition must propagate it.
+const createRun = require('./maker-support.cjs');
+for (const kind of ['teacher', 'miniboss']) {
+  for (const won of [false, true]) {
+    const run = createRun();
+    run("resetGame(); state.mode='playing'; settingsPanel.hidden=true; state.stageIndex=STAGES.length-1; state.elapsed=12.75;");
+    run(kind === 'teacher'
+      ? "state.boss={hp:40,maxHp:100}; state.miniboss=null;"
+      : "state.boss=null; state.miniboss={hp:50,maxHp:100,armor:50,maxArmor:100};");
+    run('updateHud()');
+    const hud = run.elements.bossHud, name = run.elements.bossName, fill = run.elements.bossHealthFill;
+    assert.equal(hud.hidden, false, kind + ' visible before end');
+    assert.equal(fill.style.width, kind === 'teacher' ? '40%' : '50%');
+    const hpBefore = run('JSON.stringify({boss:state.boss,miniboss:state.miniboss})');
+    run('togglePause()');
+    assert.equal(run('state.mode'), 'paused');
+    assert.equal(hud.hidden, false, 'pause retains HP');
+    run('togglePause()');
+    assert.equal(run('state.mode'), 'playing');
+    if (!won) run('state.player.health=0');
+    run('finishRun(' + won + ')');
+    assert.equal(run('state.mode'), won ? 'won' : 'over');
+    assert.equal(run('bossHudEntries().length'), 0);
+    assert.equal(hud.hidden, true, kind + ' genuine end hides stale DOM');
+    assert.equal(name.textContent, '');
+    assert.equal(fill.style.width, '0%');
+    assert.equal(run('state.elapsed'), 12.75, 'presentation does not advance clock');
+    assert.equal(run('JSON.stringify({boss:state.boss,miniboss:state.miniboss})'), hpBefore);
+    run('startGame()');
+    assert.equal(run('state.boss'), null);
+    assert.equal(run('state.miniboss'), null);
+    assert.equal(hud.hidden, true, 'normal restart has no stale Boss HUD');
+    assert.equal(name.textContent, '');
+  }
+}
+for (const won of [false, true]) {
+  const run = createRun();
+  run("startTrial('assassin')");
+  assert.equal(run.elements.bossHud.hidden, false);
+  run('finishRun(' + won + ')');
+  assert.equal(run.elements.bossHud.hidden, true, 'existing trial end still clears HUD');
+  assert.equal(run('bossHudEntries().length'), 0);
+  assert.equal(run.elements.bossName.textContent, '');
+}
+console.log('PASS: production normal loss/win, pause/resume, restart and trial end HUD propagation');

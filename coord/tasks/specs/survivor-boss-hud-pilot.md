@@ -31,3 +31,7 @@ repo stasischen/erin，branch codex/survivor-boss3，現有來源基線54564e6a4
 Dot提供UTF8／LF unified diff（含final LF）、原檔hash、patch byte數／SHA256、改檔清單、預期postimage hash與真實自查／未測清單。Luna先對base與patch hash獨立判定，再git apply --check與精確套用，不能自創邏輯後自批；有錯退回Dot同卡修。Mac保留版本／完整測試／Git／PR／發布權限，Dot不需repo寫入權。新增實質修改重新綁定SHA；Dot自身瀏覽器測試不算獨立code approval。非作者Mac在完整證據後match-head merge、等Pages成功與正式版本確認。角色失聯、base漂移、套用／測試／QA失敗均停在同卡交接，不跳門、不加CI、排程或模型輪詢。
 
 Dot已確認原生常設範圍含後續隔離候選的完整實際測試；仍不碰正式站、原作品、repo寫入或安全設定，平台實際拒絕照實回報。早期Maker-only拒絕與未完成遊戲證據保留；新授權不是舊測試PASS。
+
+## 同卡結算刷新補件範圍（2026-10-28）
+
+首patch的a候選42筆真Chrome工程幾何通過，但normal finishRun(false)進結算後留下暗幕後舊HP；未發布a。靜態判為既有normal流程缺口，未做origin/main實機對照。主控依小修授權追加允許render/hud.js、engine/loop.js、ui/levelup.js、既有tests/boss-hud.cjs中的顯示刷新／實際transition回歸；不得改clock／紀錄／戰鬥。Dot最後只提出ui/levelup.js與該test兩檔，Luna獨審及精確套用、Mac機械版本b後完整123PASS。補測須用真實finishRun／showOverlay路徑，不只設mode再手動刷新；normal勝負、暫停續玩、重試及trial結算都要保持。原五檔scope與源hash屬首patch凍結歷史，不追溯改寫。

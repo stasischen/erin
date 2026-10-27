@@ -9,13 +9,13 @@
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "20261028a：Dot血條精確patch由Luna獨立approve並exactapply，五postimage符合，機械7檔版本同步；Mac完整--layout exit0/73tests/122PASS、161檔hash前後一致。主控提交後發布固定候選，交既有非作者Mac整PR重審及Dot自己雲端三尺寸/刺客全功能/Maker驗收；未宣稱UI通過或merge。前j/k未完成與Maker修正歷史保留，不開boss4。Godot§11：共用資料HUD／像素資產不變，未跑Godot實機。",
+  "next": "20261028b：Dot結算補件patch380960603244a4c541b9ad9be79f30b81350cfc9ce05bc82cffc675dc4226508由Luna獨立before-fail/after-pass review及exactapply2postimages，Mac完整--layout exit0/73tests/123PASS/161hash一致。原842/a未發布，normal over舊HP殘留已由真正showOverlay刷新hook修；待新固定候選真Chrome三尺寸/結算全路徑工程、Dot雲端整卡/Maker、非作者Mac整PR重審後才合併。Godot§11保留共用資料與呈現分層，未跑Godot實機，不開boss4。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T17:59:21.609182+00:00",
+  "updated": "2026-10-27T18:28:34.608489+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

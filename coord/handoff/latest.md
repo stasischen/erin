@@ -1,5 +1,21 @@
 # 目前交接
 
+## PR104 b正常結算補件已Luna獨審／精確套用，123PASS待重新工程與雲端（最新）
+
+Dot以842f021183223a7b7b961bd61d9c81b6a975fb82為base的結算補件SHA256380960603244a4c541b9ad9be79f30b81350cfc9ce05bc82cffc675dc4226508，只改ui/levelup.js的一個非暫停showOverlay後HP刷新接點及既有boss-hud測試。Luna先驗同一新test在舊產品因teacher genuine end hides stale DOM失敗、加精確patch後通過，再對真repoexactapply核兩postimage；公開本人紀錄luna-normal-end-patch.md。沒有修改時鐘／紀錄／難度／戰鬥；Maker的獨立finish分支未改，不宣稱該分支已實測。
+
+Mac機械版本20261028b、完整node games/survivor/tools/test.cjs --layout exit0／73test檔／123行PASS／161檔測前後hash一致，diffcheck通過。原a的122PASS／42Chrome幾何與normal結算finding保留，a從未公開；不能算b的真Chrome或Dot證據。接著對本新提交生成固定預覽、重測真Chrome三尺寸normal loss/win/pause/restart及trial end，既有非作者Mac整PR重審、Dot自己雲端整卡／Maker全驗收後才原PR merge。正式仍i，boss4／5未開工。
+
+---
+
+## 842候選工程幾何通過，normal結算殘留觀察待Dot補件（最新）
+
+固定842f021183223a7b7b961bd61d9c81b6a975fb82／20261028a的A/B部署隔離與七key回歸通過，真Chrome injected工程42筆三尺寸HP幾何通過；這仍不是Dot雲端實測。另3尺寸皆捕捉normal老師失敗結算的舊HP DOM未refresh：實際finishRun(false)後mode over、資料entries空但畫面hidden仍false，留在暗幕後，不擋重試；試煉trialMenu清理正常。靜態看為既有結算流程遺留，未冒稱新回歸或已實測origin/main。
+
+主控暫停發布842候選，交Dot判定與最小顯示刷新／實際transition回歸patch，再Luna審查後Mac套用測試。具體允許範圍小幅增加engine/loop.js或ui/levelup.js中normal結算顯示刷新接點，不改時鐘／紀錄／戰鬥；原HUD與test可調，超出須另說明。公開候選尚未發布、正式仍i；原122PASS／161hash／Luna首patch批准仍只對842受測內容有效，不跳過新實質修改重審。
+
+---
+
 ## PR104血條patch已由Luna獨審／精確套用，122PASS待固定預覽與整版驗收（最新）
 
 Dot邏輯patch以base9ae7e85ef8aadd33dab6458746e596c3cafa2ead／SHA25655fa253feb96798966e3daf1eb0bef8c0b737b13f1daf76ff410112058c8d777綁定，由Luna本人先在私有快照獨立審查，再在Mac精確套用五檔且postimage全符；公開審查見coord/reviews/survivor-boss-gallery-3/luna-patch.md。移除試煉Boss身體HP條、改共用上方HUD，冰火雙子各自HP與身份可分辨，保留身體弱點／架勢和原玩法；沒有私修Dot邏輯。
