@@ -1,5 +1,13 @@
 # 目前交接
 
+## Dot首評已核實，試接輸入與Mac角色已補齊（最新）
+
+Dot實際首評changes：概念分工可行、可讀固定源並產生patch文字，但缺精確HP允許檔／驗收及Mac角色就緒，不能當流程已導入。已補coord/tasks/specs/survivor-boss-hud-pilot.md，同PR104不開並行新卡；只改HUD顯示與有意義的回歸測試，版本另由Mac同步。獨立Luna已實際完成只讀就緒檢查並可接審查／精確apply；目前沒有patch可審或套。既有Mac審查員定點確認l Maker數值控件P2及舊smoke更正收斂，完整121PASS仍是作者證據，完整整版審查留最終組合SHA。
+
+另已讀到Dot原生補件：家長常設授權包含後續隔離候選的完整正常試玩，舊Maker-only範圍缺口解除，不再重複詢問；實際平台檢查仍適用。舊j不完整證據、k控件changes均保留，不倒填PASS。以下授權pending句子只代表歷史當時狀態。本輪無程式修改／新遊戲驗收，正式站仍i、PR104仍未合併。
+
+---
+
 ## 主控新流程提案待 Dot 評估（最新，優先於下方歷史）
 
 家長明確指定：主控開卡，Dot提供精確patch，Luna獨立審查後在Mac套用測試分支，Mac跑完整測試與處理Git／PR／預覽發布，Dot驗公開測試版，通過後由Mac非作者角色合併。已寫成 coord/knowledge/DOT_PATCH_WORKFLOW.md 的draft並送Dot評估；收到實際ready結果才導入，不把概念同意當工具／原生授權已具備。Dot不需GitHub寫入權，Luna不能猜補patch邏輯或自寫自批，不新增排程／模型輪詢。

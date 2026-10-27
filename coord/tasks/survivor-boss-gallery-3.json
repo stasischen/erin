@@ -9,12 +9,12 @@
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "PR104版本20261027l／受測修正SHAab260aa8d96090656a8c168d60a2a9a2c595e941待獨立重審；最新HEAD另含純交接提交，160個受測檔相同。Mac完整含--layout exit0/121PASS、真Chrome DOM/AX五參數UI保存/重載/恢復與舊switch回歸通過。重審後主控再發布新固定候選；k Maker基線changes及舊API smoke更正保留。普通gameplay原生澄清pending，不自行送件或接下一卡。",
+  "next": "PR104 l Maker作者121PASS/160hash與真Chrome五參數回歸；獨立定點已確認P2收斂，完整新組合待審。家長指定Boss血條作Dot patch→Luna審查套用pilot，首評changes要求具體檔案/驗收與Mac角色就緒，已補契約coord/tasks/specs/survivor-boss-hud-pilot.md待Dot重評；尚未採用或套patch。普通隔離gameplay常設原生範圍已由Dot補件確認，不重問。主控保留Git/測試/預覽，既有非作者Mac保留整PR104 gate；不開boss4。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T16:50:41.377743+00:00",
+  "updated": "2026-10-27T17:34:26.602804+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

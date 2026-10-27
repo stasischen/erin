@@ -1,6 +1,6 @@
 # Dot patch → Luna review/apply → Dot preview verification
 
-Status: proposal awaiting Dot assessment; not active until a bound ready result is received. This user-authorized proposal preserves the Mac's ownership of Git, pull requests and production merges.
+Status: first Dot assessment returned changes (missing bounded pilot input and Mac role readiness); revised input in coord/tasks/specs/survivor-boss-hud-pilot.md awaits reassessment. Not active until a bound ready result is received. This user-authorized proposal preserves the Mac's ownership of Git, pull requests and production merges.
 
 ## Roles and sequence
 
@@ -29,3 +29,5 @@ Luna is an independent reviewer of Dot's patch and an exact mechanical applier; 
 Weakpoint PR103 is already merged/deployed. Existing PR104 Maker correction is at 20261027l with author Mac121PASS; it has not received final independent/UI acceptance or merged. Keep that evidence/history intact.
 
 After Dot assesses this proposal as executable, use the parent's Boss-health-bar feedback as the first small pilot within PR104, not a parallel next game card: relocate trial Boss HP presentation to a fixed upper HUD region, outside central combat, without overlapping player HUD or controls. Handle single Boss and twins/shared encounter data coherently, preserve health/posture mechanics and body weakpoint/warning cues. Verify three sizes, pause/retry/new-encounter cleanup and existing Boss regressions. Dot first supplies a patch; Luna reviews/applies it; Mac publishes the resulting candidate; Dot then tests that candidate. No blood-bar patch has been applied by this proposal.
+
+The actual native supplement now confirms standing normal isolated-preview testing across later candidates; earlier Maker-only denial is historical and remains recorded. The pilot file/acceptance contract and actual Mac role readiness are now explicit in the pilot spec; no code patch has yet been applied.
