@@ -30,8 +30,9 @@ function drawTrialMoves() {
     if(!['windup','active'].includes(m.ai.phase))continue;
     const def=t.definition.moves.find(d=>d.id===m.id),shape={...def.blocks.moves[0].shape};
     if(m.id==='charge')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
-    SurvivorArt.paint('move/gatekeeper-'+m.id,{context:ctx,x:b.x-40,y:b.y-40,width:80,height:80,animation:m.ai.phase==='windup'?'windup':'active',time:state.elapsed,angle:m.angle,...SurvivorArt.phaseContext(m.ai,def.blocks.moves[0].timing)},()=>{
-      ctx.save();drawTrialShape(shape,m.id==='leap'?m.target:b,m.angle,m.ai.phase==='active');
+    const origin=m.id==='leap'?m.target:b;
+    SurvivorArt.paint('move/gatekeeper-'+m.id,{context:ctx,...SurvivorArt.shapeOptions(shape,origin,m.angle),animation:m.ai.phase==='windup'?'windup':'active',time:state.elapsed,angle:m.angle,...SurvivorArt.phaseContext(m.ai,def.blocks.moves[0].timing)},()=>{
+      ctx.save();drawTrialShape(shape,origin,m.angle,m.ai.phase==='active');
       // 舉盾／舉斧、旋轉武器：圖形動作與地面範圍同時蓄力，無文字橫幅。
       ctx.translate(b.x,b.y);ctx.rotate(m.angle+(m.id==='spin'?state.elapsed*10:0));
       const lift=m.ai.phase==='windup'?-22:0;
@@ -64,7 +65,7 @@ function drawTrialEncounter(){
  const t=state.trial;
  for(const f of t.fields){
    const owner=t.actors.find(b=>b.actorId===f.owner);if(!owner)continue;
-   SurvivorArt.paint('move/'+f.kind,{context:ctx,x:f.x-f.radius,y:f.y-f.radius,width:f.radius*2,height:f.radius*2,radius:f.radius,animation:f.warning>0?'windup':'active',time:state.elapsed,angle:Math.atan2(f.vy||0,f.vx||1)},()=>{
+   SurvivorArt.paint('move/'+f.kind,{context:ctx,...SurvivorArt.shapeOptions({type:'circle',radius:f.radius},f,Math.atan2(f.vy||0,f.vx||1)),animation:f.warning>0?'windup':'active',time:state.elapsed,angle:Math.atan2(f.vy||0,f.vx||1)},()=>{
      ctx.save();ctx.translate(f.x,f.y);
      if(f.kind==='feather'){
        ctx.rotate(Math.atan2(f.vy,f.vx));ctx.fillStyle='#fff4d1';ctx.fillRect(-10,-3,20,6);ctx.fillStyle='#7155a0';ctx.fillRect(-7,3,10,3);
@@ -79,9 +80,12 @@ function drawTrialEncounter(){
  for(const b of trialBodies())for(const m of b.moves){
    if(!['windup','active'].includes(m.ai.phase))continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0],active=m.ai.phase==='active';
-   SurvivorArt.paint('move/'+m.id,{context:ctx,x:b.x-s.shape.radius,y:b.y-s.shape.radius,width:s.shape.radius*2,height:s.shape.radius*2,animation:m.ai.phase,time:state.elapsed,angle:m.angle,...SurvivorArt.phaseContext(m.ai,s.timing)},()=>{
-     const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=encounterShape(m,s.shape);
-     if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
+   const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=encounterShape(m,s.shape);
+   if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
+   const angle=['ring','cross'].includes(shape.type)?shape.angle:m.angle;
+   const rays=m.id==='spiral'?SurvivorGalleryRules.volley(b,m.angle+(active?m.elapsed*s.effect.rotation:0),s.effect.count,Math.PI*2,1,s.shape.angle*Math.PI/180):null;
+   const regions=rays?rays.map(shot=>SurvivorArt.shapeOptions({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx))):undefined;
+   SurvivorArt.paint('move/'+m.id,{context:ctx,...SurvivorArt.shapeOptions(shape,origin,angle),regions,animation:m.ai.phase,time:state.elapsed,...SurvivorArt.phaseContext(m.ai,s.timing)},()=>{
      if(['nova','cross'].includes(m.id)){
        ctx.save();ctx.translate(b.x,b.y);ctx.rotate(shape.angle);ctx.strokeStyle=active?'#ffe391':'#d32c4d';ctx.fillStyle=active?'rgba(255,98,45,.55)':'rgba(229,42,74,.15)';
        if(m.id==='nova'){
@@ -91,7 +95,7 @@ function drawTrialEncounter(){
        }else {for(let i=0;i<2;i++){ctx.rotate(i*Math.PI/2);if(active)ctx.fillRect(-shape.radius,-shape.thickness,shape.radius*2,shape.thickness*2);else {ctx.beginPath();ctx.moveTo(-shape.radius,0);ctx.lineTo(shape.radius,0);ctx.lineWidth=2;ctx.stroke();}}}
        ctx.restore();
      }else if(m.id==='spiral'){
-       for(const shot of SurvivorGalleryRules.volley(b,m.angle+(active?m.elapsed*s.effect.rotation:0),s.effect.count,Math.PI*2,1,s.shape.angle*Math.PI/180))drawTrialShape({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx),active);
+       for(const shot of rays)drawTrialShape({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx),active);
      }else drawTrialShape(shape,origin,m.angle,active);
      if(['dive','icefall','meteor'].includes(m.id)){
        ctx.save();ctx.fillStyle='rgba(42,38,56,.35)';ctx.beginPath();ctx.ellipse(m.target.x,m.target.y,s.shape.radius*.65,18,0,0,Math.PI*2);ctx.fill();

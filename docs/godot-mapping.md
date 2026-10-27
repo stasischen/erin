@@ -1,6 +1,6 @@
 # Survivor 美術與 Godot 移植對照
 
-本卡只準備美術接合，沒有開始移植或更改玩法。依據：`coord/inbox/done/20261026T154905Z-parent-godot-art-prep.md`。初版：20261026aw；美術清單 v2：20261027f。
+本卡只準備美術接合，沒有開始移植或更改玩法。依據：`coord/inbox/done/20261026T154905Z-parent-godot-art-prep.md`。初版：20261026aw；美術清單 v2：20261027g。
 
 ## 換一張圖
 
@@ -32,7 +32,7 @@
 
 `layer/*` 是複合繪圖邊界（地面陰影、整群場地、HUD 輔助等），不是一張可覆蓋整群物件的 PNG。角色、水球／敵方彈、寶石、各種 VFX 是可替換的個別美術入口。`scene/world` 包含剩餘 inline UI、血條與幾何標記；這些仍由 procedural 層繪製，移植時重寫平台畫法。背景 PNG 必須維持固定地磚尺寸以保留拼接。
 
-## v2 選填欄位與換圖契約（20261027f）
+## v2 選填欄位與換圖契約（20261027g）
 
 查詢器接受 schemaVersion 1／2；既有條目不必補新欄位。`lookup(id, animation, seconds, manifest, context)` 是純函式；`picture(id, animation, seconds, context)` 才載圖。context 可傳 direction（S/E/N/W 等）、aim {x,y} 或 angle（世界弧度），以及 phaseElapsed／phaseDuration（秒）。沒有新增欄位或 phaseDuration 時，舊 fps 裁格行為不變。
 
@@ -58,11 +58,11 @@ move/* 若要放圖，須將 mode 改為 sprite；layer/* 複合邊界仍保留�
 
 - fitTo：bounds（預設呼叫端矩形）、radius（半徑直徑）、path（origin 到 target 的長條）、native（原生格子 × scale）。
 - rotateWithAim：預設 false，true 使用 angle 或 path 方向；所有角度只旋轉美術。
-- zLayer：ground／actor／overlay；預設 actor，保持既有順序。一般技能特效可放在角色前後；招式 paint 以 ground 決定在原警示前畫，其餘在原警示後畫，但原地面範圍／缺口函式都仍執行。
+- zLayer：ground／actor／overlay；預設 actor，保持既有順序。一般技能特效可放在角色前後；招式皮膚共用原警示的原點／形狀並裁切在實際範圍內，保留環形缺口；原警示層固定最後畫，不因 zLayer 被蓋住。zLayer 的三層分組用於一般技能特效。
 - blend：source-over（預設）、lighter、multiply、screen；alpha 為 0–1，預設 1，與既有淡出相乘。
 - progressMode：time（預設秒數）、phase（依提供的階段比例選幀）、grow（依比例長大）、fade（依比例淡出）。
 
-補齊 effect/gust、lightning、sparkle、discharge、hammer-swing、maker-ring、burst、impact、perfect-dodge；預設 sheet 仍 null。命中形狀與預警幾何沒有改成圖片輪廓。每動畫獨立圖片、外框、混色與裁格快取只在美術層處理。
+補齊 effect/gust、lightning、sparkle、discharge、hammer-swing、maker-ring、burst、impact、perfect-dodge；預設 sheet 仍 null。shapeOptions 將既有警示幾何提供給圖片：落點招式用鎖定目標、追隨招式用施法者，直線提供真正的起終點及寬度；這些輸入也用來裁切皮膚，避免不透明 PNG 填入環形安全缺口；多射線彈幕共用同一組射線清單，逐條裁圖而不填滿中間空隙。命中形狀與預警幾何沒有改成圖片輪廓。每動畫獨立圖片、外框、混色與裁格快取只在美術層處理。
 
 ### 64×64 方向試作
 

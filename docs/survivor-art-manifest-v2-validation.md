@@ -1,6 +1,6 @@
 # 美術清單 v2 驗證與交接
 
-卡片：coord/tasks/survivor-art-manifest-v2.json；規格：coord/tasks/specs/survivor-art-manifest-v2.md。版本 20261027f；既有清單不必補欄位，查詢器接受 schema 1／2。沒有修改戰鬥規則、碰撞、生成或 Maker 作品 schema；沒有替換正式主角美術。
+卡片：coord/tasks/survivor-art-manifest-v2.json；規格：coord/tasks/specs/survivor-art-manifest-v2.md。版本 20261027g；既有清單不必補欄位，查詢器接受 schema 1／2。沒有修改戰鬥規則、碰撞、生成或 Maker 作品 schema；沒有替換正式主角美術。
 
 ## 實作
 
@@ -13,7 +13,7 @@
 
 ## 驗證
 
-Mac Studio `node games/survivor/tools/test.cjs --layout` 全部通過，exit 0、109 則 PASS；`git diff --check` 通過。完整日誌僅留本機 ~/.local/share/erin/logs/artv2-full-tests.log；沒有 GitHub CI。另單獨跑過 art-manifest、art-manifest-v2、boss-gallery-2 與真實 layout。
+首輪 20261027f 的 Mac Studio `node games/survivor/tools/test.cjs --layout` 全部通過，exit 0、109 則 PASS；`git diff --check` 通過。完整日誌僅留本機 ~/.local/share/erin/logs/artv2-full-tests.log；沒有 GitHub CI。另單獨跑過 art-manifest、art-manifest-v2、boss-gallery-2 與真實 layout。
 
 - 原 art-manifest 測試的六組改動前 Canvas SHA-256 與 153 組固定戰鬥 trace 全部相同；未重新產生基準。既有條目的舊 fps、圖片裁格與失敗回退仍受測試覆蓋。
 - 新純函式案例：預設值、schema1、4/8 向、鏡像／循環拒絕、不同方向格子、margin／spacing、逐幀時間與精確邊界、階段拉伸／停用、名稱回退、獨立 sheet、顯示錨點／倍率、來源深複製、非法資料／路徑、VFX 路徑／混色設定、保留原警示、玩家不雙重翻轉、碰撞不變。
@@ -31,7 +31,17 @@ Mac Studio `node games/survivor/tools/test.cjs --layout` 全部通過，exit 0�
 ## Godot §11
 
 - §11.1／11.4：清單欄位是可 JSON 序列化的數據；每格尺寸、方向／鏡像、原稿、色票、來源、顯示與碰撞分離。仍是 classic JS 包裝，未全面轉 JSON。
-- §11.2／11.6：lookup／direction／frameRect／phaseContext／vfxPlan／sheetPaths 為純查詢，固定秒數與方向輸入，有邊界／舊等價案例。圖片載入、裁圖、外框與 draw 屬平台層。
+- §11.2／11.6：lookup／direction／frameRect／phaseContext／shapeOptions／vfxPlan／sheetPaths 為純查詢，固定秒數與方向輸入，有邊界／舊等價案例。圖片載入、裁圖、外框與 draw 屬平台層。
 - §11.3：只讀既有階段，沒有用播放結束觸發傷害；未新增事件匯流排。
 - §11.5：音訊未變，沿用既有原稿與匯出待辦。
 - §11.7：displaySize／scale 不寫回碰撞或輸入；幀速率不改邏輯秒數。Godot flip_h／SpriteFrames 命名／speed_scale 與 VFX 對照見 docs/godot-mapping.md；本輪未執行 Godot。
+
+## 首輪獨立審查 changes 與修正（20261027g）
+
+審查員在三尺寸實際確認 move/icefall 的圖在 Boss 身上，原警示卻在鎖定落點；gatekeeper leap 同樣由兩處不同原點產生。首輪 tests 雖通過，不能代表換皮已正確，PR #102 未合併；原 changes 紀錄與 PR 留言保留。
+
+- 修正共用 shapeOptions：皮膚與原警示使用同一 origin／shape。冰錐、隕石、俯衝及守門人跳砸都用 m.target；nova 等施法者中心招式維持 body；衝鋒使用實際射線長度。正常老師的跳砸／追蹤／落點群也讀實際 points，其餘招式依原警示的圈、線或牆提供皮膚幾何。沒有改動命中／傷害／生成規則。
+- 圖片只裁在原警示範圍內，環形缺口不被不透明圖填滿；spiral 亦共用原彈幕射線列表，逐條裁圖保留缺口，警示固定最後畫。alpha／blend 與一般特效的圖層設定仍有效；shapeOptions／clip 只影響繪圖。
+- 新 art-telegraph-geometry 案例：Boss=(315,305)、落點=(500,480)，兩軸明顯不同，驗證 icefall／meteor／dive／leap 的 windup／active 都對齊原警示；nova 仍以施法者為中心，普通老師落點亦覆蓋。
+- 十尺寸真實 Chrome 另讀不透明圖的環形缺口像素：缺口為透明、危險環仍有圖，避免只測原警示函式有執行。獨立的 layout 與新／舊 art 測試已通過；最後修正版 Mac Studio 全套含 --layout exit 0、110 PASS；`git diff --check` 通過，日誌 ~/.local/share/erin/logs/artv2-revision-final-tests.log。新被審 SHA 以同 PR 的修正回覆與 HEAD 核對。
+- 版本、?v=、sw 同步升為 20261027g；同一分支與 PR 修正，再交原獨立 session 重審。

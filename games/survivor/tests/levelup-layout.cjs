@@ -67,6 +67,19 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     const canvas=document.createElement('canvas');canvas.width=canvas.height=64;
     SurvivorArt.draw(id,{context:canvas.getContext('2d'),x:0,y:0,width:64,height:64,direction:'W'});
     if(color(canvas,12,30)!=='237,125,158,255')throw Error('實際繪圖未使用方向與顯示大小');
+    // Opaque artwork must not fill the real safe gap in a ring warning.
+    const ring=document.createElement('canvas');ring.width=ring.height=96;
+    const size=SurvivorArtManifest.assets[id].displaySize;delete SurvivorArtManifest.assets[id].displaySize;
+    try {
+      SurvivorArt.draw(id,{context:ring.getContext('2d'),...SurvivorArt.shapeOptions({type:'ring',radius:32,thickness:12,gap:Math.PI/2},{x:48,y:48}),direction:'E'});
+      if(ring.getContext('2d').getImageData(76,48,1,1).data[3]!==0||ring.getContext('2d').getImageData(48,20,1,1).data[3]===0)throw Error('不透明換皮填掉安全缺口');
+      const rays=document.createElement('canvas');rays.width=rays.height=96;
+      const alias='move/fixture-rays';SurvivorArtManifest.assets[alias]=JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));SurvivorArtManifest.assets[alias].vfx={rotateWithAim:true};
+      try {
+        SurvivorArt.paint(alias,{context:rays.getContext('2d'),regions:[-Math.PI/4,Math.PI/4].map(angle=>SurvivorArt.shapeOptions({type:'line',length:40,radius:2},{x:48,y:48},angle))},()=>{});
+        if(rays.getContext('2d').getImageData(76,48,1,1).data[3]!==0||rays.getContext('2d').getImageData(65,65,1,1).data[3]===0)throw Error('換皮填掉彈幕缺口或旋轉錯誤');
+      }finally{delete SurvivorArtManifest.assets[alias];}
+    } finally {SurvivorArtManifest.assets[id].displaySize=size;}
     return true;
   })()`),true,'美術 v2 真實像素與鏡像');
   await evaluate("startGame();true");

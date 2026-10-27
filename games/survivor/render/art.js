@@ -52,7 +52,7 @@
   function lookup(id,animation='idle',seconds=0,manifest=root.SurvivorArtManifest,context={}) {
     if(!manifest||!owns(manifest.assets,id))return null;
     const a=manifest.assets[id],name=animationName(a,animation),clip=a.animations[name];if(!clip)return null;
-    const facing=resolveDirection(a,context.direction===undefined?context.aim===undefined?context.angle:context.aim:context.direction);
+    const facing=resolveDirection(a,context.direction!==undefined?context.direction:Number.isFinite(context.angle)?context.angle:context.aim);
     if(!facing||facing.row<0)return null;
     const mapped=!Array.isArray(clip.frames),frames=mapped?clip.frames[facing.sourceDirection]:clip.frames;
     if(!arrayOK(frames))return null;
@@ -117,6 +117,25 @@
     const w=(art.displaySize?art.displaySize[0]:width)*scale,h=(art.displaySize?art.displaySize[1]:height)*scale;
     return [x+width*art.hitboxAnchor[0]-w*art.pivot[0],y+height*art.hitboxAnchor[1]-h*art.pivot[1],w,h];
   }
+  function shapeOptions(shape,origin,angle=0) {
+    const radius=Math.max(0,shape.radius||0),outer=radius+(shape.type==='ring'?(shape.thickness||0):0);
+    return {x:origin.x-outer,y:origin.y-outer,width:outer*2,height:outer*2,radius:outer,angle,
+      ...(shape.type==='line'?{x:origin.x,y:origin.y-radius,width:shape.length,height:radius*2}:{}),
+      origin:{x:origin.x,y:origin.y},target:{x:origin.x+Math.cos(angle)*(shape.length||radius),y:origin.y+Math.sin(angle)*(shape.length||radius)},shape:copy(shape)};
+  }
+  function clipShape(g,options) {
+    const s=options.shape,o=options.origin;if(!s||!o)return;
+    g.save();g.translate(o.x,o.y);g.rotate(options.angle||0);g.beginPath();
+    if(s.type==='line')g.rect(0,-s.radius,s.length,s.radius*2);
+    else if(s.type==='sector'){g.moveTo(0,0);g.arc(0,0,s.radius,-s.angle*Math.PI/360,s.angle*Math.PI/360);g.closePath();}
+    else if(s.type==='ring'){
+      const start=(s.gap||0)/2,end=Math.PI*2-start,outer=s.radius+(s.thickness||0),inner=Math.max(0,s.radius-(s.thickness||0));
+      g.arc(0,0,outer,start,end);g.arc(0,0,inner,end,start,true);g.closePath();
+    }else if(s.type==='cross'){g.rect(-s.radius,-s.thickness,s.radius*2,s.thickness*2);g.rect(-s.thickness,-s.radius,s.thickness*2,s.radius*2);}
+    else g.arc(0,0,s.radius,0,Math.PI*2);
+    g.restore();g.clip();
+    if(s.type==='cross'){g.beginPath();g.arc(o.x,o.y,s.radius,0,Math.PI*2);g.clip();}
+  }
   function vfxPlan(art,options) {
     const v=art.vfx,progress=positive(options.phaseDuration)?Math.max(0,Math.min(1,(options.phaseElapsed===undefined?options.time||0:options.phaseElapsed)/options.phaseDuration)):0;
     let box=options.box||[options.x,options.y,options.width,options.height],angle=options.angle||0;
@@ -158,16 +177,16 @@
     const art=lookup(id,options.animation,options.time,root.SurvivorArtManifest,options);if(!art||art.mode!=='sprite')return false;
     const frame=picture(id,options.animation,options.time,options);if(!frame)return false;
     const g=options.context,box=bounds(id,options.x,options.y,options.width,options.height,options),plan=vfxPlan(art,{...options,box});
-    g.save();g.imageSmoothingEnabled=false;
+    g.save();g.imageSmoothingEnabled=false;clipShape(g,options);
     if(art.vfx.alpha!==1||art.vfx.progressMode==='fade')g.globalAlpha*=plan.alpha;
     if(plan.blend!=='source-over')g.globalCompositeOperation=plan.blend;
     let rect=plan.box;
-    if(plan.angle){const cx=art.vfx.fitTo==='path'&&options.origin?options.origin.x:rect[0]+rect[2]/2,cy=art.vfx.fitTo==='path'&&options.origin?options.origin.y:rect[1]+rect[3]/2;g.translate(cx,cy);g.rotate(plan.angle);rect=[rect[0]-cx,rect[1]-cy,rect[2],rect[3]];}
+    if(plan.angle){const cx=(art.vfx.fitTo==='path'||options.shape&&options.shape.type==='line')&&options.origin?options.origin.x:rect[0]+rect[2]/2,cy=(art.vfx.fitTo==='path'||options.shape&&options.shape.type==='line')&&options.origin?options.origin.y:rect[1]+rect[3]/2;g.translate(cx,cy);g.rotate(plan.angle);rect=[rect[0]-cx,rect[1]-cy,rect[2],rect[3]];}
     g.drawImage(frame,...rect);g.restore();return true;
   }
   function paint(id,options,fallback) {
     // 招式換皮不能移除地面範圍／缺口等判讀資訊。
-    if(options&&id.startsWith('move/')){const art=lookup(id),under=art&&art.vfx.zLayer==='ground';if(under)draw(id,options);fallback();if(!under)draw(id,options);return;}
+    if(options&&id.startsWith('move/')){for(const region of options.regions||[{}])draw(id,{...options,...region});fallback();return;}
     if(draw(id,options))return;return fallback();
   }
   function iconHtml(id) {
@@ -175,7 +194,7 @@
     const frame=picture(id);if(!frame)return null;
     return '<img class="pixel-icon" data-survivor-art="'+id+'" src="'+frame.toDataURL()+'" alt="" aria-hidden="true" draggable="false">';
   }
-  root.SurvivorArt={lookup,validate,bounds,picture,draw,paint,iconHtml,direction,resolveDirection,frameRect,sheetPaths,vfxPlan,phaseContext};
+  root.SurvivorArt={lookup,validate,bounds,picture,draw,paint,iconHtml,direction,resolveDirection,frameRect,sheetPaths,vfxPlan,phaseContext,shapeOptions};
   root.Survivor=root.Survivor||{};if(typeof window!=='undefined')window.Survivor=root.Survivor;
   root.Survivor.render=root.Survivor.render||{};root.Survivor.render.art=root.SurvivorArt;root.Survivor['art-manifest']={data:root.SurvivorArtManifest};
 })(globalThis);

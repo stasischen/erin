@@ -31,11 +31,25 @@ function bossAirHeight() {
 function drawBossMoves() {
   return SurvivorArt.paint('layer/draw-boss-moves', null, () => drawBossMovesPlaceholder.apply(this, arguments));
 }
+function bossArtShapes(move) {
+  const kind=bossKind(move),d=bossDefinition(move),shape=SurvivorArt.shapeOptions;
+  if(['leap','tracking','rain','call'].includes(kind))return move.points.map(p=>shape({type:'circle',radius:p.r},{x:move.x+deltaX(p.x,move.x),y:move.y+deltaY(p.y,move.y)},move.angle));
+  if(['ring','cage'].includes(kind)) {
+    const radius=!move.active?move.radius:kind==='cage'?move.radius*Math.max(0,move.life/d.duration):Math.hypot(deltaX(ringPoints(move)[0].x,move.x),deltaY(ringPoints(move)[0].y,move.y));
+    return [shape({type:kind==='ring'?'ring':'circle',radius,thickness:10,gap:kind==='ring'?d.gap:0},move,move.angle)];
+  }
+  if(['dash','combo'].includes(kind))return [shape({type:'line',radius:state.boss.r,length:Math.hypot(deltaX(move.endX,move.x),deltaY(move.endY,move.y))},move,move.angle)];
+  if(kind==='sniper')return [shape({type:'line',radius:1,length:1400},move,move.angle)];
+  if(kind==='barriers')return [-1,1].map(sign=>shape({type:'line',radius:8,length:move.radius*2},{x:move.x+sign*move.wallWidth,y:move.y-move.radius},Math.PI/2));
+  if(kind==='wall')return [shape({type:'line',radius:10,length:move.wallHeight},{x:wallX(move),y:move.y},Math.PI/2)];
+  if(['words','chalk'].includes(kind))return Array.from({length:move.count},(_,i)=>shape({type:'line',radius:1.5,length:170},move,move.angle+(i-(move.count-1)/2)*d.spread));
+  return [shape({type:'circle',radius:50},move,move.angle)];
+}
 function drawBossMovesPlaceholder() {
   if(state.trial) {drawTrialMoves();return;}
   for (const move of state.bossMoves) {
     // 美術是附加層；判定預警仍依原幾何畫出。
-    SurvivorArt.draw('move/boss-'+move.id,{context:ctx,x:move.x-32,y:move.y-32,width:64,height:64,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed,...bossArtContext(move)});
+    for(const skin of bossArtShapes(move))SurvivorArt.draw('move/boss-'+move.id,{context:ctx,...skin,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed,...bossArtContext(move)});
     if(move.recovery>0) {
       // 收招時移除危險區，只用像素亮點提示反擊機會。
       ctx.save();ctx.fillStyle='#ffcf49';

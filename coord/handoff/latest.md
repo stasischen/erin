@@ -4,9 +4,9 @@
 
 ## 進行中：第 2 張美術清單 v2
 
-- 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；目標版本 20261027f。
+- 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；目標版本 20261027g。
 - 方向／鏡像、atlas 排版、逐幀／階段動畫、顯示大小、外框與 VFX 設定已完成；正式角色仍沿用原美術，新增圖只供驗證。詳細交接：docs/survivor-art-manifest-v2-validation.md。
-- Mac Studio 全套 node games/survivor/tools/test.cjs --layout：exit 0、109 PASS；含十尺寸真實 PNG 像素／鏡像／白閃與既有操作。六組原 Canvas hash／153 戰鬥 trace 基準未更新且全部相同，git diff --check 通過。
+- Mac Studio 全套 node games/survivor/tools/test.cjs --layout：exit 0、110 PASS；含十尺寸真實 PNG 像素／鏡像／白閃與既有操作。六組原 Canvas hash／153 戰鬥 trace 基準未更新且全部相同，git diff --check 通過。
 - PR #102 已建立：https://github.com/stasischen/erin/pull/102 。實作提交 819f842，主控已停手交既有獨立審查 session；確切被審 HEAD 以 PR 查詢為準。審查須看確切 HEAD、自行重跑測試、三尺寸實玩原遊戲及暫換 sample 資產確認新欄位；通過才依授權合併與檢查 Pages。
 - 本 PR 同時收錄流程維護合併後的 done 與部署快照，沒有更改協作規則。
 
@@ -19,3 +19,5 @@
 ## 接下來
 
 主控追蹤 artv2 審查，有修改回同分支與同 PR；合併部署後主動向家長回報改動、試玩、測試、版本與小毛病，再問下一步。第 3 張 survivor-weakpoint 尚未開工；需等家長決定才開始。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。
+
+PR #102 首輪獨立判定 changes：落點圖與警示錯位，未合併。主控已接回，修正共享原點／形狀並裁切保留安全缺口；十尺寸 layout 與新位置回歸已通過，修正版完整修正版 exit 0、110 PASS（含安全缺口像素檢查），版本 20261027g。現在推同分支交原 session 重審，原 changes 紀錄保留。

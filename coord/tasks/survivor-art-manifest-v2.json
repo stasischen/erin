@@ -9,12 +9,12 @@
   "branch": "codex/survivor-artv2",
   "pr": 102,
   "brief": "coord/tasks/specs/survivor-art-manifest-v2.md",
-  "next": "PR #102 待獨立審查；Mac Studio 全套含 --layout 109 PASS。三尺寸實玩與暫換方向圖／動畫／VFX後，通過才合併。",
+  "next": "PR #102 修正版 20261027g，全套含 --layout 110 PASS；交獨立 session 重驗落點、缺口及三尺寸完整回歸後再判定。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T09:48:03Z",
+  "updated": "2026-10-27T10:19:24Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-trial-hotfix"
