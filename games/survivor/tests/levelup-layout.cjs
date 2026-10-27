@@ -33,7 +33,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   if(devicePixelRatio!==3||!matchMedia('(pointer: coarse)').matches)throw Error('缺少DPR3或觸控模擬');
   return {blank,share};
  })()`;
- for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[461,1024]]){
+ for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[1180,820],[461,1024]]){
   // Page.enable 只在全新 session 呼叫一次。前一尺寸留下的動態 iframe、
   // 輸入焦點與 Page domain 狀態不應帶進下一個尺寸（Grok 已重現第二輪卡住）。
   const {targetId}=await send('Target.createTarget',{url:'about:blank'});

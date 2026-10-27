@@ -2355,8 +2355,8 @@ SURVIVOR_DEFAULTS.boss.moves.forEach(m => {m.feedback={move:{level:'small',hitSt
 
 // ✏️ Erin 可以改：王的試煉初值；距離為世界單位，時間為秒。
 SURVIVOR_DEFAULTS.gallery = {
-  "schemaVersion": 1,
-  "arenaRadius": 620,
+  "schemaVersion": 2,
+  "arenaRadius": 200,
   "entrySeconds": 2,
   "wallStun": 2,
   "hazardLimit": 16,
@@ -2587,5 +2587,7 @@ SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
 // ✏️ Erin 可以改：每招的 AI 距離帶（世界單位），不依賴競技場大小。
 SURVIVOR_DEFAULTS.gallery.bosses.forEach(b=>b.moves.forEach(m=>{
   const ranged=['charge','leap','frost-dash','dive','feathers','spiral','tornado','icefall','meteor'].includes(m.id);
-  m.ai={minDistance:0,maxDistance:ranged?480:200,angleWeight:0,phaseWeight:0,offscreen:true};
+  if(b.id==='gatekeeper'&&m.id==='charge')m.minPhase=1;
+  const shape=m.blocks.moves[0].shape;
+  m.ai={minDistance:m.id==='charge'?70:0,maxDistance:ranged?600:shape.radius+18,angleWeight:0,phaseWeight:0,offscreen:true};
 }));

@@ -266,3 +266,7 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .trial-choice img { width:84px; height:84px; padding:10px; border-radius:50%; border:4px solid #694f5d; background:#c8af8e; image-rendering:pixelated; }
 .trial-choice:focus-visible { outline:4px solid #865ac9; border-radius:12px; }
 .trial-entry { border-radius:50%; width:52px; height:52px; padding:8px; }
+
+.experience-wrap[hidden], .status[hidden], .level-label[hidden], .trial-confirm[hidden] { display:none; }
+.trial-confirm { text-align:center; padding:16px; background:#142b40; color:#eef8ff; border:2px solid #8cbad0; }
+.trial-confirm-actions { display:flex; justify-content:center; gap:16px; }

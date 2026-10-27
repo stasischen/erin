@@ -317,7 +317,7 @@
   function drawBoss() {
     if(selected.boss==='gallery') {
       const p=panel('王的試煉 · 圓形競技場'),g=draft.gallery;
-      range(p,g,'arenaRadius',[420,1200,20],'競技場半徑');range(p,g,'entrySeconds',[1,5,.1],'入口預警秒數');range(p,g,'wallStun',[1,5,.1],'撞牆暈眩秒數');
+      range(p,g,'arenaRadius',[200,300,10],'競技場半徑');range(p,g,'entrySeconds',[1,5,.1],'入口預警秒數');range(p,g,'wallStun',[1,5,.1],'撞牆暈眩秒數');
       range(p,g,'hazardLimit',[1,32,1],'危險區上限');range(p,g,'summonLimit',[1,16,1],'召喚物上限');
       const hazard=el('fieldset',undefined,p);el('legend','共用地面危險區積木（供後續 Boss 使用）',hazard);
       select(hazard,'種類',g.hazard,'kind',{poison:'毒池',ice:'冰面',fire:'火圈'});

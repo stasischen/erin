@@ -487,11 +487,12 @@
         return result;
       });
       if(input.gallery !== undefined) {
-        const base=data.gallery, g={...input.gallery};
+        const base=data.gallery, g={...input.gallery},legacy=g.schemaVersion===1;
+        if(legacy)g.arenaRadius=Math.max(200,Math.min(300,num(g.arenaRadius,420,1200,'舊競技場半徑')*200/620));
         if(Array.isArray(g.bosses)&&g.bosses.length===1&&g.bosses[0].id==='gatekeeper')g.bosses=[...g.bosses,...JSON.parse(JSON.stringify(base.bosses.slice(1)))];
-        if(!g || g.schemaVersion!==1 || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
-        const result={schemaVersion:1};
-        for(const [k,lo,hi] of [['arenaRadius',420,1200],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
+        if(!g || ![1,2].includes(g.schemaVersion) || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
+        const result={schemaVersion:2};
+        for(const [k,lo,hi] of [['arenaRadius',200,300],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
         const h=g.hazard;if(!h)fail('地面危險區資料缺少');
         result.hazard={kind:choice(h.kind,['poison','ice','fire'],'危險區種類')};
         for(const [k,lo,hi] of [['radius',20,200],['duration',.1,15],['interval',.1,3],['damage',0,40],['slow',.2,1]])result.hazard[k]=num(h[k],lo,hi,k);
@@ -503,11 +504,11 @@
             const originalMove=original.moves[j],s=m.blocks && m.blocks.moves && m.blocks.moves[0];
             if(m.id!==originalMove.id || !s || m.blocks.version!==1 || m.blocks.moves.length!==1 || s.id!=='move' || !s.trigger || s.trigger.event!=='onSelect' || s.shape.type!==originalMove.blocks.moves[0].shape.type || !s.feedback || s.feedback.pose!==m.id || s.feedback.warning!=='ground' || s.feedback.level!=='medium' || !s.effect)fail('試煉招式積木錯誤');
             const timing={};for(const [k,lo,hi] of [['windup',.6,3],['active',.1,4],['recovery',.2,3],['cooldown',.1,8]])timing[k]=num(s.timing[k],lo,hi,k);
-            const a=m.ai===undefined?originalMove.ai:m.ai;
+            const a=m.ai===undefined||(legacy&&m.ai.minDistance===0&&m.ai.maxDistance===10000)?originalMove.ai:m.ai;
             if(!a)fail('試煉 AI 規則缺少');
             const ai={minDistance:num(a.minDistance,0,10000,'AI 最近距離'),maxDistance:num(a.maxDistance,0,10000,'AI 最遠距離'),angleWeight:num(a.angleWeight,0,10,'AI 朝向加權'),phaseWeight:num(a.phaseWeight,0,10,'AI 階段加權'),offscreen:typeof a.offscreen==='boolean'?a.offscreen:fail('AI 畫面外規則需為開關')};
             if(ai.minDistance>ai.maxDistance)fail('AI 最近距離不可大於最遠距離');
-            return {id:m.id,ai,name:name(m.name,'試煉招式',24),minPhase:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度'),...(originalMove.blocks.moves[0].shape.thickness!==undefined?{thickness:num(s.shape.thickness,2,40,'環或光束半寬')}:{})},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度'),...(originalMove.blocks.moves[0].effect.duration!==undefined?{duration:num(s.effect.duration,.1,10,'危險區／彈幕壽命'),interval:num(s.effect.interval,.1,3,'生成間隔'),count:num(s.effect.count,1,32,'羽毛數量',true),slow:num(s.effect.slow,.2,1,'冰面剩餘速度'),rotation:num(s.effect.rotation,0,6,'旋轉速度')}:{})},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
+            return {id:m.id,ai,name:name(m.name,'試煉招式',24),minPhase:legacy&&b.id==='gatekeeper'&&m.id==='charge'?1:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度'),...(originalMove.blocks.moves[0].shape.thickness!==undefined?{thickness:num(s.shape.thickness,2,40,'環或光束半寬')}:{})},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度'),...(originalMove.blocks.moves[0].effect.duration!==undefined?{duration:num(s.effect.duration,.1,10,'危險區／彈幕壽命'),interval:num(s.effect.interval,.1,3,'生成間隔'),count:num(s.effect.count,1,32,'羽毛數量',true),slow:num(s.effect.slow,.2,1,'冰面剩餘速度'),rotation:num(s.effect.rotation,0,6,'旋轉速度')}:{})},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
           });return boss;
         });data.gallery=result;
       }
