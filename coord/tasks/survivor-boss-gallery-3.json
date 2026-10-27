@@ -5,16 +5,16 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：雙刃刺客",
-  "state": "doing",
+  "state": "peer_review",
   "branch": "codex/survivor-boss3",
-  "pr": null,
+  "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "雙刃刺客實作與版本20261027j完成；Mac完整含--layout exit0、git diff --check及三尺寸作者UI工程smoke通過，正在push並開PR。開PR後交獨立session程式審查/Mac完整測試，再由Dot雲端對固定候選三尺寸及卡片功能實玩；Godot §11.1–11.7及差距見docs/survivor-boss-gallery-3.md。",
+  "next": "PR104已開，實作SHA24e8b64040b0c4ebe749ad01c92228c7b16f3e08／版本20261027j。實作者停手，主控先派獨立session程式審查及Mac完整含--layout；通過後對同一固定候選交Dot自己的雲端電腦做三尺寸與卡片功能，核實證據後由審查員決定合併。Godot §11.1–11.7及試玩路徑見docs/survivor-boss-gallery-3.md；未宣稱Dot通過，不開下一卡。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T15:11:19.241574+00:00",
+  "updated": "2026-10-27T15:13:37.353174+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

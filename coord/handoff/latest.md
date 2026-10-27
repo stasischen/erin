@@ -83,3 +83,8 @@ GROKBOT 恢復時沿用公開測試站與 Git 版工具，分清 Mac 工程驗�
 - 作者正常UI工程smoke在1024×461、740×360、1180×820通過：王冠選單四王與最佳時間列、刺客入場、移動／衝刺／按住放開攻擊／暫停續玩，Canvas滿版、HUD控件不重疊。只見既有本機favicon.ico404，無遊戲資源錯誤或JS例外；這不是獨立審查或Dot驗收，未聲稱作者UI已打贏或完成半血／破架勢。
 - 正常試玩、半血／架勢操作、Maker設定與保存重載、Godot §11.1–11.7適用項目與差距見 `docs/survivor-boss-gallery-3.md`。純規則與真引擎已驗每刀信用、5刀衝刺資源、貼牆換位、白閃先於傷害、先射後滑、倍率及紀錄隔離；Godot未實機執行、手感平衡待實玩。
 - 家長授權的Dot雲端分工已最小對齊AGENTS／GAME_WORKFLOW／本卡brief與DECISIONS；後續由獨立session先程式審查與Mac全套，再對同固定候選交Dot雲端正式三尺寸／卡片驗收。Maker須有該PR／SHA草稿許可並清理，正式站／原作品不碰。尚無本版Dot通過或合併判定；開PR後實作者停手，boss4／boss5不開工。
+
+
+## boss3 PR104 交獨立審查
+
+PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 SHA `24e8b64040b0c4ebe749ad01c92228c7b16f3e08`，版本 `20261027j`；本段與卡片 PR／狀態為後續純交接提交，遊戲／測試／快取159檔與受測內容相同，正式審查仍核對 PR 最新完整 HEAD。實作者已完成開 PR 所需交接，停止寫入，不 approve／merge；先由獨立 session 程式審查及 Mac 全套，再交 Dot 同一固定候選正式雲端試玩，任何實質修正都在原分支並重新驗證／綁定。boss4／boss5仍未開工。
