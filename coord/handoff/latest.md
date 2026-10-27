@@ -1,5 +1,93 @@
 # 目前交接
 
+## A／B作用域證據已收齊，交非作者做整PR最終判定（最新）
+
+受測及公開候選source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b。主控只彙整證據，不自行批准自己早期實作；本提交僅公開coord紀錄，161個受測source/test/cache與該source完全相同。
+
+| 範圍 | 已取得證據與限制 |
+| --- | --- |
+| Mac預設程式 | Luna與獨立Mac完整含layout均exit0／73test檔／123PASS，161hash測前後與提交一致；精確4.5倍、嚴格半血／鎖段、同幀事件順序、pause計時、較快才覆寫由純規則／真引擎覆蓋。 |
+| 正常試煉 | Dot自己雲端normal-auto／pause-assisted真勝利52.56秒，reload保留；不是default-manual配平批准。 |
+| Fixture A | CUSTOM只recoveryGain12→100，四encounter×三真iframe12格實玩／真暈眩；刺客真紅窗manual新充放命中；雙子Fire死只留Ice93%；Maker13.01與normal52.56分離且各自reload。另兩尺寸不補寫Fire未測格；獨審確認12encounter範圍充分。 |
+| Fixture B | 同1024×461真frame：HP100時完整四次紅預警→橙出手→收招；HP47時完整五次。影步消失／背後重現／白閃／刺擊有直接片段，近牆落點留場內；苦無扇形／五彈與後續橫移可見。只連斬2/.5、三招傷害1為CUSTOM，未改HP／架勢／刀數／位移／權重。 |
+| 發布工程 | 固定preview ec7e7bc0f6966a3bd463941cc3156369d1b39b71、Pages40560933832 success、285HTTP/hash、舊215不變；七key A/B隔離、78真Chrome工程幾何與30結算trace通過，這些不冒充Dot實玩。 |
+
+A已採用Dot格式重發的標準封包，與原件實質完全相同；原始只format-superseded。B標準封包亦接收approve／fixture_b_visual_only，均whole_pr/code_approval=false。B未拍近牆那次橙刺擊frame，開放場地白閃→橙刺已拍；不聲稱同幀發射微序、精確wall算術或預設節拍配平。shadow active鄰文.12、slider accessibility.1與初始讀值相同、未編輯，不以此推測源資料被改。
+
+A/B均UI Reset→Save→reload逐項恢復，B核HP1600、damage12/18/10、blade.85/.1、shadow1.1/.12、kunai.9/.5、counts4/5、recovery12/max100/dodge30/decay6/stun2.5、.2/3/1.5、manual1；normal52.56與Maker13.01重讀在，無pending或活局、自己的tabs已關。各早期partial保留，不改成整體通過。
+
+最後由既有非作者Mac核全PR diff／鐵則／這份分層證據及僅coord新增差異，判approve或具體changes；同意才match-head merge commit，等正式Pages並開正式站核版本b。此刻尚未批准／merge，正式仍i；boss4/5未開工。私人原件／session／完整logs／screenshots不入repo。
+
+---
+
+## Fixture A格式已正式接收，僅剩B可見鏈路及最終核對（最新）
+
+Dot已另發標準enum修正版，頂層approve但acceptance_scope=fixture_a_only、whole_pr/code_approval=false。Root逐欄比較：只有傳輸欄位變動，12格／紅窗／雙子／紀錄／清理等實質資料完全相同；標準receiver已成功採納修正版。原始不合法enum回件完整保留，只標format-superseded，不追溯改觀察、不重測、不在本機偽造approve。非作者Mac已認A的12個encounter×尺寸實玩／暈眩格與限定的雙子演員範圍充分，不新增Fire另外兩格硬門檻；CUSTOM仍不是default配平批准。
+
+已送Fixture B，只在已驗1024×461補刺客可見4／5刀、影步消失／背後／白閃／刺擊及靠牆、苦無與側滑。先用恢復預設架勢、刀數4／5；需要才三招傷害1、連斬windup2/active.5、HP500、其他招windup2（active不變，避免改側滑距離），全部CUSTOM逐項列／末UI reset-save-reload恢復。先不改權重，不重做A。精確倍率／嚴格半血／跨半血鎖段／同幀發射先於移動／精準pause／較快才覆寫已有獨立Mac預設純規則與真引擎證據；normal老師／熊結算已有production-path及三尺寸Chrome工程，不另擴真人一般波次通關門檻。
+
+之後仍須B實際結果與非作者Mac整份候選最終核對，尚未整PR批准／merge。程式仍13851b6／20261028b、Mac123PASS不重跑、正式仍i；normal52.56與Maker13.01、A及各partial依範圍保留。boss4／5未開工。
+
+---
+
+## Fixture A已回報12格功能完成，格式修正／最終獨審仍待（最新）
+
+同source13851b6fd7c9f7683231b36c9e2613c30f050909／b的Dot原件：只改Maker共用recoveryGain12→100（未改HP／傷害），四既有試煉Boss×三真iframe尺寸12格均有實玩／真正暈眩觀察；CUSTOM不當default難度或default-manual。刺客1024真紅窗內切manual、新J充放實際命中，HP71→55→30（浮字263／394不拿來證exact4.5）；雙子1024分別受傷／暈眩，FIRE死亡只剩ICE93%血條。740／1180雙子只認列ICE暈眩，不冒稱FIRE也測到。Maker刺客真勝利13.01秒及reload，fresh normal仍52.56秒；紀錄隔離有直接UI證據。
+
+UI Reset→Save→reload核對recovery12、maximum100／dodge30／decay6／stun2.5／chargeBonus.5、.2／3／1.5／4／5與manual1，無pending／live場景，所有自己頁籤已關。原件作者與request／source／manifest／bundle及12格集合已核實；但top verdict用了非協議值pass_scoped_functional_evidence，標準receiver拒收，尚未normalized adopt。原始回件完整保留，不在本機改成approve；已請Dot同請求重發格式正確原觀察不變的結果，fixture scope與wholePR未批准維持明確，不重測。
+
+已交非作者Mac只讀核對A覆蓋與最少B視覺順序補驗。完整4／5刀、影步／貼牆、苦無先射後滑仍待；精確數學／半血鎖段等依其既有Mac證據分層判。原normal52.56及其他partials不改寫，程式仍b／123PASS、不merge、正式仍i、下一卡未開。
+
+---
+
+## Dot已正常通關52.56秒並驗證重載紀錄；整體仍未批准（最新）
+
+已核實同13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b的完整一局結果與request／manifest／bundle／作者。Dot自己雲端直接頁1180×757，normal-auto／pause-assisted／固定Sword，無Maker或數值／注入／重開，實際「挑戰成功！」，刺客最佳52.56秒，reload後仍52.56，其餘三王仍—。manual偏好恢復1並reload，自己頁籤已關、紀錄保留，沒有懸停中的局或清理待辦。畫面背景HUD54秒與選單best52.56是不同顯示；不由此推測計時bug或精確暫停扣除。
+
+新直接證據只新增正常自動模式勝利及該筆紀錄存讀，不能冒稱default-manual／完整卡片批准。該局架勢最高讀75，沒有真正break／紅弱點／manual red-window charged；未可靠數出完整4/5刀、跨半血鎖段、影步貼牆與苦無先射後滑；faster-only、精準pause accounting、Boss/Maker map隔離、雙子及剩餘控制／normal結算矩陣仍缺。前幾局HP39／posture88等partial照原件保留，本局數值不混用。verdict仍changes／completed_partial_acceptance，product_defects空，無source／wholePR批准。
+
+主控交現有非作者Mac審查員只讀核對累積矩陣及最少剩餘驗證方法。可控Maker fixture若獲認為適合功能補證，必須明標CUSTOM、列實際欄位與恢復，和normal勝利／Mac default規則測試分層；不擅自把自訂當預設、不默默降低正式卡門檻，非作者Mac已核對正式卡並認可受控CUSTOM診斷與normal勝利／獨立Macdefault測試可分層共同判定，卡片沒有另加每個格都要default-manual通關。已送fixture A：只把共用收招命中recoveryGain12→100（合法0..100），其他初始預設不變，透過真正Maker Play載入全作品；補四個既有試煉Boss×三尺寸實玩／真暈眩、刺客紅窗manual命中、雙子存活者與Maker／normal紀錄隔離。所有改值明標CUSTOM、完成時UI reset/save/reload恢復12及其他改值；中斷則明列pending，不假稱清理。之後fixture B才觀察招式視覺順序，精確數學／跨半血鎖段／較快覆寫／精準pause由既有Mac純規則與真引擎覆蓋，不無限新增真人門檻。這是方法認可，不是已測或已批准；程式仍原b、Mac123PASS不重跑，PR104不merge，正式仍i、boss4/5未開工。
+
+---
+
+## Dot單次收招補驗新增半血證據，仍未完整驗收（最新）
+
+同13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b的收招補件已核對實際原件與綁定。只有一次normal-auto刺客試煉、pause-assisted、固定Sword；沒有Maker／HP／傷害／源碼／儲存注入。HP依序到50／49、最後39%，確實曾低於半血；架勢峰值88%、退出時44%。E與auto劍混合輸出後有淨架勢增加，不能分離歸因成E單次12，更不能稱E有22 interrupt。主動經王冠／試煉選單退出，沒有勝利或死亡終態、沒有成功紀錄；未量到活動時間，不用牆鐘推算。manual偏好已恢復1並reload，自己的頁籤已關。
+
+仍changes／incomplete_evidence，無product_defect。低於半血觀察不等於已驗完整五刀或跨半血鎖段；真break／取消／紅弱點manual蓄力、完整招式與勝利／紀錄、雙子survivor及剩餘矩陣仍開放。前兩份原partial與Maker／有限三frame幾何PASS保留，Mac123PASS不冒充雲端；PR不merge、下一卡不接。
+
+前次任務由主控限定為收招觀察，所以Dot取到部分觀察後依指示退場。下一階段應是一局完整勝負驗證：不因中途HP／posture里程碑退出；如果工具預算／能力需中斷，暫停、釋放按鍵並保留自己隔離測試頁與續測線索，誠實記錄未完成及偏好清理待辦，不自行銷毀進度後重開。終態或最終停止才恢復偏好／清理。這只改操作交接，不改產品、驗收門檻或授權範圍；原已關閉局不假稱能續接。
+
+---
+
+## Dot b補測仍證據不足，尚未通關或批准（最新）
+
+已核實同source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b的新補測原件與request／manifest／bundle。CUSTOM僅把刺客三招傷害12／18／10改1／1／1練習，未當正常通過；之後UI恢復並重讀傷害／HP1600／4-5刀／.2-3-1.5。一次normal-auto（不是default-manual）使Boss血量由100%到最後可讀57%、架勢最高74%，最終27秒死亡；手動偏好已恢復1並reload核對，沒有成功紀錄、沒有清除其他namespace。
+
+這是有進展的部分證據，不是新bug或整版通過。仍缺真正破架勢／紅弱點蓄力、半血五刀、完整招式順序、normal通關／最好時間、雙子survivor及剩餘三尺寸互動。原三frame有限幾何與Maker五欄保存重置PASS保留，原changes不改寫，Mac123PASS／工程注入不補雲端缺項。Dot指出snapshot決策與實際.2遊戲秒閃避窗未同步；不追加同樣盲打。Luna只讀已核實固定Sword的收招命中每次加12、每秒衰減6，可累積真正架勢；E只有在收招命中才可能加12，不會中斷或加22。一般模式選Hammer的建議因試煉入口固定Sword已排除，不能當可執行方案。主控只追加一次同候選normal-auto收招路徑驗證（不改Maker或難度），嘗試有新來源依據的操作；若仍無直接證據保留未通過，不追加同樣盲打。產品與驗收規格未改。
+
+PR104維持peer_review、不得merge，正式仍i、下一卡未接。交接與卡片更新先本機保存以維持候選HEAD，公開PR另留摘要；原始交換、日誌及操作細節仍在私有儲存。沒有重跑未改動的全套或新增CI。
+
+---
+
+## Dot b雲端部分通過，仍changes／incomplete_evidence（最新）
+
+已核實本次真Dot雲端結果、source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b及公開manifest完全匹配。三種真iframe尺寸／canvas與上方雙子HUD幾何有直接證據；1024／740有部分實際操作，1180×820外頁裁切需上下分看，不能冒充原生fullscreen／完整互動矩陣。五項Maker UI修改／保存／reload／重置／reload已PASS並恢復.2／3／1.5／4／5，其他王未變。
+
+仍缺全卡：兩次default manual刺客只HP100→99／98，未確認半血五刀、真破架勢與紅弱點蓄力、完整影步／苦無流程、normal成功通關／最佳時間存讀、雙子存活者更新。這是證據未完成，Dot未列產品缺陷；Mac123PASS／工程78筆不冒充它。主控安排只補缺項：隔離Maker低正傷害演練輸入／閃避節拍，參數、正常玩法、實際通關與未測分開；恢復後再正常測，不能把降難度當default通過。原changes結果不覆寫，獨立Mac核實剩餘矩陣後才finalgate。PR104不merge，boss4／5不接；源程式未改，不因證據不足亂修或重跑無關全套。
+
+---
+
+## PR104 b固定測試版已公開並送Dot雲端驗收（最新）
+
+source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b已Luna及非作者Mac整PR code_ready，雙方Mac完整--layout exit0／73test檔／123PASS／161hash一致。新固定測試頁：https://stasischen.github.io/erin-preview/pr-104/13851b6fd7c9f7683231b36c9e2613c30f050909/games/survivor/ 。preview commit ec7e7bc0f6966a3bd463941cc3156369d1b39b71，既有Pages run40560933832 success，manifest ce77806f5c2bf42fe084e01eb10b8c238536bfe281b025a3e5ce6ff3003c57b9；全285檔HTTP/hash符合、舊215檔不變，未公開的a未混入。
+
+Mac私有injected真Chrome78筆幾何及30筆真正normal勝負結算清除追蹤通過，未在結算後手動refresh來過測；七key A/B、紀錄/reload、SW/cache隔離也通過。這些是部署工程，不能當Dot雲端實戰。已將精確候選交既有Dot自己雲端，驗三尺寸、刺客全卡、成功通關紀錄與Maker五欄位保存/重載/重置；Dot是HP作者，其UI測試不取代Luna/非作者Mac code approval。原生常設隔離試玩範圍已確認，不重問。
+
+等待Dot實際結果；未正式approve／merge，正式站仍20261027i，boss4／5未開始。本交接更新先本機待提交以保持送件source HEAD不漂移；PR說明與本機私有索引亦留發布/送件證據，後續依規範隨授權分支提交，不能因此直接改main。
+
+---
+
 ## PR104 b正常結算補件已Luna獨審／精確套用，123PASS待重新工程與雲端（最新）
 
 Dot以842f021183223a7b7b961bd61d9c81b6a975fb82為base的結算補件SHA256380960603244a4c541b9ad9be79f30b81350cfc9ce05bc82cffc675dc4226508，只改ui/levelup.js的一個非暫停showOverlay後HP刷新接點及既有boss-hud測試。Luna先驗同一新test在舊產品因teacher genuine end hides stale DOM失敗、加精確patch後通過，再對真repoexactapply核兩postimage；公開本人紀錄luna-normal-end-patch.md。沒有修改時鐘／紀錄／難度／戰鬥；Maker的獨立finish分支未改，不宣稱該分支已實測。
