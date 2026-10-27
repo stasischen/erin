@@ -2,7 +2,7 @@
 
 ## 當前：PR104 l Maker 修正待重審（優先於全部歷史）
 
-- 本輪 `20261027l` 只修新 sequence.phaseCount 的1～8數值控件與舊0／1布林同名碰撞，Boss預設／難度不變；真Chrome五參數UI保存／重載／重置回歸已通過，Mac完整含--layout已exit0／121PASS、160檔hash一致，準備同PR交新SHA重審。
+- 本輪 `20261027l` 只修新 sequence.phaseCount 的1～8數值控件與舊0／1布林同名碰撞，Boss預設／難度不變；真Chrome五參數UI保存／重載／重置回歸已通過，Mac完整含--layout已exit0／121PASS、160檔hash一致，受測修正SHA `ab260aa8d96090656a8c168d60a2a9a2c595e941` 待同PR重審（最新HEAD另含純交接提交）。
 - k候選的215檔發布／119PASS屬下方歷史；該候選Maker在基線發現後半刀數錯畫switch，Dot未修改／保存，所以沒有清理動作。原review及原始結果保留，不把k code_ready或舊API smoke當本次UI通過。
 - Maker草稿常設授權已由Dot自己的可信原生對話確認；每次仍核對PR／完整SHA／namespace並清理。普通gameplay原生範圍澄清仍pending，不重複索授權或繞過；本輪實作者不送Dot。
 - 正式站仍20261027i，PR104未合併；boss4／5未開工。家長曾短暫回報開始按鈕無反應，隨即自行確認可操作；原因未定、未為此改碼。
@@ -154,3 +154,8 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Mac完整 `node games/survivor/tools/test.cjs --layout` exit0／121行PASS、`git diff --check` PASS；160個程式／測試／快取檔測前後SHA256完全相同，舊frozen基準未重生。完整log與原始證據留本機，這是Mac工程證據，不是Dot對新固定候選的正式驗收。
 - 更正先前「7刀／1.8工程smoke」：當時工具直接構造後半phaseCount7（前半4）與倍率1.8，保存API→新Maker VM載入→startTrial後讀definition。只證明資料／API接合，沒操作Maker控件、沒驗前7後8五參數循環、也沒實際打出七刀；先前未標明層次，回報範圍過寬，於此窄化。原對話工具輸出及一般UI原JSON不重寫，不補造前輪raw。
 - k候選215檔發布／119PASS與Maker基線changes均保留歷史；Dot在基線即停、沒修改／保存，所以無清理。Maker原生常設授權已確認，普通gameplay原生澄清仍pending；不重問或繞過，不自行送Dot。正式站i、boss4/5未開工。
+
+
+### l 版受測修正 SHA
+
+`ab260aa8d96090656a8c168d60a2a9a2c595e941`／20261027l，之後只有交接及卡片狀態的純metadata更新；160個受測程式／測試／快取檔相同。正式重審及新候選仍以PR104最新完整HEAD核對。實作者完成同分支push後停止寫入，不自行審查／合併或送Dot。
