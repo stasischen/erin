@@ -1,5 +1,13 @@
 # 目前交接
 
+## 主控新流程提案待 Dot 評估（最新，優先於下方歷史）
+
+家長明確指定：主控開卡，Dot提供精確patch，Luna獨立審查後在Mac套用測試分支，Mac跑完整測試與處理Git／PR／預覽發布，Dot驗公開測試版，通過後由Mac非作者角色合併。已寫成 coord/knowledge/DOT_PATCH_WORKFLOW.md 的draft並送Dot評估；收到實際ready結果才導入，不把概念同意當工具／原生授權已具備。Dot不需GitHub寫入權，Luna不能猜補patch邏輯或自寫自批，不新增排程／模型輪詢。
+
+weakpoint PR103已合併上線；PR104目前l Maker修正HEAD8bacd68e2d776fa6952e52122aaf85d65e49c554、作者Mac完整含layout121PASS／160hash／真Chrome五參數回歸通過，作者已停筆，待專項確認與最終整版驗收。家長新回饋確認是Boss／刺客血條遮擋中央，將於流程ready後作本PR小修試接：固定上方、避開玩家HUD、兼顧雙子；目前尚未修改血條程式。正式站仍i，PR104未合併，boss4／5未開工。這份提案與進度由主控暫存，私人交換識別與原始回覆仍只留本機。
+
+---
+
 ## 當前：PR104 l Maker 修正待重審（優先於全部歷史）
 
 - 本輪 `20261027l` 只修新 sequence.phaseCount 的1～8數值控件與舊0／1布林同名碰撞，Boss預設／難度不變；真Chrome五參數UI保存／重載／重置回歸已通過，Mac完整含--layout已exit0／121PASS、160檔hash一致，受測修正SHA `ab260aa8d96090656a8c168d60a2a9a2c595e941` 待同PR重審（最新HEAD另含純交接提交）。
