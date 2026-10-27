@@ -2,12 +2,13 @@
 
 現行規則：AGENTS.md；正式任務：coord/tasks/README.md；GROKBOT 恢復清單：coord/handoff/workflow-alignment-20261027.md。公開摘要進 Git；私人原文、完整日誌與 session 對照留 ~/.local/share/erin/。
 
-## 進行中：第 3 張共用弱點積木
+## 待獨立審查：第 3 張共用弱點積木
 
 - 家長已同意接著做弱點卡；分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，版本 20261027h。
 - 共用弱點 block、老師／守門人護甲與部位、Maker 編輯與保存、具名美術錨點已完成。投射物／炸彈／場／連鎖等都走同一傷害入口；一般部位預設 0.2，開啟弱點 3，不與舊架勢疊成 9 倍。
 - 開啟前預告、開啟發光及關閉前快閃，條件可 AND／OR；環境／誘餌是可接事件，不新增機關。保留競技場尺寸、AI距離帶、前方蓄力與其他 Boss。
 - 最終完整 Mac Studio `node games/survivor/tools/test.cjs --layout` exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。六組 Canvas／153 戰鬥 trace／所有 frozen legacy 基準沒有重生。作者開 PR 即停手，交獨立 session 鎖定 SHA 重審，不能自審／自併。
+- PR #103：https://github.com/stasischen/erin/pull/103 ，實作被測 SHA d5e6ce3c3f93e5be83b70f2e80df7e94c19fa36a。後續只提交本卡 PR 編號與公開交接，主控應查最新完整 HEAD；作者已停手，尚未審查／合併／上線，正式網站仍是 20261027g。
 - 驗收與 Godot §11 差距：docs/survivor-weakpoint-validation.md。新聲音保留 ZzFX 參數，尚未匯出 WAV／OGG、未執行 Godot。
 
 ## 已完成：第 2 張美術清單 v2
