@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "coord-workflow-alignment",
+  "title": "協作流程整理：公開紀錄、正式佇列與 GROKBOT 交接",
+  "owner": "codex",
+  "state": "peer_review",
+  "repo": "erin",
+  "branch": "codex/coord-workflow-alignment",
+  "pr": null,
+  "brief": "coord/handoff/workflow-alignment-20261027.md",
+  "next": "Mac Studio 全套含 --layout 108 PASS，備份與卡片連結核對通過；開 PR 後由獨立 session 審查流程與公開範圍。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "medium",
+  "updated": "2026-10-27T09:07:04Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-trial-hotfix"
+  ]
+}

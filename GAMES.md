@@ -36,12 +36,12 @@ games/
 ### 3. Commit 並 Push
 
 ```bash
-git add .
+git add games/你的遊戲名稱/index.html games/你的遊戲名稱/game.js games/你的遊戲名稱/style.css index.html
 git commit -m "新增遊戲：你的遊戲名稱"
-git push
+git push origin codex/你的卡片id
 ```
 
-GitHub Pages 會自動更新，大約 1-3 分鐘後上線。
+上面只推工作分支；依 `AGENTS.md` 開 PR 並經獨立 session 審查，獲授權的審查員合併後，等待 GitHub Pages 部署成功並確認線上版本。不要直接 push main。
 
 ---
 
