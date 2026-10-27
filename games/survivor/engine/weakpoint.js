@@ -72,8 +72,11 @@ function bossWeakpointPoints(body, config) {
   return points;
 }
 function triggerBossWeakpoint(body, type, seconds = 1) {
-  if (!bossWeakpointConfig(body) || !['wall-stun', 'environment', 'bait'].includes(type)) return;
+  if (!bossWeakpointConfig(body) || !['wall-stun', 'posture-break', 'environment', 'bait'].includes(type)) return;
   body.weakpointSignals = {...body.weakpointSignals, [type]: Math.max(0, seconds)};
+}
+function clearBossWeakpoints(body) {
+  delete body.weakpoints;delete body.weakpointSignals;delete body.weakpointMoveId;delete body.facingAngle;
 }
 function noteBossRecovery(body, moveId, seconds=.6) {
   if(!bossWeakpointConfig(body))return;
@@ -82,8 +85,9 @@ function noteBossRecovery(body, moveId, seconds=.6) {
 }
 function updateBossWeakpoints(dt) {
   for (const body of state.trial ? trialBodies() : state.boss ? [state.boss] : []) {
-    const config = bossWeakpointConfig(body); if (!config) continue;
-    if (state.bossIntro > 0 || state.bossPhasePause > 0) {if(body.weakpoints)delete body.weakpoints; continue;}
+    const config = bossWeakpointConfig(body);
+    if (!config) {if(body.weakpointSignals||body.weakpoints)clearBossWeakpoints(body); continue;}
+    if (state.bossIntro > 0 || state.bossPhasePause > 0) {clearBossWeakpoints(body); continue;}
     const moves = body.moves || state.bossMoves, move = moves[0];
     const signals = body.weakpointSignals || {};
     const recovery = signals.recovery>0 || moves.some(m => m.recovery > 0 || m.ai && m.ai.phase === 'recovery');
@@ -91,7 +95,7 @@ function updateBossWeakpoints(dt) {
     else if (!recovery && !(body.posture && body.posture.stun > 0)) body.facingAngle = Math.atan2(deltaY(state.player.y, body.y), deltaX(state.player.x, body.x));
     const context = {body, source: {x: body.x + deltaX(state.player.x, body.x), y: body.y + deltaY(state.player.y, body.y)},
       facing: body.facingAngle || 0, moveId: body.weakpointMoveId,
-      flags: {recovery, 'after-move':signals['after-move']>0, 'posture-break': !!(body.posture && body.posture.stun > 0),
+      flags: {recovery, 'after-move':signals['after-move']>0, 'posture-break': signals['posture-break'] > 0,
         'wall-stun': signals['wall-stun'] > 0, environment: signals.environment > 0, bait: signals.bait > 0}};
     const result = SurvivorWeakpoints.step(body.weakpoints, config, context, body.feedbackFrozen ? 0 : dt);
     body.weakpoints = result.state;
@@ -113,4 +117,4 @@ function weakpointImpact(body, result, attacker = state.player) {
     result.kind === 'armor' ? {sound: 'metal', trauma: .08, particles: 5} : {sound: 'posture'});
 }
 Survivor.engine=Survivor.engine||{};
-Survivor.engine.weakpoint={rules:SurvivorWeakpoints,bossWeakpointConfig,updateBossWeakpoints,resolveBossWeakpoint,triggerBossWeakpoint,noteBossRecovery};
+Survivor.engine.weakpoint={rules:SurvivorWeakpoints,bossWeakpointConfig,updateBossWeakpoints,resolveBossWeakpoint,triggerBossWeakpoint,clearBossWeakpoints,noteBossRecovery};

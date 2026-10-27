@@ -23,10 +23,11 @@
 
 ## Mac Studio 驗證
 
-最終凍結來源版本 20261027h 的完整指令：`node games/survivor/tools/test.cjs --layout`，exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。不新增或使用 GitHub CI。完整日誌與截圖留 repo 外，公開只記指令、結果與 SHA。
+首輪凍結來源版本 20261027h 的完整指令：`node games/survivor/tools/test.cjs --layout`，exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。不新增或使用 GitHub CI。完整日誌與截圖留 repo 外，公開只記指令、結果與 SHA。
 
 - `tests/weakpoint.cjs`：七種條件、AND／OR、時序、開啟／關閉前提示、解除再觸發、角度／部位、命中前狀態、不疊九倍、暫停／hitstop、接縫、鏡像與顯示錨點、合法資料 round trip 與非法值拒絕。
 - `tests/weakpoint-combat.cjs`：真實投射物／炸彈／場／連鎖／Maker 來源方向，100 傷害對護甲為 20、對已開背後為 300；50 HP 不再被該炸彈秒殺而剩 30，20 HP 才擊倒；金屬 small／弱點 large 聲效優先，真正撞牆與未掛積木 Boss 回歸。
+- `tests/weakpoint-event-sources.cjs`：實際 charge 撞牆與 `teacherPostureEvent` 真正產生的 `posture-broken` 分開；只撞牆、只破架勢、普通暈眩、兩事件同幀或先後有效窗口的 AND／OR、來源到期／closing／去重／hitstop／暫停，以及明確清除、轉階段、入口、移除積木與新場景。測試建立各事件當下的身體狀態，走真引擎產生器，不直接偽造 flags 或 stub 規則輸出。
 - `tests/maker-ui.cjs`：新增弱點頁的實際數值／條件／部位操作、兩隻 Boss 分別保存、重讀、當前草稿進練習、非法時序阻擋儲存、移除／重裝。
 - `tests/levelup-layout.cjs`：十尺寸真 Chrome DPR3／觸控回歸，另讀實際 Canvas 像素驗 warning 暖色、open 發光、closing 暖色、closed 不殘留。
 - 舊測試只按新增護甲更新具體傷害預期：boss-range 的 35→7、teacher-offscreen 的 1→0.2 或已開弱點 3、dash-skill 的 100 炸彈對 20 HP 擊倒。舊 teacher-posture 的 charged-only 契約明確在移除新積木時驗證；新積木的普攻／蓄力同樣三倍另測。沒有重生原 Canvas、戰鬥或 frozen legacy 基準。
@@ -46,3 +47,9 @@
 ## Godot §11
 
 §11.1：弱點設定只有可序列化數字、id、條件陣列，schema 白名單與舊作品補值；尚未全面抽成獨立 JSON。§11.2／11.3：純 `step/resolve` 與 weakpoint-warning/open/closing/closed 事件保留為引擎邊界，接合層才讀寫實體、音訊、Canvas。§11.4：具名正規化錨點、顯示縮放與世界命中半徑分開。§11.5：新增金屬聲保留 ZzFX 合成參數，沒有 WAV／OGG 匯出。§11.6：固定輸入／秒／來源座標對預期事件、倍率、HP。§11.7：純規則不讀 CSS、DPR、DOM 或視窗大小，競技場沿用原固定世界尺寸；尚未執行 Godot。
+
+## PR103 第一輪 changes 修正（20261027i）
+
+獨立審查指出：守門人撞牆也設定 `posture.stun`，所以舊接合把純撞牆誤當破架勢，使 AND 或單選破架勢錯開。現在 `posture-break` 只在真正 `posture-broken` 事件出現時記錄自己的有效期；`wall-stun` 仍由撞牆事件記錄，普通／共用暈眩本身不是原因。原因各自計時，新的來源可與尚有效的舊來源組合；相同持續來源不每幀續滿，來源到期不從殘留 stun 再生。入口、轉階段、移除積木與 `clearBossWeakpoints` 清除窗口及原因，換場景則建立新身體；碰撞原本的暈眩行為保留。原 changes 審查與證據保留，修正版仍需獨立重審。
+
+修正版 20261027i 最終完整 Mac Studio `node games/survivor/tools/test.cjs --layout`：exit 0、114 PASS；測前後 34 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。沒有更新任何 frozen legacy／Canvas／戰鬥基準，人工 UI 與最終判定仍交獨立審查。

@@ -4,10 +4,10 @@
 
 ## 待獨立審查：第 3 張共用弱點積木
 
-- 家長已同意接著做弱點卡；分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，版本 20261027h。
+- 家長已同意接著做弱點卡；分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，待重審版本 20261027i。
 - 共用弱點 block、老師／守門人護甲與部位、Maker 編輯與保存、具名美術錨點已完成。投射物／炸彈／場／連鎖等都走同一傷害入口；一般部位預設 0.2，開啟弱點 3，不與舊架勢疊成 9 倍。
 - 開啟前預告、開啟發光及關閉前快閃，條件可 AND／OR；環境／誘餌是可接事件，不新增機關。保留競技場尺寸、AI距離帶、前方蓄力與其他 Boss。
-- 最終完整 Mac Studio `node games/survivor/tools/test.cjs --layout` exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。六組 Canvas／153 戰鬥 trace／所有 frozen legacy 基準沒有重生。作者開 PR 即停手，交獨立 session 鎖定 SHA 重審，不能自審／自併。
+- 首輪版本 20261027h 完整 Mac Studio `node games/survivor/tools/test.cjs --layout` exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。六組 Canvas／153 戰鬥 trace／所有 frozen legacy 基準沒有重生。作者開 PR 即停手，交獨立 session 鎖定 SHA 重審，不能自審／自併。
 - PR #103：https://github.com/stasischen/erin/pull/103 ，實作被測 SHA d5e6ce3c3f93e5be83b70f2e80df7e94c19fa36a。後續只提交本卡 PR 編號與公開交接，主控應查最新完整 HEAD；作者已停手，尚未審查／合併／上線，正式網站仍是 20261027g。
 - 驗收與 Godot §11 差距：docs/survivor-weakpoint-validation.md。新聲音保留 ZzFX 參數，尚未匯出 WAV／OGG、未執行 Godot。
 
@@ -42,3 +42,7 @@ PR102 合併後的卡片 done 與交接快照隨本次已授權 weakpoint 分支
 ## Dot 瀏覽器複審導入狀態
 
 家長希望 Dot 接手瀏覽器實測；主控已安排只針對公開已上線 20261027g、1024×461 的單輪能力驗證，結果由主控追蹤確認。現行 Mac 完整測試、獨立三尺寸驗收及合併權維持，候選版預覽與 Dot 能力驗通後才調整分工；此為導入狀態，不是已啟用的新硬性門檻。公開紀錄不放私人交換資訊、request ID、session 對照或截圖。
+
+## PR103 第一輪修正版已交重審
+
+獨立 changes：撞牆與破架勢讀同一個 shared stun，造成 AND／單選破架勢誤開；原紀錄在 coord/reviews/survivor-weakpoint/grok.md 及審查提交保留。實作者已接回同分支，將破架勢改由真正 posture-broken 事件建立獨立有效期，撞牆來源保持獨立，入口／轉階段／移除積木／新場景清除來源；原碰撞暈眩不變。新增真引擎事件組合與到期回歸已通過，修正版 20261027i 已在 Mac Studio 凍結來源跑完整 `node games/survivor/tools/test.cjs --layout`：exit0、114 PASS，測前後34個程式／測試檔hash一致，`git diff --check`通過。只推原PR103，作者已停手；交原獨立session對最新完整SHA重審及安排UI，尚未通過重審、合併或上線。

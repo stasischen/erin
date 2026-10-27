@@ -17,7 +17,7 @@ globalThis.SurvivorPractice = (()=>{
   function frame(data,id,mini=false) {
     const f=document.createElement('iframe');f.title=mini?'怪物即時預覽':'招式練習場';f._practicePayload={data:payload(data)};f._practiceId=id;f._practiceMini=mini;
     const remembered=debugMemory[id]||{};f._debugOptions=remembered.options;f._debugBefore=remembered.before;
-    f.src=new URL('practice.html?v=20261027h',SurvivorPreview.base).href;return f;
+    f.src=new URL('practice.html?v=20261027i',SurvivorPreview.base).href;return f;
   }
   function closeFull() {
     if(!full)return;

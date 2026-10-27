@@ -9,12 +9,12 @@
   "branch": "codex/survivor-weakpoint",
   "pr": 103,
   "brief": "coord/tasks/specs/survivor-weakpoint.md",
-  "next": "PR #103、20261027h，實作SHA d5e6ce3c3f93e5be83b70f2e80df7e94c19fa36a；Mac完整含 --layout exit0、113 PASS。作者停手，等主控安排獨立session鎖定最新HEAD重跑與三尺寸實玩；Godot差距見驗收文件。",
+  "next": "PR103修正版20261027i：撞牆／真破架勢事件來源已分離，Mac完整含 --layout exit0、114 PASS，測前後34個source/test檔hash一致；作者停手，交原獨立session針對最新HEAD重審及安排UI。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T11:12:52Z",
+  "updated": "2026-10-27T11:40:09Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-art-manifest-v2"
