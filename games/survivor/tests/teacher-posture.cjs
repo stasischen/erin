@@ -20,7 +20,8 @@ assert.deepEqual(json('rules.bonuses(rules.initial(),cfg)'),{charge:1,damage:1})
 // 同一資料配方可套任意角色狀態；事件本身不帶主角／老師或繪圖物件。
 assert.deepEqual(json("rules.step({value:80,stun:0},SurvivorEffectBlocks.event('posture','onInterrupt',GAME_DATA),cfg).events[0].actions"),[{type:'stun',duration:2.5},{type:'heal',amount:4}]);
 function fresh(weapon='candy-sword') {
- run(`GAME_DATA.attackMode='manual';resetGame();state.mode='playing';state.weaponId='${weapon}';state.player.damageDisabled=false;state.player.invincible=0;state.spawnTimer=999;state.shotTimer=999;summonTeacher();state.bossIntro=0;state.bossRest=999;state.boss.x=state.player.x+70;state.boss.y=state.player.y;state.boss.speed=0;updateCamera();`);
+ // 這組保留未掛新弱點積木時的既有架勢契約；新部位/護甲/3倍不疊乘在 weakpoint.cjs 驗證。
+ run(`GAME_DATA.boss.weakpoint=null;GAME_DATA.attackMode='manual';resetGame();state.mode='playing';state.weaponId='${weapon}';state.player.damageDisabled=false;state.player.invincible=0;state.spawnTimer=999;state.shotTimer=999;summonTeacher();state.bossIntro=0;state.bossRest=999;state.boss.x=state.player.x+70;state.boss.y=state.player.y;state.boss.speed=0;updateCamera();`);
 }
 // 老師落地：預警最後 .2 秒以外不算；真正落地前 .2 秒才算，不能把起跳誤當命中。
 fresh();run("beginBossMove('podium-leap');globalThis.m=state.bossMoves[0];m.warning=.1");

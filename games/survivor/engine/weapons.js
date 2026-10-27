@@ -89,7 +89,7 @@ function swingWithImpacts(dash,command) {
     if(effectLevel('splash-water')) {
       const splash=cardBlock('splash-water','onShotHit',{damage:event.damage}), radius=splash.conditions[0].radius;
       skillVisual('splash',t.x,t.y,{radius});
-      for(const other of combatTargets()) if(other!==t && !hits.includes(other) && cardBlockMatches(splash.conditions[0],other,t.x,t.y)) {hitBuildTarget(other,splash.actions[0].amount);if(state.mode!=='playing')return;}
+      for(const other of combatTargets()) if(other!==t && !hits.includes(other) && cardBlockMatches(splash.conditions[0],other,t.x,t.y)) {hitBuildTarget(other,splash.actions[0].amount,{source:t});if(state.mode!=='playing')return;}
     }
     triggerMakerEffects('hit',t.x,t.y);
     if(state.mode!=='playing') return;
@@ -106,5 +106,6 @@ Survivor.engine.weapons = {activeWeapon,swingAtNearest,rules:SurvivorWeapons};
 
 // 表現接合：只接收揮擊事件與受擊目標；不改傷害、範圍或擊退規則。
 function meleeImpact(target,event) {
+  if(bossWeakpointConfig(target))return; // 共用傷害入口已選護甲小回饋／弱點大回饋。
   feedbackImpact(weaponFeedback(event),true,state.player,target);
 }

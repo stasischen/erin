@@ -22,7 +22,7 @@ for (const [width, height] of [[732,310],[800,360],[915,412],[667,375],[1024,768
       assert.equal(run('targetVisible(teacher)'), true, `${width}x${height}, ${position}, side ${side}, sample ${sample}: entered within ${deadline} seconds`);
       assert.equal(run('canAttackTarget(teacher)'), true, 'in attack range after entry');
       run('hitBuildTarget(teacher,1);');
-      assert.equal(run('teacher.hp'),1999,'can damage teacher');
+      assert.ok([1999.8,1997].includes(run('teacher.hp')),'can damage teacher: 1×armor0.2 or open weakpoint3; visibility contract unchanged');
       // 站定再戰鬥 20 秒，不會每幀被生成規則送回畫面外。
       if (width >= 667) {
         run('globalThis.stayedVisible=true;for(let i=0;i<400;i++){tick(.05);if(!targetVisible(teacher))stayedVisible=false;}');

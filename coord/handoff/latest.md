@@ -2,12 +2,22 @@
 
 現行規則：AGENTS.md；正式任務：coord/tasks/README.md；GROKBOT 恢復清單：coord/handoff/workflow-alignment-20261027.md。公開摘要進 Git；私人原文、完整日誌與 session 對照留 ~/.local/share/erin/。
 
-## 進行中：第 2 張美術清單 v2
+## 進行中：第 3 張共用弱點積木
 
-- 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；目標版本 20261027g。
+- 家長已同意接著做弱點卡；分支 codex/survivor-weakpoint，基底 origin/main 262bdab90fefeacbf596a526594b7c861d3b8ce9，版本 20261027h。
+- 共用弱點 block、老師／守門人護甲與部位、Maker 編輯與保存、具名美術錨點已完成。投射物／炸彈／場／連鎖等都走同一傷害入口；一般部位預設 0.2，開啟弱點 3，不與舊架勢疊成 9 倍。
+- 開啟前預告、開啟發光及關閉前快閃，條件可 AND／OR；環境／誘餌是可接事件，不新增機關。保留競技場尺寸、AI距離帶、前方蓄力與其他 Boss。
+- 最終完整 Mac Studio `node games/survivor/tools/test.cjs --layout` exit 0、113 PASS；測試前後 32 個程式／測試檔 SHA-256 一致，`git diff --check` 通過。六組 Canvas／153 戰鬥 trace／所有 frozen legacy 基準沒有重生。作者開 PR 即停手，交獨立 session 鎖定 SHA 重審，不能自審／自併。
+- 驗收與 Godot §11 差距：docs/survivor-weakpoint-validation.md。新聲音保留 ZzFX 參數，尚未匯出 WAV／OGG、未執行 Godot。
+
+## 已完成：第 2 張美術清單 v2
+
+- 家長已指示主控繼續，家長同時試玩既有版本。卡：survivor-art-manifest-v2；分支 codex/survivor-artv2；已上線版本 20261027g。
 - 方向／鏡像、atlas 排版、逐幀／階段動畫、顯示大小、外框與 VFX 設定已完成；正式角色仍沿用原美術，新增圖只供驗證。詳細交接：docs/survivor-art-manifest-v2-validation.md。
 - Mac Studio 全套 node games/survivor/tools/test.cjs --layout：exit 0、110 PASS；含十尺寸真實 PNG 像素／鏡像／白閃與既有操作。六組原 Canvas hash／153 戰鬥 trace 基準未更新且全部相同，git diff --check 通過。
-- PR #102 已建立：https://github.com/stasischen/erin/pull/102 。實作提交 819f842，主控已停手交既有獨立審查 session；確切被審 HEAD 以 PR 查詢為準。審查須看確切 HEAD、自行重跑測試、三尺寸實玩原遊戲及暫換 sample 資產確認新欄位；通過才依授權合併與檢查 Pages。
+- PR #102：https://github.com/stasischen/erin/pull/102 ，第二輪實作被審 b588726ed8ea362c3f78609f94d157c0f40c8623；審查紀錄提交後完整 diff／HEAD 核對 dc2a220a4e131372e860902f4080d21237b855f1；merge 262bdab90fefeacbf596a526594b7c861d3b8ce9。獨立 session 重跑完整測試與三尺寸操作後通過，以 merge commit 合併。
+- Pages run 40489171784 completed/success：https://github.com/stasischen/erin/actions/runs/40489171784 。部署後實際刷新首頁並進遊戲，資源 query／version.json 均為 20261027g，守門人試煉可載入且 console 無 error。
+- 同帳號正式 approve 已嘗試但被 GitHub 拒絕；獨立 session 如實留言：https://github.com/stasischen/erin/pull/102#issuecomment-6439585102 。上線驗證：https://github.com/stasischen/erin/pull/102#issuecomment-6439695753 。
 - 本 PR 同時收錄流程維護合併後的 done 與部署快照，沒有更改協作規則。
 
 ## 最近已完成
@@ -18,6 +28,16 @@
 
 ## 接下來
 
-主控追蹤 artv2 審查，有修改回同分支與同 PR；合併部署後主動向家長回報改動、試玩、測試、版本與小毛病，再問下一步。第 3 張 survivor-weakpoint 尚未開工；需等家長決定才開始。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。
+家長已同意第 3 張 survivor-weakpoint，現在製作中；本卡結束回報後再等家長決定 boss3，後續仍照 boss3、boss4、boss5 順序，一次一張。GROKBOT 恢復時由主控交付進度與證據，不請家長手動派審。
 
-PR #102 首輪獨立判定 changes：落點圖與警示錯位，未合併。主控已接回，修正共享原點／形狀並裁切保留安全缺口；十尺寸 layout 與新位置回歸已通過，修正版完整修正版 exit 0、110 PASS（含安全缺口像素檢查），版本 20261027g。現在推同分支交原 session 重審，原 changes 紀錄保留。
+PR102 合併後的卡片 done 與交接快照隨本次已授權 weakpoint 分支提交；不追加到已合併分支、不直接推 main、不另開只有快照的 PR。舊 watcher 維持停用。
+
+審查歷程：PR #102 首輪 changes 指出落點圖與警示錯位；主控在同分支修正共享原點／形狀，裁切保留安全缺口。第二輪由原獨立 session 重驗三尺寸落點、環形／彈幕缺口、白閃／外框及完整操作後通過；原 changes 紀錄保留於提交 355d4f75c08bfaed2501f4a3095252c26aaa5101 與 PR 留言。
+
+## PR102 給家長的回報（歷史）
+
+美術清單 v2 已上線 20261027g，支援方向動畫、鏡像與特效設定，並修好圖片與落點預警錯位。重新整理遊戲後可進 Boss 試煉，觀察守門人跳砸的圖與落點，以及環形招式的安全缺口。Mac Studio 完整 110 PASS，740×360、1024×461、1180×820 獨立實玩通過，目前沒有新的阻擋問題。這版主要整理繪圖能力，正式主角仍沿用既有美術；Godot 對照只有文件契約核對，尚未實機執行，下一張弱點卡等待家長意見。
+
+## Dot 瀏覽器複審導入狀態
+
+家長希望 Dot 接手瀏覽器實測；主控已安排只針對公開已上線 20261027g、1024×461 的單輪能力驗證，結果由主控追蹤確認。現行 Mac 完整測試、獨立三尺寸驗收及合併權維持，候選版預覽與 Dot 能力驗通後才調整分工；此為導入狀態，不是已啟用的新硬性門檻。公開紀錄不放私人交換資訊、request ID、session 對照或截圖。

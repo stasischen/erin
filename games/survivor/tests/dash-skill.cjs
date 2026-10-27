@@ -71,7 +71,7 @@ run('render();');
 fresh();
 run(`state.enemies = [{x:450,y:300,r:17,speed:0,damage:15,hp:50,alive:true,wobble:0,flash:0}]; activateSkill();`);
 step(.6); assert.equal(run('state.enemies.length'), 0); assert.equal(run('state.gems.length'), 1);
-fresh(); run('state.stageIndex=STAGES.length-1; summonTeacher(); state.bossIntro = 0; state.boss.x = 450; state.boss.y = 300; state.boss.hp = 50; activateSkill();');
+fresh(); run('state.stageIndex=STAGES.length-1; summonTeacher(); state.bossIntro = 0; state.boss.x = 450; state.boss.y = 300; state.boss.hp = 20; activateSkill();'); // 護甲後炸彈100×0.2仍走相同勝利入口。
 step(.6); assert.equal(run('state.mode'), 'won');
 // 暫停、選卡、設定畫面不施放也不倒數；重開清掉炸彈與冷卻。
 fresh(); run('activateDash(); activateSkill(); showOverlay("paused"); globalThis.before = JSON.stringify([state.bomb,state.dashTimer,state.dashCooldown,state.skillCooldown]); tick(5); activateDash(); activateSkill();');

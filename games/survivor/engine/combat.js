@@ -54,7 +54,7 @@ function resolveWaterHit(shot) {
     // 小水花是範圍命中，不產生遞迴大泡泡；同一顆泡泡不重複命中本體目標。
     skillVisual('splash',shot.x,shot.y,{radius:shot.r*weapon.splashSize});
     for(const t of combatTargets()) if(!shot.hitList.includes(t) && Math.hypot(deltaX(t.x,shot.x),deltaY(t.y,shot.y))<=shot.r*weapon.splashSize+t.r) {
-      shot.hitList.push(t);hitBuildTarget(t,original*weapon.splashDamage);
+      shot.hitList.push(t);hitBuildTarget(t,original*weapon.splashDamage,{source:shot});
       if(state.mode!=='playing') return;
     }
   }
@@ -148,11 +148,14 @@ function hitBuildTarget(target, damage, attack = {}) {
   if(target.trialActor&&target!==state.boss)return withTrialBody(target,()=>hitBuildTarget(target,damage,attack));
   if (!canAttackTarget(target)) return;
   if (target === state.boss) {
-    if(attack.charged)damage*=teacherBonuses().damage;
-    damageHitSound();
+    const weakpoint = resolveBossWeakpoint(target, attack);
+    if(attack.charged && weakpoint.kind === 'normal')damage*=teacherBonuses().damage;
+    damage = schoolDamage(target, damage) * weakpoint.multiplier;
+    if(weakpoint.kind === 'normal')damageHitSound();
     damageNumber(target, damage);
     target.meleeFlash=false;
-    target.hp -= schoolDamage(target, damage); target.flash = HIT_FLASH_SECONDS; updateHud();
+    target.hp -= damage; target.flash = HIT_FLASH_SECONDS; updateHud();
+    weakpointImpact(target, weakpoint, attack.attacker || state.player);
     if (target.hp <= 0) { tierImpact('large',state.player,target);if(state.trial)trialBossDefeated(target);else {state.boss = null; finishRun(true);} }
     else teacherRecoveryHit();
   } else if (target.alive) damageEnemy(target, damage);
@@ -206,7 +209,7 @@ function executeMakerEffect(effect, x, y, level) {
     for (let n=0; n<effect.count; n++) {
       const next = remaining.filter(t => Math.hypot(deltaX(t.x, x),deltaY(t.y, y))<=effect.radius).sort((a,b)=>Math.hypot(deltaX(a.x, x),deltaY(a.y, y))-Math.hypot(deltaX(b.x, x),deltaY(b.y, y)))[0];
       if(!next) break;
-      remaining.splice(remaining.indexOf(next),1);lightning(x,y,next.x,next.y);x=next.x;y=next.y;hitBuildTarget(next,damage);
+      remaining.splice(remaining.indexOf(next),1);lightning(x,y,next.x,next.y);hitBuildTarget(next,damage,{source:{x,y}});x=next.x;y=next.y;
       if(state.mode!=="playing") return;
     }
     return;
@@ -216,7 +219,7 @@ function executeMakerEffect(effect, x, y, level) {
     if (effect.type === "slow") { target.slowTimer = effect.duration; target.makerSlow = effect.multiplier; }
     else if (effect.type === "stun") stunTarget(target,effect.duration);
     else if (effect.type === "knockback") shiftTarget(target, x, y, effect.distance, false, effect.slideSeconds);
-    else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(deltaY(target.y, y),deltaX(target.x, x))) > effect.gap/2 && Math.hypot(deltaX(target.x, x),deltaY(target.y, y)) >= effect.radius * .65)) hitBuildTarget(target,damage);
+    else if (effect.type === "aoe" || (effect.type === "ring-with-gap" && Math.abs(Math.atan2(deltaY(target.y, y),deltaX(target.x, x))) > effect.gap/2 && Math.hypot(deltaX(target.x, x),deltaY(target.y, y)) >= effect.radius * .65)) hitBuildTarget(target,damage,{source:{x,y}});
     if (state.mode !== "playing") return;
   }
 }
@@ -246,7 +249,7 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
     const level = effectLevel("water-attack");
     const block=cardBlock('water-attack','onWaterHit',{damage});
     if (level) skillVisual('splash',x,y,{radius:block.conditions[0].radius});
-    if (level) for (const other of combatTargets()) if (other !== target && cardBlockMatches(block.conditions[0],other,x,y)) applyCardTargetActions(block,other);
+    if (level) for (const other of combatTargets()) if (other !== target && cardBlockMatches(block.conditions[0],other,x,y)) applyCardTargetActions(block,other,{x,y});
     if (effectLevel('water-skill') || effectLevel('fusion-puddle')) addField('water',x,y);
   }
   if (school === "wind") return; // 入門只提升水球速度；擊退由旋風處理。
@@ -259,7 +262,7 @@ function schoolEffect(school, target, x, y, damage, excluded = []) {
       const other = combatTargets().filter(e => !visited.includes(e) && Math.hypot(deltaX(e.x,x),deltaY(e.y,y)) <= radius).sort((a,b) => Math.hypot(deltaX(a.x,x),deltaY(a.y,y))-Math.hypot(deltaX(b.x,x),deltaY(b.y,y)))[0];
       if (!other) break;
       visited.push(other); lightning(x,y,other.x,other.y);
-      hitBuildTarget(other, damage * (modifier?modifier.multiplier:chain.multiplier));
+      hitBuildTarget(other, damage * (modifier?modifier.multiplier:chain.multiplier),{source:{x,y}});
       x=other.x;y=other.y;
       if(state.mode!=='playing') return;
     }
@@ -281,8 +284,8 @@ function updateFields(dt) {
     for (const target of combatTargets()) {
       if (Math.hypot(deltaX(target.x, field.x), deltaY(target.y, field.y)) > field.radius + target.r) continue;
       const level = field.school === "water" ? Math.max(effectLevel("water-skill"), effectLevel("water-dash"), effectLevel("fusion-storm")) : field.school === "wind" ? effectLevel("wind-dash") : effectLevel("fusion-dash");
-      if (field.school === 'water') hitBuildTarget(target,cardBlock('water-skill','onFieldTick',{level}).actions[0].amount);
-      else hitBuildTarget(target, block?block.damage:BUILD_TUNING.fieldDamage * Math.max(1, level));
+      if (field.school === 'water') hitBuildTarget(target,cardBlock('water-skill','onFieldTick',{level}).actions[0].amount,{source:field});
+      else hitBuildTarget(target, block?block.damage:BUILD_TUNING.fieldDamage * Math.max(1, level),{source:field});
       if (field.school === "water") {
         const tick=cardBlock('water-skill','onFieldTick',{level});
         applyCardTargetActions({actions:tick.actions.slice(1)},target);
@@ -358,7 +361,7 @@ function updateOneUltimate(dt, selectedSchool) {
   if (card.school === "wind") targets = targets.filter(target => cardBlockMatches(ultimateBlock.conditions[0],target,x,y));
   state.ultimateVisual = { worldWidth: state.worldWidth, worldHeight: state.worldHeight, school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: card.school === "water" ? 1.2 : .5 };
   state.ultimateTimer = ultimateBlock.interval;
-  for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
+  for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage,{source:{x,y}}); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }
 function imminentDashThreat() {
   const p = state.player, window = UPGRADE_TUNING.perfectWindow;
@@ -453,8 +456,8 @@ function updateBomb(dt) {
   for(const boss of state.trial?trialBodies():state.boss?[state.boss]:[]) {
     if(!canAttackTarget(boss)||Math.hypot(deltaX(boss.x,bomb.x),deltaY(boss.y,bomb.y))>bomb.radius+boss.r)continue;
     withTrialBody(boss,()=>{
-      boss.hp-=schoolDamage(boss,bomb.damage);boss.flash=HIT_FLASH_SECONDS;boss.meleeFlash=false;pushAway(boss);updateHud();
-      if(boss.hp<=0){if(state.trial)trialBossDefeated(boss);else {state.boss=null;finishRun(true);}}
+      hitBuildTarget(boss,bomb.damage,{source:bomb});
+      if(boss.hp>0&&state.mode==='playing')pushAway(boss);
     });
     if(state.mode!=='playing')return;
   }

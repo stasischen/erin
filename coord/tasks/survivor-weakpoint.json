@@ -5,16 +5,16 @@
   "repo": "erin",
   "risk": "low",
   "title": "共用弱點積木與護甲傷害",
-  "state": "todo",
-  "branch": null,
+  "state": "doing",
+  "branch": "codex/survivor-weakpoint",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-weakpoint.md",
-  "next": "等待前卡合併與家長指示；依正式規格實作，Mac Studio 全套含 --layout 通過後開 PR 交獨立 session。",
+  "next": "實作20261027h完成；Mac Studio最終凍結來源完整含 --layout exit0、113 PASS，準備push並開PR交獨立session。Godot §11差距見docs/survivor-weakpoint-validation.md。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T08:57:37Z",
+  "updated": "2026-10-27T11:11:40Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-art-manifest-v2"

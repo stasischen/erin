@@ -333,8 +333,9 @@ function tickImpacts(dt) {
     if(state.trial&&state.trial.actors)for(const body of trialBodies()) {
       if(!shot.alive||!canAttackTarget(body)||shot.hitList.includes(body)||Math.hypot(body.x-shot.x,body.y-shot.y)>=body.r+shot.r)continue;
       withTrialBody(body,()=>{
-        shot.hitList.push(body);schoolShotHit(shot,body);feedbackImpact(shot.feedback,true,shot,body);
-        hitBuildTarget(body,shot.damage,{charged:shot.autoCharged});
+        shot.hitList.push(body);schoolShotHit(shot,body);
+        if(!bossWeakpointConfig(body))feedbackImpact(shot.feedback,true,shot,body);
+        hitBuildTarget(body,shot.damage,{charged:shot.autoCharged,source:{x:body.x-shot.vx,y:body.y-shot.vy},point:shot,attacker:shot});
         if(state.mode==='playing'){for(const school of shot.schools||[])schoolEffect(school,body,body.x,body.y,shot.damage,shot.hitList);resolveWaterHit(shot);}
       });
       if(state.mode!=='playing')return;
@@ -342,10 +343,10 @@ function tickImpacts(dt) {
     if (!(state.trial&&state.trial.actors) && shot.alive && state.boss && canAttackTarget(state.boss) && !shot.hitList.includes(state.boss) && Math.hypot(deltaX(state.boss.x, shot.x), deltaY(state.boss.y, shot.y)) < state.boss.r + shot.r) {
       shot.hitList.push(state.boss);
       const boss = state.boss;
-      damageHitSound();
       schoolShotHit(shot, boss);
-      feedbackImpact(shot.feedback,true,shot,boss);boss.hp -= schoolDamage(boss, shot.damage*(shot.autoCharged?teacherBonuses().damage:1)); boss.flash = HIT_FLASH_SECONDS; boss.meleeFlash=false; updateHud();
-      if(boss.hp>0)teacherRecoveryHit();
+      if(!bossWeakpointConfig(boss))feedbackImpact(shot.feedback,true,shot,boss);
+      hitBuildTarget(boss,shot.damage,{charged:shot.autoCharged,source:{x:boss.x-shot.vx,y:boss.y-shot.vy},point:shot,attacker:shot});
+      if(state.mode!=='playing')return;
       for (const school of shot.schools || []) schoolEffect(school, boss, school === "wind" ? state.player.x : boss.x, school === "wind" ? state.player.y : boss.y, shot.damage, shot.hitList);
       resolveWaterHit(shot);
       if (state.mode !== "playing") return;
@@ -358,6 +359,7 @@ function tickImpacts(dt) {
   state.enemies = state.enemies.filter((enemy) => enemy.alive);
   updateBookShooting(dt);
   if(state.trial&&state.trial.actors||!state.boss || !state.boss.feedbackFrozen)updateBoss(dt);
+  updateBossWeakpoints(dt);
   updateBossZone(dt);
   if (state.mode !== "playing") return;
   for (let i = state.enemyShots.length - 1; i >= 0; i--) {

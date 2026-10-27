@@ -3,6 +3,7 @@
 (function () {
   const tuning = { soundVolume: .35, musicVolume: .035, maxVoices: 8, perSound: 2 };
   const sounds = {
+    metal: {cooldown:.08,params:[.2,0,1750,.001,.015,.1,1,1.8,-24,0,720,.012]},
     perfect: {cooldown:.1,params:[.35,0,1350,.001,.015,.22,0,1,0,0,350,.03]},
     posture: {cooldown:.3,params:[.4,0,420,.005,.08,.25,1,1,3]},
     shoot: { cooldown: .09, params: [.35, 0, 620, .002, .015, .06, 1, 1, -8] },

@@ -61,7 +61,7 @@
     const effectiveClip={fps:0,loop:['idle','run'].includes(name.split('_')[0]),...clip};
     const frame=selectFrame(frames,effectiveClip,time,context.phaseDuration,sync||!!(a.vfx&&a.vfx.progressMode==='phase'));
     return {id,animation:name,sheet:clip.sheet===undefined?a.sheet:clip.sheet,mode:a.mode,frame,
-      frameSize:a.frameSize.slice(),pivot:a.pivot.slice(),hitboxAnchor:a.hitboxAnchor.slice(),
+      frameSize:a.frameSize.slice(),pivot:a.pivot.slice(),hitboxAnchor:a.hitboxAnchor.slice(),anchors:copy(a.anchors||{}),
       directions:a.directions||1,...facing,row:mapped?0:facing.row,layout:copy(clip.layout||a.layout),
       displaySize:copy(a.displaySize),scale:a.scale===undefined?1:a.scale,outline:copy(a.outline),
       palette:copy(a.palette),source:copy(a.source),syncToPhase:sync,
@@ -75,6 +75,7 @@
     return Object.entries(manifest.assets).every(([id,a])=>{
       if(!a||!/^[a-z-]+\/[a-z][a-z0-9-]*$/.test(id)||!pathOK(a.sheet)||!['sprite','procedural'].includes(a.mode)||a.mode==='procedural'&&a.sheet!==null)return false;
       if(!pair(a.frameSize,n=>Number.isInteger(n)&&n>0&&n<=4096)||![a.pivot,a.hitboxAnchor].every(v=>pair(v,n=>Number.isFinite(n)&&n>=0&&n<=1)))return false;
+      if(a.anchors!==undefined&&(!a.anchors||typeof a.anchors!=='object'||Array.isArray(a.anchors)||Object.entries(a.anchors).some(([name,value])=>!/^[a-z][a-z0-9-]*$/.test(name)||!pair(value,n=>Number.isFinite(n)&&n>=0&&n<=1))))return false;
       if(a.directions!==undefined&&![1,4,8].includes(a.directions)||!validateLayout(a.layout))return false;
       const dirs=orders[a.directions||1],order=a.directionOrder||dirs,mirror=a.mirror||{};
       if(!Array.isArray(order)||!order.length||new Set(order).size!==order.length||order.some(d=>!dirs.includes(d)))return false;

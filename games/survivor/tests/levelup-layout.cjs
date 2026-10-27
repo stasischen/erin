@@ -82,6 +82,20 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     } finally {SurvivorArtManifest.assets[id].displaySize=size;}
     return true;
   })()`),true,'美術 v2 真實像素與鏡像');
+  assert.equal(await evaluate(`(()=>{
+    const boss=state.boss,clock=state.elapsed;ctx.save();
+    try {
+      ctx.setTransform(1,0,0,1,0,0);state.elapsed=0;
+      state.boss={x:64,y:64,r:32,facingAngle:0,weakpoints:{core:{phase:'warning',left:.1}}};
+      const pixel=phase=>{ctx.clearRect(0,0,canvas.width,canvas.height);state.boss.weakpoints.core.phase=phase;drawBossWeakpoints(state.boss);return Array.from(ctx.getImageData(64,64,1,1).data);};
+      const warning=pixel('warning'),open=pixel('open'),closing=pixel('closing'),closed=pixel('closed');
+      if(!(warning[3]>0&&warning[0]>warning[1]))throw Error('弱點開啟前缺少暖色預告');
+      if(!(open[3]>0&&open[1]>open[0]))throw Error('弱點開啟缺少發光');
+      if(!(closing[3]>0&&closing[0]>closing[1]))throw Error('關閉前缺少變色提示');
+      if(closed[3]!==0)throw Error('關閉後殘留弱點提示');
+      return true;
+    } finally {state.boss=boss;state.elapsed=clock;ctx.restore();}
+  })()`),true,'弱點 warning/open/closing/closed 真實像素');
   await evaluate("startGame();true");
   assert.equal(await evaluate(`(()=>{
     if(!state.pickingWeapon||state.pendingChoices.length!==3)throw Error('缺少武器選擇');

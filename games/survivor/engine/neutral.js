@@ -86,7 +86,7 @@ function updateNeutralItems(dt) {
   n.birdAngle=(n.birdAngle+dt*bird.actions[0].speed)%(Math.PI*2);n.birdTimer=Math.max(0,n.birdTimer-dt);
   if (effectLevel('item-bird') && n.birdTimer<=0) {
     const pos=neutralBirdPosition(),target=combatTargets().filter(t=>SurvivorEffectBlocks.matches(bird.conditions[0],{dx:deltaX(t.x,pos.x),dy:deltaY(t.y,pos.y),r:t.r})).sort((a,b)=>Math.hypot(deltaX(a.x,pos.x),deltaY(a.y,pos.y))-Math.hypot(deltaX(b.x,pos.x),deltaY(b.y,pos.y)))[0];
-    if (target) { n.birdTimer=bird.interval;skillVisual('gust',pos.x,pos.y,{x2:target.x,y2:target.y,color:'#ffd879',life:.2});hitBuildTarget(target,bird.actions[1].amount); }
+    if (target) { n.birdTimer=bird.interval;skillVisual('gust',pos.x,pos.y,{x2:target.x,y2:target.y,color:'#ffd879',life:.2});hitBuildTarget(target,bird.actions[1].amount,{source:pos}); }
   }
   if (state.mode!=='playing') return;
   // 先移除到期炸彈，再處理傷害；連鎖掉落只在下次更新倒數。
@@ -94,7 +94,7 @@ function updateNeutralItems(dt) {
   for(let i=n.bombs.length-1;i>=0;i--) {n.bombs[i].timer-=dt;if(n.bombs[i].timer<=0) due.push(n.bombs.splice(i,1)[0]);}
   for(const bomb of due) {
     skillVisual('splash',bomb.x,bomb.y,{radius:bombRule.conditions[0].radius,color:'#ffc269',life:.4});playSound('explosion');
-    for(const t of combatTargets()) { if(SurvivorEffectBlocks.matches(bombRule.conditions[0],{dx:deltaX(t.x,bomb.x),dy:deltaY(t.y,bomb.y),r:t.r})) hitBuildTarget(t,bombRule.actions[0].amount);if(state.mode!=='playing') return; }
+    for(const t of combatTargets()) { if(SurvivorEffectBlocks.matches(bombRule.conditions[0],{dx:deltaX(t.x,bomb.x),dy:deltaY(t.y,bomb.y),r:t.r})) hitBuildTarget(t,bombRule.actions[0].amount,{source:bomb});if(state.mode!=='playing') return; }
   }
 }
 function drawNeutralItems() {

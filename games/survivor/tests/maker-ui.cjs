@@ -343,3 +343,24 @@ ui.click('加入 '+defaults.boss.moves[0].name);ui.ids.save.fire('click');assert
 choose('boss','words');slider('收招停頓秒數',.7);slider('招後冷卻秒數（至少階段休息）',3);ui.ids.save.fire('click');
 assert.equal(saved().boss.moves[0].recovery,.7);assert.equal(saved().boss.moves[0].cooldown,3);
 console.log('PASS: Maker AI weights/angle/phase threshold, remove/add move rules and per-move recovery/cooldown persisted');
+
+// 弱點積木：實際選條件/AND、調數值、新增部位，經白名單存讀並帶入練習。
+ui=setup();choose('boss','weakpoint');
+slider('普通部位傷害倍率',.25);slider('弱點傷害倍率',4);slider('弱點開啟秒數',2.5);
+slider('弱點關閉提示秒數',.4);slider('允許命中角度弧',180);slider('相對朝向角度',180);
+ui.click('全部成立');ui.click('指定招式收招後');ui.click('加入弱點部位');
+const armors=ui.nodes().filter(n=>n.tag==='input'&&n.attrs['aria-label']==='普通部位傷害倍率');
+armors[1].value=.24;armors[1].fire('input');
+ui.ids.save.fire('click');
+assert.equal(saved().boss.weakpoint.armorMultiplier,.25);assert.equal(saved().boss.weakpoint.criticalMultiplier,4);
+assert.equal(saved().boss.weakpoint.parts.length,2);assert.equal(saved().boss.weakpoint.parts[0].mode,'all');
+assert.equal(saved().boss.weakpoint.parts[0].conditions[0].type,'after-move');assert.equal(saved().boss.weakpoint.parts[0].conditions[0].moveId,'words');
+assert.equal(saved().gallery.bosses[0].weakpoint.armorMultiplier,.24);
+const weakStorage={...ui.storage};ui=setup({saved:weakStorage});choose('boss','weakpoint');
+assert.equal(Number(ui.nodes().find(n=>n.tag==='input'&&n.attrs['aria-label']==='弱點傷害倍率').value),4);
+choose('boss','podium-leap');ui.click('試這隻');assert.equal(ui.calls.at(-1).data.boss.weakpoint.criticalMultiplier,4);
+choose('boss','weakpoint');slider('弱點開啟秒數',.5);slider('弱點關閉提示秒數',1);ui.ids.save.fire('click');
+assert.equal(ui.ids.makerStatus.className,'error');assert.equal(JSON.parse(ui.storage['erin-survivor-maker-v1']).boss.weakpoint.parts[0].duration,2.5);
+slider('弱點開啟秒數',2.5);ui.click('移除弱點積木');ui.ids.save.fire('click');assert.equal(saved().boss.weakpoint,null);
+ui.click('加入弱點積木');ui.ids.save.fire('click');assert.equal(saved().boss.weakpoint.criticalMultiplier,3);
+console.log('PASS: weakpoint Maker numbers / AND / after-move / multiple parts / separate Boss settings / save reload / current draft trial / invalid timing / remove reinstall');

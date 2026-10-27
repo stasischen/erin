@@ -19,6 +19,8 @@
   };
   const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5],recovery:[0,3,.1],cooldown:[0,8,.1]};
   const POSTURE_BOUNDS={window:[.05,.4,.01],maximum:[20,200,5],dodgeGain:[0,100,1],recoveryGain:[0,100,1],interruptGain:[0,100,1],decay:[0,30,1],stunSeconds:[1,5,.1],chargeBonus:[0,2,.1],damageMultiplier:[1,5,.1],heal:[0,20,1]};
+  const WEAKPOINT_CONDITIONS={'recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
+  const WEAKPOINT_BOUNDS={armorMultiplier:[.15,.25,.01],criticalMultiplier:[1,6,.1],warning:[.1,1.5,.05],closing:[.1,1,.05]};
   const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
   const ATTACK_BOUNDS = {chargeStun:[0,2,.1],splashSize:[1,4,.1],splashDamage:[0,1,.05],comboEvery:[2,10,1],comboReset:[.3,5,.1],comboMultiplier:[1,5,.1],chargeSeconds:[.2,5,.1],chargeMultiplier:[1,5,.1],moveRetention:[0,1,.05],chargeSize:[1,3,.1],comboSize:[1,3,.1],comboPush:[0,100,1],finisherRecovery:[0,1,.05],stepDistance:[0,40,1],thrustWidth:[5,50,1]};
@@ -280,6 +282,29 @@
       if (!source || typeof source!=='object') fail('時機積木格式不正確');
       return {...Object.fromEntries(Object.entries(bounds).map(([key,b])=>[key,num(source[key],b[0],b[1],key)])),inputBuffer:num(source.inputBuffer===undefined?.12:source.inputBuffer,.1,.15,'輸入緩衝')};
     };
+    const weakpoint = (value, base, moveIds) => {
+      if(value===undefined)return base===undefined?undefined:copy(base);
+      if(value===null)return null; // Maker 可移除積木，回到原來的無部位規則。
+      blockObject(value,['version','parts',...Object.keys(WEAKPOINT_BOUNDS)],'弱點');
+      if(value.version!==1||!Array.isArray(value.parts)||value.parts.length<1||value.parts.length>8)fail('弱點版本或部位數量錯誤');
+      const result={version:1};
+      for(const [key,b] of Object.entries(WEAKPOINT_BOUNDS))result[key]=num(value[key],b[0],b[1],'弱點 '+key);
+      const seen=new Set();
+      result.parts=value.parts.map(p=>{
+        blockObject(p,['id','anchor','radiusScale','angleDegrees','arcDegrees','mode','duration','conditions'],'弱點部位');
+        if(typeof p.id!=='string'||!/^[a-z][a-z0-9-]{0,23}$/.test(p.id)||seen.has(p.id))fail('弱點部位 id 不正確或重複');seen.add(p.id);
+        if(!Array.isArray(p.conditions)||!p.conditions.length||p.conditions.length>7)fail('弱點需要一到七個開啟條件');
+        const part={id:p.id,anchor:choice(p.anchor,['weakpoint'],'美術錨點'),radiusScale:num(p.radiusScale,.25,1.5,'弱點半徑倍率'),angleDegrees:num(p.angleDegrees,-180,180,'弱點方向'),arcDegrees:num(p.arcDegrees,20,360,'弱點角度'),mode:choice(p.mode,['any','all'],'弱點條件組合'),duration:num(p.duration,.5,8,'弱點開啟秒數')};
+        if(part.duration<=result.closing)fail('弱點開啟時間需長於關閉提示');
+        part.conditions=p.conditions.map(c=>{
+          blockObject(c,['type','moveId'],'弱點條件');
+          const type=choice(c.type,Object.keys(WEAKPOINT_CONDITIONS),'弱點條件');
+          if(type==='after-move')return {type,moveId:choice(c.moveId,moveIds,'弱點指定招式')};
+          if(c.moveId!==undefined)fail('只有指定招式條件可帶 moveId');
+          return {type};
+        });return part;
+      });return result;
+    };
     try {
       if (!input || input.schemaVersion !== 1) fail('作品版本不支援');
       input=compileWaves(input);
@@ -509,10 +534,14 @@
             const ai={minDistance:num(a.minDistance,0,10000,'AI 最近距離'),maxDistance:num(a.maxDistance,0,10000,'AI 最遠距離'),angleWeight:num(a.angleWeight,0,10,'AI 朝向加權'),phaseWeight:num(a.phaseWeight,0,10,'AI 階段加權'),offscreen:typeof a.offscreen==='boolean'?a.offscreen:fail('AI 畫面外規則需為開關')};
             if(ai.minDistance>ai.maxDistance)fail('AI 最近距離不可大於最遠距離');
             return {id:m.id,ai,name:name(m.name,'試煉招式',24),minPhase:legacy&&b.id==='gatekeeper'&&m.id==='charge'?1:num(m.minPhase,1,2,'開始階段',true),weight:num(m.weight,0,100,'選招權重'),blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:s.shape.type,radius:num(s.shape.radius,30,200,'招式範圍'),angle:num(s.shape.angle,0,360,'扇形角度'),...(originalMove.blocks.moves[0].shape.thickness!==undefined?{thickness:num(s.shape.thickness,2,40,'環或光束半寬')}:{})},timing,effect:{damage:num(s.effect.damage,0,40,'傷害'),speed:num(s.effect.speed,0,600,'速度'),...(originalMove.blocks.moves[0].effect.duration!==undefined?{duration:num(s.effect.duration,.1,10,'危險區／彈幕壽命'),interval:num(s.effect.interval,.1,3,'生成間隔'),count:num(s.effect.count,1,32,'羽毛數量',true),slow:num(s.effect.slow,.2,1,'冰面剩餘速度'),rotation:num(s.effect.rotation,0,6,'旋轉速度')}:{})},feedback:{...originalMove.blocks.moves[0].feedback}}]}};
-          });return boss;
+          });
+          const config=weakpoint(b.weakpoint,original.weakpoint,boss.moves.map(m=>m.id));
+          if(config!==undefined)boss.weakpoint=config;
+          return boss;
         });data.gallery=result;
       }
       const b = { ...input.boss };
+      data.boss.weakpoint=weakpoint(b.weakpoint,data.boss.weakpoint,data.boss.moves.map(m=>m.id));
       for(const [key,bounds] of Object.entries(POSTURE_BOUNDS)) data.boss.posture[key]=num(b.posture&&b.posture[key]!==undefined?b.posture[key]:data.boss.posture[key],bounds[0],bounds[1],key);
       data.boss.name = name(b.name, '魔王名稱', 24); data.boss.hp = num(b.hp, 500, 5000, '魔王血量'); data.boss.speed = num(b.speed, 0, 200, '魔王速度'); data.boss.radius = num(b.radius, 20, 50, '魔王大小');
       for(const [key,bounds] of Object.entries(BOSS_COMBAT_BOUNDS)) data.boss.combat[key]=num(b.combat&&b.combat[key]!==undefined?b.combat[key]:data.boss.combat[key],bounds[0],bounds[1],key);
@@ -588,5 +617,5 @@
     if (result.valid) { try { localStorage.setItem(KEY, JSON.stringify(result.data)); } catch (_) { result.valid = false; result.errors.push('這台裝置無法儲存，請允許本機儲存後再試'); } }
     return result;
   }
-  root.SurvivorData = { bossAIRules, POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_TIERS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
+  root.SurvivorData = { WEAKPOINT_BOUNDS, WEAKPOINT_CONDITIONS, bossAIRules, POSTURE_BOUNDS, waveDefinitions, waveStacks, compileWaves, WAVE_POSITIONS, BOSS_MOVE_BOUNDS, BOSS_COMBAT_BOUNDS, FEEDBACK_TIERS, FEEDBACK_BOUNDS, WARNING_STYLES, FEEDBACK_SOUNDS, feedback, KEY, BLOCK_PARTS, ENEMY_STACKS, BOSS_STACKS, enemyStacks, bossStacks, compileEnemy, compileBossMove, SPECIAL_BOUNDS, WEAPON_STACKS, weaponStacks, compileWeapon, TIMING_BOUNDS, PLAYER_BOUNDS, PLAYER_LABELS, playerDefaults, normalizePlayer, PHASE_BOUNDS, PHASE_SHAPES, TYPES, KINDS, BOUNDS, WEAPON_BOUNDS, ATTACK_BOUNDS, TUNING_BOUNDS, PACING_BOUNDS, BEHAVIORS, NEUTRAL_BOUNDS, SCHOOL_BOUNDS, ENCOUNTER_BOUNDS, ELITE_ABILITIES, PARAMS, defaults, validate, load, save, copy };
 })(globalThis);

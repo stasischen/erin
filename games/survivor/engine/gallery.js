@@ -152,7 +152,7 @@ function updateTrial(dt) {
       b.x+=Math.cos(m.angle)*speed*dt;b.y+=Math.sin(m.angle)*speed*dt;
       const collision=SurvivorTrialRules.boundary(b,t.arena);Object.assign(b,collision.position);
       const events=SurvivorTrialRules.wallStun(collision.hit,trialSettings().wallStun);
-      if(events.length) {t.events.push(...events);b.posture={value:0,stun:events[0].seconds};clearBossMoves();b.flash=.3;updateHud();return;}
+      if(events.length) {t.events.push(...events);b.posture={value:0,stun:events[0].seconds};triggerBossWeakpoint(b,'wall-stun',events[0].seconds);clearBossMoves();b.flash=.3;updateHud();return;}
     }
     if(m.id==='spin') {const dx=state.player.x-b.x,dy=state.player.y-b.y,d=Math.max(1,Math.hypot(dx,dy));b.x+=dx/d*speed*dt;b.y+=dy/d*speed*dt;clampToMap(b);}
     if(m.id==='leap') {const progress=Math.min(1,1-Math.max(0,m.ai.left-dt)/timing.active);b.x=m.origin.x+(m.target.x-m.origin.x)*progress;b.y=m.origin.y+(m.target.y-m.origin.y)*progress;}
@@ -165,6 +165,7 @@ function updateTrial(dt) {
     t.events.push({type:'move-phase',moveId:m.id,phase:m.ai.phase});
     if(m.ai.phase==='active') {m.active=true;m.warning=0;}
     if(m.ai.phase==='recovery'&&m.id==='axe'&&m.repeat===0) {m.repeat=1;m.ai={phase:'windup',left:Math.max(.6,timing.recovery)};m.angle+=Math.PI/5;m.dodged=false;m.active=false;}
+    if(m.ai.phase==='recovery')noteBossRecovery(b,m.id,timing.recovery);
     if(m.ai.phase==='select') {clearBossMoves();state.bossRest=.35;b.recoveryLeft=.35;}
   }
   // 同幀把狀態機的結果交給繪圖與架勢命中接合層，落地不殘留上一幀騰空狀態。

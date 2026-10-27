@@ -231,3 +231,7 @@ SurvivorArtManifest.assets['sample/player-directions']={
 for(const id of ['gust','lightning','sparkle','discharge','hammer-swing','maker-ring','burst','impact','perfect-dodge']) {
   if(!SurvivorArtManifest.assets['effect/'+id])SurvivorArtManifest.assets['effect/'+id]=JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/particle']));
 }
+
+// 命中部位使用具名錨點，與角色 hitboxAnchor 分開；座標為來源影格 0～1。
+for (const id of ['character/teacher','character/gatekeeper']) SurvivorArtManifest.assets[id].anchors={weakpoint:[.5,.5]};
+SurvivorArtManifest.assets['effect/weakpoint']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/gust'])),sheet:null,mode:'procedural'};

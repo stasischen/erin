@@ -314,7 +314,43 @@
 
     });
   }
+  function drawWeakpointEditor() {
+    const host=panel('共用弱點積木');
+    el('p','普通部位只受護甲倍率傷害並發出小金屬火花；弱點先預告、亮起、關閉前快閃，命中使用大回饋。角度相對 Boss 朝向，180 度是背後。',host);
+    const owners=[{owner:draft.boss,base:SURVIVOR_DEFAULTS.boss},...draft.gallery.bosses.filter(b=>b.id==='gatekeeper').map(owner=>({owner,base:SURVIVOR_DEFAULTS.gallery.bosses.find(b=>b.id===owner.id)}))];
+    for(const {owner,base} of owners) {
+      const box=el('fieldset',undefined,host);el('legend',owner.name,box);
+      if(!owner.weakpoint){button(box,'加入弱點積木',()=>{owner.weakpoint=api.copy(base.weakpoint);changed();render();});continue;}
+      const config=owner.weakpoint;
+      button(box,'移除弱點積木',()=>{owner.weakpoint=null;changed();render();});
+      const names={armorMultiplier:'普通部位傷害倍率',criticalMultiplier:'弱點傷害倍率',warning:'弱點開啟預告秒數',closing:'弱點關閉提示秒數'};
+      for(const [key,bounds] of Object.entries(api.WEAKPOINT_BOUNDS))range(box,config,key,bounds,names[key]);
+      config.parts.forEach(part=>{
+        const field=el('fieldset',undefined,box);el('legend','弱點部位 '+part.id,field);
+        select(field,'美術錨點',part,'anchor',{weakpoint:'weakpoint（美術清單）'});
+        for(const [key,bounds,label] of [['radiusScale',[.25,1.5,.05],'部位命中半徑倍率'],['angleDegrees',[-180,180,5],'相對朝向角度'],['arcDegrees',[20,360,5],'允許命中角度弧'],['duration',[.5,8,.1],'弱點開啟秒數']])range(field,part,key,bounds,label);
+        select(field,'條件組合',part,'mode',{any:'任一成立',all:'全部成立'});
+        part.conditions.forEach(condition=>{
+          const row=el('fieldset',undefined,field);
+          select(row,'開啟條件',condition,'type',api.WEAKPOINT_CONDITIONS,()=>{
+            if(condition.type==='after-move')condition.moveId=owner.moves[0].id;else delete condition.moveId;
+            changed();render();
+          });
+          if(condition.type==='after-move')select(row,'指定招式',condition,'moveId',Object.fromEntries(owner.moves.map(m=>[m.id,m.name])));
+          if(part.conditions.length>1)button(row,'移除此條件',()=>{part.conditions.splice(part.conditions.indexOf(condition),1);changed();render();});
+        });
+        if(part.conditions.length<7)button(field,'加入開啟條件',()=>{part.conditions.push({type:'recovery'});changed();render();});
+        if(config.parts.length>1)button(field,'移除此弱點部位',()=>{config.parts.splice(config.parts.indexOf(part),1);changed();render();});
+      });
+      if(config.parts.length<8)button(box,'加入弱點部位',()=>{
+        let index=1;while(config.parts.some(p=>p.id==='part-'+index))index++;
+        config.parts.push({id:'part-'+index,anchor:'weakpoint',radiusScale:1,angleDegrees:0,arcDegrees:360,mode:'any',duration:1.5,conditions:[{type:'recovery'}]});changed();render();
+      });
+    }
+    el('p','環境／誘餌條件由共用 triggerBossWeakpoint 事件入口觸發；此卡不新增場景機關。試老師可從招式頁進練習，守門人從王的試煉進入。',host);
+  }
   function drawBoss() {
+    if(selected.boss==='weakpoint'){drawWeakpointEditor();return;}
     if(selected.boss==='gallery') {
       const p=panel('王的試煉 · 圓形競技場'),g=draft.gallery;
       range(p,g,'arenaRadius',[200,300,10],'競技場半徑');range(p,g,'entrySeconds',[1,5,.1],'入口預警秒數');range(p,g,'wallStun',[1,5,.1],'撞牆暈眩秒數');
@@ -501,7 +537,7 @@
     if(tab==='weapons') return draft.weapons.map(w=>({id:w.id,name:w.name,icon:w.icon,draw:drawWeapons,practice:w.id}));
     if(tab==='cards') return [{id:'schools',name:'流派名稱',icon:'water',draw:drawSchools},...draft.cards.map((c,i)=>({id:c.id,name:c.name,icon:c.icon,note:(c.school?draft.build[c.school].name:'支援')+' · '+(c.requires.length?'↳ '+c.requires.map(id=>draft.cards.find(x=>x.id===id).name).join(' ＋ '):'起點'),draw:()=>{cardIndex=i;drawCards();},spec:{kind:'card',id:c.id}}))];
     if(tab==='enemies') return draft.enemies.map(e=>({id:e.id,name:e.name,icon:'monster',draw:drawEnemies,practice:e.id}));
-    if(tab==='boss') return [{id:'gallery',name:'王的試煉',icon:'boss',draw:drawBoss},{id:'ai',name:'AI 規則',icon:'boss',draw:drawBoss},{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
+    if(tab==='boss') return [{id:'gallery',name:'王的試煉',icon:'boss',draw:drawBoss},{id:'weakpoint',name:'弱點積木',icon:'weakpoint',draw:drawBoss},{id:'ai',name:'AI 規則',icon:'boss',draw:drawBoss},{id:'phases',name:'魔王階段',icon:'boss',draw:drawBoss},{id:'zone',name:'安全圈',icon:'ring',draw:drawBoss},...draft.boss.moves.map(m=>({id:m.id,name:m.name,icon:m.kind,draw:drawBoss,spec:{kind:'move',id:m.id}}))];
     if(tab==='stages') return [{id:'pacing',name:'出怪節奏',icon:'monster',draw:drawPacing},...draft.stages.map(stage=>({id:stage.id,name:stage.name,icon:'play',draw:()=>drawStage(stage)})),{id:'elites',name:'精英怪',icon:'monster',draw:()=>drawEncounters('elites','精英怪')},{id:'chocobear',name:'巧克力大熊',icon:'boss',draw:()=>drawEncounters('chocobear','巧克力大熊')}];
     return [{id:'defaults',name:'預設設定',draw:drawDefaults},{id:'body',name:'碰撞與重量',draw:drawBodyRules},{id:'neutral',name:'中立道具',draw:drawNumbers},{id:'schoolRules',name:'流派數值',draw:drawNumbers},{id:'tuning',name:'基本玩法',draw:drawNumbers},{id:'build',name:'流派共用',draw:drawNumbers},{id:'bossTuning',name:'魔王共用',draw:drawNumbers}].map(x=>({icon:'numbers',...x}));
   }

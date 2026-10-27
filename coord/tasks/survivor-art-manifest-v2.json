@@ -5,16 +5,16 @@
   "repo": "erin",
   "risk": "low",
   "title": "美術清單 v2：方向、動畫、顯示與特效",
-  "state": "peer_review",
+  "state": "done",
   "branch": "codex/survivor-artv2",
   "pr": 102,
   "brief": "coord/tasks/specs/survivor-art-manifest-v2.md",
-  "next": "PR #102 修正版 20261027g，全套含 --layout 110 PASS；交獨立 session 重驗落點、缺口及三尺寸完整回歸後再判定。",
+  "next": "PR #102 已獨立重審、merge 並確認 Pages 20261027g；等家長試玩及決定是否開始 survivor-weakpoint。",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T10:19:24Z",
+  "updated": "2026-10-27T10:38:40Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-trial-hotfix"
