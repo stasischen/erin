@@ -1,6 +1,6 @@
 # 王的試煉 hotfix 交接
 
-來源：`coord/inbox/done/20261026T175024Z-parent-trial-hotfix.md`。版本 `20261027d`。
+來源：家長的 `survivor-trial-hotfix` 任務卡（本機佇列 `hotfix.md`）。版本 `20261027e`。
 
 ## 修改
 
@@ -14,7 +14,9 @@
 
 ## 驗證與獨立審查
 
-Codex 只執行 `node games/survivor/tools/test.cjs`，未加 `--layout`。最終整套測試全部通過（exit 0，含新增 hotfix 案例）；`git diff --check` 通過。
+家長最新指示要求完整測試包含 `--layout`，取代舊卡「不加 --layout」的限制。本輪執行 `node games/survivor/tools/test.cjs --layout` 全部通過（exit 0），含十種 Chrome 版面；`git diff --check` 通過。完整輸出保留於本機 `/tmp/erin-hotfix-full-test.log`，不加入 repo。
+
+首次完整執行時，Chrome 的 Maker 怪物預覽重現初始化失敗：共用 HUD 嘗試存取練習場沒有的 `.experience-wrap`，使 `resetGame()` 中斷，後續讀取 `practiceEnemy.speed` 失敗。現已在容器存在時才更新隱藏狀態；既有真實 iframe 即時更新及「試這隻」案例覆蓋此回歸。版面測試另加入 `1180×820`，與既有 `1024×461`、`740×360` 一同驗證，總共十種尺寸。版本及資源快取同步升為 `20261027e`。
 
 新增 `tests/trial-hotfix.cjs`：純追近與距離選招、無招可選、舊作品遷移／新作品保存、半徑上下限、三種視野的全部入口預警圓、休息／冷卻追近與預警／暈眩停止、固定抽樣與滿血第一階段下 20 秒內移動及衝鋒、衝鋒先預警、試煉 HUD、離局確認／取消保留進度。既有守門人測試改用設定半徑作牆面斷言，不綁定 620。
 
@@ -27,4 +29,4 @@ Codex 只執行 `node games/survivor/tools/test.cjs`，未加 `--layout`。最�
 - §11.3：沿用招式階段、撞牆、階段變化等序列化事件，未新增事件匯流排。
 - §11.4／11.5：沿用美術清單、像素圖示及既有音訊，未新增素材或截圖；逐幀美術與音訊匯出仍是既有待辦。
 
-目前沒有需要 Erin 或家長先決定的新設計；場地與追人手感仍待試玩。未寫入 `.git`，提交、push 與 PR 交 erin-watch；沒有操作 main 或自行審查。
+目前沒有需要 Erin 或家長先決定的新設計；場地與追人手感仍待獨立審查員試玩。依家長最新指示，由本 session 在既有分支提交、push 與開 PR，開完即停止；沒有操作 main 或自行審查。`coord/` 僅保留本機交接，PR 最終檔案差異不包含它；既有已推送提交中的兩筆 coord 新檔透過後續提交退出最終差異，沒有改寫歷史或 force-push。
