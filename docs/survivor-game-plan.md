@@ -114,6 +114,8 @@ AI 由家長操作：Erin 坐在家長旁邊，直接把想法說出來，家長
 
 ## 3. Agent 協作規則（給 Codex、Grok、Claude）
 
+> 本節保留階段 0 的歷史規劃與卡片格式。2026-10-27 起，協作規則只以根目錄 `AGENTS.md` 為準：公開 coord 進 Git、私人原話與完整日誌留本機、正式卡在 `coord/tasks/`、Mac Studio 全套含 --layout、不用 GitHub CI、主控安排獨立 session 審查，經授權後合併並回報再問下一步。舊的 watcher 自動接卡／代提交、禁止實作者 push、以及只由家長親手合併等不同流程均不再適用。本節的歷史工具路徑不代表目前安裝狀態。
+
 改編自 `stasischen/agent-coord-kit`：照 kit 的格式記錄任務卡、審查和收件匣，讓不同廠牌、不同電腦上的 agent 都看同一份紀錄接手。先用**輕量模式**：不安裝自動協調器、不設排程。階段 0 會把這一節整理成 repo 根目錄的 `AGENTS.md`，之後以 `AGENTS.md` 為準。
 
 ### 3.1 這台 MacBook 上的工具

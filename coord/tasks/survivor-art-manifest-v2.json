@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-art-manifest-v2",
+  "owner": "codex",
+  "repo": "erin",
+  "risk": "low",
+  "title": "美術清單 v2：方向、動畫、顯示與特效",
+  "state": "todo",
+  "branch": null,
+  "pr": null,
+  "brief": "coord/tasks/specs/survivor-art-manifest-v2.md",
+  "next": "等待前卡合併與家長指示；依正式規格實作，Mac Studio 全套含 --layout 通過後開 PR 交獨立 session。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "updated": "2026-10-27T08:57:37Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-trial-hotfix"
+  ]
+}

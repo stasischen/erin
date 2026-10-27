@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-boss-gallery-5",
+  "owner": "codex",
+  "repo": "erin",
+  "risk": "low",
+  "title": "王的試煉：雪球雪人、寶箱怪與冰封大腦",
+  "state": "todo",
+  "branch": null,
+  "pr": null,
+  "brief": "coord/tasks/specs/survivor-boss-gallery-5.md",
+  "next": "等待前卡合併與家長指示；依正式規格實作，Mac Studio 全套含 --layout 通過後開 PR 交獨立 session。",
+  "reviewers": [
+    "grok"
+  ],
+  "waitingFor": null,
+  "updated": "2026-10-27T08:57:37Z",
+  "updatedBy": "codex",
+  "dependsOn": [
+    "survivor-boss-gallery-4"
+  ]
+}

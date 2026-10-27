@@ -1,0 +1,10 @@
+# 公開協作紀錄放 coord/；私人資料與執行產物放 repo 外。
+.DS_Store
+*.log
+/coord/private/
+/coord/inbox/private/
+/coord/logs/
+/coord/screenshots/
+/coord/handoff/private/
+/screenshots/
+/test-results/

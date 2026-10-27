@@ -82,3 +82,11 @@
 - 2026-10-26：依家長同意的統一拼圖第 4 步，將三武器普通攻擊、連段重招、蓄力、獨立特殊招及衝刺斬整理成五部分可收合積木；舊作品載入轉換，保留原初值與戰鬥接合。回饋參數編輯留第 7 步，敵人遷移留第 5 步。來源：`coord/inbox/done/20261026T094145Z-parent-weapon-blocks.md`；驗證及待上手項目見 `docs/survivor-weapon-blocks-validation.md`，尚待 Grok 審查與 Erin 試玩，未核准上線。
 
 - 2026-10-26：家長轉述「預警文字可以拿掉 看起來很怪」；四種波次事件移除文字橫幅，保留事件預警並以邊緣脈動與音效呈現，老師戰及其他必要文字保留。（來源：`coord/inbox/done/20261026T131537Z-parent-wave-warning-text.md`；驗證與待試玩：`docs/survivor-wave-warning-text-validation.md`）
+
+## 2026-10-27：協作流程整理
+
+- 家長確認公開協作紀錄仍用 Git 管理，私人原話／截圖／完整日誌與對話放本機；六卡正式來源統一為 coord/tasks，不再讀 /tmp 舊佇列。
+- 家長決定測試全部在 Mac Studio，含 --layout；不新增 GitHub CI，保留 Pages 部署。
+- 家長指定本對話為主控，負責獨立 session 派審、追蹤與交接；暫代審查在 GROKBOT 恢復後交回，不要求新 GitHub 帳號。
+- 一張 PR 完成後主動回報並提出預計下一步、問家長意見；不自行開始下一卡。舊 watcher 已停用並備份，協作規則更新範圍已獲家長授權。
+- 詳細路徑變更、備份、撤回的舊建議與恢復步驟見 coord/handoff/workflow-alignment-20261027.md；PR #100 已審查合併且線上版本 20261027e。

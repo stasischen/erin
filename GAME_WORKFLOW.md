@@ -2,6 +2,8 @@
 
 這份流程用來把遊戲點子變成可以放進 `games/` 的小遊戲。重點不是讓 AI 一次做完，而是讓 Erin 先說清楚想法，再一步一步測試、修改、分享。
 
+Agent 的分工、Git、測試、審查、授權與交接以 [AGENTS.md](AGENTS.md) 為準。正式任務只讀 `coord/tasks/`，不從 `/tmp/erin-queue/` 接卡；私人原話、截圖與完整日誌放本機 `~/.local/share/erin/`。所有測試在 Mac Studio 執行（含 `--layout`），不新增 GitHub CI；一張 PR 結束後由主控主動回報並問家長下一步，不自動接卡。
+
 ## 製作原則
 
 - 第一版先做「可以玩」，不要一開始就追求完整美術。

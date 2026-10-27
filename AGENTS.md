@@ -1,48 +1,64 @@
 # 協作規則
 
-本 repo 的遊戲協作依 `GAMES.md`、`GAME_WORKFLOW.md`、`ASSETS.md` 與 `docs/survivor-game-plan.md`。本檔整理 Survivor 計畫 §3；階段 0 完成後，代理人的協作流程以本檔為準，遊戲規格仍以遊戲計畫為準。家長可以更新本檔。
+本檔為目前有效流程，依家長 2026-10-27 指示整理。舊卡、歷史交接及 `docs/survivor-game-plan.md` §3 的不同流程不再適用；遊戲規格仍依計畫、正式任務卡、`GAMES.md`、`GAME_WORKFLOW.md` 與 `ASSETS.md`。家長可隨時更新本檔。
 
 ## 角色
 
-- `codex`：讀卡與收件匣、實作、開分支與提交、更新自己的卡、啟動試玩伺服器。不得審查自己的程式；可 push 自己的 `codex/<卡片id>` 分支並開 PR，但不得 push 或 merge 到 `main`。
-- `grok`：家長與 agent 之間的溝通窗口：轉述家長和 Erin 的原話、寫入 `coord/inbox/`、整理給家長的回報；審查 Codex 分支並寫自己的審查紀錄。不修改 Codex 的程式或卡片、不 merge。
-- `claude`：只處理 Codex 與 Grok 無法解決或意見衝突的問題，以及架構決定。
-- `erin`：遊戲總監，決定設計並試玩；可自己改程式、素材與設定值。她不自行開 AI 對話，也不當審查者。
-- `user`（家長）：操作 AI、轉述 Erin 原話、決定風險、最後審查、管理安全設定並核准上線。
+- 主控 `codex`：整理卡片、安排並追蹤獨立審查 session、實作與修正、分支與指定檔案提交、push 工作分支並開 PR、向家長回報。不得審查或合併自己的實作。
+- 審查 `grok`：獨立 session 審查 diff、Mac Studio 測試與試玩、寫自己的審查紀錄；有問題交回實作者，不代寫待審程式。目前由獨立 Codex session 暫代，GROKBOT 額度恢復後由主控依家長指示交回。
+- `claude`：只處理雙方無法解決的衝突或架構決定。
+- `erin`：遊戲總監，決定設計並試玩，可在家長旁修改程式、素材與數值；不當審查者、不自行開 AI 對話。
+- `user`（家長）：決定範圍、風險與下一步，操作 AI、轉述原話、管理安全設定並授權上線。
 
-家長操作 AI；Erin 可以在旁口述。不要在公開 repo 記錄 Erin 的全名、學校、年齡、照片或住址。作者與審查者必須不同。同一檔案同一時間只由一人修改；Erin 正在改的檔案先不要碰。
+獨立審查以不同 session 分工，不要求不同 GitHub 帳號。同一時間只有一個 session 修改工作目錄；交出 PR 後實作者停手，收到意見再接回。Erin 正在改的檔案先不碰。
 
-## 檔案與任務卡
+## 公開與本機資料
 
-- 任務卡放 `coord/tasks/<id>.json`；審查放 `coord/reviews/<id>/<reviewer>.md`；原話收件匣放 `coord/inbox/`，處理完移到 `coord/inbox/done/`。
-- 知識紀錄放 `coord/knowledge/DECISIONS.md`、`PITFALLS.md`、`SETUP.md`。
-- 暫不建立協調器專用的 `lanes/`、`requests/`、`results/`、`approvals/`。Mac Studio 上有本機監看服務 `erin-watch`（launchd `com.stasischen.erin-watch`）：`coord/inbox/` 或 `coord/tasks/` 有變動時自動叫醒 Codex 一輪；結束後在 `codex/*` 分支上提交 Codex 改動的檔案（逐一指名），push 該分支並在沒有 PR 時開 PR 到 `main`，Grok 透過 GitHub PR 事件收到通知。
-- 卡片依計畫 §3.4 欄位，`dependsOn` 可省略。`id` 用小寫英數與連字號；未完成卡的 `next` 必填。UTC 時間用 ISO 8601。`pr` 是數字或 `null`。等待另一張卡用 `dependsOn`；等待某人回答才用 `blocked` 並填 `waitingFor`。
-- 狀態：`todo` 排隊中、`doing` 製作中、`peer_review` 等 Grok、`review` 等 Erin 試玩與家長確認、`blocked` 等待指定對象、`done` 已 merge 並 push。
-- 只更新自己負責的卡。交接時更新 `state`、`next`、`updated`、`updatedBy`。
-- `risk` 由家長決定；只改遊戲、首頁卡片與文件預設 `low`。改本檔或協作規則屬 B 級，需家長決定。無論風險，merge 與 push 到 `main` 都必須有家長明確同意；agent 與 erin-watch 只可 push 自己的 `codex/<卡片id>` 分支。
+`coord/` 留在 repo 並用 Git 管理，內容必須適合公開：
 
-## 收件匣與審查
+- `coord/tasks/<id>.json`：正式任務與狀態快照；完成狀態仍須核對 PR；`brief` 指向 `coord/tasks/specs/<id>.md` 或其他公開規格。
+- `coord/reviews/<id>/<reviewer>.md`：被審 SHA、判定、測試、試玩、問題與重現方式。
+- `coord/knowledge/`：決策、踩坑、環境與流程變更。
+- `coord/handoff/latest.md`：目前卡、PR、SHA、版本、負責角色、結果與下一步；歷史摘要另檔保留。
+- `coord/inbox/`：只放可公開的需求摘要；既有 `done/` 為歷史來源，新的私人原話不直接放進來。
 
-- 收件匣檔名為 `<UTC時間>-<短名>.md`，格式：`kind: request|feedback|approve`、`lane: none`、`ref: <卡片id>`、分隔線 `---`，接著放原話。收件匣由 Grok 依家長轉述寫入（Codex 也可在家長直接交代時寫入）；Erin 的話照抄；家長核准才可用 `approve`，並在內文附 `sha: <完整40碼>`。
-- 審查檔第一行只能是 `verdict: approve` 或 `verdict: changes`，第二行是被審完整 40 碼 SHA，後面記錄看過的檔案與檢查結果。Approve 只對該 SHA 有效；新實質程式提交需重審。
-- Erin 在本階段範圍內的要求直接處理並記錄。超出範圍且會大改架構或拖慢進度的點子，先記錄再由 Erin 和家長決定是否開卡。資訊不足時標 `blocked` 並說明等待對象與所需答案。
+Mac Studio 本機根目錄 `~/.local/share/erin/`：`inbox/` 放私人原話、`logs/` 放完整日誌、`screenshots/` 放截圖、`history/` 放完整對話與舊暫存原件、`backups/` 放備份。這些資料不加入提交，也不是正式任務狀態來源。`/tmp/erin-queue/` 已退役；六卡以 repo 正式卡為準，其餘舊暫存原件只留本機備份，不自動新增待辦。
 
-## Git 與試玩
+公開 repo 不記錄 Erin 全名、學校、年齡、照片、住址或私人對話。公開摘要只寫遊戲要求；私人原話完整留本機，不擅自改寫。不建立額外協調器 `lanes/`、`requests/`、`results/`、`approvals/`。
 
-1. 從最新 `main` 建立 `codex/<卡片id>` 分支，將卡設為 `doing` 並填 `branch`。
-2. 完成後提交指定檔案，卡設為 `peer_review`，請 Grok 審查 `git diff main...<branch>`。
-3. Grok 審查通過後更新卡為 `review`，讓 Erin 試玩；有修改回饋則回到 `doing`。
-4. 家長明確核准後才可記錄 `approve`，並由家長 merge、push。任何人都不得 force-push 或做破壞性刪除。
+## 卡片與順序
 
-commit 只加入指名檔案，不使用 `git add .` 或 `git commit -a`。卡片提交訊息用 `task: <id> <state>`；審查用 `review: <id> grok <approve|changes>`；Erin 的提交用 `erin:` 開頭。
+卡片沿用計畫 §3.4 欄位，`dependsOn` 可省略。`id` 小寫英數與連字號；未完成卡的 `next` 必填，UTC 用 ISO 8601，`pr` 為數字或 null。等待另一卡用 `dependsOn`；等人回答才用 `blocked` 與 `waitingFor`。只更新自己的卡，交接更新 `state`、`next`、`updated`、`updatedBy`。
 
-電腦試玩可在 repo 根目錄執行 `python3 -m http.server 8000`，網址為 `http://localhost:8000/games/survivor/`。同 Wi-Fi 的行動裝置使用 Mac IP 取代 `localhost`。首次允許連入由家長操作。每次改版更新遊戲資源的 `?v=` 版本號。
+狀態：`todo` 排隊、`doing` 製作、`peer_review` 獨立審查、`review` 等家長／Erin 決定、`blocked` 等指定回答、`done` 已合併；若 Pages 未成功，交接另標上線待處理，不宣稱完成上線。
 
-## 安全與隱私
+家長指定順序：hotfix → artv2 → weakpoint → boss3 → boss4 → boss5；正式 id 與分支見 `coord/tasks/README.md`。一次一張，前卡合併且主控回報後，仍等家長對下一步表示意見才開工。另行授權的流程維護不代表遊戲下一卡已開工。
 
-AI 工具由家長操作；遊戲專用 Codex 工作階段限於工作資料夾並採 on-request 權限；Grok 本機工具每次執行前詢問。Agent 與 erin-watch 只可 push 自己的 `codex/*` 分支並開 PR；push 或 merge 到 `main`（上線）只由家長在明確核准後進行。家長可另用不登入 GitHub 的標準 macOS 帳號隔離遊戲工作。詳細設定依 `docs/survivor-game-plan.md` §4。
+`risk` 由家長決定；遊戲與一般文件預設 low，協作規則屬 B 級，須家長授權範圍；本輪流程整理已獲授權。範圍內要求直接處理並記錄；大改架構、超範圍或拖慢進度的點子先交家長與 Erin 決定。
 
-## 叫醒方式
+## 實作與 PR
 
-沒有排程或輪詢。家長說「看卡片」後：Codex 先處理未完成的收件匣與自己的 `doing` 卡，再依賴關係接手可做的 `todo` 卡；Grok 找 `peer_review` 卡；Claude 找 `waitingFor: "claude"` 的 `blocked` 卡。完成回報要用家長能直接唸給 Erin 聽的簡單話。
+1. 確認沒有別人的未提交修改，`git fetch origin`，從最新 `origin/main` 建 `codex/<卡片id>`（六卡指定別名見索引）。不直接切換／修改／push main，不 force-push，不做破壞性刪除。
+2. 設 doing，依卡實作。新機制用共用 block、資料驅動且 Maker 可調；美術只經 art-manifest；每招有預警、普通敵人從畫面外生成。Boss 依卡從可見入口預警登場，召喚物依卡由 Boss 冒出。維持橫向全螢幕、圓形像素 HUD、前方蓄力攻擊。
+3. 遊戲資源改版遞增 version.json，執行 `node games/survivor/tools/version.cjs --write` 同步 ?v= 與 sw.js。純流程／文件 PR 不改遊戲版本，交接註明原因；每卡記錄 Godot §11 適用項目與差距。
+4. **所有測試在 Mac Studio 做**：`node games/survivor/tools/test.cjs --layout` 全 PASS，並跑 `git diff --check`。不新增或使用 GitHub CI 測試，保留既有 Pages 部署。可先跑相關案例排錯，push 前仍跑全套。完整日誌放本機，公開紀錄寫指令、版本、結果與對應 SHA。
+5. 只 stage 指名檔案並檢查 staged diff，可提交公開 coord；不加入私人資料、日誌或截圖。不用 `git add .`、`git commit -a`，不自動收集整個工作目錄提交。任務訊息 `task: <id> <state>`；Erin 提交用 `erin:`。
+6. 全通過才 push 工作分支與 gh pr create，設 peer_review；交接寫 PR、完整 HEAD、版本、測試、試玩方式。建立 PR 遇到 502 等未知結果，先查該分支是否已有 PR。
+7. 主控安排獨立審查，實作者停手。修改要求在同分支修正、全套測試、push 原 PR、再交重審；不另開 PR、不自行 approve。
+
+## 審查與合併
+
+- 審查員讀本檔、正式卡、PR、相關 docs 與交接，鎖定確切 SHA，在 Mac Studio 重跑全套含 --layout。遊戲改動在 1024×461、740×360、1180×820 實際試玩，確認無黑邊、HUD 無重疊、功能符合卡片。流程／文件 PR 檢查資料及連結、記錄遊戲未變，不冒稱驗收新遊戲機制。
+- 審查檔第一行只能 `verdict: approve` 或 `verdict: changes`，第二行只有完整 40 碼 SHA；後記看過檔案、測試及重現方式。新實質修改需重審；只新增審查、PR 編號或流程狀態的提交，仍看完整 diff 確認無實質變更。
+- 有問題用 `gh pr review --request-changes`；通過用 `gh pr review --approve`。共用作者帳號若被拒絕，改用 PR 留言記錄判定、SHA 與證據，清楚說明非 GitHub 正式 approval，不要求另開帳號；獨立 session 審查紀錄仍需存在。
+- 家長已授權目前六卡與本輪流程整理：獨立審查通過後由審查員合併，不再逐次確認；不授權作者合併自己實作，也不擴及未指定範圍。用 `gh pr merge <PR> --merge --match-head-commit <最新確認SHA>`，不 squash、不 force、不直接 push main。
+- 審查員可提交自己的公開審查檔，訊息 `review: <id> grok <approve|changes>`。有審查／流程提交時，合併前重新看最新 HEAD 與完整差異；不能以流程提交名義跳過實質修改。
+- 等 merge SHA 對應的既有 Pages 部署成功，開線上首頁及遊戲確認版本。純流程 PR 遊戲版本保持原值；部署失敗或舊版本需處理並記錄，不宣稱完成。合併後新增的流程狀態與部署證據先記 PR 留言及本機交接，由主控隨下一個家長授權分支提交；不為寫 done 直接改 main，也不為此自動開新卡。
+
+## 主控回報與 GROKBOT 交接
+
+主控負責安排、通知與追蹤審查、協調修正，不把派審工作丟回家長。每張 PR 結束主動用繁中三至五句回報：改動、怎麼試玩、測試／上線結果、小毛病，再說預計下一步並問家長意見；未收到下一步指示不開新卡。
+
+沒有自動接卡或定時叫醒。舊 launchd `com.stasischen.erin-watch` 已於 2026-10-27 停用並卸載，舊腳本保留供查核；不得自動切分支、提交、push 或接卡，未經家長授權不能恢復。家長叫醒後先看 latest、進行中卡與審查意見；審查只接已交 PR。GROKBOT 恢復時主控交付最新 PR/SHA/版本、卡片進度、規則變更、測試證據與未解事項，再交回審查角色。
+
+試玩在 repo 根目錄執行 `python3 -m http.server 8000`，開 `http://localhost:8000/games/survivor/`。同 Wi-Fi 行動裝置以 Mac IP 取代 localhost，首次連入由家長操作。工具安全設定由家長管理，不因更新流程自行降低權限。
