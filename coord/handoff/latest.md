@@ -1,5 +1,17 @@
 # 目前交接
 
+## StoneHands slice independently approved/applied, full Mac128PASS (2026-10-28T05:58:26.429184+00:00)
+
+Dot full replacement47577bytes/SHA256 fc665a8ff81640dba645d2c6c7d39e6802369b82ec3a561980f814a7e476d4e3 at base529078cea6200ced9d9382073e403db5dca3bef0 includes exact19path scope,16changed paths. New canvas fixture supplies valid dimensioned transparentPNG dataURI and retains drawCalls; no pixel acceptance inferred. All prior15production/test/art postimages matched the corrected priorproposal; only helper added. Canonical result received from actualGitHub, onlyauthorproposalready. Late priornotifications reconciled, unrelatedLingo tasks untouched.
+
+Luna independently approved r4, privatechecked then exactly applied to source,16/16postimages/bytes match; targeted10/10 exit0,14JS/CJSsyntax and generatorAST pass, diffcheckpass. Public review coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r4.md. Core guarded/open/closing render contract, true target warn/hit/dodge, alternating limbs, interrupted-state cleanup, actualmanifest menu crop/load/error/reopen, Maker controls and legacydata regressions verified in that scope. Prior r1/r2/r3 changes and real failure logs remain, not rewritten approve.
+
+Root separately mechanically bumped internal20261028d, verified onlyc->d resourceversions/cache plus newmanifest PNG precache; full Mac node games/survivor/tools/test.cjs --layout exit0,74testfiles/128PASS/164files before-after identical. Full logs/hash/provenance private. First new real selectable Boss is implemented at defaults5; Eye/Mask are absent, not stubs. Automated realChrome/layout is not Dot cloud gameplay; wholecard/UI/defaultmanual difficulty is not accepted yet.
+
+Commit/push this coherent slice, then repin actualfullSHA to Dot for RollingEye; Mask follows, samecard/branch. Preserve Stone+original4 and oldsaved1/3/4 edits, keep future7fixtures clearly synthetic. Only after all3Bosses and fulltests pass create onePR/immutablepreview, Dot self-cloud3sizes, nonauthorMac finalgate/merge/Pages/versionverify. No currentPR/candidate, productionstillb, boss5unstarted. Godot11 applicable data/pureblocks/serial events/16px source and worldcoords/tests addressed, no runtimeport/audio exports claimed.
+
+---
+
 ## StoneHands r3: corrected hit-stop test, shared canvas fixture gap (2026-10-28T05:15:54.486274+00:00)
 
 Latest exact53709byte patch / SHA256 6b18ab254381569325be1556019d90215e6632ec1f0fe4fb7f059c9a5fac692f at A434 base explicitly supersedes the earlier menu proposal after sanitized real Mac runtime evidence. Only test postimage changed from ed095; all production/menu/core/PNG bytes match prior static review. Root selected the corrected canonical result for formal receive; earlier result was held, not falsely approved or applied.

@@ -2622,3 +2622,16 @@ SURVIVOR_DEFAULTS.gallery.bosses.push({
    blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:'sector',radius:200,angle:70},timing:{windup:.9,active:.5,recovery:.7,cooldown:.5},effect:{damage:10,speed:0,projectiles:{count:5,speed:230,life:2,radius:6,artId:'move/kunai'},slide:{speed:130}},feedback:{level:'medium',warning:'ground',pose:'kunai-slide'}}]}}
  ]
 });
+
+// Two alternating limbs use the same warned slam block; side is identity, not a third actor.
+SURVIVOR_DEFAULTS.gallery.bosses.push({
+ id:'stone-hands',name:'石像雙手',artId:'character/stone-hands',hp:2000,radius:34,speed:45,
+ phases:[{threshold:1,speed:1},{threshold:.5,speed:1.15}],
+ weakpoint:{version:1,armorMultiplier:.2,criticalMultiplier:3,warning:.15,closing:.25,
+  parts:[{id:'core',anchor:'weakpoint',radiusScale:.6,angleDegrees:0,arcDegrees:360,mode:'any',duration:3,requiresMatch:true,conditions:[{type:'windup'}]}]},
+ moves:[-1,1].map(side=>({id:side<0?'left-slam':'right-slam',name:side<0?'左手砸地':'右手砸地',minPhase:1,weight:1,
+  ai:{minDistance:0,maxDistance:600,angleWeight:0,phaseWeight:0,offscreen:true},
+  blocks:{version:1,moves:[{id:'move',trigger:{event:'onSelect'},shape:{type:'circle',radius:55,angle:0},
+   timing:{windup:1.2,active:.2,recovery:.8,cooldown:.4},effect:{damage:16,speed:0,limb:{side,reach:170,lift:70}},
+   feedback:{level:'medium',warning:'ground',pose:side<0?'left-slam':'right-slam'}}]}}))
+});

@@ -19,7 +19,7 @@
   };
   const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5],recovery:[0,3,.1],cooldown:[0,8,.1]};
   const POSTURE_BOUNDS={window:[.05,.4,.01],maximum:[20,200,5],dodgeGain:[0,100,1],recoveryGain:[0,100,1],interruptGain:[0,100,1],decay:[0,30,1],stunSeconds:[1,5,.1],chargeBonus:[0,2,.1],damageMultiplier:[1,5,.1],heal:[0,20,1]};
-  const WEAKPOINT_CONDITIONS={'recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
+  const WEAKPOINT_CONDITIONS={'windup':'招式預警時','recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
   const WEAKPOINT_BOUNDS={armorMultiplier:[.15,.25,.01],criticalMultiplier:[1,6,.1],warning:[.1,1.5,.05],closing:[.1,1,.05]};
   const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
@@ -293,10 +293,11 @@
       for(const [key,b] of Object.entries(WEAKPOINT_BOUNDS))result[key]=num(value[key],b[0],b[1],'弱點 '+key);
       const seen=new Set();
       result.parts=value.parts.map(p=>{
-        blockObject(p,['id','anchor','radiusScale','angleDegrees','arcDegrees','mode','duration','conditions'],'弱點部位');
+        blockObject(p,['id','anchor','radiusScale','angleDegrees','arcDegrees','mode','duration','conditions','requiresMatch'],'弱點部位');
         if(typeof p.id!=='string'||!/^[a-z][a-z0-9-]{0,23}$/.test(p.id)||seen.has(p.id))fail('弱點部位 id 不正確或重複');seen.add(p.id);
         if(!Array.isArray(p.conditions)||!p.conditions.length||p.conditions.length>7)fail('弱點需要一到七個開啟條件');
         const part={id:p.id,anchor:choice(p.anchor,['weakpoint'],'美術錨點'),radiusScale:num(p.radiusScale,.25,1.5,'弱點半徑倍率'),angleDegrees:num(p.angleDegrees,-180,180,'弱點方向'),arcDegrees:num(p.arcDegrees,20,360,'弱點角度'),mode:choice(p.mode,['any','all'],'弱點條件組合'),duration:num(p.duration,.5,8,'弱點開啟秒數')};
+        if(p.requiresMatch!==undefined){if(typeof p.requiresMatch!=='boolean')fail('弱點條件持續需為開關');part.requiresMatch=p.requiresMatch;}
         if(part.duration<=result.closing)fail('弱點開啟時間需長於關閉提示');
         part.conditions=p.conditions.map(c=>{
           blockObject(c,['type','moveId'],'弱點條件');
@@ -309,7 +310,7 @@
     };
     const trialEffects=(effect,base,timing)=>{
       const result={};
-      for(const key of ['sequence','relocate','projectiles','slide']) {
+      for(const key of ['sequence','relocate','projectiles','slide','limb']) {
         if(!base[key]){if(effect[key]!==undefined)fail('此招式沒有 '+key+' 積木');continue;}
         const value=effect[key];if(!value||typeof value!=='object')fail('缺少 '+key+' 積木');
         if(key==='sequence'){
@@ -320,6 +321,10 @@
           if(result[key].vanish+result[key].flash>timing.windup+1e-8)fail('換位後需留足完整白閃預警');
         }else if(key==='projectiles'){
           blockObject(value,['count','speed','life','radius','artId'],'苦無彈幕');result[key]={count:num(value.count,1,15,'苦無數量',true),speed:num(value.speed,60,400,'苦無速度'),life:num(value.life,.5,5,'苦無壽命'),radius:num(value.radius,3,12,'苦無半徑'),artId:choice(value.artId,['move/kunai'],'苦無美術')};
+        }else if(key==='limb'){
+          blockObject(value,['side','reach','lift'],'交替肢體');
+          if(value.side!==base.limb.side)fail('肢體左右識別不可改變');
+          result[key]={side:value.side,reach:num(value.reach,60,300,'肢體觸及距離'),lift:num(value.lift,20,120,'舉手高度')};
         }else {blockObject(value,['speed'],'側滑');result[key]={speed:num(value.speed,0,300,'側滑速度')};}
       }
       return result;

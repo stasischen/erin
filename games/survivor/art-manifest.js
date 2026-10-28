@@ -240,3 +240,16 @@ SurvivorArtManifest.assets['effect/weakpoint']={...JSON.parse(JSON.stringify(Sur
 SurvivorArtManifest.assets['character/assassin']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['character/gatekeeper'])),sheet:'art/characters/assassin.png',placeholder:{body:'#776b98',outline:'#272638',eyes:'#fff5df'},anchors:{weakpoint:[.5,.5]}};
 for(const id of ['blade-combo','shadowstep','kunai-slide','kunai','white-flash'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['move/feather'])),sheet:null,palette:id==='white-flash'?['#ffffff','#fff0c5','#3f344e']:['#fff0d5','#655582','#302c41']};
 SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/weakpoint'])),palette:['#ff4568','#fff0a5','#ffb85b']};
+
+// Original 16px torso and two distinct hand frames, no external artwork.
+(()=>{
+ const clone=id=>JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));
+ for(const [id,frame] of [['stone-hands',0],['stone-hand-left',1],['stone-hand-right',2]]){
+  const art=clone('character/gatekeeper');art.sheet='art/characters/stone-hands.png';
+  art.anchors={weakpoint:[.5,.5]};art.palette=['#9cabb1','#35434c','#b9e7cf'];
+  art.placeholder={body:'#9cabb1',outline:'#35434c',eyes:'#b9e7cf'};
+  for(const animation of Object.values(art.animations))animation.frames=[frame];
+  SurvivorArtManifest.assets['character/'+id]=art;
+ }
+ for(const id of ['left-slam','right-slam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
+})();

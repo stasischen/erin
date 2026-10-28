@@ -332,6 +332,7 @@
         const field=el('fieldset',undefined,box);el('legend','弱點部位 '+part.id,field);
         select(field,'美術錨點',part,'anchor',{weakpoint:'weakpoint（美術清單）'});
         for(const [key,bounds,label] of [['radiusScale',[.25,1.5,.05],'部位命中半徑倍率'],['angleDegrees',[-180,180,5],'相對朝向角度'],['arcDegrees',[20,360,5],'允許命中角度弧'],['duration',[.5,8,.1],'弱點開啟秒數']])range(field,part,key,bounds,label);
+        if(part.requiresMatch!==undefined)button(field,'條件消失即關閉：'+(part.requiresMatch?'開':'關'),()=>{part.requiresMatch=!part.requiresMatch;changed();render();},part.requiresMatch);
         select(field,'條件組合',part,'mode',{any:'任一成立',all:'全部成立'});
         part.conditions.forEach(condition=>{
           const row=el('fieldset',undefined,field);
@@ -374,6 +375,7 @@
           if(s.effect.sequence){range(field,s.effect.sequence,'count',[1,8,1],'前半場連斬刀數');range(field,s.effect.sequence,'phaseCount',[1,8,1],'後半場連斬刀數');el('p','每刀固定使用預警＋出手秒數；只有整組最後才收招。連段開始鎖定刀數，中途半血仍完成原節拍。',field);}
           if(s.effect.relocate)for(const [key,bounds,label]of [['distance',[40,160,2],'背後換位距離'],['vanish',[.1,1,.05],'消失秒數'],['flash',[.2,.5,.05],'白閃預警秒數']])range(field,s.effect.relocate,key,bounds,label);
           if(s.effect.projectiles)for(const [key,bounds,label]of [['count',[1,15,1],'每扇苦無數量'],['speed',[60,400,10],'苦無速度'],['life',[.5,5,.1],'苦無壽命秒數'],['radius',[3,12,1],'苦無半徑']])range(field,s.effect.projectiles,key,bounds,label);
+          if(s.effect.limb)for(const [key,bounds,label]of [['reach',[60,300,5],'肢體觸及距離'],['lift',[20,120,5],'舉手高度']])range(field,s.effect.limb,key,bounds,label);
           if(s.effect.slide)range(field,s.effect.slide,'speed',[0,300,10],'橫向滑步速度');
           if(s.effect.duration!==undefined){
             if(['nova','cross'].includes(m.id))range(field,s.shape,'thickness',[2,40,1],'環／光束半寬');

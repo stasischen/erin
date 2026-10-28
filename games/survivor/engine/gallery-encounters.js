@@ -81,7 +81,7 @@ function encounterDodgeThreat(){
      const q=s.effect.projectiles;
      const contact=Math.min(...SurvivorGalleryRules.volley(b,m.angle,q.count,s.shape.angle*Math.PI/180,q.speed).map(shot=>SurvivorPosture.contact(shot.x-p.x,shot.y-p.y,shot.vx,shot.vy,q.radius+p.r)));
      time+=contact;near=contact<=q.life;
-    }else near=SurvivorTrialRules.contains(s.shape,b,m.angle,p);
+    }else near=SurvivorTrialRules.contains(s.shape,s.effect.limb?m.target:b,m.angle,p);
    }
    if(['dive','icefall','meteor'].includes(m.id))time+=m.ai.phase==='windup'?s.timing.active:m.ai.left;
    if(m.id==='frost-dash'){const hit=SurvivorPosture.contact(b.x-p.x,b.y-p.y,Math.cos(m.angle)*s.effect.speed,Math.sin(m.angle)*s.effect.speed,b.r+p.r);time+=hit;near=hit<=(m.ai.phase==='active'?m.ai.left:s.timing.active);}

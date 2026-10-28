@@ -27,22 +27,44 @@ globalThis.SurvivorTrialBlocks=(()=>{
   const result={...previous};if(won&&Number.isFinite(seconds)&&seconds>0&&(!Number.isFinite(result[id])||seconds<result[id]))result[id]=seconds;
   return result;
  }
- return {count,start,advance,behind,slide,record};
+ // Lock the landing center once and cap reach; arena clipping must not move it beyond reach.
+ function limbTarget(body,target,reach,arena){
+  const dx=target.x-body.x,dy=target.y-body.y,d=Math.hypot(dx,dy),n=d?Math.min(1,reach/d):0;
+  return SurvivorTrialRules.boundary({x:body.x+dx*n,y:body.y+dy*n,r:0},arena).position;
+ }
+ function limbChoice(def,phase,lastSide,distance,sample){
+  const moves=def.moves.filter(m=>{const limb=m.blocks.moves[0].effect.limb;return limb&&limb.side!==lastSide;});
+  return SurvivorTrialRules.choose({...def,moves},phase,distance,[],sample);
+ }
+ function limbPose(body,side,move,spec,exposure=null){
+  // The guard hand clears the actual core circle; active hand retains its frozen landing geometry.
+  const home=exposure?{x:exposure.x+side*(exposure.radius+spec.shape.radius*.6+body.r*.1),y:exposure.y,height:0}:
+   {x:body.x+side*body.r*.35,y:body.y-body.r*.2,height:0};
+  if(!move||!spec||spec.effect.limb.side!==side)return home;
+  const phase=move.ai.phase,progress=Math.max(0,Math.min(1,1-move.ai.left/(spec.timing[phase]||1)));
+  if(phase==='windup')return {x:move.target.x,y:move.target.y,height:spec.effect.limb.lift*Math.min(1,progress*3)};
+  if(phase==='active')return {...move.target,height:0};
+  if(phase==='recovery')return {x:move.target.x+(home.x-move.target.x)*progress,y:move.target.y+(home.y-move.target.y)*progress,height:0};
+  return home;
+ }
+ return {count,start,advance,behind,slide,record,limbTarget,limbChoice,limbPose};
 })();
 SurvivorEffectBlocks.trialMoves=SurvivorTrialBlocks;
 Survivor.engine['trial-blocks']={rules:SurvivorTrialBlocks};
 
-function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide;});}
+function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide||e.limb;});}
 function updateTrialBlockActor(dt){
  const t=state.trial,b=state.boss,def=t.definition;
  if(!state.bossMoves.length){
   b.recoveryLeft=0;state.bossRest=countdown(state.bossRest,dt);
   Object.assign(b,SurvivorTrialRules.pursue(b,state.player,def.speed*def.phases[state.bossPhase-1].speed*(b.slowTimer>0?BUILD_TUNING.slowMultiplier:1),dt,140));clampToMap(b);
   if(state.bossRest>0)return;
-  const distance=Math.hypot(state.player.x-b.x,state.player.y-b.y),id=SurvivorGalleryRules.choose(def,b.role,state.bossPhase,b.previous||[],Math.random(),distance);
+  const distance=Math.hypot(state.player.x-b.x,state.player.y-b.y),hasLimbs=def.moves.some(m=>m.blocks.moves[0].effect.limb);
+  const sample=Math.random(),id=hasLimbs?SurvivorTrialBlocks.limbChoice(def,state.bossPhase,b.lastLimb,distance,sample):SurvivorGalleryRules.choose(def,b.role,state.bossPhase,b.previous||[],sample,distance);
   if(!id){state.bossRest=.3;return;}
   const s=def.moves.find(m=>m.id===id).blocks.moves[0];
   state.bossMoves.push({id,kind:id,owner:b.actorId,ai:SurvivorTrialBlocks.start(s.timing,s.effect,state.bossPhase),angle:Math.atan2(state.player.y-b.y,state.player.x-b.x),dodged:false,teleported:false,slideSide:(b.slideCount||0)%2?-1:1});
+  if(s.effect.limb){const m=state.bossMoves[0];m.target=SurvivorTrialBlocks.limbTarget(b,state.player,s.effect.limb.reach,t.arena);t.events.push({type:'limb-warning',id:b.actorId,side:s.effect.limb.side,target:{...m.target}});}
   b.previous=[id];if(s.effect.slide)b.slideCount=(b.slideCount||0)+1;
   b.vanished=!!s.effect.relocate;playSound('warning');return;
  }
@@ -63,7 +85,10 @@ function updateTrialBlockActor(dt){
   if(event.phase==='windup'){m.dodged=false;m.angle=Math.atan2(state.player.y-b.y,state.player.x-b.x);playSound('warning');}
   if(event.type==='strike'){
    if(e.projectiles){for(const shot of SurvivorGalleryRules.volley(b,m.angle,e.projectiles.count,s.shape.angle*Math.PI/180,e.projectiles.speed))trialField(b,shot,{...shot,kind:'kunai',projectile:true,artId:e.projectiles.artId,radius:e.projectiles.radius,life:e.projectiles.life,damage:e.damage});}
-   else if(SurvivorTrialRules.contains(s.shape,b,m.angle,state.player))bossHurtPlayer(e.damage,s.feedback);
+   else {
+    if(e.limb){b.lastLimb=e.limb.side;t.events.push({type:'limb-slam',id:b.actorId,side:e.limb.side,target:{...m.target}});}
+    if(SurvivorTrialRules.contains(s.shape,e.limb?m.target:b,m.angle,state.player))bossHurtPlayer(e.damage,s.feedback);
+   }
    if(state.trial!==t||!state.bossMoves.includes(m))return;
   }
   if(event.phase==='recovery')noteBossRecovery(b,m.id,s.timing.recovery);

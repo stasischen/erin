@@ -83,7 +83,7 @@ function drawTrialEncounter(){
    if(!['windup','active'].includes(m.ai.phase))continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0],active=m.ai.phase==='active';
    if(s.effect.relocate&&m.teleported&&m.ai.phase==='windup'&&m.ai.left<=s.effect.relocate.flash)SurvivorArt.paint('move/white-flash',{context:ctx,x:b.x-30,y:b.y-60,width:60,height:60,time:state.elapsed},()=>{const palette=SurvivorArt.lookup('move/white-flash').palette;ctx.save();ctx.fillStyle=palette[0];ctx.fillRect(b.x-24,b.y-34,48,6);ctx.fillRect(b.x-3,b.y-55,6,48);ctx.restore();});
-   const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=trialUsesBlocks(t.definition)?{...s.shape}:encounterShape(m,s.shape);
+   const origin=s.effect.limb||['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=trialUsesBlocks(t.definition)?{...s.shape}:encounterShape(m,s.shape);
    if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
    const angle=['ring','cross'].includes(shape.type)?shape.angle:m.angle;
    const rays=m.id==='spiral'?SurvivorGalleryRules.volley(b,m.angle+(active?m.elapsed*s.effect.rotation:0),s.effect.count,Math.PI*2,1,s.shape.angle*Math.PI/180):null;
@@ -99,7 +99,10 @@ function drawTrialEncounter(){
        ctx.restore();
      }else if(m.id==='spiral'){
        for(const shot of rays)drawTrialShape({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx),active);
-     }else drawTrialShape(shape,origin,m.angle,active);
+     }else {
+       if(s.effect.limb){ctx.save();ctx.fillStyle='rgba(30,26,40,.35)';ctx.beginPath();ctx.ellipse(origin.x,origin.y,shape.radius,shape.radius*.6,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+       drawTrialShape(shape,origin,m.angle,active);
+     }
      if(['dive','icefall','meteor'].includes(m.id)){
        ctx.save();ctx.fillStyle='rgba(42,38,56,.35)';ctx.beginPath();ctx.ellipse(m.target.x,m.target.y,s.shape.radius*.65,18,0,0,Math.PI*2);ctx.fill();
        if(active&&m.id!=='dive'){ctx.fillStyle=m.id==='icefall'?'#c9faff':'#ffb65f';const height=100*m.ai.left/s.timing.active;ctx.fillRect(m.target.x-12,m.target.y-height-32,24,32);}ctx.restore();
@@ -111,12 +114,39 @@ function drawTrialBodies(){
  for(const body of trialBodies())withTrialBody(body,()=>{
    if(body.vanished)return;
    const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0;
-   const x=body.x,y=body.y,scale=body.r/32*(m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
+   const exposure=trialCoreExposure(body),limbed=state.trial.definition.moves.some(d=>d.blocks.moves[0].effect.limb);
+   const x=body.x,y=body.y,scale=body.r/32*(!limbed&&m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
    drawGroundShadow(x,y,body.r,air);
+   // Exposed torso is in front of the floor-plane attacking hand, not merely its marker.
+   if(exposure)drawTrialLimbs(body,exposure);
    drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);
+   if(!exposure)drawTrialLimbs(body);
    drawBossWeakpoints(body,air);
    const weak=body.posture.stun>0;
    if(weak||body.posture.value>=GAME_DATA.boss.posture.maximum*.75){ctx.fillStyle=weak?'#fff0a5':'#ffb95c';ctx.fillRect(x-16,y-air-70,32,32);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-12,y-air-66,24);}
    ctx.fillStyle='#fff0a5';ctx.fillRect(x-34,y+49,68*body.posture.value/GAME_DATA.boss.posture.maximum,3);
  });
+}
+
+// Match the shared critical-enabled phases, including closing after interruption with no move.
+function trialCoreExposure(body){
+ if(!state.trial.definition.moves.some(d=>d.blocks.moves[0].effect.limb))return null;
+ const config=bossWeakpointConfig(body),part=config&&config.parts.find(p=>p.id==='core');
+ if(!part||!['open','closing'].includes(body.weakpoints?.[part.id]?.phase))return null;
+ const point=bossWeakpointPoints(body,config)[part.anchor];
+ return point?{...point,radius:Math.max(8,body.r*part.radiusScale)}:null;
+}
+// Nonattacking guards move aside; attacking hand keeps its immutable target and floor-plane layer.
+function drawTrialLimbs(body,exposure=null){
+ const def=state.trial.definition,move=body.moves&&body.moves[0];
+ for(const side of [-1,1]){
+  const definition=def.moves.find(d=>d.blocks.moves[0].effect.limb?.side===side);if(!definition)continue;
+  const spec=definition.blocks.moves[0],current=move&&move.id===definition.id?move:null;
+  const pose=SurvivorTrialBlocks.limbPose(body,side,current,spec,exposure),id=side<0?'character/stone-hand-left':'character/stone-hand-right';
+  const size=spec.shape.radius*1.2,animation=current?current.ai.phase:'idle';
+  SurvivorArt.paint(id,{context:ctx,x:pose.x-size/2,y:pose.y-pose.height-size/2,width:size,height:size,animation,time:state.elapsed},()=>{
+   const a=SurvivorArt.lookup(id),colors=a.palette;ctx.save();ctx.fillStyle=colors[0];ctx.fillRect(pose.x-size/2,pose.y-pose.height-size/2,size,size);
+   ctx.strokeStyle=colors[1];ctx.lineWidth=3;ctx.strokeRect(pose.x-size/2,pose.y-pose.height-size/2,size,size);ctx.restore();
+  });
+ }
 }
