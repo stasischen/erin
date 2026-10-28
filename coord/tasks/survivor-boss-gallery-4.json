@@ -9,13 +9,13 @@
   "branch": "codex/survivor-boss4",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "Dot第一增量僅舊作品ID遷移；Luna獨審精確套用通過，Mac版20261028c完整含layout exit0/74測試檔/124PASS、162檔before/after相同。三新王未實作，無PR/預覽。接著以本提交最新SHA交Dot石像雙手完整vertical slice，需擴充舊gallery-2/3測試allowlist以保留實際舊1/3/4王migration而更新數量假設；再Luna獨審套用、Mac全測。後續眼方塊/面具仍同卡/分支逐段綁base；整卡完成才開PR。Godot§11本段資料identity/可移植測試適用，未Godot實機。",
+  "next": "StoneHands完整提案經Luna獨審changes：windup核心開啟但另一home手仍遮胸口，新增測試缺真曝光幾何。patch未套用/未執行。主控提交review與狀態後，請Dot依新base重提完整修正版並補全開窗期間兩手/核心可見性回歸，再Luna獨審/精確套用/Mac全測升版。維持migration已通過內部c/124PASS，三新王仍未實作到分支，無PR/預覽。Godot§11依原範圍，未移植。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-28T02:58:52.107634+00:00",
+  "updated": "2026-10-28T04:22:41.883600+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

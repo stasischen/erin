@@ -1,5 +1,15 @@
 # 目前交接
 
+## StoneHands提案獨審changes，未套用，退回Dot修正（2026-10-28T04:22:41.883600+00:00）
+
+完整提案41,696bytes/SHA256 ce777cee22c215cfe1ad69f14d2095a102257b35da5d1ab178c1380b0646cf0b，13text加原創48×16三格PNG。主控核過完整來源/preimage/patchbytes/hash/18path與PNG exact256bytes/hash；合法收件只代表作者提案ready。Luna另獨審在base d4542b73968cc1940bcd60e8ecaa7518307a2f5a判changes，見coord/reviews/survivor-boss-gallery-4/luna-stone-hands.md。
+
+阻擋：攻擊手windup舉起時另一隻手仍在home守位，實際圖塊遮住胸口；弱點系統卻在windup開core，上層紅標不代表核心露出。新測試只看倍率/姿勢高度，沒有驗證曝光。Dot須修正清楚可見的曝光姿勢並補兩手/核心窗口的幾何或呈現回歸，含窗口起迄，不讓提示蓋住遮擋就宣稱通過。Root/Luna沒有代寫修正。
+
+此次完全未套用提案，也未跑提案測試/生成器/瀏覽器。遊戲仍migration內部20261028c、先前完整74test檔/124PASS/162hash；目前162檔全相同，只有本公開review/卡/handoff新狀態，不無意義重跑或升遊戲版。正式仍b，無boss4PR/候選。接著以本次新實際HEAD重新綁Dot完整修正版，保持同卡/同分支，舊提案/審查/raw不抹除。過期原始migration通知已對照後來重綁/獨審/全測提交處理為歷史，不重複套用。
+
+---
+
 ## boss4增量1完成：僅資料遷移，三王仍待實作（2026-10-28T02:58:52.107634+00:00）
 
 Dot原生已實際承認作者授權並交精確7931-byte patch，SHA256 8ff56592199f582070c7797a5efc5e317de8adf2445983235e1310d9f0fa6ab2，綁base68e2a8e0528658c3bec0d1b91810c27d47255849；標準回件已收，僅code_patch_proposal_only、wholePR=false/card_complete=false。source讀取與hash/語意範圍有分列，不冒稱全部語意看完；原scope-only失敗與未發布prepare歷史保留。
