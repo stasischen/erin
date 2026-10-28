@@ -1,5 +1,13 @@
 # 目前交接
 
+## boss4恢復派送：家長回報已完成Dot原生作者授權（2026-10-28T02:38:56.074841+00:00）
+
+家長已回報完成前述原生確認，主控恢復doing、waitingFor清空，依最新實際HEAD重新建立同卡successor request。Dot負責完整三王程式patch文字提案；Luna不同session獨審及精確套用；Mac負責完整測試/版本/Git/PR/隔離測試站，Dot自己雲端實測，非作者Mac最終審查/合併/Pages。未授予Dot直接repo寫入/PR/merge/安全設定。原生scope仍由Dot實際核對，不拿repo聲明冒充平台設定。
+
+原scope-only changes及不合法coverage object保留，不改raw或假採納；新正式回件要求合法非空coverage list、字串gate_review、來源/manifest/bundle與patch/pre/postimage綁定。現在仍無boss4程式或PR；下一步等真正patch後獨立審查，而非再評估是否啟用流程。boss5未開工。私人原話/原始交換/logs/screenshots留repo外，公開協作紀錄正常commit在本工作分支。
+
+---
+
 ## boss4等待Dot原生程式提案作者範圍確認（2026-10-28T01:49:41.699448+00:00）
 
 家長已直接授權接續boss4及Dot作者→Luna獨審/套用→Mac PR/預覽→Dot雲端驗證→非作者Mac合併；受信任跨session讀取亦核對到人類原始指示。不是缺Mac主控的家長同意。Dot原生回件明確表示當前收件範圍只有技術/內容審查與隔離試玩，不包含承接三個新Boss完整實作patch；要求在其原生對話確認該作者範圍。主控已請家長一次補確認Erin正式派卡的程式提案作者角色；不把既有Maker草稿授權拿來擴權，不改平台/安全設定，也不改叫別的作者代寫後自批。

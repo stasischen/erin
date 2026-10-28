@@ -5,17 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：石像雙手、眼方塊與面具石像",
-  "state": "blocked",
+  "state": "doing",
   "branch": "codex/survivor-boss4",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "家長已授權本卡與Dot→Luna流程，但Dot原生回件只接受審查/隔離測試，要求在原生對話確認Erin完整程式patch提案作者範圍；等待家長完成該確認。尚無程式patch/PR。收到後依最新HEAD重綁同卡請求，再Dot出patch→Luna獨審精確套用→Mac全測/版本/PR/預覽→Dot雲端QA→非作者Mac finalgate。原scope-only回件格式不符coverage list，正式收件隔離，raw保留不改。Godot§11適用範圍依開工紀錄，尚未實作或驗收。",
+  "next": "家長已回報在Dot原生完成Erin程式patch提案作者授權，恢復本卡。主控重新固定最新完整SHA/來源/allowlist交Dot提出完整三王patch；Luna獨審精確套用，Mac完整含layout全PASS後開同卡PR與隔離預覽，Dot自己雲端三尺寸功能驗證，非作者Mac finalgate/merge/Pages。舊scope-only回件維持歷史隔離，不當程式通過；新回件須合法coverage非空list。Godot§11適用資料/規則/事件/像素/測試/世界座標，未實機移植。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "user",
-  "updated": "2026-10-28T01:49:41.699448+00:00",
+  "waitingFor": null,
+  "updated": "2026-10-28T02:38:56.074841+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
