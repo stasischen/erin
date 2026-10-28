@@ -456,3 +456,12 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 唯一固定遊玩URL：[PR105 source 09bfd3e／20261028e](https://stasischen.github.io/erin-preview/pr-105/09bfd3e0877e3b723cd2581ecb44b53dae57ea65/games/survivor/)。三尺寸Eye v4專項雲端測試已送至[#411 #6468015572](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468015572)，完整manifest preimage已隨request bundle提供，避免另外重建hash。要求Dot只測自己的雲端Chrome實際操作、三尺寸canvas/HUD、E→N→W靜止面內扭轉、外向面Eye/beam warning與命中時序；不改code、HP、隱藏狀態或Maker，不碰正式站。回覆格式明確把觀察放`viewport_results`、`coverage:null`。
 - 送件時PR105 head正是上述source SHA。request結果只評固定預覽Eye實玩，不代表獨立程式審查、整卡、PR或merge；收件後須再核request、manifest、bundle、source及comment作者。舊Stone候選740×360 raised-hand/HUD重疊明列為已知的另一項缺口，Eye範圍不修它也不遮蔽它。未來如有coord-only紀錄提交，不改候選遊戲檔；Eye結果仍只對固定source `09bfd3e`有效。
 - PR105尚未approve/merge，Mask Statue未完成。等待Dot結果後先記錄其實測範圍；再另向Dot要求修Stone HUD重疊，Luna複審、Mac完整測試、新SHA候選及Dot驗收後才可進下一階段。
+
+
+### Rolling Eye v4 Dot partial evidence與針對性補測（2026-10-28 12:18 UTC）
+
+- 原始回覆 [#6468600347](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468600347) 已讀回，通過既有request/source/manifest/bundle/作者normalizer與validator；`changes / partial_evidence`，scope只限固定預覽的Eye實玩。source仍是 `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`、版本 `20261028e`；回覆不得套用到PR後續的新HEAD或宣稱程式缺陷。
+- 三個iframe/canvas尺寸1024×461、740×360、1180×820皆核對一致。1024實測到一次Eye warning→實體beam→可見HP下降，beam起點與眼中心對齊；但路徑只確實完成E、N，下一玩家位置造成S而非W，故沒有E→N→W或相同法線靜止+90°畫面對照。740實際路徑E→N→E，缺W與扭轉對照，也沒完成beam warning→命中/傷害。1180曾觀察到N→W，但較早有未逐格計數的E移動，不能證明起始面連續E→N→W；沒完成beam鏈。不得以Mac規則測試補畫面證據。
+- 原始Dot觀察另指出1024時Boss血條蓋住眼睛上部；740時玩家上身接近並被Boss HUD遮住。1180外頁窗較短且捲動，部分頂端HUD/右邊緣在外頁視口以外，不等於canvas內裁切；仍未完成整個HUD邊緣驗收。初次畫面Boss均可見，未觀察到畫面外生成。上述視覺遮擋待另作HUD問題處理，不能跟扭轉驗收混為一談。
+- 已送針對性證據補測 [#6468770049](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468770049)，candidate仍固定同一immutable URL/source09bfd3e；request manifest列明目前PR head `8b8db3d14df64abf4516dd03a82b6f998669d1ef`僅coord檔變更，遊戲檔與sw.js逐byte相同。補測只重做1024 E→N→W靜止對照、740/1180外向面beam warning→實際beam/HP變化，並附普通玩家位置引導；不改code、Maker、HP或隱藏狀態。`coverage:null`、畫面記錄放`viewport_results`。
+- 目前任務維持blocked等待補測回覆。後續先核新回覆仍限同一固定候選及指定片段，再由Dot另提供HUD遮擋修正patch、Luna複審、Mac完整測試及新SHA候選；Stone raised-hand/HUD舊缺口與Mask Statue也尚未清除。
