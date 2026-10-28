@@ -487,3 +487,10 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Dot上一輪回覆已確認740×360與1180×820光束鏈證據完成；1024×461仍是E→N→S，沒有要求的E→N→W與靜止+90°對照。已依此只發一個1024尺寸新請求：[PR #411 #6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)，request `33e8b7b1715399874cf6dc1a895b54201d6fa1c56ad39a240cb7936760a5a37d`，manifest `8a77ab6dda271c246806cd09561416fdd93046b6fd22d70233bf75b78be549bd`，bundle `220fcf6ac15f954a193135f5960cd2fc683f12576de2f83ab50f3e206f3f76ec`。公開留言readback確認request id、manifest、bundle及候選SHA。
 - 該request唯一候選仍是source `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`／版本`20261028e`固定預覽；送件當下PR head為`1a30bee7d791a3e38f130d845f4305d99ab8cfcb`，其相對候選只有coord紀錄差異，遊戲檔與`sw.js`完全未變。新結果只適用該候選；禁止hidden state、devtools、Maker、程式修改或正式站。
 - 本次只要求在1024×461用正常遊戲輸入記錄連續E→N→W實際預警，並比較初始與同法線返回後的靜止眼面扭轉。上次E→N→S後才出現W不能代替要求路徑；若仍分岔，照實回報並維持partial。等待Dot結果；不代表整卡、程式碼審查、PR或merge通過。
+
+
+### Boss4 HUD patch與Rolling Eye 1024補測並行派送（2026-10-28 14:17 UTC）
+
+- 收到家長指出不應停在等待後，確認先前只送了1024實測、沒有送HUD修改請求。已另發Dot code patch proposal：[PR #411 #6471404535](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471404535)，request `4965af3237abb0efaffbea2702f0c19f587be567334fd1d464151b1908ba166b`，base/head `5acc25a82e841f1f99c538301a52083517cbff02`、manifest `8b72f136640387a45e6f0303627a1fe466cdb1e68ea38b8cb1e34fed50a14aa1`、bundle `7001d6c4da08e0d8b0e6caebd03fa6b562ea7b05a97628736c1febccbca9925e`；PR留言readback已核對。
+- HUD request只允許提案修改`games/survivor/style.css`，要求用共用響應式佈局處理1024 Eye上部、740玩家上身及石像手部預警與Boss HUD重疊，維持HP/架勢/名稱可讀；禁止遊戲邏輯、隱藏狀態、正式站、repo寫入、push或merge。若單一CSS不夠，Dot須停下說明所需路徑，不能擴大範圍。這只是code proposal，須Luna獨立審查/精確套用後由Mac測試、新發固定候選，再交Dot瀏覽器驗收。
+- 此patch request固定在當時PR HEAD `5acc25a`；送件後協調紀錄提交不改遊戲檔。與1024瀏覽器補測request #6471339722（固定遊戲source `09bfd3e`）是兩個不同source、不同範圍的請求。兩者都等Dot回覆，但HUD patch審查可先啟動，不需等1024實測。

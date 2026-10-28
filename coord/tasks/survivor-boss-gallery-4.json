@@ -8,14 +8,14 @@
   "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye v4 source09bfd3e／20261028e的Dot固定預覽結果已驗證：740×360及1180×820 warning→beam→受擊鏈已補；1024×461仍是E→N→S，缺E→N→W及同法線靜止+90°比較。已將單一1024缺口補測送至PR #411留言6471339722，request 33e8b7b1715399874cf6dc1a895b54201d6fa1c56ad39a240cb7936760a5a37d；結果只適用固定候選，不套用到PR新head。回覆仍須部分證據處理；不推論程式缺陷或整卡通過。另有Eye/玩家受HUD遮擋及Mask Statue未完成。",
-  "next": "等待並驗證Dot對request 33e8b7b1715399874cf6dc1a895b54201d6fa1c56ad39a240cb7936760a5a37d的固定source09bfd3e、1024×461-only回覆：實際連續E→N→W預警與同法線靜止扭轉比較。若仍分岔或缺畫面，保持partial。之後另處理1024/740 HUD遮擋與Stone raised-hand遮HUD，Luna複審、Mac完整--layout測試、新SHA候選及Dot實玩後再完成Mask Statue。PR105保持draft。",
+  "brief": "Rolling Eye v4 source09bfd3e／20261028e的Dot結果：740×360及1180×820 warning→beam→受擊鏈已補；1024×461仍E→N→S，缺E→N→W及同法線靜止扭轉，已送固定候選實測 #6471339722。HUD遮擋也已另送Dot code-only patch proposal #6471404535：僅改style.css，基於PR head5acc25a，處理1024 Eye、740玩家及Stone手部與HUD重疊；待Dot提案、Luna獨立複審、Mac精確套用/--layout與新候選Dot實測。未停工等單一結果，兩請求並行。",
+  "next": "並行處理：(1) 驗證Dot對 #6471339722 固定source09bfd3e的1024×461 E→N→W/靜止扭轉畫面；(2) 收取Dot對 #6471404535、base5acc25a、style.css-only HUD修正提案，核對patch/hash後交Luna獨立複審。提案通過後在精確base套用，Mac跑完整--layout、升版本並發新固定候選給Dot實測三尺寸；再完成HUD缺口及Mask Statue。PR105保持draft。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（PR #411 #6471339722：固定20261028e候選的1024×461轉面/靜止扭轉補測）",
-  "updated": "2026-10-28T14:14:19Z",
+  "waitingFor": "Dot（#6471339722：1024固定候選實測；#6471404535：Boss4 HUD CSS patch提案）",
+  "updated": "2026-10-28T14:17:00Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
