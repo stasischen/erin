@@ -5,17 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：石像雙手、眼方塊與面具石像",
-  "state": "doing",
+  "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "家長已授權boss4；主控鎖精確base與來源/allowlist交Dot出patch，Luna獨審後機械套用；Mac全套含layout全PASS才開本卡唯一PR與SHA隔離預覽，Dot自有雲端三尺寸驗收，再非作者Mac審查合併。Godot§11：資料/規則/事件/固定像素/可移植案例/世界座標適用，只處理三王；不移植Godot、不全面JSON化、不改音訊。",
+  "next": "家長已授權本卡與Dot→Luna流程，但Dot原生回件只接受審查/隔離測試，要求在原生對話確認Erin完整程式patch提案作者範圍；等待家長完成該確認。尚無程式patch/PR。收到後依最新HEAD重綁同卡請求，再Dot出patch→Luna獨審精確套用→Mac全測/版本/PR/預覽→Dot雲端QA→非作者Mac finalgate。原scope-only回件格式不符coverage list，正式收件隔離，raw保留不改。Godot§11適用範圍依開工紀錄，尚未實作或驗收。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": null,
-  "updated": "2026-10-28T01:37:05.410403+00:00",
+  "waitingFor": "user",
+  "updated": "2026-10-28T01:49:41.699448+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

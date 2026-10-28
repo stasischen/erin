@@ -1,5 +1,15 @@
 # 目前交接
 
+## boss4等待Dot原生程式提案作者範圍確認（2026-10-28T01:49:41.699448+00:00）
+
+家長已直接授權接續boss4及Dot作者→Luna獨審/套用→Mac PR/預覽→Dot雲端驗證→非作者Mac合併；受信任跨session讀取亦核對到人類原始指示。不是缺Mac主控的家長同意。Dot原生回件明確表示當前收件範圍只有技術/內容審查與隔離試玩，不包含承接三個新Boss完整實作patch；要求在其原生對話確認該作者範圍。主控已請家長一次補確認Erin正式派卡的程式提案作者角色；不把既有Maker草稿授權拿來擴權，不改平台/安全設定，也不改叫別的作者代寫後自批。
+
+已送精確公開base0fc5331e8a9b695eb81f77fd416580c6b89a1668、46來源清單/15允許路徑及完整request/manifest/prompt preimage；已回讀一致。回件verdict changes、request_scope_check_only，只讀request，未讀來源/產patch/跑測試/試玩。原始回件coverage是object，不符標準非空list，正式收件隔離；僅人工核對來源與綁定後記錄實際block，不假稱adopt，不改raw。私人交換識別、原始人類訊息與完整原件留repo外。沒有真正工具/平台拒絕。
+
+當前branch codex/survivor-boss4，卡blocked/waitingFor:user，尚無PR/新程式/新遊戲測試；正式站仍20261028b。PR104完工卡與部署交接已在boss4開工commit0fc5331提交並push，不會永遠留本機。此次只提交可公開blocked狀態與路線摘要；原Dot請求仍綁原base，未來授權確認後必須依當時實際HEAD重新固定successor request，不把新patch硬套舊base。下一階段Luna獨立精確審查/套用；boss5未開工。不輪詢、不排程、不自動喚醒。
+
+---
+
 ## boss4已獲家長授權開工（2026-10-28T01:37:05.410403+00:00）
 
 正式卡survivor-boss-gallery-4，分支codex/survivor-boss4從最新origin/main a0b10ad63774bc9db8950cfdff6094c169a8d5d9建立，尚無PR。三王：石像雙手／翻滾眼方塊／面具石像，規格見coord/tasks/specs/survivor-boss-gallery-4.md。Root只寫協作與機械作業；Dot是程式patch作者，Luna不同session獨審/精確套用，Mac全測/版本/PR/隔離預覽，Dot自己雲端實測，非作者Mac finalgate/merge/Pages確認。當前唯一寫入者Root；交patch給Luna時停筆。boss5未授權開工。
