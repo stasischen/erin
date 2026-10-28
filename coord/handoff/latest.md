@@ -399,3 +399,52 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Mac Studio來源 `node games/survivor/tools/test.cjs --layout` 已在固定程式SHA通過（exit0、74測試檔／128 PASS，164個程式／測試／快取hash一致），`git diff --check` PASS。只有Pages部署，沒有GitHub遊戲CI。PR保持draft；石像雙手是三Boss卡片中的第一個階段，翻滾眼方塊及面具石像未完成、未進此候選，正式站仍為 `20261028b`。
 - Dot的PR105雲端三尺寸階段實玩已送，尚無結果；Mac工程／HTTP驗證不冒充Dot實玩。PR的測試版SHA、manifest及發布commit見PR描述。
 - 下一步：保留目前候選讓家長試玩；收到Dot結果後記錄範圍與問題。繼續同卡Rolling Eye patch（需基於最新PR分支SHA重新綁定）→ Luna獨立審查／精確套用 → Mac完整測試 → Mask Statue；整卡與最終獨立審查完成前不merge。
+
+
+## PR105：收件器漏讀已查明；Rolling Eye 等修正版
+
+- PR105仍是draft，遠端source head `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`。先前回報「沒有Dot結果」是收件器錯誤：#411留言第一行帶 `recipient=mac-manager`，本機精確比對只接受不含recipient的舊格式，因此靜默漏讀。沒有重送舊request；改從GitHub原留言讀回原文，只在本機normalized副本移除該marker欄位，原始JSON/body保留，兩個結果都通過既有request/SHA/hash validator。修接收器工具尚未包含在 Erin 程式碼變更中。
+- Stone Hands frozen 20261028d候選三尺寸補測回 `changes / partial_evidence`：1024×461核心攻擊顯示105、Boss HP 100→95；dash位移三尺寸都觀察到；1024×461有一組警示到撞擊。各尺寸連續左右交替且身份與impact frame清楚仍未證實。這是證據缺口，不是已診斷遊戲缺陷。只補此缺口的新雲端請求已送Dot，僅測固定公開候選，不改Maker/程式/HP。
+- Rolling Eye patch proposal以精確source85e及12個變更路徑（全屬19項允許路徑）綁定，patch與postimage hash機械核對通過；Luna獨立審查判 `changes`：朝向/畫面旋轉與真實格步方向脫節；beam權重為0時序列停滯；Maker顯示不生效的半徑/移速欄。詳見 `coord/reviews/survivor-boss-gallery-4/luna.md`。尚未套用，未跑遊戲測試。
+- 已請Dot基於同一個未變的85e提交修正版，新增朝向、多方向格步、beam=0與Maker實際控制測試；同時請Dot補Stone缺少的三尺寸交替落擊觀察。修正版仍需Luna複審，再機械套用、Mac跑完整 `node games/survivor/tools/test.cjs --layout`，發佈新的SHA固定測試版後才做Dot雲端實玩。PR105整卡、Mask Statue、approve/merge均未完成。
+- PR公開進度：[Dot補測](https://github.com/stasischen/erin/pull/105#issuecomment-6464917262)、[Luna changes與Rolling Eye修正](https://github.com/stasischen/erin/pull/105#issuecomment-6465088180)、[新Stone缺口補測](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465118541)、[Rolling Eye修正版請求](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465082162)。
+
+
+### PR105 請求完整性預檢補充（待Dot重驗）
+
+- Eye revision與Stone Hands證據補測的兩份GitHub回覆都標為 `changes / incomplete`，僅屬 integrity preflight，沒有重跑遊戲或 UI。直接比對本機凍結 `source.json` 後，來源端的 `manifestHash` 可由完整manifest重算吻合；兩份預檢回報的「舊格式重建值」則剛好等於移除 `exchangeRoom` 欄位後的hash，確認這是新舊manifest格式不一致，沒有證據指向bundle或source內容損壞。
+- 已分別向原兩個request送出metadata-only補充，含精確凍結 `request.json`、`source.json` descriptor/manifest preimage及 `SHA-256(UTF-8(json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":"))))` canonicalization。原request、source、scope及bundle都未變；請Dot只重驗manifest完整性，不重跑程式審查或瀏覽器測試。
+- 補充留言：[Eye manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465306269)、[Stone manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465306797)。收到Dot明確重驗前，兩項 request 狀態仍維持 incomplete，Stone先前partial_evidence、Luna對patch的changes也都不變。
+
+
+### PR105 Rolling Eye v3 patch 已收，等待Luna複審
+
+- Dot確認Eye revision原request的manifest preimage已核實：hashed manifest含 `exchangeRoom`；完整preimage及source canonicalization重算完全吻合。見[完整性確認](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465602032)。原source仍為PR105 head `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`。
+- 新v3提案 `approve / proposal_ready_for_independent_review` 只表示可送Luna審查，不是程式審查通過。proposal SHA-256 `e425f7fa473ac53be6ad98337c00c4600d77d4927cb85b445c6283d245e4c520`、patch 51,039 bytes；主控用原normalizer/validator驗request、source、manifest、bundle及作者，並在exact-base scratch驗 `git apply --check`、11文字postimage與1張PNG postimage SHA/bytes、所有12條變更路徑均在19項allowlist。v3新增112×16 RGBA PNG（237 bytes），只在本機查看。
+- v3聲稱修正前版三項Luna findings：實際格步方向驅動朝向/眼部/光束；beam disabled時安全輪轉並拒絕兩招全disabled；隱藏不生效Maker控件。已把精確patch與原始回覆交Luna再審；未套用、未跑CJS、Mac完整 `--layout`、素材產生器或瀏覽器。PR105保持draft。
+- Stone Hands結果仍維持 `partial_evidence`；Stone preimage addendum已送出，但截至本紀錄尚無Dot對其manifest完整性的確認，也未補跑左右手撞擊序列。不得把Eye preflight完成推廣成Stone驗收通過。
+- 本段目前等待Luna v3 verdict及Dot Stone完整性/落擊回覆；請照既定流程接續。
+
+### Rolling Eye v3 Luna 複審：仍需修正面內扭轉
+
+- Luna確認v3已修正前版三項問題，但對完整patch仍判 `changes`。新的blocking reproduction：face0起始走E→N→W，最後face normal回face0但signed roll總和+90°；active transit結束後程式只保存face，renderer回未旋轉face0，丟失眼面扭轉。face art不是90° rotationally symmetric；同一normal也可能對應不同面內twist。詳細審查檔在 `coord/reviews/survivor-boss-gallery-4/luna.md`，v2記錄保留於 `luna-v2.md`。
+- v4修正請求已送Dot，source仍綁PR105 head85e；要求保存完整cube orientation/等價的normal+twist，E→N→W靜止姿態保留+90°，另測不同路徑到相同normal但扭轉不同時的穩定render/frame，並保留v3前三項修正。請求內已明列supersedes，且已附新的exact request/manifest preimage，避免重複完整性阻塞：[v4 patch request](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466814725)、[manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466818564)。
+- PR105仍draft、遠端head未變85e；v3未套用，沒有跑新遊戲測試或瀏覽器測試。[PR更新](https://github.com/stasischen/erin/pull/105#issuecomment-6466823402)。
+
+
+### PR105 Dot 收件漏讀原因與 Stone 窄範圍補測（2026-10-28）
+
+- Dot 的 Stone 補測回覆一直存在於 [PR #411 #6466710501](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466710501)。我先前說「還沒確認收到」是收件器漏讀後的錯誤推論：本機 exchange parser 只接受不含 `recipient=` 的舊 marker，遇到 `recipient=mac-manager` 就因精確比對失敗而跳過。原始留言沒有遺失；此後直接從 GitHub 讀回並以原始 request／source／manifest／bundle 綁定驗證。這是工具接收缺陷，修復及回歸測試尚未包含在 Erin repo。
+- 另有獨立的 manifest preimage 對照問題：Dot 先前重建時漏掉 hashed manifest 的 `exchangeRoom`；[#6465603733](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465603733) 核對補充後確認完整 preimage。這個 hash 對照問題與「收件器看不到留言」是兩件事。
+- Stone Hands 結果 [#6466710501](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466710501) 已在本機按固定 request、source SHA `2bb7270f8590f34bdaedb3d4d1255fa7cd50326d`、manifest、bundle 與預覽版本 `20261028d` 驗證。Dot 的結論僅核准三個 viewport 各兩次左右手交替 warning→impact 序列；1024×461、740×360、1180×820 皆有兩段序列。因交換格式把 viewport observations 放在 `coverage`（而現有 intake validator 把該欄當檔案覆蓋率），只在本機標準化副本搬到 `viewport_results` 後跑原 validator；原留言與證據未改。這不是 Stone 全功能、整卡、PR 或合併核准。
+- 補測記錄另發現 740×360 的 raised hand top 與 HUD 重疊。Dot 此次 scope 只核對左右手預警／撞擊序列，故重疊仍是待修的 UI 問題；不把窄範圍 approve 擴大解讀。待 Rolling Eye v4 的同檔修改解決後，另基於當時最新 PR head 向 Dot 要 Stone HUD 修正，再對最後固定候選重測。
+- PR105仍為 draft，remote head維持 `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`；尚未套用任何 patch，也未因這次收件核對重跑遊戲測試。
+
+
+### PR105 Rolling Eye v4 Luna 核准、Mac 套用與完整測試（2026-10-28 11:28 UTC）
+
+- Dot 原始提案 [#6467328114](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6467328114) 綁定既有 request、source `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`、manifest與bundle；結果 `approve` 僅 `code_patch_proposal_only`，明確不是獨立程式審查、整卡通過或合併授權。完整提案57,641 bytes，SHA-256 `94876616a2e9a629bbb5b2f5cf93e38e32764c8ef4dc533aecdbd7cb16edadb0`，明確取代未套用的v3。
+- Luna獨立複審通過，詳見 `coord/reviews/survivor-boss-gallery-4/luna-v4.md`。24個 `(face, up)` 狀態保留完整朝向；E→N→W休止時維持face0及+90°扭轉；相同外向face的不同扭轉能被區分，beam/weakpoint及共用眼／光束錨點使用一致朝向。v3的beam停用回退及Maker有效設定修正仍保留。
+- 主控核對request、source SHA、manifest canonical hash、bundle hash、patch長度/hash、11個文字preimage/postimage與1個獨立PNG payload；12個變更路徑皆在19項allowlist內。先於精確base scratch成功套用並驗postimage，再將文字patch及PNG分別套用至原PR分支；`version.json`升至 `20261028e`，由正式version工具同步頁面query及service-worker快取。
+- Mac完整 `node games/survivor/tools/test.cjs --layout` 第二輪 exit0、134個PASS行，含Boss4朝向／renderer／beam／Maker案例與layout Chrome；`git diff --check`通過。第一次全套測試發現Boss4新測試一處仍讀舊`gridFace`欄位；換成`gridOrientation.face`後，定向測試揭露第二個fixture在舊`state.trial`未清時重啟，沿用舊beam權重；在fixture起始先`resetGame()`後定向與全套都通過。這兩處僅測試fixture修正，遊戲邏輯未增改。
+- 目前尚未建立新commit、push PR或發布新preview；PR105仍draft、remote head仍是85e。下一步將明確列出檔案建立同分支commit/push，依append-only隔離流程發布新SHA候選，請Dot只對該候選做雲端實玩。舊Stone候選在740×360的raised hand/HUD重疊仍另待修；先避免與Eye同檔修改衝突，再按最新PR head另送Dot修正，不能把Eye v4核准或Stone窄範圍approve擴大為整卡/PR通過。

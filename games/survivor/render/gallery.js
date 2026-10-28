@@ -46,6 +46,7 @@ function drawTrialMoves() {
 
 const trialPlaceholders={};
 function trialPicture() {
+  if(trialGridSpec(state.trial.definition))return trialEyePicture(state.boss);
   const id=state.boss.artId||state.trial.definition.artId,m=state.bossMoves[0],timing=m&&state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].timing;
   const context=actorArtContext(state.boss,m&&{...m.ai,angle:m.angle},timing);
   if(state.boss.impactFlash||state.boss.flash>0||m&&m.ai.phase==='windup'&&m.teleported&&state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].effect.relocate&&m.ai.left<=state.trial.definition.moves.find(d=>d.id===m.id).blocks.moves[0].effect.relocate.flash)context.tint='#ffffff';
@@ -82,6 +83,7 @@ function drawTrialEncounter(){
  for(const b of trialBodies())for(const m of b.moves){
    if(!['windup','active'].includes(m.ai.phase))continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0],active=m.ai.phase==='active';
+   if(s.effect.gridRoll||s.effect.beam){drawTrialGridMove(b,m,s);continue;}
    if(s.effect.relocate&&m.teleported&&m.ai.phase==='windup'&&m.ai.left<=s.effect.relocate.flash)SurvivorArt.paint('move/white-flash',{context:ctx,x:b.x-30,y:b.y-60,width:60,height:60,time:state.elapsed},()=>{const palette=SurvivorArt.lookup('move/white-flash').palette;ctx.save();ctx.fillStyle=palette[0];ctx.fillRect(b.x-24,b.y-34,48,6);ctx.fillRect(b.x-3,b.y-55,6,48);ctx.restore();});
    const origin=s.effect.limb||['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=trialUsesBlocks(t.definition)?{...s.shape}:encounterShape(m,s.shape);
    if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
@@ -115,11 +117,17 @@ function drawTrialBodies(){
    if(body.vanished)return;
    const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0;
    const exposure=trialCoreExposure(body),limbed=state.trial.definition.moves.some(d=>d.blocks.moves[0].effect.limb);
-   const x=body.x,y=body.y,scale=body.r/32*(!limbed&&m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
+   const x=body.x,y=body.y,scale=body.r/32*(!limbed&&!trialGridSpec(state.trial.definition)&&m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
    drawGroundShadow(x,y,body.r,air);
    // Exposed torso is in front of the floor-plane attacking hand, not merely its marker.
    if(exposure)drawTrialLimbs(body,exposure);
-   drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);
+   ctx.save();if(trialGridSpec(state.trial.definition)){
+    const pose=SurvivorTrialBlocks.gridRenderPose(body.gridOrientation,body.gridTransit);
+    // Rotate around the actual central eye anchor, preserving beam/hit world geometry.
+    const anchor=bossWeakpointPoints(body,bossWeakpointConfig(body)).weakpoint;
+    ctx.translate(anchor.x,anchor.y);ctx.rotate(pose.angle);ctx.translate(-anchor.x,-anchor.y);
+   }
+   drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);ctx.restore();
    if(!exposure)drawTrialLimbs(body);
    drawBossWeakpoints(body,air);
    const weak=body.posture.stun>0;
@@ -149,4 +157,37 @@ function drawTrialLimbs(body,exposure=null){
    ctx.strokeStyle=colors[1];ctx.lineWidth=3;ctx.strokeRect(pose.x-size/2,pose.y-pose.height-size/2,size,size);ctx.restore();
   });
  }
+}
+
+// Closed orientation frames and actual open iris use the same fixed central anchor.
+function trialEyePicture(body){
+ const open=trialGridExposure(body),pose=SurvivorTrialBlocks.gridRenderPose(body.gridOrientation,body.gridTransit),animation=open?'eye_open':'face'+pose.face;
+ const image=SurvivorArt.picture(body.artId,animation,0);if(image)return image;
+ // Loading fallback depicts the same eye state, not a misleading weakpoint marker.
+ const key='eye-'+animation;if(trialPlaceholders[key])return trialPlaceholders[key];
+ const canvas=document.createElement('canvas');canvas.width=16;canvas.height=16;
+ const g=canvas.getContext('2d'),art=SurvivorArt.lookup(body.artId),palette=art.palette;
+ g.fillStyle=palette[0];g.fillRect(2,2,12,12);g.fillStyle=palette[1];g.fillRect(3,3,10,10);
+ g.fillStyle=palette[2];if(open){g.fillRect(5,5,6,6);g.fillStyle=palette[0];g.fillRect(7,6,2,4);}
+ else if(pose.face===3)g.fillRect(5,7,6,2);
+ else if(pose.face===1)g.fillRect(11,5,1,6);
+ else if(pose.face===2)g.fillRect(5,3,6,1);
+ else if(pose.face===4)g.fillRect(3,5,1,6);
+ else if(pose.face===5)g.fillRect(5,11,6,1);
+ else {g.fillRect(5,5,2,2);g.fillRect(9,9,2,2);}
+ trialPlaceholders[key]=canvas;return canvas;
+}
+function drawTrialGridMove(b,m,s){
+ const region=trialGridRegion(b,m,s),active=m.ai.phase==='active';
+ SurvivorArt.paint('move/'+m.id,{context:ctx,...SurvivorArt.shapeOptions(region.shape,region.origin,region.angle),animation:m.ai.phase,time:state.elapsed},()=>{
+  ctx.save();ctx.translate(region.origin.x,region.origin.y);ctx.rotate(region.angle);
+  ctx.beginPath();ctx.rect(0,-region.shape.radius,region.shape.length,region.shape.radius*2);
+  ctx.strokeStyle=active?'#ffe391':'#d32c4d';ctx.lineWidth=2;ctx.stroke();
+  if(active){ctx.fillStyle='rgba(255,98,45,.55)';ctx.fill();}ctx.restore();
+  if(s.effect.gridRoll){
+   ctx.save();ctx.beginPath();ctx.arc(state.trial.arena.x,state.trial.arena.y,state.trial.arena.radius,0,Math.PI*2);ctx.clip();
+   const cell=s.effect.gridRoll.cell;ctx.fillStyle='rgba(229,42,74,.22)';ctx.fillRect(m.target.x-cell/2,m.target.y-cell/2,cell,cell);
+   ctx.strokeStyle='#d32c4d';ctx.lineWidth=2;ctx.strokeRect(m.target.x-cell/2,m.target.y-cell/2,cell,cell);ctx.restore();
+  }
+ });
 }

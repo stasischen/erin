@@ -363,19 +363,21 @@
       select(hazard,'種類',g.hazard,'kind',{poison:'毒池',ice:'冰面',fire:'火圈'});
       for(const [key,bounds,label] of [['radius',[20,200,5],'範圍'],['duration',[.1,15,.1],'持續秒數'],['interval',[.1,3,.1],'傷害間隔'],['damage',[0,40,1],'傷害'],['slow',[.2,1,.05],'剩餘速度']])range(hazard,g.hazard,key,bounds,label);
       for(const b of g.bosses) {
-        const box=el('fieldset',undefined,p);el('legend',b.name,box);text(box,'名稱',b,'name');range(box,b,'hp',[500,5000,100],'血量');range(box,b,'radius',[20,50,1],'大小');range(box,b,'speed',[0,200,5],'追擊速度');
-        range(box,b.phases[1],'threshold',[.05,.95,.01],'第二階段血量低於比例');range(box,b.phases[1],'speed',[.5,2,.05],'第二階段速度倍率');
+        const box=el('fieldset',undefined,p),gridBoss=b.moves.some(m=>m.blocks.moves[0].effect.gridRoll);el('legend',b.name,box);text(box,'名稱',b,'name');range(box,b,'hp',[500,5000,100],'血量');range(box,b,'radius',[20,50,1],'大小');if(!gridBoss)range(box,b,'speed',[0,200,5],'追擊速度');
+        if(!gridBoss){range(box,b.phases[1],'threshold',[.05,.95,.01],'第二階段血量低於比例');range(box,b.phases[1],'speed',[.5,2,.05],'第二階段速度倍率');}
         for(const m of b.moves) {
           const field=el('fieldset',undefined,box);el('legend',m.name,field);const s=m.blocks.moves[0];
-          range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');
-          range(field,m.ai,'minDistance',[0,10000,10],'AI 最近距離');range(field,m.ai,'maxDistance',[0,10000,10],'AI 最遠距離');range(field,m.ai,'phaseWeight',[0,10,.1],'AI 第二階段加權');
-          range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(['sector','ring'].includes(s.shape.type))range(field,s.shape,'angle',[0,360,5],s.shape.type==='ring'?'安全缺口角度':'扇形角度');
+          if(s.effect.beam)range(field,m,'weight',[0,1,1],'光束啟用 0 關 1 開');
+          else if(!s.effect.gridRoll){range(field,m,'minPhase',[1,2,1],'開始階段');range(field,m,'weight',[0,100,1],'AI 選招權重');range(field,m.ai,'minDistance',[0,10000,10],'AI 最近距離');range(field,m.ai,'maxDistance',[0,10000,10],'AI 最遠距離');range(field,m.ai,'phaseWeight',[0,10,.1],'AI 第二階段加權');}
+          if(!s.effect.gridRoll&&!s.effect.beam)range(field,s.shape,'radius',[30,200,5],'形狀半徑');if(['sector','ring'].includes(s.shape.type))range(field,s.shape,'angle',[0,360,5],s.shape.type==='ring'?'安全缺口角度':'扇形角度');
           for(const [key,bounds,label] of [['windup',[.6,3,.05],'預警'],['active',[.1,4,.05],'出手'],['recovery',[.2,3,.05],'收招'],['cooldown',[.1,8,.1],'冷卻']])range(field,s.timing,key,bounds,label+'秒數');
-          range(field,s.effect,'damage',[0,40,1],'傷害');range(field,s.effect,'speed',[0,600,10],'招式移速');
+          range(field,s.effect,'damage',[0,40,1],'傷害');if(!s.effect.gridRoll&&!s.effect.beam)range(field,s.effect,'speed',[0,600,10],'招式移速');
           if(s.effect.sequence){range(field,s.effect.sequence,'count',[1,8,1],'前半場連斬刀數');range(field,s.effect.sequence,'phaseCount',[1,8,1],'後半場連斬刀數');el('p','每刀固定使用預警＋出手秒數；只有整組最後才收招。連段開始鎖定刀數，中途半血仍完成原節拍。',field);}
           if(s.effect.relocate)for(const [key,bounds,label]of [['distance',[40,160,2],'背後換位距離'],['vanish',[.1,1,.05],'消失秒數'],['flash',[.2,.5,.05],'白閃預警秒數']])range(field,s.effect.relocate,key,bounds,label);
           if(s.effect.projectiles)for(const [key,bounds,label]of [['count',[1,15,1],'每扇苦無數量'],['speed',[60,400,10],'苦無速度'],['life',[.5,5,.1],'苦無壽命秒數'],['radius',[3,12,1],'苦無半徑']])range(field,s.effect.projectiles,key,bounds,label);
           if(s.effect.limb)for(const [key,bounds,label]of [['reach',[60,300,5],'肢體觸及距離'],['lift',[20,120,5],'舉手高度']])range(field,s.effect.limb,key,bounds,label);
+          if(s.effect.gridRoll)range(field,s.effect.gridRoll,'cell',[60,120,5],'格步翻滾格距');
+          if(s.effect.beam){range(field,s.effect.beam,'width',[3,20,1],'光束半寬');range(field,s.effect.beam,'range',[100,800,20],'光束最長距離');}
           if(s.effect.slide)range(field,s.effect.slide,'speed',[0,300,10],'橫向滑步速度');
           if(s.effect.duration!==undefined){
             if(['nova','cross'].includes(m.id))range(field,s.shape,'thickness',[2,40,1],'環／光束半寬');

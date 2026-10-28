@@ -33,3 +33,17 @@ def png_bytes():
 if __name__ == '__main__':
     destination = Path(__file__).resolve().parents[1] / 'art/characters/stone-hands.png'
     destination.write_bytes(png_bytes())
+
+
+# Original seven-frame Rolling Eye; Stone output above is unchanged.
+EYE_PALETTE = {'.': [0, 0, 0, 0], 'o': [48, 54, 79, 255], 's': [154, 131, 184, 255], 'h': [206, 190, 225, 255], 'e': [189, 244, 223, 255]}
+EYE_FRAMES = [['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..ossoosssssso..', '..ossossssssso..', '..osssssssssso..', '..osssssssssso..', '..ossssssoosso..', '..osssssssosso..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..ossssssssoho..', '..ossssssssoho..', '..ossssssssoho..', '..ossssssssoho..', '..ossssssssoho..', '..ossssssssoho..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..ossoooooosso..', '..osshhhhhhsso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..ossoooooosso..', '..osshhhhhhsso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..oohsssssssso..', '..oohsssssssso..', '..oohsssssssso..', '..oohsssssssso..', '..oohsssssssso..', '..oohsssssssso..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osssssssssso..', '..osshhhhhhsso..', '..ossoooooosso..', '..osssssssssso..', '...oooooooooo...', '................', '................'], ['................', '................', '...oooooooooo...', '..oshhhhhhhhso..', '..osssssssssso..', '..osseeeeeesso..', '..osseehoeesso..', '..osseeooeesso..', '..osseeooeesso..', '..osseeooeesso..', '..osseeeeeesso..', '..osssssssssso..', '..osssssssssso..', '...oooooooooo...', '................', '................']]
+
+def eye_png_bytes():
+    if any(len(f)!=16 or any(len(r)!=16 for r in f) for f in EYE_FRAMES):
+        raise ValueError('Eye frames must be 16x16')
+    raw=b''.join(b'\0'+b''.join(bytes(EYE_PALETTE[c]) for f in EYE_FRAMES for c in f[y]) for y in range(16))
+    return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',112,16,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b'')
+
+if __name__ == '__main__':
+    (Path(__file__).resolve().parents[1]/'art/characters/rolling-eye.png').write_bytes(eye_png_bytes())

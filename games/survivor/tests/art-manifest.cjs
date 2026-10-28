@@ -6,7 +6,7 @@ assert.equal(run("SurvivorArt.lookup('__proto__')"),null);
 const data=plain('SurvivorArtManifest');
 const stoneFrames={'character/stone-hands':0,'character/stone-hand-left':1,'character/stone-hand-right':2};
 for(const [id,a] of Object.entries(data.assets)) {
-  if(['character/gatekeeper','character/frost-twin','character/fire-twin','character/winged','character/assassin'].includes(id)) {assert.equal(a.sheet,'art/characters/'+id.split('/')[1]+'.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
+  if(['character/gatekeeper','character/frost-twin','character/fire-twin','character/winged','character/assassin','character/rolling-eye'].includes(id)) {assert.equal(a.sheet,'art/characters/'+id.split('/')[1]+'.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
   else if(Object.hasOwn(stoneFrames,id)){assert.equal(a.sheet,'art/characters/stone-hands.png');assert.deepEqual(a.frameSize,[16,16]);assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
   else assert.equal(a.sheet,null);
   const d=plain(`SurvivorArt.lookup(${JSON.stringify(id)},'run',99)`);

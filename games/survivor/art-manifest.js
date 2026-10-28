@@ -253,3 +253,17 @@ SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify
  }
  for(const id of ['left-slam','right-slam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
 })();
+
+// Original seven-frame Eye: six closed orientations and the actual visible iris.
+(()=>{
+ const clone=id=>JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));
+ const art=clone('character/gatekeeper');art.sheet='art/characters/rolling-eye.png';
+ art.source={generator:'tools/gallery4-art.py',kind:'original literal 16px Eye frames'};
+ art.anchors={weakpoint:[.5,.5]};art.palette=['#30364f','#9a83b8','#bdf4df'];
+ art.placeholder={outline:'#30364f',body:'#9a83b8',eyes:'#bdf4df'};
+ for(const a of Object.values(art.animations))a.frames=[0];
+ for(let i=0;i<6;i++)art.animations['face'+i]={frames:[i],fps:0,loop:false};
+ art.animations['eye_open']={frames:[6],fps:0,loop:false};art.animations.idle.frames=[6];
+ SurvivorArtManifest.assets['character/rolling-eye']=art;
+ for(const id of ['grid-roll','eye-beam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
+})();

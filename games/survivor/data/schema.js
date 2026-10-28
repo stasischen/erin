@@ -19,7 +19,7 @@
   };
   const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5],recovery:[0,3,.1],cooldown:[0,8,.1]};
   const POSTURE_BOUNDS={window:[.05,.4,.01],maximum:[20,200,5],dodgeGain:[0,100,1],recoveryGain:[0,100,1],interruptGain:[0,100,1],decay:[0,30,1],stunSeconds:[1,5,.1],chargeBonus:[0,2,.1],damageMultiplier:[1,5,.1],heal:[0,20,1]};
-  const WEAKPOINT_CONDITIONS={'windup':'招式預警時','recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
+  const WEAKPOINT_CONDITIONS={'beam-active':'眼面朝外的光束預警／出手','windup':'招式預警時','recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
   const WEAKPOINT_BOUNDS={armorMultiplier:[.15,.25,.01],criticalMultiplier:[1,6,.1],warning:[.1,1.5,.05],closing:[.1,1,.05]};
   const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
@@ -310,7 +310,7 @@
     };
     const trialEffects=(effect,base,timing)=>{
       const result={};
-      for(const key of ['sequence','relocate','projectiles','slide','limb']) {
+      for(const key of ['sequence','relocate','projectiles','slide','limb','gridRoll','beam']) {
         if(!base[key]){if(effect[key]!==undefined)fail('此招式沒有 '+key+' 積木');continue;}
         const value=effect[key];if(!value||typeof value!=='object')fail('缺少 '+key+' 積木');
         if(key==='sequence'){
@@ -321,6 +321,10 @@
           if(result[key].vanish+result[key].flash>timing.windup+1e-8)fail('換位後需留足完整白閃預警');
         }else if(key==='projectiles'){
           blockObject(value,['count','speed','life','radius','artId'],'苦無彈幕');result[key]={count:num(value.count,1,15,'苦無數量',true),speed:num(value.speed,60,400,'苦無速度'),life:num(value.life,.5,5,'苦無壽命'),radius:num(value.radius,3,12,'苦無半徑'),artId:choice(value.artId,['move/kunai'],'苦無美術')};
+        }else if(key==='gridRoll'){
+          blockObject(value,['cell'],'格步翻滾');result[key]={cell:num(value.cell,60,120,'格距')};
+        }else if(key==='beam'){
+          blockObject(value,['width','range'],'直線光束');result[key]={width:num(value.width,3,20,'光束半寬'),range:num(value.range,100,800,'光束最長距離')};
         }else if(key==='limb'){
           blockObject(value,['side','reach','lift'],'交替肢體');
           if(value.side!==base.limb.side)fail('肢體左右識別不可改變');
@@ -547,7 +551,7 @@
           if(!b || typeof b!=='object' || Array.isArray(b) || !known.has(b.id) || saved.has(b.id))fail('試煉魔王識別錯誤');
           saved.set(b.id,b);
         }
-        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin']];
+        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin'],['gatekeeper','frostfire','winged','assassin','stone-hands']];
         const complete=saved.size===known.size;
         const recognized=historical.some(ids=>ids.length===saved.size&&ids.every(id=>known.has(id)&&saved.has(id)));
         if(!complete&&!recognized)fail('試煉魔王名單不完整');
@@ -574,6 +578,15 @@
           });
           const config=weakpoint(b.weakpoint,original.weakpoint,boss.moves.map(m=>m.id));
           if(config!==undefined)boss.weakpoint=config;
+          const grid=boss.moves.find(m=>m.blocks.moves[0].effect.gridRoll),beam=boss.moves.find(m=>m.blocks.moves[0].effect.beam);
+          if(grid){
+            if(!beam||!config||config.parts.length!==1)fail('翻滾眼需保留光束與單一眼部弱點');
+            if(grid.weight!==1||grid.minPhase!==1||grid.ai.minDistance!==0||grid.ai.maxDistance<600)fail('格步翻滾為必要移動，不能停用或限制可達距離');
+            if(![0,1].includes(beam.weight))fail('光束啟用需為 0 或 1');
+            const part=config.parts[0],timing=beam.blocks.moves[0].timing;
+            if(part.id!=='eye'||part.anchor!=='weakpoint'||part.requiresMatch!==true||part.conditions.length!==1||part.conditions[0].type!=='beam-active')fail('眼部條件需與實際光束階段一致');
+            if(config.warning+.1>timing.windup||part.duration<timing.windup+timing.active)fail('光束需先完成眼部開啟預警，眼部顯露時間需覆蓋出手');
+          }
           return boss;
         });data.gallery=result;
       }

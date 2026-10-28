@@ -5,17 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：石像雙手、眼方塊與面具石像",
-  "state": "blocked",
+  "state": "doing",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Stone Hands 實作完成，版本20261028d；Mac完整--layout 74測試檔／128 PASS、164個程式／測試／快取hash穩定，Luna r4精確審查通過。已先開PR105 draft並發布只含Stone Hands的固定測試候選（來源2bb7270f8590f34bdaedb3d4d1255fa7cd50326d）；本候選只供階段回饋，不代表整卡完成或可合併。Dot雲端三尺寸／功能試玩已送，待結果。Rolling Eye patch及Mask Statue仍待完成；現有Rolling Eye來源請求原本綁2bb，coord更新後需依新HEAD重綁，不能把舊SHA誤當目前PR HEAD。",
-  "next": "等待Dot完成Stone Hands階段候選雲端試玩並交付Rolling Eye精確patch；Luna獨立審查及精確套用後Mac全套測試，接著完成Mask Statue。PR105保持draft；整卡三Boss與固定最新候選全通過獨立審查前不merge。",
+  "brief": "Rolling Eye v4 Dot replacement patch（SHA-256 94876616a2e9a629bbb5b2f5cf93e38e32764c8ef4dc533aecdbd7cb16edadb0，base85e）已經Luna獨立approve並精確套用；版本升至20261028e，Mac完整node games/survivor/tools/test.cjs --layout第二輪exit0、134 PASS。初次失敗為兩處過期測試fixture，修正後定向與全套通過。PR105尚未更新／發布新預覽；Stone舊候選740×360 raised hand/HUD重疊仍獨立待修。",
+  "next": "將已通過測試的明確檔案提交至codex/survivor-boss4並push既有PR105；用append-only隔離流程發布新SHA固定preview，交Dot在雲端對相同候選實玩。收Dot的Eye v4候選結果後，再依最新PR head獨立要求Dot修Stone 740×360 raised-hand/HUD重疊，Luna複審與Mac完整測試後重新發布與驗收；其後完成Mask Statue。PR105維持draft，所有GitHub CI不作遊戲測試。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（Rolling Eye patch；Stone Hands 階段雲端試玩）",
-  "updated": "2026-10-28T06:19:53Z",
+  "waitingFor": null,
+  "updated": "2026-10-28T11:28:54Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

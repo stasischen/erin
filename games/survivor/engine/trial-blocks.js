@@ -47,12 +47,76 @@ globalThis.SurvivorTrialBlocks=(()=>{
   if(phase==='recovery')return {x:move.target.x+(home.x-move.target.x)*progress,y:move.target.y+(home.y-move.target.y)*progress,height:0};
   return home;
  }
- return {count,start,advance,behind,slide,record,limbTarget,limbChoice,limbPose};
+ function gridCells(arena,radius,cell){
+  const n=Math.floor((arena.radius-radius)/cell),out=[];
+  for(let row=-n;row<=n;row++)for(let col=-n;col<=n;col++){
+   const x=arena.x+col*cell,y=arena.y+row*cell;
+   if(Math.hypot(x-arena.x,y-arena.y)+radius<=arena.radius+1e-8)out.push({x,y,col,row});
+  }
+  return out;
+ }
+ function gridEntry(body,arena,cell){
+  return gridCells(arena,body.r,cell).sort((a,b)=>Math.hypot(a.x-body.x,a.y-body.y)-Math.hypot(b.x-body.x,b.y-body.y)||a.row-b.row||a.col-b.col)[0];
+ }
+ function gridTarget(body,target,arena,cell){
+  const col=Math.round((body.x-arena.x)/cell),row=Math.round((body.y-arena.y)/cell);
+  const choices=gridCells(arena,body.r,cell).filter(p=>Math.abs(p.col-col)+Math.abs(p.row-row)===1);
+  return choices.sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y)||a.row-b.row||a.col-b.col)[0]||null;
+ }
+ function gridPose(origin,target,progress){
+  const f=Math.max(0,Math.min(1,progress));
+  return {x:origin.x+(target.x-origin.x)*f,y:origin.y+(target.y-origin.y)*f};
+ }
+ function sweepRegion(origin,target,radius){
+  return {origin:{x:origin.x,y:origin.y},angle:Math.atan2(target.y-origin.y,target.x-origin.x),shape:{type:'line',radius,length:Math.hypot(target.x-origin.x,target.y-origin.y)}};
+ }
+ function boundedBeam(origin,target,width,maxRange,arena){
+  const angle=Math.atan2(target.y-origin.y,target.x-origin.x);
+  return {origin:{x:origin.x,y:origin.y},angle,shape:{type:'line',radius:width,length:Math.min(maxRange,SurvivorTrialRules.rayLength(origin,angle,arena))}};
+ }
+ function gridOrientation(face){
+  const normals=[{x:0,y:0,z:-1},{x:1,y:0,z:0},{x:0,y:-1,z:0},{x:0,y:0,z:1},{x:-1,y:0,z:0},{x:0,y:1,z:0}];
+  if(!normals[face])throw new RangeError('grid face');return {...normals[face]};
+ }
+ function gridState(value=0){
+  const face=typeof value==='number'?value:value.face,n=gridOrientation(face);
+  const reference=face===2?{x:0,y:0,z:1}:face===5?{x:0,y:0,z:-1}:{x:0,y:-1,z:0};
+  const up=typeof value==='number'?reference:value.up;
+  if(!up||![up.x,up.y,up.z].every(v=>[-1,0,1].includes(v))||Math.abs(up.x)+Math.abs(up.y)+Math.abs(up.z)!==1||n.x*up.x+n.y*up.y+n.z*up.z!==0)throw new RangeError('orthogonal cardinal cube up required');
+  return {face,up:{...up}};
+ }
+ function gridTwist(value){
+  const pose=gridState(value),n=gridOrientation(pose.face),base=gridState(pose.face).up;
+  const right={x:base.y*n.z-base.z*n.y,y:base.z*n.x-base.x*n.z,z:base.x*n.y-base.y*n.x};
+  const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+  return Math.atan2(dot(pose.up,right),dot(pose.up,base));
+ }
+ function gridOutward(value){return gridOrientation(gridState(value).face).z===1;}
+ function gridRenderPose(value,transit){
+  const pose=gridState(value),start=gridTwist(pose);
+  if(!transit)return {face:pose.face,angle:start};
+  const progress=Math.max(0,Math.min(1,transit.elapsed/transit.duration));
+  const end=gridTwist(transit.turn.orientation),raw=end-start;
+  const delta=Math.atan2(Math.sin(raw),Math.cos(raw));
+  // The signed-step tumble is transient; endpoints use the full persistent pose.
+  return {face:progress<.5?pose.face:transit.turn.orientation.face,
+   angle:start+delta*progress+Math.sin(Math.PI*progress)*transit.turn.angle*.5};
+ }
+ function gridTurn(face,origin,target){
+  const dx=Math.sign(target.x-origin.x),dy=Math.sign(target.y-origin.y);
+  if(Math.abs(dx)+Math.abs(dy)!==1)throw new RangeError('one cardinal grid step required');
+  const before=gridState(face),n=gridOrientation(before.face),next=dx?{x:-dx*n.z,y:n.y,z:dx*n.x}:{x:n.x,y:-dy*n.z,z:dy*n.y};
+  const faceNext=Array.from({length:6},(_,i)=>i).find(i=>{const v=gridOrientation(i);return v.x===next.x&&v.y===next.y&&v.z===next.z;});
+  const u=before.up,up=dx?{x:-dx*u.z,y:u.y,z:dx*u.x}:{x:u.x,y:-dy*u.z,z:dy*u.y};
+  const orientation=gridState({face:faceNext,up});
+  return {face:faceNext,normal:next,orientation,step:{x:dx,y:dy},axis:dx?'horizontal':'vertical',angle:(dx-dy)*Math.PI/2};
+ }
+ return {count,start,advance,behind,slide,record,limbTarget,limbChoice,limbPose,gridCells,gridEntry,gridTarget,gridPose,sweepRegion,boundedBeam,gridOrientation,gridOutward,gridTurn,gridState,gridTwist,gridRenderPose};
 })();
 SurvivorEffectBlocks.trialMoves=SurvivorTrialBlocks;
 Survivor.engine['trial-blocks']={rules:SurvivorTrialBlocks};
 
-function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide||e.limb;});}
+function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide||e.limb||e.gridRoll||e.beam;});}
 function updateTrialBlockActor(dt){
  const t=state.trial,b=state.boss,def=t.definition;
  if(!state.bossMoves.length){
@@ -97,4 +161,74 @@ function updateTrialBlockActor(dt){
  // 方向以弧度獨立傳入，不能覆蓋 shape.angle 的扇形度數。
  m.warning=m.ai.phase==='windup'?m.ai.left:0;m.active=m.ai.phase==='active';m.recovery=m.ai.phase==='recovery'?m.ai.left:0;b.recoveryLeft=m.recovery;
  if(m.ai.phase==='select'){clearBossMoves();state.bossRest=.4;}
+}
+
+function trialGridSpec(def){return def.moves.find(m=>m.blocks.moves[0].effect.gridRoll)?.blocks.moves[0];}
+function trialGridRegion(b,m,s){
+ if(s.effect.beam)return m.region;
+ return SurvivorTrialBlocks.sweepRegion(m.origin,m.target,b.r);
+}
+function trialGridExposure(b){return Object.values(b.weakpoints||{}).some(p=>p.phase==='open'||p.phase==='closing');}
+function updateTrialGridActor(dt){
+ const t=state.trial,b=state.boss,def=t.definition,step=Math.min(.05,Math.max(0,dt));
+ // A cancelled in-flight roll finishes the previously warned route without damage.
+ // It never teleports to a new origin or starts a second attack from an off-grid position.
+ const transit=b.gridTransit;
+ if(transit&&!state.bossMoves.includes(transit.move)){
+  transit.elapsed=Math.min(transit.duration,transit.elapsed+step);
+  Object.assign(b,SurvivorTrialBlocks.gridPose(transit.origin,transit.target,transit.elapsed/transit.duration));
+  if(transit.elapsed>=transit.duration){b.gridOrientation=transit.turn.orientation;b.gridBeamSpent=false;delete b.gridTransit;}
+  return;
+ }
+ if(b.posture.stun>0||b.stunTimer>0){clearBossMoves();b.recoveryLeft=0;return;}
+ if(!state.bossMoves.length){
+  b.recoveryLeft=0;state.bossRest=countdown(state.bossRest,step);
+  if(state.bossRest>0||trialGridExposure(b))return;
+  const beam=def.moves.find(m=>m.blocks.moves[0].effect.beam),roll=def.moves.find(m=>m.blocks.moves[0].effect.gridRoll);
+  const distance=Math.hypot(state.player.x-b.x,state.player.y-b.y);
+  const eligible=move=>move.weight>0&&move.minPhase<=state.bossPhase&&distance>=move.ai.minDistance&&distance<=move.ai.maxDistance;
+  // Disabled/ineligible beam falls back to the required roll without falsifying orientation.
+  const selected=SurvivorTrialBlocks.gridOutward(b.gridOrientation)&&!b.gridBeamSpent&&eligible(beam)?beam:roll;
+  if(!eligible(selected))return;
+  const s=selected.blocks.moves[0],origin={x:b.x,y:b.y};
+  const m={id:selected.id,kind:selected.id,owner:b.actorId,origin,ai:SurvivorBossAI.start(s.timing),dodged:false};
+  if(s.effect.gridRoll){
+   m.target=SurvivorTrialBlocks.gridTarget(b,state.player,t.arena,s.effect.gridRoll.cell);
+   if(!m.target){state.bossRest=.4;return;}
+   m.angle=Math.atan2(m.target.y-b.y,m.target.x-b.x);m.turn=SurvivorTrialBlocks.gridTurn(b.gridOrientation,m.origin,m.target);
+  }else{
+   const config=bossWeakpointConfig(b),point=config&&bossWeakpointPoints(b,config).weakpoint;
+   if(!point)return; // schema requires the eye anchor and live exposure configuration
+   m.region=SurvivorTrialBlocks.boundedBeam(point,state.player,s.effect.beam.width,s.effect.beam.range,t.arena);
+   m.angle=m.region.angle;
+  }
+  m.warning=s.timing.windup;m.active=false;m.recovery=0;
+  state.bossMoves.push(m);t.events.push({type:s.effect.gridRoll?'grid-warning':'beam-warning',id:b.actorId,moveId:m.id,region:trialGridRegion(b,m,s)});playSound('warning');return;
+ }
+ const m=state.bossMoves[0],s=def.moves.find(d=>d.id===m.id).blocks.moves[0],phase=m.ai.phase;
+ // One bounded phase step per render tick. Excess dt is deliberately not consumed
+ // across warning/exposure boundaries, so a stalled frame cannot hide all warning.
+ const used=Math.min(step,m.ai.left);
+ if(phase==='active'){
+  if(s.effect.gridRoll){
+   const tr=b.gridTransit,before={x:b.x,y:b.y};
+   tr.elapsed=Math.min(tr.duration,tr.elapsed+used);
+   Object.assign(b,SurvivorTrialBlocks.gridPose(tr.origin,tr.target,tr.elapsed/tr.duration));
+   const region=SurvivorTrialBlocks.sweepRegion(before,b,b.r);
+   if(SurvivorTrialRules.contains(region.shape,region.origin,region.angle,state.player))bossHurtPlayer(s.effect.damage,s.feedback);
+  }else if(trialGridExposure(b)&&SurvivorTrialRules.contains(m.region.shape,m.region.origin,m.region.angle,state.player))bossHurtPlayer(s.effect.damage,s.feedback);
+  if(state.trial!==t||!state.bossMoves.includes(m))return;
+ }
+ m.ai.left=Math.max(0,m.ai.left-used);
+ if(m.ai.left<=1e-8){
+  const next=SurvivorBossAI.advance(m.ai,s.timing,0).state;
+  m.ai=next;t.events.push({type:'move-phase',id:b.actorId,moveId:m.id,phase:next.phase});
+  if(next.phase==='active'&&s.effect.gridRoll)b.gridTransit={move:m,origin:{...m.origin},target:{...m.target},duration:s.timing.active,elapsed:0,turn:m.turn};
+  if(next.phase==='recovery'){
+   if(s.effect.gridRoll){Object.assign(b,m.target);delete b.gridTransit;b.gridOrientation=m.turn.orientation;b.gridBeamSpent=false;}
+   noteBossRecovery(b,m.id,s.timing.recovery);
+  }
+  if(next.phase==='select'){if(s.effect.beam)b.gridBeamSpent=true;clearBossMoves();state.bossRest=.4;return;}
+ }
+ m.warning=m.ai.phase==='windup'?m.ai.left:0;m.active=m.ai.phase==='active';m.recovery=m.ai.phase==='recovery'?m.ai.left:0;b.recoveryLeft=m.recovery;
 }

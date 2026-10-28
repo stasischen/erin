@@ -104,9 +104,9 @@ function updateBossWeakpoints(dt) {
     else if (!recovery && !(body.posture && body.posture.stun > 0)) body.facingAngle = Math.atan2(deltaY(state.player.y, body.y), deltaX(state.player.x, body.x));
     const context = {body, source: {x: body.x + deltaX(state.player.x, body.x), y: body.y + deltaY(state.player.y, body.y)},
       facing: body.facingAngle || 0, moveId: body.weakpointMoveId,
-      flags: {windup:!!(move&&move.ai&&move.ai.phase==='windup'), recovery, 'after-move':signals['after-move']>0, 'posture-break': signals['posture-break'] > 0,
+      flags: {'beam-active':!!(state.trial&&move&&['windup','active'].includes(move.ai?.phase)&&state.trial.definition.moves.find(d=>d.id===move.id)?.blocks.moves[0].effect.beam&&SurvivorTrialBlocks.gridOutward(body.gridOrientation)),windup:!!(move&&move.ai&&move.ai.phase==='windup'), recovery, 'after-move':signals['after-move']>0, 'posture-break': signals['posture-break'] > 0,
         'wall-stun': signals['wall-stun'] > 0, environment: signals.environment > 0, bait: signals.bait > 0}};
-    const result = SurvivorWeakpoints.step(body.weakpoints, config, context, body.feedbackFrozen ? 0 : dt);
+    const result = SurvivorWeakpoints.step(body.weakpoints, config, context, body.feedbackFrozen ? 0 : state.trial&&trialGridSpec(state.trial.definition)?Math.min(.05,Math.max(0,dt)):dt);
     body.weakpoints = result.state;
     for (const key of Object.keys(signals)) signals[key] = countdown(signals[key], body.feedbackFrozen?0:dt);
   }
