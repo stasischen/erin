@@ -480,3 +480,10 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 740×360已補齊Eye睜眼／光束預警→同錨點橙色beam穿過玩家→受擊變暗及HP下降；1180×820已看到預警→beam穿過玩家、受擊粒子及變暗／恢復，HP條在外頁視口外，沒有宣稱HP數值。兩尺寸的beam-chain缺口標為已補。
 - 1024×461仍是`partial_evidence`：一般玩家操作重走結果為E→N→S；玩家往左側後先出現南向移動，完成後才看到西向預警。這不符合要求的連續E→N→W，因此未用後續西移代替第三步；起始法線返回後的靜止+90°畫面對照仍缺。沒讀寫hidden state，不據此推論程式缺陷。
 - 全回覆為`changes / partial_evidence`，`coverage:null`，`whole_pr_approval=false`、`independent_code_approval=false`、`card_complete=false`、`merge_authority=false`。只更新證據狀態；不等於PR或整卡通過。下一步仍需處理1024單一缺口，再分開處理HUD遮擋及未完成的Mask Statue。
+
+
+### Rolling Eye v4 1024×461 專項補測已送（2026-10-28 14:14 UTC）
+
+- Dot上一輪回覆已確認740×360與1180×820光束鏈證據完成；1024×461仍是E→N→S，沒有要求的E→N→W與靜止+90°對照。已依此只發一個1024尺寸新請求：[PR #411 #6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)，request `33e8b7b1715399874cf6dc1a895b54201d6fa1c56ad39a240cb7936760a5a37d`，manifest `8a77ab6dda271c246806cd09561416fdd93046b6fd22d70233bf75b78be549bd`，bundle `220fcf6ac15f954a193135f5960cd2fc683f12576de2f83ab50f3e206f3f76ec`。公開留言readback確認request id、manifest、bundle及候選SHA。
+- 該request唯一候選仍是source `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`／版本`20261028e`固定預覽；送件當下PR head為`1a30bee7d791a3e38f130d845f4305d99ab8cfcb`，其相對候選只有coord紀錄差異，遊戲檔與`sw.js`完全未變。新結果只適用該候選；禁止hidden state、devtools、Maker、程式修改或正式站。
+- 本次只要求在1024×461用正常遊戲輸入記錄連續E→N→W實際預警，並比較初始與同法線返回後的靜止眼面扭轉。上次E→N→S後才出現W不能代替要求路徑；若仍分岔，照實回報並維持partial。等待Dot結果；不代表整卡、程式碼審查、PR或merge通過。
