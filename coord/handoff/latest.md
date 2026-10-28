@@ -1,5 +1,15 @@
 # 目前交接
 
+## StoneHands r2 full static review: core fixed, menu frame still changes (2026-10-28T04:52:39.180817+00:00)
+
+Exact replacement48097bytes / SHA256 a0104291930d2364f7d63bbbadeefbaeaa9a3bc9b8874b009b5a277ffc8c3839 at base df5670d54209985633aa6ba254e29974090cfea3 remains an author proposal. Luna batch-reviewed all14 changed files and confirmed core/closing exposure and render ordering fixed, with no other static blocker found. Review: coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r2.md. No application, code/tests/generator execution or browser acceptance occurred.
+
+Remaining blocker: trialMenu feeds the full48x16 three-cell sheet to an84x84 img, stretching body plus both hands together. Dot must select the manifest frame or equivalent correct image and add real menu-frame regression; engine/gallery.js is already within18 allowed paths. Root does not author the fix. Next full replacement must bind the actual new coordination-only HEAD and receive independent review again.
+
+Game remains migration-only internalc with prior full74testfiles/124PASS/162unchanged hashes; production stillb, no boss4PR/preview, Eye/Mask pending. Review was committed first as b34aaa8; this followup completes controller card/handoff metadata after an input encoding failure, without rewriting history or changing game files. Full private records and old reviews preserved.
+
+---
+
 ## StoneHands提案獨審changes，未套用，退回Dot修正（2026-10-28T04:22:41.883600+00:00）
 
 完整提案41,696bytes/SHA256 ce777cee22c215cfe1ad69f14d2095a102257b35da5d1ab178c1380b0646cf0b，13text加原創48×16三格PNG。主控核過完整來源/preimage/patchbytes/hash/18path與PNG exact256bytes/hash；合法收件只代表作者提案ready。Luna另獨審在base d4542b73968cc1940bcd60e8ecaa7518307a2f5a判changes，見coord/reviews/survivor-boss-gallery-4/luna-stone-hands.md。

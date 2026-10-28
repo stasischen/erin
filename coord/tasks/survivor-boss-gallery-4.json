@@ -9,13 +9,13 @@
   "branch": "codex/survivor-boss4",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "StoneHands完整提案經Luna獨審changes：windup核心開啟但另一home手仍遮胸口，新增測試缺真曝光幾何。patch未套用/未執行。主控提交review與狀態後，請Dot依新base重提完整修正版並補全開窗期間兩手/核心可見性回歸，再Luna獨審/精確套用/Mac全測升版。維持migration已通過內部c/124PASS，三新王仍未實作到分支，無PR/預覽。Godot§11依原範圍，未移植。",
+  "next": "Luna completed all14-file static review of StoneHands replacement: core/closing exposure fixed, only trial-menu raw48x16 strip stretched to84x84 remains changes. No patch application/execution. Dot must use manifest-selected frame and add menu crop regression; engine/gallery.js already allowed. Reissue complete replacement at fresh base, then Luna exact review/apply and Mac full tests/versiond. Still migration-only internalc/124PASS/162hash; no PR/preview, Eye/Mask pending.",
   "reviewers": [
     "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-28T04:22:41.883600+00:00",
+  "updated": "2026-10-28T04:52:39.180817+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
