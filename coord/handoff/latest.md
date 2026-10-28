@@ -1,5 +1,15 @@
 # 目前交接
 
+## StoneHands r3: corrected hit-stop test, shared canvas fixture gap (2026-10-28T05:15:54.486274+00:00)
+
+Latest exact53709byte patch / SHA256 6b18ab254381569325be1556019d90215e6632ec1f0fe4fb7f059c9a5fac692f at A434 base explicitly supersedes the earlier menu proposal after sanitized real Mac runtime evidence. Only test postimage changed from ed095; all production/menu/core/PNG bytes match prior static review. Root selected the corrected canonical result for formal receive; earlier result was held, not falsely approved or applied.
+
+Luna r3 review: coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r3.md. Private exact archive/15postimage test shows four suites blocked by shared tests/maker-support.cjs canvas element lacking toDataURL: Boss4/Boss2/Boss3/weakpoint-combat, with6other targeted suites passing.13JS/CJS syntax and generatorAST pass. This is a test DOM API gap, not evidence that browser PNG export is broken; no source apply/fullsuite/layout/cloudQA. Source stayed clean throughout except Luna's new review. Prior scratch a010 hitstop failure was real and preserved, followed by corrected independent test scenarios; no production freeze removed or damage expectations weakened.
+
+Controller authorizes the single exact helper path as19th allowed path, with fresh source/hash manifest. Dot must supply the fixture change in a full replacement, preserving production frame cropping, all old assertions/golden and meaningful separate menu regression; no local controller/reviewer fix. Keep source c/migration124PASS/162bytes unchanged for this coordination-only commit, then rebind actualHEAD. All private logs/raw/scratch stay outside repo; this safe summary is committed. Eye/Mask and wholecard PR/preview/actualDotQA still pending; productionb.
+
+---
+
 ## StoneHands r2 full static review: core fixed, menu frame still changes (2026-10-28T04:52:39.180817+00:00)
 
 Exact replacement48097bytes / SHA256 a0104291930d2364f7d63bbbadeefbaeaa9a3bc9b8874b009b5a277ffc8c3839 at base df5670d54209985633aa6ba254e29974090cfea3 remains an author proposal. Luna batch-reviewed all14 changed files and confirmed core/closing exposure and render ordering fixed, with no other static blocker found. Review: coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r2.md. No application, code/tests/generator execution or browser acceptance occurred.

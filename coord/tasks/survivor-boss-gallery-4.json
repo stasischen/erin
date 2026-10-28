@@ -9,13 +9,13 @@
   "branch": "codex/survivor-boss4",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "Luna completed all14-file static review of StoneHands replacement: core/closing exposure fixed, only trial-menu raw48x16 strip stretched to84x84 remains changes. No patch application/execution. Dot must use manifest-selected frame and add menu crop regression; engine/gallery.js already allowed. Reissue complete replacement at fresh base, then Luna exact review/apply and Mac full tests/versiond. Still migration-only internalc/124PASS/162hash; no PR/preview, Eye/Mask pending.",
+  "next": "Luna r3 reviewed menu/core and corrected hitstop test, private exact15postimage targeted runs now fail4 suites due shared tests/maker-support.cjs missing canvas.toDataURL (browser has API), other6 pass. No source apply. Controller authorizes this exact additional fixture path19, preserves real production/menu and existing assertions; Dot must submit complete replacement with fixture fix at new base, Luna re-review/private checks/exactapply then Mac full/versiond. Internalc124PASS remains migration-only; no PR/preview, Eye/Mask pending.",
   "reviewers": [
     "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-28T04:52:39.180817+00:00",
+  "updated": "2026-10-28T05:15:54.486274+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
