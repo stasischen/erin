@@ -465,3 +465,10 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 原始Dot觀察另指出1024時Boss血條蓋住眼睛上部；740時玩家上身接近並被Boss HUD遮住。1180外頁窗較短且捲動，部分頂端HUD/右邊緣在外頁視口以外，不等於canvas內裁切；仍未完成整個HUD邊緣驗收。初次畫面Boss均可見，未觀察到畫面外生成。上述視覺遮擋待另作HUD問題處理，不能跟扭轉驗收混為一談。
 - 已送針對性證據補測 [#6468770049](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468770049)，candidate仍固定同一immutable URL/source09bfd3e；request manifest列明目前PR head `8b8db3d14df64abf4516dd03a82b6f998669d1ef`僅coord檔變更，遊戲檔與sw.js逐byte相同。補測只重做1024 E→N→W靜止對照、740/1180外向面beam warning→實際beam/HP變化，並附普通玩家位置引導；不改code、Maker、HP或隱藏狀態。`coverage:null`、畫面記錄放`viewport_results`。
 - 目前任務維持blocked等待補測回覆。後續先核新回覆仍限同一固定候選及指定片段，再由Dot另提供HUD遮擋修正patch、Luna複審、Mac完整測試及新SHA候選；Stone raised-hand/HUD舊缺口與Mask Statue也尚未清除。
+
+### PR #411 已有回覆的接收／採用狀態釐清（2026-10-28 12:20 UTC）
+
+- Dot 已在約定的PR回覆，沒有漏掉回覆本身：Stone補測 [#6463244565](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6463244565) 對應request `e05006d…`；Rolling Eye完整patch提案 [#6463785368](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6463785368) 對應request `4b68295…`。兩份都有本機GitHub readback與normalized intake receipt。
+- 收件流程曾因Dot marker多帶`recipient=mac-manager`、而舊receiver只比對不含recipient的格式，將回覆靜默漏進自動收件；手動從GitHub原留言核對後，normalized副本只修marker欄位，JSON與證據不變。這解釋了為何狀態曾顯示「沒收到」；後續不應再把它描述為仍待確認是否收到。
+- 07:58 Eye回覆的`approve` scope是`code_patch_proposal_only`、status是`proposal_ready_for_independent_review`，表示提案可交Luna複審，並非patch已直接採納。Luna複審在原提案找到三項需修正處；後來修正版再經Luna approve，Mac才套用並提交source `09bfd3e`。所以「Dot有回覆／Mac收到」為是；「07:58原提案原樣採用」為否；「修正版已採用」為是。
+- 先前把「沒有收到確認」和「提案尚未採用」合寫，讓人誤以為PR #411上沒有回覆，這是我對收件狀態及proposal scope描述不精確。毋須重送已完成的請求；目前等的是另一個固定source `09bfd3e` 的瀏覽器證據補測 `#6468770049`。
