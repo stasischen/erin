@@ -391,3 +391,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 ### l 版受測修正 SHA
 
 `ab260aa8d96090656a8c168d60a2a9a2c595e941`／20261027l，之後只有交接及卡片狀態的純metadata更新；160個受測程式／測試／快取檔相同。正式重審及新候選仍以PR104最新完整HEAD核對。實作者完成同分支push後停止寫入，不自行審查／合併或送Dot。
+
+## Boss4 階段測試版 PR105 已發布（整卡仍進行中）
+
+- 家長同意提早提供石像雙手階段試玩。Draft PR：[PR105](https://github.com/stasischen/erin/pull/105)。候選固定遊戲來源 `2bb7270f8590f34bdaedb3d4d1255fa7cd50326d`／版本 `20261028d`；測試版：[石像雙手](https://stasischen.github.io/erin-preview/pr-105/2bb7270f8590f34bdaedb3d4d1255fa7cd50326d/games/survivor/)。
+- 候選 manifest SHA-256 `888f7bad4ddea1a36109f26dbbe3d088ef500b7df6c1a07d15d37c9725b16699`。Pages publication commit `5ddd531cf975b009bad35780491e3fff1263cc47`／run `40642665228` completed/success；線上舊285檔及新增71候選檔共356個HTTP200與SHA-256核對一致，舊檔和四份既有manifest payload完整未變。Mac隔離發布工程A/B驗證通過。
+- Mac Studio來源 `node games/survivor/tools/test.cjs --layout` 已在固定程式SHA通過（exit0、74測試檔／128 PASS，164個程式／測試／快取hash一致），`git diff --check` PASS。只有Pages部署，沒有GitHub遊戲CI。PR保持draft；石像雙手是三Boss卡片中的第一個階段，翻滾眼方塊及面具石像未完成、未進此候選，正式站仍為 `20261028b`。
+- Dot的PR105雲端三尺寸階段實玩已送，尚無結果；Mac工程／HTTP驗證不冒充Dot實玩。PR的測試版SHA、manifest及發布commit見PR描述。
+- 下一步：保留目前候選讓家長試玩；收到Dot結果後記錄範圍與問題。繼續同卡Rolling Eye patch（需基於最新PR分支SHA重新綁定）→ Luna獨立審查／精確套用 → Mac完整測試 → Mask Statue；整卡與最終獨立審查完成前不merge。

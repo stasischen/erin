@@ -5,17 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：石像雙手、眼方塊與面具石像",
-  "state": "doing",
+  "state": "blocked",
   "branch": "codex/survivor-boss4",
-  "pr": null,
-  "brief": "coord/tasks/specs/survivor-boss-gallery-4.md",
-  "next": "StoneHands full slice independently Luna r4 approved/exact16postimages applied; internal20261028d Mac full--layout exit0/74files/128PASS/164stable hashes, mechanicalcache/version verified. Real fifth Boss implemented, but no DotcloudQA/PR/preview yet. Next samecard Dot RollingEye complete slice at this newsource: discrete warned gridroll/outwardeye shortwindow/then warnedlaser, sharedblocks/Maker/art/tests; preserve Stone/original4 and old1/3/4 edits. Then Mask and wholecard PR/preview/Dotcloud/nonauthor finalgate. Godot11 data/pureblocks/events/original16px/testing/worldcoords applied, no Godot executable/audio work.",
+  "pr": 105,
+  "brief": "Stone Hands 實作完成，版本20261028d；Mac完整--layout 74測試檔／128 PASS、164個程式／測試／快取hash穩定，Luna r4精確審查通過。已先開PR105 draft並發布只含Stone Hands的固定測試候選（來源2bb7270f8590f34bdaedb3d4d1255fa7cd50326d）；本候選只供階段回饋，不代表整卡完成或可合併。Dot雲端三尺寸／功能試玩已送，待結果。Rolling Eye patch及Mask Statue仍待完成；現有Rolling Eye來源請求原本綁2bb，coord更新後需依新HEAD重綁，不能把舊SHA誤當目前PR HEAD。",
+  "next": "等待Dot完成Stone Hands階段候選雲端試玩並交付Rolling Eye精確patch；Luna獨立審查及精確套用後Mac全套測試，接著完成Mask Statue。PR105保持draft；整卡三Boss與固定最新候選全通過獨立審查前不merge。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": null,
-  "updated": "2026-10-28T05:58:26.429184+00:00",
+  "waitingFor": "Dot（Rolling Eye patch；Stone Hands 階段雲端試玩）",
+  "updated": "2026-10-28T06:19:53Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
