@@ -8,14 +8,14 @@
   "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye v4 code已Luna approve、Mac精確套用；source09bfd3e／20261028e的三尺寸固定預覽已Dot實測。原回覆通過綁定驗證但為changes/partial_evidence：三尺寸canvas尺寸確認；1024有warning→beam→扣血但未完成E→N→W及靜止+90°對照；740是E→N→E且無beam impact鏈；1180有N→W但前段未逐格確認、無beam impact鏈。另觀察1024 Boss血條遮Eye上部、740 Boss HUD遮玩家上身。已送同一immutable候選針對性補測，等待Dot回覆；未推斷程式缺陷或整卡通過。",
-  "next": "等待並驗證Dot對固定source09bfd3e的補測回覆 [#6468770049]：1024連續E→N→W及同法線靜止扭轉對照、740/1180 Eye-open beam warning→實際impact/HP變化。若仍有畫面缺口，繼續保留partial evidence。之後另請Dot針對1024/740 HUD遮擋與Stone手臂遮HUD提供修正patch，Luna複審與Mac完整--layout測試後發布新SHA給Dot驗收；再完成Mask Statue。PR105保持draft。",
+  "brief": "Rolling Eye v4 source09bfd3e／20261028e兩次Dot固定候選雲端結果均已驗證。#6468600347三尺寸canvas通過，但多個旋轉/光束片段不完整；gap補測#6468910347已補齊740×360及1180×820的eye warning→實體beam穿過玩家→受擊反應鏈（740並看到HP下降；1180未聲稱HP值，血條在外頁視口外）。1024×461仍實際走成E→N→S，非要求的E→N→W，故原法線靜止+90°對照未完成。回覆仍為changes/partial_evidence；不推論程式缺陷、不視為整卡通過。另有1024 Eye被Boss血條遮上部、740玩家上身受Boss HUD遮擋。",
+  "next": "保留候選source09bfd3e的Dot結果範圍；待安排只針對1024×461重做E→N→W與同法線靜止扭轉對照，記錄每步實際預警方向，未完成前保持partial。其後另請Dot修正1024/740 HUD遮擋與Stone raised-hand遮HUD，Luna複審、Mac完整--layout測試、新SHA候選及Dot實玩後再完成Mask Statue。PR105保持draft。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（同一固定預覽的Rolling Eye v4證據補測）",
-  "updated": "2026-10-28T12:18:10Z",
+  "waitingFor": "Dot（Rolling Eye v4 1024×461單一剩餘朝向/靜止扭轉畫面證據）",
+  "updated": "2026-10-28T12:29:29Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

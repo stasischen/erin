@@ -472,3 +472,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 收件流程曾因Dot marker多帶`recipient=mac-manager`、而舊receiver只比對不含recipient的格式，將回覆靜默漏進自動收件；手動從GitHub原留言核對後，normalized副本只修marker欄位，JSON與證據不變。這解釋了為何狀態曾顯示「沒收到」；後續不應再把它描述為仍待確認是否收到。
 - 07:58 Eye回覆的`approve` scope是`code_patch_proposal_only`、status是`proposal_ready_for_independent_review`，表示提案可交Luna複審，並非patch已直接採納。Luna複審在原提案找到三項需修正處；後來修正版再經Luna approve，Mac才套用並提交source `09bfd3e`。所以「Dot有回覆／Mac收到」為是；「07:58原提案原樣採用」為否；「修正版已採用」為是。
 - 先前把「沒有收到確認」和「提案尚未採用」合寫，讓人誤以為PR #411上沒有回覆，這是我對收件狀態及proposal scope描述不精確。毋須重送已完成的請求；目前等的是另一個固定source `09bfd3e` 的瀏覽器證據補測 `#6468770049`。
+
+
+### Rolling Eye v4 固定候選 gap 補測 #6468910347（2026-10-28 12:29 UTC）
+
+- 已從PR #411讀回 [Dot回覆](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468910347)，綁定原request #6468770049、request `54175fe093703ff469c73c4eaacf00e3e68dd5f6c85f3e12667dc252bffa787a`、固定遊戲source `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`、manifest `7c8b2ffe22c95cb34a5e51d2bcd293ea217cb3cb3d11137cf4d071e95f09f3c6`及bundle `1a9bdd913b6457e2183ea063ecdad999a6d3688a0ab8babf6eb5d676851d0e46`；既有exchange normalizer／validator通過。PR105目前HEAD `6996b391307e9f6cf178ba55a7df86d418b181b5`僅比tested source多coord紀錄，遊戲檔與sw.js未變；結果只適用immutable `20261028e`候選。
+- 740×360已補齊Eye睜眼／光束預警→同錨點橙色beam穿過玩家→受擊變暗及HP下降；1180×820已看到預警→beam穿過玩家、受擊粒子及變暗／恢復，HP條在外頁視口外，沒有宣稱HP數值。兩尺寸的beam-chain缺口標為已補。
+- 1024×461仍是`partial_evidence`：一般玩家操作重走結果為E→N→S；玩家往左側後先出現南向移動，完成後才看到西向預警。這不符合要求的連續E→N→W，因此未用後續西移代替第三步；起始法線返回後的靜止+90°畫面對照仍缺。沒讀寫hidden state，不據此推論程式缺陷。
+- 全回覆為`changes / partial_evidence`，`coverage:null`，`whole_pr_approval=false`、`independent_code_approval=false`、`card_complete=false`、`merge_authority=false`。只更新證據狀態；不等於PR或整卡通過。下一步仍需處理1024單一缺口，再分開處理HUD遮擋及未完成的Mask Statue。
