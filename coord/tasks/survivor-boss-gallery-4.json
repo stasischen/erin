@@ -8,14 +8,14 @@
   "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye v4 source09bfd3e／20261028e的Dot結果：740×360及1180×820 warning→beam→受擊鏈已補；1024×461仍E→N→S，缺E→N→W及同法線靜止扭轉，已送固定候選實測 #6471339722。HUD遮擋也已另送Dot code-only patch proposal #6471404535：僅改style.css，基於PR head5acc25a，處理1024 Eye、740玩家及Stone手部與HUD重疊；待Dot提案、Luna獨立複審、Mac精確套用/--layout與新候選Dot實測。未停工等單一結果，兩請求並行。",
-  "next": "並行處理：(1) 驗證Dot對 #6471339722 固定source09bfd3e的1024×461 E→N→W/靜止扭轉畫面；(2) 收取Dot對 #6471404535、base5acc25a、style.css-only HUD修正提案，核對patch/hash後交Luna獨立複審。提案通過後在精確base套用，Mac跑完整--layout、升版本並發新固定候選給Dot實測三尺寸；再完成HUD缺口及Mask Statue。PR105保持draft。",
+  "brief": "Rolling Eye固定20261028e候選的740×360及1180×820 beam/hit鏈已Dot確認；1024×461 E→N→W/靜止扭轉仍缺，專項實測request #6471339722待回。HUD-only CSS patch request #6471404535收到Dot partial結果 #6471522223：未提供patch/changed files；Dot判定CSS-only不足以確保不遮畫面或不破壞viewport/input同步，要求唯讀games/survivor/game.js及其固定viewport/render/input依賴。此read-only擴張未獲准，本輪未讀/修改/測試/套用。PR105目前HEAD 0dbd092不同於提案source5acc25a，僅多coord紀錄；沒有任何新head或PR核准。",
+  "next": "等家長決定是否允許Dot在新的凍結request中唯讀games/survivor/game.js及其實際點名的viewport/render/input依賴；若准許，先讀取hash並以當時PR最新HEAD重新凍結，Dot仍只可對style.css提出patch，除非另獲明確修改授權。HUD patch仍須Luna獨立複審、同base精確套用、Mac完整--layout、新固定SHA預覽和Dot三尺寸實測。並行處理Dot的#6471339722 1024實測；Mask Statue未完成。PR105維持draft。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（#6471339722：1024固定候選實測；#6471404535：Boss4 HUD CSS patch提案）",
-  "updated": "2026-10-28T14:17:00Z",
+  "waitingFor": "家長（決定是否批准Dot唯讀game.js及點名的viewport/render/input依賴）；Dot #6471339722 1024實測仍待回",
+  "updated": "2026-10-28T14:30:23Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

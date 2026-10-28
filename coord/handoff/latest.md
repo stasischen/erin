@@ -494,3 +494,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 收到家長指出不應停在等待後，確認先前只送了1024實測、沒有送HUD修改請求。已另發Dot code patch proposal：[PR #411 #6471404535](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471404535)，request `4965af3237abb0efaffbea2702f0c19f587be567334fd1d464151b1908ba166b`，base/head `5acc25a82e841f1f99c538301a52083517cbff02`、manifest `8b72f136640387a45e6f0303627a1fe466cdb1e68ea38b8cb1e34fed50a14aa1`、bundle `7001d6c4da08e0d8b0e6caebd03fa6b562ea7b05a97628736c1febccbca9925e`；PR留言readback已核對。
 - HUD request只允許提案修改`games/survivor/style.css`，要求用共用響應式佈局處理1024 Eye上部、740玩家上身及石像手部預警與Boss HUD重疊，維持HP/架勢/名稱可讀；禁止遊戲邏輯、隱藏狀態、正式站、repo寫入、push或merge。若單一CSS不夠，Dot須停下說明所需路徑，不能擴大範圍。這只是code proposal，須Luna獨立審查/精確套用後由Mac測試、新發固定候選，再交Dot瀏覽器驗收。
 - 此patch request固定在當時PR HEAD `5acc25a`；送件後協調紀錄提交不改遊戲檔。與1024瀏覽器補測request #6471339722（固定遊戲source `09bfd3e`）是兩個不同source、不同範圍的請求。兩者都等Dot回覆，但HUD patch審查可先啟動，不需等1024實測。
+
+
+### Boss4 HUD patch 回件：缺少唯讀 viewport 上下文（2026-10-28 14:30 UTC）
+
+- Dot回覆 [#6471522223](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471522223)，對應HUD patch request [#6471404535](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471404535)。本機normalizer/validator核對request、author、marker、source、manifest、bundle與schema一致。結果為`changes / partial_evidence`、scope `code_patch_proposal_only`、`changed_files=[]`、`patch=null`；不包含可套用程式碼，也不是PR/卡片核准。
+- Dot完成7個指定唯讀檔的hash檢查，沒有執行程式、apply check、Mac測試或HUD預覽驗收。它指出CSS把Boss HUD疊在整個canvas上，單純移到角落/透明化不能保證不遮玩家與攻擊tell；縮放或裁切canvas還可能讓viewport與輸入座標失同步。因此它沒有猜測CSS patch，而要求下一階段先讀`games/survivor/game.js`中的`fitVisibleViewport`、canvas/worldViewport/camera、pointer座標及其固定模組，並提供同base bytes/hash。
+- 目前凍結patch request base `5acc25a82e841f1f99c538301a52083517cbff02`，PR105現HEAD `0dbd092f2f7af521150ddabed2c4b6323317d46d`；兩者間只增加`coord/handoff/latest.md`和Boss4 task JSON，沒有遊戲程式變更。該差異不會把舊proposal升格為目前HEAD核准。style.css-only提案無patch，不採納/套用。
+- 依原request allowlist，本輪未讀`game.js`，未修改、測試或擴大Dot權限。後續須先由家長決定是否允許Dot將`game.js`及它實際點名的viewport/render/input依賴僅列read-only；收到允許後另以當時PR最新HEAD重凍結request。Eye的1024-only雲端實測request #6471339722仍獨立待回。
