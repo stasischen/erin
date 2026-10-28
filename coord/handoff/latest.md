@@ -1,5 +1,17 @@
 # 目前交接
 
+## boss4增量1完成：僅資料遷移，三王仍待實作（2026-10-28T02:58:52.107634+00:00）
+
+Dot原生已實際承認作者授權並交精確7931-byte patch，SHA256 8ff56592199f582070c7797a5efc5e317de8adf2445983235e1310d9f0fa6ab2，綁base68e2a8e0528658c3bec0d1b91810c27d47255849；標準回件已收，僅code_patch_proposal_only、wholePR=false/card_complete=false。source讀取與hash/語意範圍有分列，不冒稱全部語意看完；原scope-only失敗與未發布prepare歷史保留。
+
+Luna非作者獨審後只精確套用schema.js與新boss-gallery-4.cjs；pre/postimage/bytes完全相符，相關舊2/3與新migration測試通過，紀錄coord/reviews/survivor-boss-gallery-4/luna-migration.md。這段為已知ID的1/3/4王存檔遷移、保留編輯、重排、錯誤拒絕/冪等/不改原件；synthetic7只是測試fixture，沒有把三個新Boss塞placeholder上線。Root沒有代寫邏輯。
+
+Root接回pen後機械升內部版20261028c，同步?v=/sw；完整node games/survivor/tools/test.cjs --layout在Mac exit0，74測試檔/124PASS，162檔before/after完全一致，gitdiffcheck通過。版本生成差異另核僅舊b→c。完整logs/hash/來源原件留repo外。尚無本卡PR/公開候選，正式仍20261028b，沒有把此增量當Boss4功能或Dot雲端驗收通過。
+
+下一段同卡由Dot實作石像雙手，之後眼方塊、面具；每段以實際新提交重新鎖來源，Luna重審再套，Mac每次實質程式增量全測/升版。主控已找到舊gallery-2/3測試固定總數4及pop語意問題，下一請求會明列這兩精確路徑可修改，但保留舊1/3/4王自訂資料migration與原四王行為/紀錄的真回歸，不削弱測試。全部三王完成才開唯一PR/隔離預覽，再Dot自己雲端三尺寸功能操作、非作者Mac finalgate/merge/Pages。boss5未開工。
+
+---
+
 ## boss4恢復派送：家長回報已完成Dot原生作者授權（2026-10-28T02:38:56.074841+00:00）
 
 家長已回報完成前述原生確認，主控恢復doing、waitingFor清空，依最新實際HEAD重新建立同卡successor request。Dot負責完整三王程式patch文字提案；Luna不同session獨審及精確套用；Mac負責完整測試/版本/Git/PR/隔離測試站，Dot自己雲端實測，非作者Mac最終審查/合併/Pages。未授予Dot直接repo寫入/PR/merge/安全設定。原生scope仍由Dot實際核對，不拿repo聲明冒充平台設定。

@@ -531,10 +531,23 @@
         return result;
       });
       if(input.gallery !== undefined) {
-        const base=data.gallery, g={...input.gallery},legacy=g.schemaVersion===1;
+        const base=data.gallery;
+        if(!input.gallery || typeof input.gallery!=='object' || Array.isArray(input.gallery))fail('王的試煉資料格式錯誤');
+        const g={...input.gallery},legacy=g.schemaVersion===1;
+        if(![1,2].includes(g.schemaVersion) || !Array.isArray(g.bosses))fail('王的試煉資料格式錯誤');
         if(legacy)g.arenaRadius=Math.max(200,Math.min(300,num(g.arenaRadius,420,1200,'舊競技場半徑')*200/620));
-        if(Array.isArray(g.bosses)&&[1,3].includes(g.bosses.length)&&g.bosses.length<base.bosses.length&&g.bosses.every((b,i)=>b.id===base.bosses[i].id))g.bosses=[...g.bosses,...JSON.parse(JSON.stringify(base.bosses.slice(g.bosses.length)))];
-        if(!g || ![1,2].includes(g.schemaVersion) || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
+        // 歷史名單按 ID 遷移，不把陣列順序當身份，也不以任意缺項冒充舊存檔。
+        const known=new Set(base.bosses.map(b=>b.id)),saved=new Map();
+        for(const b of g.bosses){
+          if(!b || typeof b!=='object' || Array.isArray(b) || !known.has(b.id) || saved.has(b.id))fail('試煉魔王識別錯誤');
+          saved.set(b.id,b);
+        }
+        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin']];
+        const complete=saved.size===known.size;
+        const recognized=historical.some(ids=>ids.length===saved.size&&ids.every(id=>known.has(id)&&saved.has(id)));
+        if(!complete&&!recognized)fail('試煉魔王名單不完整');
+        // 只有缺少的新預設才補入；既有值仍走下方嚴格驗證，不用預設掩蓋壞值。
+        g.bosses=base.bosses.map(b=>saved.has(b.id)?saved.get(b.id):copy(b));
         const result={schemaVersion:2};
         for(const [k,lo,hi] of [['arenaRadius',200,300],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
         const h=g.hazard;if(!h)fail('地面危險區資料缺少');
