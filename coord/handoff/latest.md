@@ -1,5 +1,29 @@
 # 目前交接
 
+## boss4已獲家長授權開工（2026-10-28T01:37:05.410403+00:00）
+
+正式卡survivor-boss-gallery-4，分支codex/survivor-boss4從最新origin/main a0b10ad63774bc9db8950cfdff6094c169a8d5d9建立，尚無PR。三王：石像雙手／翻滾眼方塊／面具石像，規格見coord/tasks/specs/survivor-boss-gallery-4.md。Root只寫協作與機械作業；Dot是程式patch作者，Luna不同session獨審/精確套用，Mac全測/版本/PR/隔離預覽，Dot自己雲端實測，非作者Mac finalgate/merge/Pages確認。當前唯一寫入者Root；交patch給Luna時停筆。boss5未授權開工。
+
+家長問「完工交接為什麼不commit？」；現行規則是merge後完工／部署狀態先本機與PR留言，再隨下一張已授權分支提交，避免只為狀態改main。本次PR104的done卡及正式部署紀錄即隨boss4開工提交，並非協作紀錄永久不進Git；原始對話、screenshots與logs仍私有。以下「未commit待下一分支」保留為當時歷史，已由本次接續處理。
+
+Godot§11：本卡要求資料驅動、共用純規則/秒與世界座標、可序列化事件、manifest原始像素與可移植輸入/輸出案例；只調三王相關接點，不做全引擎重構/JSON抽離/音訊匯出，Godot未實機執行。預期下一遊戲版本20261028c，Dot patch不碰版本生成檔，由Mac另行機械同步。
+
+---
+
+## PR104已獨立批准、merge commit合併及正式上線b（最新完工）
+
+PR104：https://github.com/stasischen/erin/pull/104 。最終非作者判定approve見coord/reviews/survivor-boss-gallery-3/grok.md；被審內容15b7b4b420de212d5589e2adfc06bbf133137df3，review-only HEAD be0786bc335717a5a9c0ed757e8f6aaf7f6a0a1c，merge SHA a0b10ad63774bc9db8950cfdff6094c169a8d5d9。GitHub API確認MERGED與兩parent，使用精確HEAD --merge，無squash／force／checkout或直接push main。GitHub拒共用作者帳號正式approve，已依規則留不同session獨立判定留言，未假稱GitHub正式approval；歷史changes與各partial不抹除。
+
+該merge的既有Pages run40604882840 completed/success：https://github.com/stasischen/erin/actions/runs/40604882840 。全新暫存profile真Chrome實際開https://stasischen.github.io/erin/與https://stasischen.github.io/erin/games/survivor/，兩頁complete、視察正常，遊戲ready／有效canvas、version20261028b、manifest含trial-blocks；這是上線載入確認，不冒充正式站重打整卡，不清使用者資料。Root另核確切merge tree161個source/test/cache hash全符受測13851b6。正式版本現已b，不再是i。
+
+本版新增雙刃刺客4/5連斬／影步／苦無及紅弱點、每王最佳成功時間；修方向鍵釋放、Maker數字控件、共用上方Boss HP與雙子存活者、結算殘留。Mac雙方完整含layout123PASS／73test檔／161hash，Dot自有雲端normal-auto真勝利52.56存讀、五Maker欄UI循環、CUSTOM A12格stun/redmanual/twin/Maker13.01隔離及B可見鏈路共同經非作者整PR核實；CUSTOM不當default-manual配平，精準數學／時序由預設Mac證據分層覆蓋。A格式重發只換envelope，原件保留。影步active旁文.12與range輔助讀值.1是非阻擋顯示差異，實際資料未被編輯；手動節奏／Erin手感及Godot實機未宣稱驗收。
+
+主控下一步預計boss4，仍等家長意見，boss4／5未開工。新流程已實際串通：主控開卡→Dot精確patch→Luna獨立審查與機械套用→Mac完整測試／Git／PR／固定預覽→Dot雲端實測→非作者Mac finalgate／merge／Pages；未新增GitHubCI、排程、模型輪詢或恢復watcher。GROKBOT恢復後依家長指示交回角色，交付本摘要／卡／審查與本機私有原件索引，不自動切換或接卡。
+
+本次done卡與latest只更新本機、未commit，依流程隨下一個家長授權分支提交；不為寫完工狀態直接動main或推已合併分支。原始對話／交換識別／完整logs／screenshots仍repo外。
+
+---
+
 ## A／B作用域證據已收齊，交非作者做整PR最終判定（最新）
 
 受測及公開候選source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b。主控只彙整證據，不自行批准自己早期實作；本提交僅公開coord紀錄，161個受測source/test/cache與該source完全相同。

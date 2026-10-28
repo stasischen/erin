@@ -5,10 +5,10 @@
 | 順序／舊別名 | 正式卡 | 指定分支 | 目前狀態 |
 |---|---|---|---|
 | 1 hotfix.md | [survivor-trial-hotfix](survivor-trial-hotfix.json) | `codex/survivor-trial-hotfix` | PR #100 已合併，20261027e 已上線 |
-| 2 artv2.md | [survivor-art-manifest-v2](survivor-art-manifest-v2.json) | `codex/survivor-artv2` | 等家長決定開工 |
-| 3 weakpoint.md | [survivor-weakpoint](survivor-weakpoint.json) | `codex/survivor-weakpoint` | 等前卡與家長指示 |
-| 4 boss3.md | [survivor-boss-gallery-3](survivor-boss-gallery-3.json) | `codex/survivor-boss3` | 同上 |
-| 5 boss4.md | [survivor-boss-gallery-4](survivor-boss-gallery-4.json) | `codex/survivor-boss4` | 同上 |
-| 6 boss5.md | [survivor-boss-gallery-5](survivor-boss-gallery-5.json) | `codex/survivor-boss5` | 同上 |
+| 2 artv2.md | [survivor-art-manifest-v2](survivor-art-manifest-v2.json) | `codex/survivor-artv2` | PR #102 已合併，20261027g 已上線 |
+| 3 weakpoint.md | [survivor-weakpoint](survivor-weakpoint.json) | `codex/survivor-weakpoint` | PR #103 已合併，20261027i 已上線 |
+| 4 boss3.md | [survivor-boss-gallery-3](survivor-boss-gallery-3.json) | `codex/survivor-boss3` | PR #104 已合併，20261028b 已上線 |
+| 5 boss4.md | [survivor-boss-gallery-4](survivor-boss-gallery-4.json) | `codex/survivor-boss4` | 家長已授權，doing；Dot patch／Luna 獨審流程 |
+| 6 boss5.md | [survivor-boss-gallery-5](survivor-boss-gallery-5.json) | `codex/survivor-boss5` | 等 boss4 與家長指示 |
 
 這張表是路線摘要，進度以 JSON、PR 和 `coord/handoff/latest.md` 核對。另有家長授權的 `coord-workflow-alignment` 流程維護；不代表第 2 張已開工。舊任務卡不在本輪自動重排或重開，避免把歷史 peer_review 誤當新任務。
