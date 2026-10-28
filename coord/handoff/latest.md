@@ -448,3 +448,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 主控核對request、source SHA、manifest canonical hash、bundle hash、patch長度/hash、11個文字preimage/postimage與1個獨立PNG payload；12個變更路徑皆在19項allowlist內。先於精確base scratch成功套用並驗postimage，再將文字patch及PNG分別套用至原PR分支；`version.json`升至 `20261028e`，由正式version工具同步頁面query及service-worker快取。
 - Mac完整 `node games/survivor/tools/test.cjs --layout` 第二輪 exit0、134個PASS行，含Boss4朝向／renderer／beam／Maker案例與layout Chrome；`git diff --check`通過。第一次全套測試發現Boss4新測試一處仍讀舊`gridFace`欄位；換成`gridOrientation.face`後，定向測試揭露第二個fixture在舊`state.trial`未清時重啟，沿用舊beam權重；在fixture起始先`resetGame()`後定向與全套都通過。這兩處僅測試fixture修正，遊戲邏輯未增改。
 - 目前尚未建立新commit、push PR或發布新preview；PR105仍draft、remote head仍是85e。下一步將明確列出檔案建立同分支commit/push，依append-only隔離流程發布新SHA候選，請Dot只對該候選做雲端實玩。舊Stone候選在740×360的raised hand/HUD重疊仍另待修；先避免與Eye同檔修改衝突，再按最新PR head另送Dot修正，不能把Eye v4核准或Stone窄範圍approve擴大為整卡/PR通過。
+
+
+### PR105 Rolling Eye v4 固定預覽已發布，交Dot雲端實玩（2026-10-28 11:39 UTC）
+
+- PR105 draft 的遊戲程式提交為 `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`，版本 `20261028e`。測試站只追加新SHA目錄，Pages commit `d40a7711338a6046a261715c35c552ee4fd94068`／run `40680856243` completed/success；新候選manifest SHA-256 `ea18f6514c35fba62d8675ab4f42f444fee16e1a549739cae8a932194a1f3b0e`，73個manifest payload。上線後428個舊/新檔案逐一HTTP200與SHA-256核對一致，原356檔及五份舊manifest payload完全不變。Mac A/B工程檢查通過；無遊戲CI。
+- 唯一固定遊玩URL：[PR105 source 09bfd3e／20261028e](https://stasischen.github.io/erin-preview/pr-105/09bfd3e0877e3b723cd2581ecb44b53dae57ea65/games/survivor/)。三尺寸Eye v4專項雲端測試已送至[#411 #6468015572](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468015572)，完整manifest preimage已隨request bundle提供，避免另外重建hash。要求Dot只測自己的雲端Chrome實際操作、三尺寸canvas/HUD、E→N→W靜止面內扭轉、外向面Eye/beam warning與命中時序；不改code、HP、隱藏狀態或Maker，不碰正式站。回覆格式明確把觀察放`viewport_results`、`coverage:null`。
+- 送件時PR105 head正是上述source SHA。request結果只評固定預覽Eye實玩，不代表獨立程式審查、整卡、PR或merge；收件後須再核request、manifest、bundle、source及comment作者。舊Stone候選740×360 raised-hand/HUD重疊明列為已知的另一項缺口，Eye範圍不修它也不遮蔽它。未來如有coord-only紀錄提交，不改候選遊戲檔；Eye結果仍只對固定source `09bfd3e`有效。
+- PR105尚未approve/merge，Mask Statue未完成。等待Dot結果後先記錄其實測範圍；再另向Dot要求修Stone HUD重疊，Luna複審、Mac完整測試、新SHA候選及Dot驗收後才可進下一階段。
