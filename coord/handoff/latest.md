@@ -533,3 +533,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 
 - 家長明確同意Dot針對HUD提出patch。此核准對應已發出的[#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)，範圍仍限`games/survivor/engine/loop.js`與`games/survivor/style.css`的patch proposal，base `e44dfe7a351b5a3f86c0a319785159598e0db16d`，設計採保留world/object比例、縮小可見世界區域、保留全螢幕背景無黑邊。
 - Dot不得直接寫repo、push、開PR或merge；收到patch後交Luna獨立複審，再由Mac對精確base套用及測試。已有request在處理中，不重送。
+
+
+### HUD幾何證據補件與patch request（2026-10-29 08:56 UTC）
+
+- Dot的HUD patch result [#6487955801](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487955801)已綁定驗證，狀態`changes / incomplete`、`patch:null`、`changed_files:[]`、沒有增加寫入路徑。它接受家長已選「保留world/object比例、縮小可見世界」；但沒有足夠固定幾何證據保證玩家、Boss和完整攻擊tell在三尺寸均可見，未提供可能降低該條件的patch。
+- Dot點名唯讀缺口`games/survivor/render/gallery.js`、`games/survivor/engine/gallery-encounters.js`、`games/survivor/data/defaults.js`，用來算Boss/招式預警的實際世界邊界。本地無需新增寫權；原批准patch allowlist仍只含`games/survivor/engine/loop.js`與`games/survivor/style.css`。
+- 已基於當時最新PR HEAD `13de2068f6e20f956157aa57259c52db7307dd7f`發出合併幾何補查與patch提案的新request [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413)，request `6f027d3386923f61e1124b64cc807c3798750779793a3a6a465fc613b58900fb`、manifest `49095a2b696cf40f318077c69384f30b0bf62968641fe127d752668cbc154ae2`、bundle `3b30707e6a1711e3b8c36351908ad04e68ef4d83830954b45ba1bc14cd525d87`；公開readback核對request/hash與三個path。要求讀幾何、核bounds後若可行直接交loop.js+style.css patch，否則明列證據/幾何阻礙；不改repo、不執行測試。
+- Rolling Eye 1024測試#6471445903已驗證為E→N，下一預警E，停止；E→N→W和靜止+90°仍未完成。該固定candidate證據維持partial；HUD patch如產生新SHA，須在新預覽重做三尺寸與Eye朝向功能檢查。

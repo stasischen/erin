@@ -8,14 +8,14 @@
   "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye固定20261028e候選740×360及1180×820 warning→beam→受擊鏈已Dot確認；1024測試#6471445903已驗證但只完成E→N，下一預警為E而停止，仍缺E→N→W及同法線靜止+90°。家長接受為HUD留專區、保留world/object比例並縮小可見世界。HUD viewport context回覆#6486337797指出最低需engine/loop.js同步viewport；已按此基於PR HEAD e44dfe7送出Dot patch proposal #6487897220，寫入提案只限engine/loop.js與style.css。等Dot patch，之後Luna獨立複審、Mac完整--layout/升版/新預覽，Dot在新候選做三尺寸實玩。無遊戲程式修改。 家長已明確授權Dot提出engine/loop.js與style.css patch（僅patch文字，禁止repo寫入）；既有request #6487897220持續處理，不重送。",
-  "next": "等待Dot對#6487897220、base e44dfe7的loop.js+style.css精確patch提案。Luna獨立複審並核pre/postimage與allowlist，通過後Mac在精確base套用；Mac跑完整node games/survivor/tools/test.cjs --layout、升版本並發布新固定候選；Dot做三尺寸HUD和功能實測。1024 E→N→W/靜止+90°與740/1180功能證據在新候選重測，然後完成Mask Statue。PR105保持draft。",
+  "brief": "Rolling Eye 20261028e fixed candidate的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。HUD顯示政策由家長決定：保留world/object比例、縮小可見世界、全螢幕無黑邊。Dot HUD初次提案回覆#6487955801無patch、無新增寫路徑，缺三Boss/attack tell固定幾何資料；已送#6492318413只讀render/gallery.js、engine/gallery-encounters.js、data/defaults.js並如可行提出engine/loop.js+style.css patch。Dot不寫repo。",
+  "next": "等待並驗證Dot對#6492318413、base13de206的幾何證據及loop.js+style.css完整patch提案。若patch存在，核hash/allowlist後交Luna獨立複審並精確套用；Mac跑完整node games/survivor/tools/test.cjs --layout、升版本、提交並發固定候選；Dot在新候選測三尺寸HUD、canvas/input同步與Rolling Eye E→N→W/靜止扭轉。若無patch，記錄精確幾何限制再向家長呈報。之後完成Mask Statue；PR105保持draft。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（PR #411 #6487897220：家長已授權的HUD patch proposal；base e44dfe7）",
-  "updated": "2026-10-29T04:25:50Z",
+  "waitingFor": "Dot（PR #411 #6492318413：固定幾何證據與HUD patch提案；base13de206）",
+  "updated": "2026-10-29T08:56:08Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"
