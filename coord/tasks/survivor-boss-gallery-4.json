@@ -8,14 +8,14 @@
   "state": "blocked",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye固定20261028e候選740×360、1180×820 beam/hit鏈已Dot確認；1024×461 E→N→W/靜止扭轉仍缺，專項實測#6471339722待回。HUD patch首次提案#6471404535未交patch；Dot要求讀viewport/input實作後再判斷，家長已於2026-10-29明確批准Dot唯讀games/survivor/game.js及必要本地模組。已基於PR HEAD bc7d8e4重送context+CSS-only patch request #6486182355；patch寫入仍只限style.css，其他模組如需寫入須另批。PR105保持draft。",
-  "next": "並行等待：(1) Dot對#6471339722固定source09bfd3e的1024×461 E→N→W/靜止扭轉實測；(2) Dot對#6486182355按base bc7d8e4唯讀追蹤canvas/viewport/camera/pointer輸入及必要本地模組，回報路徑/hash並在可行時只提style.css patch。收到patch後先Luna獨立複審及精確base套用；若需寫其他模組先取得家長授權。再由Mac跑完整--layout、新固定SHA預覽、Dot三尺寸實測；完成HUD後處理Mask Statue。",
+  "brief": "Rolling Eye固定20261028e候選740×360、1180×820 beam/hit鏈已Dot確認；1024×461 E→N→W/靜止扭轉request #6471339722仍待回。HUD上下文request #6486182355已回覆並驗證：Dot讀取10個指定/必要遊戲來源檔，判斷CSS-only不能保證HUD、畫布world viewport/camera與pointer input同步；沒有交patch、未測試。最低提案寫入範圍需擴到engine/loop.js與style.css，並須家長先決定保留全戰鬥視野而等比縮小畫面，或維持比例而縮小可見世界。新寫入路徑未授權，未修改/套用。PR105保持draft。",
+  "next": "等待家長決定HUD顯示取捨及是否授權Dot僅提出games/survivor/engine/loop.js與style.css patch（不授權repo寫入）；若核准才對當時PR HEAD重凍結新request，Dot回patch後交Luna獨立複審，精確套用後Mac完整--layout、新SHA候選及Dot三尺寸驗收。若不核准，保留HUD問題並依原狀不改。並行驗證Dot對#6471339722固定source09bfd3e的1024×461測試結果；Mask Statue仍未完成。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "Dot（#6471339722：1024固定候選實測；#6486182355：HUD viewport context與style.css-only patch提案）",
-  "updated": "2026-10-29T02:26:10Z",
+  "waitingFor": "家長（HUD視野／縮放取捨及engine/loop.js patch提案授權）；Dot（#6471339722：1024固定候選實測）",
+  "updated": "2026-10-29T04:22:12Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

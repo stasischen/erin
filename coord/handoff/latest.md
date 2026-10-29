@@ -510,3 +510,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 已用當時PR105最新head `bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`重凍結並重送[#6486182355](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486182355)，request `d455b741adf784f457cea74f03788e265931a958e321fc107e88f2fb8146b134`；manifest `55b28710b18326d2c567bb47d0e673d3d9d9b718b69e679cb71f22a62b348697`、bundle `fa5bc63634a73e89ba16e666081935ad8debe198a2486bb4192363bdb1e11153`。公開留言readback已驗證request/source/hash欄位。
 - 新request只允許唯讀`game.js`和它實際需要的`games/survivor/`本地viewport/render/input模組；Dot須報告每個實際讀取路徑及SHA-256。任何patch寫入仍限`games/survivor/style.css`；若需修改其他模組須列出最小清單並再取得授權。此階段不要求瀏覽器驗收或Mac測試，不得改repo/push/merge。
 - PR105現HEAD仍為`bc7d8e4`、保持draft。另一個Rolling Eye 1024×461固定候選實測[#6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)繼續並行等待；其結果僅對source `09bfd3e`有效。
+
+
+### HUD context 回件與待決顯示取捨（2026-10-29 04:22 UTC）
+
+- Dot於2026-10-29 02:36 UTC回覆 [#6486337797](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486337797)，對應request #6486182355。既有exchange normalizer/validator確認request、author、marker、source `bc7d8e4`、manifest `55b28710...`及bundle `fa5bc636...`一致。Dot回報讀取10個遊戲來源檔及bytes/SHA；路徑與hash列於回覆。未跑程式／Mac測試／瀏覽器驗收，也未修復重疊。
+- Dot的結論是Boss HUD與canvas同層疊放；若CSS自行保留區域，canvas可用矩形會改變而牽動zoom、world viewport、camera與pointer座標。它認為要在共享viewport契約中安排HUD專區，最低新增提案可寫路徑為`games/survivor/engine/loop.js`（另保留`games/survivor/style.css`），但實際修改範圍仍待獨立審查。任何額外模組若實作證明需要，Dot要先列路徑再取得授權。
+- 這需要家長決定顯示政策：保留完整戰鬥世界和Boss可見性、將遊戲畫面等比縮小以讓出HUD專區；或維持目前畫面比例、接受可見世界範圍縮減。依Boss4規格「鏡頭幾乎看得到整個競技場、Boss永遠在畫面內或邊緣」，目前較符合前者，但需家長確認。未獲新寫入範圍核准前不請Dot產生`loop.js`修改、不套用。
+- 回件source為`bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`；當時PR HEAD為`d2c9d02fa38a368f939626f10d7ba6c387b94602`，兩者只差coord紀錄。HUD修正無patch；不代表HUD通過。1024×461固定候選實測request #6471339722仍獨立pending。
