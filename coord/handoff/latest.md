@@ -518,3 +518,12 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Dot的結論是Boss HUD與canvas同層疊放；若CSS自行保留區域，canvas可用矩形會改變而牽動zoom、world viewport、camera與pointer座標。它認為要在共享viewport契約中安排HUD專區，最低新增提案可寫路徑為`games/survivor/engine/loop.js`（另保留`games/survivor/style.css`），但實際修改範圍仍待獨立審查。任何額外模組若實作證明需要，Dot要先列路徑再取得授權。
 - 這需要家長決定顯示政策：保留完整戰鬥世界和Boss可見性、將遊戲畫面等比縮小以讓出HUD專區；或維持目前畫面比例、接受可見世界範圍縮減。依Boss4規格「鏡頭幾乎看得到整個競技場、Boss永遠在畫面內或邊緣」，目前較符合前者，但需家長確認。未獲新寫入範圍核准前不請Dot產生`loop.js`修改、不套用。
 - 回件source為`bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`；當時PR HEAD為`d2c9d02fa38a368f939626f10d7ba6c387b94602`，兩者只差coord紀錄。HUD修正無patch；不代表HUD通過。1024×461固定候選實測request #6471339722仍獨立pending。
+
+
+### 家長選擇縮小可見世界；HUD patch已續派（2026-10-29 04:25 UTC）
+
+- 家長明確選擇「接受可見範圍縮小」：保留目前世界/角色比例，讓出HUD專區，stage背景仍填滿螢幕、無黑邊。此決定足以繼續既有Dot patch流程，我不再等待第二次確認。
+- HUD上下文Dot回覆[#6486337797](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486337797)表示CSS-only不足，viewport同步至少要動`engine/loop.js`。已基於當時PR HEAD `e44dfe7a351b5a3f86c0a319785159598e0db16d`送出具體patch提案request [#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)，request `be51cf4ac090029082c58327dd8762d9a9ad502c179c77e571c57d14d1f7b841`，manifest `ff77953588a249d8149f4971a54d52249fabdb4d4a9bbe6651deb139dcf3e763`，bundle `7e894090e5b67a8c461899b2e186aae593117fd288b46d75659ec70b79ca9503`。patch提案可寫路徑僅`games/survivor/engine/loop.js`和`games/survivor/style.css`；Dot不寫repo、不執行測試。其他檔只讀，如證明需增加write path先列明再求核准。
+- 此方案要求reserved HUD rectangle同步canvas backing、worldViewport/camera與pointer座標；world/object比例不變、視野可縮小，仍確保玩家、Boss與attack tell可見。Luna須獨立複審精確patch；Mac精確套用、跑完整`--layout`、升版並發新固定候選；之後Dot才做三尺寸HUD實測。
+- 已補讀之前漏查的1024實測回覆 [#6471445903](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471445903)，normalizer核對request #6471339722、source `09bfd3e`、manifest、bundle與作者通過。正常試煉只完成E→N；北向完成後下一預警仍為E，Dot即停下，因此連續E→N→W與靜止+90°比較仍未通過。結果為`changes / partial_evidence`，沒有hidden-state操作，也不據此宣稱遊戲缺陷。此固定候選結果保留作歷史；HUD patch產生的新候選仍須重做對應三尺寸遊戲/朝向驗收。
+- 本次只改coord。HUD提案source是送件時HEAD `e44dfe7`；之後coord-only提交不改遊戲程式。PR105維持draft。
