@@ -527,3 +527,9 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - 此方案要求reserved HUD rectangle同步canvas backing、worldViewport/camera與pointer座標；world/object比例不變、視野可縮小，仍確保玩家、Boss與attack tell可見。Luna須獨立複審精確patch；Mac精確套用、跑完整`--layout`、升版並發新固定候選；之後Dot才做三尺寸HUD實測。
 - 已補讀之前漏查的1024實測回覆 [#6471445903](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471445903)，normalizer核對request #6471339722、source `09bfd3e`、manifest、bundle與作者通過。正常試煉只完成E→N；北向完成後下一預警仍為E，Dot即停下，因此連續E→N→W與靜止+90°比較仍未通過。結果為`changes / partial_evidence`，沒有hidden-state操作，也不據此宣稱遊戲缺陷。此固定候選結果保留作歷史；HUD patch產生的新候選仍須重做對應三尺寸遊戲/朝向驗收。
 - 本次只改coord。HUD提案source是送件時HEAD `e44dfe7`；之後coord-only提交不改遊戲程式。PR105維持draft。
+
+
+### 家長明確核准Dot提出HUD patch（2026-10-29 04:25 UTC）
+
+- 家長明確同意Dot針對HUD提出patch。此核准對應已發出的[#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)，範圍仍限`games/survivor/engine/loop.js`與`games/survivor/style.css`的patch proposal，base `e44dfe7a351b5a3f86c0a319785159598e0db16d`，設計採保留world/object比例、縮小可見世界區域、保留全螢幕背景無黑邊。
+- Dot不得直接寫repo、push、開PR或merge；收到patch後交Luna獨立複審，再由Mac對精確base套用及測試。已有request在處理中，不重送。
