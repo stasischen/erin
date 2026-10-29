@@ -5,17 +5,16 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：石像雙手、眼方塊與面具石像",
-  "state": "blocked",
+  "state": "doing",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye 20261028e fixed candidate的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。HUD政策已選保留world/object比例、縮小可見世界、背景全螢幕無黑邊。Dot對request #6492318413回覆#6492501348：固定來源幾何計算指出保留比例、預留HUD及所有Boss完整tell均在視窗內無法同時滿足，patch為null。該回覆綁定request/source/manifest/bundle，但本機exchange_result.py因coverage欄為object而非規定的non-empty list拒絕正式正規化；不視為已採納結果。未改程式、未執行測試或瀏覽器驗收。",
-  "next": "等待家長界定HUD專區與大型Boss預警完整可見性的優先序；在此之前不要求或套用HUD程式patch。若家長仍要求所有tell完整可見，需重定尺度／場地／招式的產品範圍；若允許預警超出可視區，需明確定義裁切時的公平性與畫面內警示。收到政策後依核准範圍向Dot提出新固定請求；其後仍需Luna獨立複審、Mac精確套用並跑node games/survivor/tools/test.cjs --layout、升版及發布固定候選，再由Dot驗三尺寸HUD與Rolling Eye缺口。之後完成Mask Statue；PR105保持draft。",
+  "brief": "Rolling Eye 20261028e固定候選的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。Dot對request #6492318413回覆#6492501348沒有patch；PR105仍draft，未改遊戲程式。家長最新決定Boss HUD維持浮層，攻擊預警超出畫面可接受，不再預留HUD專區或要求所有tell完整可見。獨立PR #2房間與標準client synthetic round-trip已人工驗證採納，僅測路由，不代表遊戲審查。",
+  "next": "以coord交接提交後的最新完整HEAD，向Dot派發新固定CSS-only浮層HUD patch：保留畫布／worldViewport全螢幕，不預留HUD空間；確保Boss HUD定位在上方且不與玩家HUD/topbar重疊；warning超出畫面可接受。若CSS不足以滿足這些約束，Dot停下並說明所需路徑，不猜測擴權。拿到patch後由Luna獨立複審，Mac精確套用、跑node games/survivor/tools/test.cjs --layout、升版及發布固定候選，再由Dot驗三尺寸HUD並補Rolling Eye缺口；之後完成Mask Statue。PR105保持draft。另：來源session自動接續仍缺可到達HTTPS ingress及簽章secret路徑，依push receiver調查待家長指定基礎設施。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "家長：HUD預留區與Boss／攻擊預警完整可見性的優先序（Dot #6492501348回報固定幾何衝突，無patch）",
-  "updated": "2026-10-29T09:24:17Z",
+  "updated": "2026-10-29T10:03:13Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

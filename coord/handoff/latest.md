@@ -1,5 +1,32 @@
 # 目前交接
 
+## Erin PR #2 標準 client round-trip 已人工收件採納；push receiver 缺入口（2026-10-29T10:03:13Z）
+
+- Dot 在 PR #2 回覆標準 result revision 3 [#6493667041](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493667041)：request、PR105 source `a3d314c180bfccea23a380ed86a4b709fee55528`、manifest/bundle hash 全匹配；coverage 陣列及 canonical manifest 通過來源 parser。內容是 synthetic `label(0)` 回傳 positive 的 `changes` finding。Mac 對相同固定 SHA 執行來源 client `find`／`receive`，已寫入 repo 外私有測試 workdir 的 `review.md` 與 `adopted.json`；PR #2 direct request 先於 #411 pointer 到達，沒有重複執行。這僅接受合成路由測試，不是遊戲程式 approval。
+- 房間流程已證實：PR #2 獨立 webhook 能喚醒 Dot，來源 client 綁 `rooms/erin.json` 可發布、人工 `find` 並驗證／採納標準結果。尚未證實來源 Codex session 自動接續；client 明確無 auto-poll/wake。
+- 家長選擇 push receiver。只讀盤點發現沒有既有公網 ingress、tunnel 或 GitHub repo hook；要實作仍缺可到達的 HTTPS endpoint、GitHub event 註冊／簽章 secret 儲存，以及 receiver 到來源 thread 的授權固定綁定。家長已被詢問要提供現成 endpoint、授權新 hosting/tunnel 規劃，或暫維持人工；未取得入口前不部署、不恢復 launchd、不建立 credentials。
+- Boss HUD 設計已確認維持浮層，warning 可超出畫面；這解除「預警必須完整在視窗」的設計限制。HUD 實作仍等 Dot 精確 patch/Luna 獨審，未由主控改遊戲程式。
+
+## Push 自動接續方向已選；尚無可用外部 webhook 入口（2026-10-29T10:02:32Z）
+
+- 家長選擇建置 push receiver，不恢復每分鐘 polling。獨立盤點 Erin、release-aggregator、agent-coord-kit 與 GitHub repo hooks 後，沒有既有 inbound webhook/tunnel/public host：release-aggregator 只有每次 coordinator pass 的 REST polling；kit 的 inbox polling 預設關閉、ntfy 僅 outbound；四個相關 GitHub repo 均無 repository hook。未檢視任何 secret 值，也未新增 hook、服務或帳號。
+- 要讓 push flow 真正可用，仍需明確提供／授權一個可從 GitHub 到達的 HTTPS ingress、GitHub webhook event 註冊方式與簽章 secret 存放路徑，以及本機 receiver 呼叫 Codex queue 喚醒 Erin source thread 的授權與固定 thread binding。只建本機 HTTP listener 無法接收 GitHub 外部事件；GitHub Pages 是靜態站，不能當 webhook receiver。
+- 目前可安全交付的下一步是先確認現成 ingress 或由家長指定可使用的 hosting/tunnel 與 secret 管理方式；取得後再把 receiver 的精確 patch 派給 Dot、交 Luna 獨審，Mac 套用及驗證。未取得入口前不部署、不修改 auth、無 GitHub Actions CI、source session 仍人工 `find`/`receive`。
+
+## 家長確認 HUD 浮層可保留；標準房間回程被拒，source 自動接續需另定喚醒方式（2026-10-29T10:00:34Z）
+
+- 家長確認 Boss HUD 維持浮層，預警提示超出畫面可接受；不再要求為所有方向／位置保證 tell 完整留在可視區。PR105 的 HUD 設計阻塞已解除此項產品政策問題，實作仍須照 Dot patch → Luna 獨審 → Mac 精確套用與完整測試，不能由主控補寫新邏輯。
+- 標準合成房間結果 [PR #2 #6493384194](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493384194) 正確辨識零值缺陷並綁定 request/source/manifest/bundle；但 `coverage` 回傳為 object，Mac `receive` 依現有 schema 拒絕（`result coverage must be a non-empty list`），因此尚未採用。已在 [PR #411 #6493631777](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6493631777) 要求同 request 僅修正 metadata：coverage 改一列 array，附 canonical manifest preimage，不重做 fixture review。PR105 source SHA 仍 `a3d314c180bfccea23a380ed86a4b709fee55528`；修正結果須先在此 SHA 用 `receive`，完成後才可提交本 handoff 變更。
+- 獨立只讀檢查確認：release-aggregator 的 inbox 目前由 coordinator pass 呼叫 GitHub REST polling，run-once 文件預設每 60 秒；無 inbound webhook listener。結果驗證器只把結果落地，frozen request 沒有原始 source thread 綁定；agent-coord-kit 的 Codex thread queue 需本機 coordinator 主動呼叫，亦無 GitHub event receiver。舊 launchd 依家長先前指示保持停用，未恢復、未新增排程、未改碼。
+- 自動接續缺的不是 Dot webhook（PR #2 新 comment delivery 已獨立驗證），而是 GitHub 結果事件抵達 Mac 後，安全驗證並喚醒對應 Erin Codex session 的 push receiver／授權執行點。需先由家長指定是否允許恢復既有 60 秒本機 polling、批准新 push receiver 所需基礎設施，或暫時維持人工 `find`／`receive`；目前沒有已授權的事件入口，不宣稱自動續接已完成。
+
+## Erin 房間 PR #2 接線：獨立通知已驗證，標準 client 回程待完成（2026-10-29T09:44:53Z）
+
+- 直接在私有房間 PR #2 發送合成通訊請求 [#6493131098](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493131098)，沿用 Dot 指定的 request ID `dot-erin-room2-transport-check-20261028`、event ID `mac-erin-room2-transport-check-v1` 與 nonce `ERIN-ROOM2-20261028`。Dot 在同房回覆 [#6493165491](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493165491)，回顯皆相符，回報 PR #2 `issue_comment/created` webhook delivery `f1a1b1a0-d37b-11f1-90d2-0d83b96dbab3`、非 PR #411 relay、非人工巡檢；這證實該次新房間事件獨立通知到 Dot。
+- Erin Mac coordinator 以一次定向 `gh api` 讀回並人工核對後，在 PR #2 留來源收件回執 [#6493232888](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493232888)。採用範圍僅限通訊回執；來源 session 自動喚醒未驗證，duplicate/recovery 未測，不代表正式程式審查或任何產品批准。
+- 純通訊回執不符合來源 client 的 `kind=result`／request、source、manifest、bundle 綁定 schema，因此另以 `stasischen/erin` PR105 HEAD `a3d314c180bfccea23a380ed86a4b709fee55528`、`docs/tasks/DOT_SOURCE_CLIENT_20261027/rooms/erin.json` 凍結隔離 synthetic fixture，綁定房間 PR #2。標準 request `b4b48c859dddff9261246f84cede7beff233528f1d36a3f198d6851825619b74`（manifest `6f46192db67b460d96ff9d6048554844fcd3d50656bf88f9f6f34e5c5faf45d0`；bundle `4921dedf51799783412170adb4800ea62db30edffce370ead435b449232cd8a9`）已發布於 [PR #2 #6493248556](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493248556)。只含零值標籤的固定小缺陷，不讀 Erin source、不執行程式、不改 repo、不做瀏覽器或產品審查。
+- 來源 client 的一次性 `find` 尚未看到符合標準 marker 的結果；已按 rollout 在舊房 PR #411 發出僅含固定 URL／hash 的通知 [#6493299880](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6493299880)，要求 Dot 把標準結果回 PR #2。等待結果期間不重發、不把任何 PR105 frozen request 移房。正式 client `receive`、來源自動接續、duplicate/recovery 仍未驗；PR105 目前仍 draft、HEAD 未變。收到標準結果後先在此 source SHA 上用 client 精確 `receive`，再依結果更新正式任務及交接；不新增 scheduler 或輪詢。
+
 ## StoneHands slice independently approved/applied, full Mac128PASS (2026-10-28T05:58:26.429184+00:00)
 
 Dot full replacement47577bytes/SHA256 fc665a8ff81640dba645d2c6c7d39e6802369b82ec3a561980f814a7e476d4e3 at base529078cea6200ced9d9382073e403db5dca3bef0 includes exact19path scope,16changed paths. New canvas fixture supplies valid dimensioned transparentPNG dataURI and retains drawCalls; no pixel acceptance inferred. All prior15production/test/art postimages matched the corrected priorproposal; only helper added. Canonical result received from actualGitHub, onlyauthorproposalready. Late priornotifications reconciled, unrelatedLingo tasks untouched.
