@@ -9,12 +9,12 @@
   "branch": "codex/survivor-boss4",
   "pr": 105,
   "brief": "Rolling Eye 20261028e固定候選的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。Dot對request #6492318413回覆#6492501348沒有patch；PR105仍draft，未改遊戲程式。家長最新決定Boss HUD維持浮層，攻擊預警超出畫面可接受，不再預留HUD專區或要求所有tell完整可見。獨立PR #2房間與標準client synthetic round-trip已人工驗證採納，僅測路由，不代表遊戲審查。",
-  "next": "以coord交接提交後的最新完整HEAD，向Dot派發新固定CSS-only浮層HUD patch：保留畫布／worldViewport全螢幕，不預留HUD空間；確保Boss HUD定位在上方且不與玩家HUD/topbar重疊；warning超出畫面可接受。若CSS不足以滿足這些約束，Dot停下並說明所需路徑，不猜測擴權。拿到patch後由Luna獨立複審，Mac精確套用、跑node games/survivor/tools/test.cjs --layout、升版及發布固定候選，再由Dot驗三尺寸HUD並補Rolling Eye缺口；之後完成Mask Statue。PR105保持draft。另：來源session自動接續仍缺可到達HTTPS ingress及簽章secret路徑，依push receiver調查待家長指定基礎設施。",
+  "next": "以coord交接提交後的最新完整HEAD，向Dot派發新固定CSS-only浮層HUD patch：保留畫布／worldViewport全螢幕，不預留HUD空間；確保Boss HUD定位在上方且不與玩家HUD/topbar重疊；warning超出畫面可接受。若CSS不足以滿足這些約束，Dot停下並說明所需路徑，不猜測擴權。拿到patch後由Luna獨立複審，Mac精確套用、跑node games/survivor/tools/test.cjs --layout、升版及發布固定候選，再由Dot驗三尺寸HUD並補Rolling Eye缺口；之後完成Mask Statue。PR105保持draft。另：共享Lingo coordinator的60秒poller仍在跑，但目前source只接#411/#1且通知到Lingo manager；Erin auto-resume等待PR443完成verified result adoption、explicit Erin adapter、原thread routing及started evidence，保持default-off，不動線上source。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "updated": "2026-10-29T10:03:13Z",
+  "updated": "2026-10-29T10:08:20Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-boss-gallery-3"

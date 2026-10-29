@@ -1,5 +1,12 @@
 # 目前交接
 
+## 校正：共享 Lingo coordinator 正在每 60 秒輪詢；Erin 尚未接入（2026-10-29T10:08:20Z）
+
+- 本機只讀核對到 `com.stasischen.lingo-coordinator` 的 launchd job 為 `running`、週期 60 秒、last exit 0；家長確認設定來源為 release-aggregator PR #411 與 lingo-agent-exchange PR #1，部署版 `41b52b4`。這是共享 Lingo coordinator，不是已停用的 Erin 專屬 `com.stasischen.erin-watch`；先前「舊 Erin watcher 停用」沒有錯，但不能推論 Mac 上完全沒有輪詢器。
+- PR #443 `codex/prod-cross-project-resume` 目前 open，published HEAD `5a785cef367444e0a4d1f026f9654088c9d4bebf`，default-off ledger/CAS 有 Lingo 與 synthetic adapter；尚未把 verified exchange result 接進 result adoption、原始專案 thread routing 或 started proof，也未部署。既有 60 秒 coordinator pass 可作 Erin 新 adapter 的事件入口，不需要先建公網 webhook；但單純加 PR #2 到 sources 清單仍會錯送既有 manager，不能自動續回 Erin。
+- PR #2 synthetic `dot_exchange_client` request 已在 PR105 source `a3d314c` 上人工 `find`／`receive` 成功；不代表自動接續。已將 Erin 綁定需求送給正在做 PR #443 的 session：在現有 deterministic poller 上加入 explicit Erin adapter/PR #2 allowlist、validated result→shared CAS→exact Erin thread，queue receipt 與實際 started evidence 分開；維持 default-off，不切部署設定、不動 launchd。
+- 推薦先重用現行 60 秒 poller做離線整合與 Erin/synthetic replay，再經獨立審查才開 Erin 單專案 canary；目前不另建 push ingress、不更動線上 sources。若之後仍要求 webhook push，才需要 HTTPS endpoint 與簽章 secret 基礎設施。
+
 ## Erin PR #2 標準 client round-trip 已人工收件採納；push receiver 缺入口（2026-10-29T10:03:13Z）
 
 - Dot 在 PR #2 回覆標準 result revision 3 [#6493667041](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493667041)：request、PR105 source `a3d314c180bfccea23a380ed86a4b709fee55528`、manifest/bundle hash 全匹配；coverage 陣列及 canonical manifest 通過來源 parser。內容是 synthetic `label(0)` 回傳 positive 的 `changes` finding。Mac 對相同固定 SHA 執行來源 client `find`／`receive`，已寫入 repo 外私有測試 workdir 的 `review.md` 與 `adopted.json`；PR #2 direct request 先於 #411 pointer 到達，沒有重複執行。這僅接受合成路由測試，不是遊戲程式 approval。
