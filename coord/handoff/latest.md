@@ -541,3 +541,19 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Dot點名唯讀缺口`games/survivor/render/gallery.js`、`games/survivor/engine/gallery-encounters.js`、`games/survivor/data/defaults.js`，用來算Boss/招式預警的實際世界邊界。本地無需新增寫權；原批准patch allowlist仍只含`games/survivor/engine/loop.js`與`games/survivor/style.css`。
 - 已基於當時最新PR HEAD `13de2068f6e20f956157aa57259c52db7307dd7f`發出合併幾何補查與patch提案的新request [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413)，request `6f027d3386923f61e1124b64cc807c3798750779793a3a6a465fc613b58900fb`、manifest `49095a2b696cf40f318077c69384f30b0bf62968641fe127d752668cbc154ae2`、bundle `3b30707e6a1711e3b8c36351908ad04e68ef4d83830954b45ba1bc14cd525d87`；公開readback核對request/hash與三個path。要求讀幾何、核bounds後若可行直接交loop.js+style.css patch，否則明列證據/幾何阻礙；不改repo、不執行測試。
 - Rolling Eye 1024測試#6471445903已驗證為E→N，下一預警E，停止；E→N→W和靜止+90°仍未完成。該固定candidate證據維持partial；HUD patch如產生新SHA，須在新預覽重做三尺寸與Eye朝向功能檢查。
+
+
+### Boss4 HUD 幾何補查：無 patch，等待預警可見性政策（2026-10-29 09:24 UTC）
+
+- Dot 對固定 request [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413) 的回覆已在 [#6492501348](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492501348) 讀回，綁定 source `13de2068f6e20f956157aa57259c52db7307dd7f`、request `6f027d3386923f61e1124b64cc807c3798750779793a3a6a465fc613b58900fb`、manifest `49095a2b696cf40f318077c69384f30b0bf62968641fe127d752668cbc154ae2` 與 bundle `3b30707e6a1711e3b8c36351908ad04e68ef4d83830954b45ba1bc14cd525d87`。Dot 回報讀完新增三個幾何來源及四個直接依賴；沒有提供 patch、沒有寫 repo、沒有執行遊戲、測試或瀏覽器驗收。
+- 正式本機 `exchange_result.py` 驗證 request ID、source SHA、manifest 與 bundle 後，因回覆的 `coverage` 是 object（接收器要求非空 list，列項還須有 `read_complete` 與 `hash_verified`）拒絕正規化；因此這份原始留言尚未正式採納，不把自述資料當已獨立核驗的審查結果。未改寫或補造 Dot 的回覆。
+- 靜態幾何指出政策衝突：1024×461 原 zoom 約 `1.21458`，可視世界高度約 `379.56`；nova 活躍末段的完整垂直外緣接近 `384`（progress 0.99 時 `380.4`），故即使 HUD 高度為零也放不下完整圖形；預留 HUD 會更小。Mac 另用固定來源程式與算式核對此單一反例；這是靜態界限，不是實測回歸或遊戲測試結果。
+- 原先已選保留 world/object 比例、縮小可視世界、背景無黑邊；仍需家長明確決定大型預警超出可視區時可否被裁，以及是否要求每個完整 tell 留在視窗內。未得到決定前不向 Dot 要求新邏輯、不套用程式 patch。PR105 仍為 draft；遊戲程式和版本未變，舊候選測試不代表 HUD 已修。
+
+
+### Dot 收件房間路徑核實（2026-10-29 09:24 UTC）
+
+- Lingo 房間 PR [#1](https://github.com/stasischen/lingo-agent-exchange/pull/1) 有 Dot 回報獨立 webhook delivery 到達；但它也要求原 Lingo 來源端再確認是否收到／採用及自動或人工接續，現有留言未證明原 session 自動恢復。Erin 房間 [#2](https://github.com/stasischen/lingo-agent-exchange/pull/2) 尚無 Mac 來源 synthetic request；Dot 明確要求補做同房 request／receipt 和來源側接收方式核對。
+- Source client [release-aggregator PR #431](https://github.com/stasischen/release-aggregator/pull/431) 已合併：可依 `exchangeRoom` 配置把新的 request、publish、find、receive 綁定到 Lingo／Erin 房間；其 task brief 明定要先完成各房間 live synthetic acceptance 才切新流，現有 frozen #411 work directory 不搬移，也沒有 source-session 自動喚醒／scheduler。故 PR105 目前固定在 PR #411 的請求仍留原房；在 Erin PR #2 acceptance 前，不把新房間描述成已完成切換。
+- Invest 房間 [PR #3 receipt](https://github.com/stasischen/lingo-agent-exchange/pull/3#issuecomment-6467264007) 記載 Dot 收到獨立 webhook delivery，但 source receipt 明寫由人工沿原執行任務接續，沒有證明 Windows 原 session 自動喚醒。GB10/MSI 透過 Invest 的既有執行連線屬已提供的操作狀態；房間留言未證明它們自行監聽。
+- Kit [PR #11](https://github.com/stasischen/agent-coord-kit/pull/11) 仍是 open draft，增加 offline continuation/replay ledger 與去重／恢復測試，但自身說明明列尚未接 coordinator、scheduler、webhooks、live rooms 或 production dispatch，亦未驗 Windows locking、live receipt/adoption 或端到端派工。直接送入既有 execution task 是另一條路由；房間 PR 不能替代它，也不證明它自動續接。
