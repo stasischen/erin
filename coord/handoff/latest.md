@@ -502,3 +502,11 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 - Dot完成7個指定唯讀檔的hash檢查，沒有執行程式、apply check、Mac測試或HUD預覽驗收。它指出CSS把Boss HUD疊在整個canvas上，單純移到角落/透明化不能保證不遮玩家與攻擊tell；縮放或裁切canvas還可能讓viewport與輸入座標失同步。因此它沒有猜測CSS patch，而要求下一階段先讀`games/survivor/game.js`中的`fitVisibleViewport`、canvas/worldViewport/camera、pointer座標及其固定模組，並提供同base bytes/hash。
 - 目前凍結patch request base `5acc25a82e841f1f99c538301a52083517cbff02`，PR105現HEAD `0dbd092f2f7af521150ddabed2c4b6323317d46d`；兩者間只增加`coord/handoff/latest.md`和Boss4 task JSON，沒有遊戲程式變更。該差異不會把舊proposal升格為目前HEAD核准。style.css-only提案無patch，不採納/套用。
 - 依原request allowlist，本輪未讀`game.js`，未修改、測試或擴大Dot權限。後續須先由家長決定是否允許Dot將`game.js`及它實際點名的viewport/render/input依賴僅列read-only；收到允許後另以當時PR最新HEAD重凍結request。Eye的1024-only雲端實測request #6471339722仍獨立待回。
+
+
+### 家長批准Dot唯讀viewport上下文；HUD提案重新派送（2026-10-29 02:26 UTC）
+
+- 家長明確同意Dot查看`games/survivor/game.js`及必要模組。原HUD回覆[#6471522223](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471522223)是partial、沒有patch；它要求先追蹤viewport/canvas/camera/pointer輸入契約，故沒有採納舊CSS-only方案。
+- 已用當時PR105最新head `bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`重凍結並重送[#6486182355](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486182355)，request `d455b741adf784f457cea74f03788e265931a958e321fc107e88f2fb8146b134`；manifest `55b28710b18326d2c567bb47d0e673d3d9d9b718b69e679cb71f22a62b348697`、bundle `fa5bc63634a73e89ba16e666081935ad8debe198a2486bb4192363bdb1e11153`。公開留言readback已驗證request/source/hash欄位。
+- 新request只允許唯讀`game.js`和它實際需要的`games/survivor/`本地viewport/render/input模組；Dot須報告每個實際讀取路徑及SHA-256。任何patch寫入仍限`games/survivor/style.css`；若需修改其他模組須列出最小清單並再取得授權。此階段不要求瀏覽器驗收或Mac測試，不得改repo/push/merge。
+- PR105現HEAD仍為`bc7d8e4`、保持draft。另一個Rolling Eye 1024×461固定候選實測[#6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)繼續並行等待；其結果僅對source `09bfd3e`有效。
