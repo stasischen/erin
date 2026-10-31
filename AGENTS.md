@@ -2,6 +2,14 @@
 
 本檔為目前有效流程，依家長截至 2026-10-28 的指示整理。舊卡、歷史交接及 `docs/survivor-game-plan.md` §3 的不同流程不再適用；遊戲規格仍依計畫、正式任務卡、`GAMES.md`、`GAME_WORKFLOW.md` 與 `ASSETS.md`。家長可隨時更新本檔。
 
+## 2026-10-31 更新（與下文衝突時以本節為準）
+
+- **依改動分流。** 下文的 Dot patch → Luna 套用 → Dot 雲端實測 → 非作者 gate 只用在「遊戲邏輯、資料、數值、權限」的改動。純美術／CSS／文案等可回復的視覺改動走「美術快車道」：一個實作者、家長看截圖驗收，見 `docs/ART_FAST_TRACK.md`。
+- **卡住就問。** 同一張卡因同一原因 blocked 2 次，主控停下用三句白話問家長，不再加流程或規則繞過去。審查最多 2 輪，第 2 輪後只擋「跑不起來」或「會弄壞存檔／資料」。
+- **規則有成本。** 新增角色、關卡或流程規則要家長同意，並說明能否刪掉一條舊的。
+- **不再等跨專案 auto-resume。** agent-coord-kit v1（continuation／PR443）已凍結；Erin 不等它。跨 agent 交棒改用 `~/Dev/agent-coord-kit/v2`（本機留言板；Dot 經 exchange PR #2；試跑中，未開排程）。
+- 全域守則與踩坑：`~/.codex/AGENTS.md`、`~/Dev/knowledge/20-pitfalls/索引.md`。
+
 ## 角色
 
 - 主控 `codex`：開卡、固定來源與允許檔、安排並追蹤獨立 session，處理 Mac 分支／機械版本同步／完整測試／Git／PR／測試版發布及回報。從 PR104 血條小修起，新增邏輯由 Dot 提供 patch，不代寫後自批；既有 Codex 實作仍由非作者完整審查。
