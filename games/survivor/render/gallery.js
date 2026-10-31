@@ -86,7 +86,7 @@ function drawTrialEncounter(){
    if(s.effect.gridRoll||s.effect.beam){drawTrialGridMove(b,m,s);continue;}
    if(s.effect.relocate&&m.teleported&&m.ai.phase==='windup'&&m.ai.left<=s.effect.relocate.flash)SurvivorArt.paint('move/white-flash',{context:ctx,x:b.x-30,y:b.y-60,width:60,height:60,time:state.elapsed},()=>{const palette=SurvivorArt.lookup('move/white-flash').palette;ctx.save();ctx.fillStyle=palette[0];ctx.fillRect(b.x-24,b.y-34,48,6);ctx.fillRect(b.x-3,b.y-55,6,48);ctx.restore();});
    const origin=s.effect.limb||['dive','icefall','meteor'].includes(m.id)?m.target:b,shape=trialUsesBlocks(t.definition)?{...s.shape}:encounterShape(m,s.shape);
-   if(m.id==='frost-dash')shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
+   if(m.id==='frost-dash'||s.effect.charge)shape.length=SurvivorTrialRules.rayLength(b,m.angle,t.arena);
    const angle=['ring','cross'].includes(shape.type)?shape.angle:m.angle;
    const rays=m.id==='spiral'?SurvivorGalleryRules.volley(b,m.angle+(active?m.elapsed*s.effect.rotation:0),s.effect.count,Math.PI*2,1,s.shape.angle*Math.PI/180):null;
    const regions=rays?rays.map(shot=>SurvivorArt.shapeOptions({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx))):undefined;
@@ -101,6 +101,9 @@ function drawTrialEncounter(){
        ctx.restore();
      }else if(m.id==='spiral'){
        for(const shot of rays)drawTrialShape({type:'line',radius:active?3:1,length:s.shape.radius},b,Math.atan2(shot.vy,shot.vx),active);
+     }else if(s.effect.charge){
+       drawTrialShape({type:'line',radius:active?s.shape.radius:5,length:shape.length},b,m.angle,active);
+       ctx.save();ctx.translate(b.x,b.y);ctx.rotate(m.angle);ctx.fillStyle=active?'#ffe391':'#d32c4d';ctx.beginPath();ctx.moveTo(shape.length,0);ctx.lineTo(shape.length-18,-11);ctx.lineTo(shape.length-18,11);ctx.closePath();ctx.fill();ctx.restore();
      }else {
        if(s.effect.limb){ctx.save();ctx.fillStyle='rgba(30,26,40,.35)';ctx.beginPath();ctx.ellipse(origin.x,origin.y,shape.radius,shape.radius*.6,0,0,Math.PI*2);ctx.fill();ctx.restore();}
        drawTrialShape(shape,origin,m.angle,active);

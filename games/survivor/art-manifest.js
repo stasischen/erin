@@ -252,6 +252,11 @@ SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify
   SurvivorArtManifest.assets['character/'+id]=art;
  }
  for(const id of ['left-slam','right-slam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
+ const mask=clone('character/stone-hands');mask.sheet='art/characters/mask-statue.png';
+ mask.source={kind:'original hand-authored 16px Mask Statue sprite'};
+ mask.placeholder={outline:'#383349',body:'#5e5a75',eyes:'#ffe08a'};mask.palette=['#383349','#5e5a75','#9a95b0','#c9936b','#ffa94d','#ffe08a'];
+ SurvivorArtManifest.assets['character/mask-statue']=mask;
+ SurvivorArtManifest.assets['move/charge']={...clone('move/gatekeeper-charge'),sheet:null,mode:'procedural'};
 })();
 
 // Original seven-frame Eye: six closed orientations and the actual visible iris.

@@ -42,11 +42,14 @@ globalThis.SurvivorWeakpoints = (() => {
     }
     return {state, events};
   }
-  function resolve(config, state, body, source, facing, points, hit = body) {
+  function resolve(config, state, body, source, facing, points, hit = body, flags = {}) {
     if (!config) return {multiplier: 1, kind: 'normal', partId: null};
     for (const part of config.parts) {
       const phase = state && state[part.id] && state[part.id].phase, point = points[part.anchor];
       if (!['open', 'closing'].includes(phase) || !point) continue;
+      // Wall-stun is a live vulnerability condition, unlike ordinary warning/recovery
+      // windows that intentionally retain their configured closing frames.
+      if(part.requiresMatch&&part.conditions.some(c=>c.type==='wall-stun')&&!(flags['wall-stun']>0))continue;
       if (!inArc(source, body, facing, part.angleDegrees, part.arcDegrees)) continue;
       if (Math.hypot(hit.x - point.x, hit.y - point.y) > body.r * part.radiusScale + (hit.r || 0)) continue;
       return {multiplier: config.criticalMultiplier, kind: 'critical', partId: part.id};
@@ -117,8 +120,12 @@ function resolveBossWeakpoint(body, attack = {}) {
   const origin = attack.source || state.player;
   const source = {x: body.x + deltaX(origin.x, body.x), y: body.y + deltaY(origin.y, body.y)};
   const hit=attack.point?{...attack.point,x:body.x+deltaX(attack.point.x,body.x),y:body.y+deltaY(attack.point.y,body.y)}:body;
+  const signals=body.weakpointSignals||{},moves=body.moves||state.bossMoves,move=moves[0];
+  const flags={'wall-stun':signals['wall-stun']>0,'posture-break':signals['posture-break']>0,environment:signals.environment>0,bait:signals.bait>0,
+    windup:!!(move&&move.ai&&move.ai.phase==='windup'),recovery:signals.recovery>0||moves.some(m=>m.recovery>0||m.ai&&m.ai.phase==='recovery'),
+    'after-move':signals['after-move']>0,'beam-active':!!(state.trial&&move&&['windup','active'].includes(move.ai?.phase)&&state.trial.definition.moves.find(d=>d.id===move.id)?.blocks.moves[0].effect.beam&&SurvivorTrialBlocks.gridOutward(body.gridOrientation))};
   const result=SurvivorWeakpoints.resolve(config, body.weakpoints, body, source, body.facingAngle || 0,
-    bossWeakpointPoints(body, config), hit);
+    bossWeakpointPoints(body, config), hit,flags);
   return SurvivorWeakpoints.charge(result,config,!!attack.charged,!!(body.weakpointSignals&&body.weakpointSignals['posture-break']>0));
 }
 function weakpointImpact(body, result, attacker = state.player) {

@@ -310,7 +310,7 @@
     };
     const trialEffects=(effect,base,timing)=>{
       const result={};
-      for(const key of ['sequence','relocate','projectiles','slide','limb','gridRoll','beam']) {
+      for(const key of ['sequence','relocate','projectiles','slide','limb','gridRoll','beam','charge']) {
         if(!base[key]){if(effect[key]!==undefined)fail('此招式沒有 '+key+' 積木');continue;}
         const value=effect[key];if(!value||typeof value!=='object')fail('缺少 '+key+' 積木');
         if(key==='sequence'){
@@ -329,6 +329,8 @@
           blockObject(value,['side','reach','lift'],'交替肢體');
           if(value.side!==base.limb.side)fail('肢體左右識別不可改變');
           result[key]={side:value.side,reach:num(value.reach,60,300,'肢體觸及距離'),lift:num(value.lift,20,120,'舉手高度')};
+        }else if(key==='charge'){
+          blockObject(value,['wallStun'],'直線衝撞');if(typeof value.wallStun!=='boolean')fail('撞牆暈眩需為開關');result[key]={wallStun:value.wallStun};
         }else {blockObject(value,['speed'],'側滑');result[key]={speed:num(value.speed,0,300,'側滑速度')};}
       }
       return result;
@@ -551,7 +553,7 @@
           if(!b || typeof b!=='object' || Array.isArray(b) || !known.has(b.id) || saved.has(b.id))fail('試煉魔王識別錯誤');
           saved.set(b.id,b);
         }
-        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin'],['gatekeeper','frostfire','winged','assassin','stone-hands']];
+        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin'],['gatekeeper','frostfire','winged','assassin','stone-hands'],['gatekeeper','frostfire','winged','assassin','stone-hands','rolling-eye']];
         const complete=saved.size===known.size;
         const recognized=historical.some(ids=>ids.length===saved.size&&ids.every(id=>known.has(id)&&saved.has(id)));
         if(!complete&&!recognized)fail('試煉魔王名單不完整');
@@ -586,6 +588,11 @@
             const part=config.parts[0],timing=beam.blocks.moves[0].timing;
             if(part.id!=='eye'||part.anchor!=='weakpoint'||part.requiresMatch!==true||part.conditions.length!==1||part.conditions[0].type!=='beam-active')fail('眼部條件需與實際光束階段一致');
             if(config.warning+.1>timing.windup||part.duration<timing.windup+timing.active)fail('光束需先完成眼部開啟預警，眼部顯露時間需覆蓋出手');
+          }
+          if(b.id==='mask-statue'){
+            const charge=boss.moves[0],part=config&&config.parts[0];
+            if(boss.moves.length!==1||charge.id!=='charge'||charge.weight!==1||charge.minPhase!==1||!charge.ai.offscreen||charge.blocks.moves[0].effect.speed<300||!charge.blocks.moves[0].effect.charge?.wallStun)fail('面具石像需保留畫面外選招的直線衝撞');
+            if(!config||config.armorMultiplier>.2||!part||part.id!=='back'||part.angleDegrees!==180||part.arcDegrees>140||part.mode!=='all'||part.requiresMatch!==true||!part.conditions.some(c=>c.type==='behind')||!part.conditions.some(c=>c.type==='wall-stun'))fail('面具石像背後弱點需只在背後且撞牆暈眩時開啟');
           }
           return boss;
         });data.gallery=result;

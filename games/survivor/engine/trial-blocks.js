@@ -116,7 +116,7 @@ globalThis.SurvivorTrialBlocks=(()=>{
 SurvivorEffectBlocks.trialMoves=SurvivorTrialBlocks;
 Survivor.engine['trial-blocks']={rules:SurvivorTrialBlocks};
 
-function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide||e.limb||e.gridRoll||e.beam;});}
+function trialUsesBlocks(def){return def.moves.some(m=>{const e=m.blocks.moves[0].effect;return e.sequence||e.relocate||e.projectiles||e.slide||e.limb||e.gridRoll||e.beam||e.charge;});}
 function updateTrialBlockActor(dt){
  const t=state.trial,b=state.boss,def=t.definition;
  if(!state.bossMoves.length){
@@ -136,6 +136,13 @@ function updateTrialBlockActor(dt){
  const result=SurvivorTrialBlocks.advance(m.ai,s.timing,dt);
  for(const event of result.timeline){
   if(event.type==='segment'){
+   if(event.phase==='active'&&e.charge){
+    b.x+=Math.cos(m.angle)*s.effect.speed*event.dt;b.y+=Math.sin(m.angle)*s.effect.speed*event.dt;
+    const wall=SurvivorTrialRules.boundary(b,t.arena);Object.assign(b,wall.position);
+    if(wall.hit&&e.charge.wallStun){b.posture={value:0,stun:t.config.wallStun};b.previous=[];triggerBossWeakpoint(b,'wall-stun',t.config.wallStun);clearBossMoves();t.events.push(...SurvivorTrialRules.wallStun(true,t.config.wallStun));updateHud();return;}
+    if(Math.hypot(b.x-state.player.x,b.y-state.player.y)<b.r+state.player.r)bossHurtPlayer(e.damage,s.feedback);
+    if(state.trial!==t)return;
+   }
    if(event.phase==='windup'&&e.relocate&&!m.teleported&&s.timing.windup-event.left+event.dt>=e.relocate.vanish-1e-8){
     Object.assign(b,SurvivorTrialBlocks.behind(state.player,{x:state.faceX,y:state.faceY},e.relocate.distance,b.r,t.arena));
     m.angle=Math.atan2(state.player.y-b.y,state.player.x-b.x);m.teleported=true;b.vanished=false;

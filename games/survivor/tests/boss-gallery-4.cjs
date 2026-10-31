@@ -4,22 +4,23 @@ const assert=require('node:assert/strict'),createRun=require('./maker-support.cj
 const run=createRun(),json=code=>JSON.parse(run('JSON.stringify('+code+')'));
 run('globalThis.originalRoster=SurvivorData.copy(SURVIVOR_DEFAULTS.gallery.bosses)');
 const oldIds=['gatekeeper','frostfire','winged','assassin'];
-assert.deepEqual(json('originalRoster.map(b=>b.id)'),[...oldIds,'stone-hands','rolling-eye']);
+assert.deepEqual(json('originalRoster.map(b=>b.id)'),[...oldIds,'stone-hands','rolling-eye','mask-statue']);
 // Isolate the migration contract against both the current five definitions and a future seven.
 // The extra definitions are test-only clones, never production placeholders or gameplay coverage.
 for(const future of [false,true]){
  run(`SURVIVOR_DEFAULTS.gallery.bosses=SurvivorData.copy(originalRoster);
-  if(${future})for(const id of ['mask-statue']){
+  if(${future})for(const id of ['future-fixture']){
    const fixture=SurvivorData.copy(originalRoster[0]);fixture.id=id;
    SURVIVOR_DEFAULTS.gallery.bosses.push(fixture);
   }
   globalThis.baseSnapshot=JSON.stringify(SURVIVOR_DEFAULTS);`);
- const count=future?7:6;
- for(const length of [1,3,4,5])for(const reverse of [false,true]){
+ const count=future?8:7;
+ for(const length of [1,3,4,5,6])for(const reverse of [false,true]){
   run(`globalThis.work=SurvivorData.defaults();work.gallery.bosses=SurvivorData.copy(originalRoster.slice(0,${length}));
    for(const [i,b] of work.gallery.bosses.entries()){
     b.name='自訂王'+i;b.hp=1900+i*100;b.speed=71+i;
-    b.moves[0].weight=3+i;b.moves[0].blocks.moves[0].timing.windup=1.25;
+    if(b.moves[0].id!=='grid-roll')b.moves[0].weight=3+i;
+    b.moves[0].blocks.moves[0].timing.windup=1.25;
    }
    if(${reverse})work.gallery.bosses.reverse();
    globalThis.inputSnapshot=JSON.stringify(work);
@@ -31,7 +32,7 @@ for(const future of [false,true]){
   assert.deepEqual(json('checked.data.gallery.bosses.map(b=>b.id)'),json('SURVIVOR_DEFAULTS.gallery.bosses.map(b=>b.id)'));
   // Compare all retained editable nested values, not merely the number of entries.
   for(let i=0;i<length;i++){
-   const id=[...oldIds,'stone-hands'][i];
+   const id=[...oldIds,'stone-hands','rolling-eye'][i];
    assert.deepEqual(json(`checked.data.gallery.bosses.find(b=>b.id==='${id}')`),json(`work.gallery.bosses.find(b=>b.id==='${id}')`));
   }
   run('globalThis.saved=SurvivorData.save(work);globalThis.loaded=SurvivorData.load();globalThis.again=SurvivorData.validate(loaded.data)');
@@ -74,6 +75,11 @@ for(const future of [false,true]){
  assert.equal(run('checked.valid'),true);assert.equal(run('checked.data.gallery.arenaRadius'),200);
  assert.equal(run('checked.data.gallery.bosses[0].hp'),2100);assert.equal(run('checked.data.gallery.bosses.length'),count);
 }
+run("work=SurvivorData.defaults();work.gallery.bosses.find(b=>b.id==='mask-statue').weakpoint=null;checked=SurvivorData.validate(work)");
+assert.equal(run('checked.valid'),false,'mask weakpoint block may not be removed');
+run("work=SurvivorData.defaults();work.gallery.bosses.find(b=>b.id==='mask-statue').moves[0].blocks.moves[0].effect.charge.wallStun=false;checked=SurvivorData.validate(work)");
+assert.equal(run('checked.valid'),false,'mask charge must stun at the wall');
+
 run('SURVIVOR_DEFAULTS.gallery.bosses=SurvivorData.copy(originalRoster)');
 console.log('PASS: ID-based 1/3/4 migration and complete-roster reorder; edits preserved; save/load idempotence; invalid and duplicate identities rejected without replacing storage; no input/default alias mutation');
 
@@ -90,6 +96,52 @@ for(const side of [-1,1])for(const sample of [0,.5,.999]){
  run(`globalThis.id=limb.limbChoice(stone,1,${side},100,${sample})`);
  assert.equal(run('stone.moves.find(m=>m.id===id).blocks.moves[0].effect.limb.side'),-side);
 }
+
+// Mask Statue uses the shared charge block, wall-stun signal, and rear-only weakpoint.
+run("globalThis.mask=GAME_DATA.gallery.bosses.find(b=>b.id==='mask-statue');startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;globalThis.mb=state.boss;globalThis.mt=state.trial;mb.x=mt.arena.x-mt.arena.radius+mb.r+100;mb.y=mt.arena.y;state.player.x=mt.arena.x-mt.arena.radius+5;state.player.y=mt.arena.y;state.player.damageDisabled=true;state.bossRest=0");
+assert.equal(run('trialUsesBlocks(mt.definition)'),true);
+assert.equal(run("mask.moves[0].blocks.moves[0].effect.charge.wallStun"),true);
+assert.equal(run("mask.weakpoint.parts[0].requiresMatch"),true,'mask weakpoint must require live behind and wall-stun conditions');
+run('mask.weakpoint.parts[0].duration=8;mt.config.wallStun=1');
+assert.equal(run("SurvivorArt.lookup('character/mask-statue').sheet"),'art/characters/mask-statue.png');
+assert.equal(run("SurvivorArt.lookup('move/charge').mode"),'procedural');
+assert.equal(run('resolveBossWeakpoint(mb,{source:state.player}).kind'),'armor');
+let sawChargeWarning=false,sawWarningArrow=false;
+for(let i=0;i<120&&run('mb.posture.stun<=0');i++){
+ run('updateTrial(.05);updateBossWeakpoints(.05)');
+ if(run("mb.moves[0]?.id==='charge'&&mb.moves[0].ai.phase==='windup'")){
+  sawChargeWarning=true;const ray=run('SurvivorTrialRules.rayLength(mb,mb.moves[0].angle,mt.arena)');
+  run('drawCalls.length=0;drawTrialEncounter()');
+  if(run(`drawCalls.some(c=>c[0]==='moveTo'&&Math.abs(c[1]-${ray})<1e-6)`))sawWarningArrow=true;
+ }
+}
+assert.equal(sawChargeWarning,true,'charge windup warning was not shown');
+assert.equal(sawWarningArrow,true,'ground charge warning arrow was not drawn');
+assert.ok(run('mb.posture.stun>0'),'wall collision did not stun the statue');
+assert.ok(run("mb.weakpointSignals['wall-stun']>0"),'wall stun did not signal the shared weakpoint');
+run("state.player.x=mb.x-Math.cos(mb.facingAngle)*100;state.player.y=mb.y-Math.sin(mb.facingAngle)*100;for(let i=0;i<8;i++)updateBossWeakpoints(.05)");
+assert.equal(run("resolveBossWeakpoint(mb,{source:state.player}).kind"),'critical');
+run("updateBossWeakpoints(1.01)");
+assert.equal(run("mb.weakpointSignals['wall-stun']"),0);
+assert.equal(run("resolveBossWeakpoint(mb,{source:state.player}).kind"),'armor','rear hit must stop being critical when the wall-stun signal expires, even if the long weakpoint window has time left');
+for(let i=0;i<60&&(run('mb.posture.stun>0')||!run('mb.moves.length'));i++)run('updateTrial(.05);updateBossWeakpoints(.05)');
+assert.equal(run("mb.moves[0]?.id"),'charge','single-move statue must be able to charge again after the stun');
+// Completing a charge without a wall and interrupting it with an ordinary stun both clear no-repeat history.
+run("mask.weakpoint.parts[0].duration=2;startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;globalThis.mt=state.trial;globalThis.mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.player.damageDisabled=true;state.bossRest=0");
+for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
+assert.ok(run("mb.moves[0]?.id==='charge'"),'no-wall trial did not start charge');
+for(let i=0;i<120&&run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
+assert.equal(run("mb.previous.includes('charge')"),false,'completed no-wall charge remained excluded by no-repeat history');
+for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
+assert.equal(run("mb.moves[0]?.id"),'charge','charge must be selectable again after a no-wall completion');
+run("state.bossMoves[0].ai.phase='active';mb.posture.stun=.5;updateTrial(.05)");
+assert.equal(run("mb.previous.includes('charge')"),false,'ordinary stun interruption left charge excluded by no-repeat history');
+run("startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;mt=state.trial;mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.bossRest=0");
+for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
+assert.ok(run("mb.moves[0]?.id==='charge'"));run('mb.posture.stun=.5;updateTrial(.05)');
+assert.equal(run("mb.previous.includes('charge')"),false,'ordinary stun interruption left charge excluded by no-repeat history');
+run('mask.weakpoint.parts[0].duration=2');
+console.log('PASS: Mask Statue common charge warning, wall stun, rear weakpoint, front armor and art-manifest entries');
 function hands(side=-1){
  run(`startTrial('stone-hands');state.trial.entry=0;state.bossIntro=0;globalThis.handBoss=state.boss;handBoss.x=state.trial.arena.x-100;handBoss.y=state.trial.arena.y;state.player.x=state.trial.arena.x;state.player.y=state.trial.arena.y;state.player.invincible=0;state.player.damageDisabled=false;handBoss.rest=0;state.bossRest=0;Math.random=()=>${side===1?.999:0};updateTrial(0);globalThis.handMove=handBoss.moves[0];globalThis.handSpec=stone.moves.find(m=>m.id===handMove.id).blocks.moves[0];`);
 }
@@ -199,11 +251,12 @@ console.log('PASS: actual torso/hand manifest bounds and layer order across both
  document.getElementById=id=>menuIds[id]||oldGet(id);
  document.querySelectorAll=selector=>selector==='[data-survivor-art]'?menuNodes.filter(n=>n.dataset.survivorArt):[];
  globalThis.Image=class{constructor(){this.width=48;this.height=16;menuImages.push(this);}set src(v){this.path=v;}get src(){return this.path;}};
- trialMenu();globalThis.stoneImage=menuIds.trialChoices.children.find(n=>n['aria-label']==='石像雙手').children[0];`);
+ trialMenu();globalThis.stoneImage=menuIds.trialChoices.children.find(n=>n['aria-label']==='石像雙手').children[0];globalThis.maskImage=menuIds.trialChoices.children.find(n=>n['aria-label']==='面具石像').children[0];`);
  const get=code=>JSON.parse(menu('JSON.stringify('+code+')'));
  const fallback=menu('stoneImage.src');assert.ok(fallback.startsWith('data:image/png;test,'));
  assert.equal(menu('stoneImage.dataset.survivorArt'),'character/stone-hands');
- assert.equal(get('menuIds.trialChoices.children').length,6);
+ assert.equal(get('menuIds.trialChoices.children').length,7);
+ assert.equal(menu('maskImage.dataset.survivorArt'),'character/mask-statue');
  assert.equal(JSON.parse(fallback.split(',').slice(1).join(',')).crops.length,0,'not loaded: visible placeholder, no raw strip');
  menu("globalThis.sheet=menuImages.find(i=>i.src.startsWith('art/characters/stone-hands.png'));sheet.onerror()");
  assert.equal(menu('stoneImage.src'),fallback,'image error preserves placeholder');
