@@ -8,9 +8,9 @@
   "state": "doing",
   "branch": "codex/survivor-boss4",
   "pr": 105,
-  "brief": "Rolling Eye 20261028e固定候選的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。Dot對request #6492318413回覆#6492501348沒有patch；PR105仍draft；HUD視覺CSS已在本機修改且僅此局部HUD被接受，Boss4其餘試玩證據仍未完成。家長最新決定Boss HUD維持浮層，攻擊預警超出畫面可接受，不再預留HUD專區或要求所有tell完整可見。獨立PR #2房間與標準client synthetic round-trip已人工驗證採納，僅測路由，不代表遊戲審查。家長於2026-10-31接受本機三尺寸截圖所示的Boss HUD視覺版本（只接受HUD定位；不代表PR105/Boss4整體review、完成或合併）。",
-  "next": "沿用 codex/survivor-boss4 / PR105；先完成 Rolling Eye 1024×461 實際試玩證據：E→N→W，並靜止測 +90°，固定 PR105 候選 SHA；已完成的 740×360 與 1180×820 證據不重做。之後按原卡處理 Mask Statue。保持 card doing、PR105 Draft，不做整體 approval、merge 或 deploy。",
-  "updated": "2026-10-31T08:25:01Z",
+  "brief": "Rolling Eye 20261028e固定候選的740×360及1180×820 beam/hit已完成；1024測試#6471445903只到E→N，下一預警E，仍缺E→N→W與靜止+90°。Dot對request #6492318413回覆#6492501348沒有patch；PR105仍draft；HUD視覺CSS已在本機修改且僅此局部HUD被接受，Boss4其餘試玩證據仍未完成。家長最新決定Boss HUD維持浮層，攻擊預警超出畫面可接受，不再預留HUD專區或要求所有tell完整可見。獨立PR #2房間與標準client synthetic round-trip已人工驗證採納，僅測路由，不代表遊戲審查。家長於2026-10-31接受本機三尺寸截圖所示的Boss HUD視覺版本（只接受HUD定位；不代表PR105/Boss4整體review、完成或合併）。 父雲端 2026-10-31 真實 UI 觀察（固定 PR #105 head cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1／20261031d，1188×761，未注入 state）：15:00:26.086 向右箭頭預警；15:00:27.115 沿線衝撞玩家並扣血；15:00:29.148 撞右牆後見暈眩圖示與左側弱點；15:00:31.091 恢復後再次向左衝撞。只記錄觀察，不推論正面傷害、弱點增傷或精確 2 秒；不代表三尺寸／整卡驗收。",
+  "next": "Mask Statue 20261031c 已由既有非作者 reviewer 第 2 輪 approve，完整 --layout 獨立測試 exit 0；依本輪授權不 commit/push。Boss4 仍需 Dot 雲端補 Rolling Eye 1024×461 E→N→W 與靜止 +90° 試玩；面具專屬素材待視覺驗收。",
+  "updated": "2026-10-31T15:05:25Z",
   "updatedBy": "codex",
   "reviewers": [
     "luna",
