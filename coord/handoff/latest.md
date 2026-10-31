@@ -1,5 +1,135 @@
 # 目前交接
 
+## 校正：共享 Lingo coordinator 正在每 60 秒輪詢；Erin 尚未接入（2026-10-29T10:08:20Z）
+
+- 本機只讀核對到 `com.stasischen.lingo-coordinator` 的 launchd job 為 `running`、週期 60 秒、last exit 0；家長確認設定來源為 release-aggregator PR #411 與 lingo-agent-exchange PR #1，部署版 `41b52b4`。這是共享 Lingo coordinator，不是已停用的 Erin 專屬 `com.stasischen.erin-watch`；先前「舊 Erin watcher 停用」沒有錯，但不能推論 Mac 上完全沒有輪詢器。
+- PR #443 `codex/prod-cross-project-resume` 目前 open，published HEAD `5a785cef367444e0a4d1f026f9654088c9d4bebf`，default-off ledger/CAS 有 Lingo 與 synthetic adapter；尚未把 verified exchange result 接進 result adoption、原始專案 thread routing 或 started proof，也未部署。既有 60 秒 coordinator pass 可作 Erin 新 adapter 的事件入口，不需要先建公網 webhook；但單純加 PR #2 到 sources 清單仍會錯送既有 manager，不能自動續回 Erin。
+- PR #2 synthetic `dot_exchange_client` request 已在 PR105 source `a3d314c` 上人工 `find`／`receive` 成功；不代表自動接續。已將 Erin 綁定需求送給正在做 PR #443 的 session：在現有 deterministic poller 上加入 explicit Erin adapter/PR #2 allowlist、validated result→shared CAS→exact Erin thread，queue receipt 與實際 started evidence 分開；維持 default-off，不切部署設定、不動 launchd。
+- 推薦先重用現行 60 秒 poller做離線整合與 Erin/synthetic replay，再經獨立審查才開 Erin 單專案 canary；目前不另建 push ingress、不更動線上 sources。若之後仍要求 webhook push，才需要 HTTPS endpoint 與簽章 secret 基礎設施。
+
+## Erin PR #2 標準 client round-trip 已人工收件採納；push receiver 缺入口（2026-10-29T10:03:13Z）
+
+- Dot 在 PR #2 回覆標準 result revision 3 [#6493667041](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493667041)：request、PR105 source `a3d314c180bfccea23a380ed86a4b709fee55528`、manifest/bundle hash 全匹配；coverage 陣列及 canonical manifest 通過來源 parser。內容是 synthetic `label(0)` 回傳 positive 的 `changes` finding。Mac 對相同固定 SHA 執行來源 client `find`／`receive`，已寫入 repo 外私有測試 workdir 的 `review.md` 與 `adopted.json`；PR #2 direct request 先於 #411 pointer 到達，沒有重複執行。這僅接受合成路由測試，不是遊戲程式 approval。
+- 房間流程已證實：PR #2 獨立 webhook 能喚醒 Dot，來源 client 綁 `rooms/erin.json` 可發布、人工 `find` 並驗證／採納標準結果。尚未證實來源 Codex session 自動接續；client 明確無 auto-poll/wake。
+- 家長選擇 push receiver。只讀盤點發現沒有既有公網 ingress、tunnel 或 GitHub repo hook；要實作仍缺可到達的 HTTPS endpoint、GitHub event 註冊／簽章 secret 儲存，以及 receiver 到來源 thread 的授權固定綁定。家長已被詢問要提供現成 endpoint、授權新 hosting/tunnel 規劃，或暫維持人工；未取得入口前不部署、不恢復 launchd、不建立 credentials。
+- Boss HUD 設計已確認維持浮層，warning 可超出畫面；這解除「預警必須完整在視窗」的設計限制。HUD 實作仍等 Dot 精確 patch/Luna 獨審，未由主控改遊戲程式。
+
+## Push 自動接續方向已選；尚無可用外部 webhook 入口（2026-10-29T10:02:32Z）
+
+- 家長選擇建置 push receiver，不恢復每分鐘 polling。獨立盤點 Erin、release-aggregator、agent-coord-kit 與 GitHub repo hooks 後，沒有既有 inbound webhook/tunnel/public host：release-aggregator 只有每次 coordinator pass 的 REST polling；kit 的 inbox polling 預設關閉、ntfy 僅 outbound；四個相關 GitHub repo 均無 repository hook。未檢視任何 secret 值，也未新增 hook、服務或帳號。
+- 要讓 push flow 真正可用，仍需明確提供／授權一個可從 GitHub 到達的 HTTPS ingress、GitHub webhook event 註冊方式與簽章 secret 存放路徑，以及本機 receiver 呼叫 Codex queue 喚醒 Erin source thread 的授權與固定 thread binding。只建本機 HTTP listener 無法接收 GitHub 外部事件；GitHub Pages 是靜態站，不能當 webhook receiver。
+- 目前可安全交付的下一步是先確認現成 ingress 或由家長指定可使用的 hosting/tunnel 與 secret 管理方式；取得後再把 receiver 的精確 patch 派給 Dot、交 Luna 獨審，Mac 套用及驗證。未取得入口前不部署、不修改 auth、無 GitHub Actions CI、source session 仍人工 `find`/`receive`。
+
+## 家長確認 HUD 浮層可保留；標準房間回程被拒，source 自動接續需另定喚醒方式（2026-10-29T10:00:34Z）
+
+- 家長確認 Boss HUD 維持浮層，預警提示超出畫面可接受；不再要求為所有方向／位置保證 tell 完整留在可視區。PR105 的 HUD 設計阻塞已解除此項產品政策問題，實作仍須照 Dot patch → Luna 獨審 → Mac 精確套用與完整測試，不能由主控補寫新邏輯。
+- 標準合成房間結果 [PR #2 #6493384194](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493384194) 正確辨識零值缺陷並綁定 request/source/manifest/bundle；但 `coverage` 回傳為 object，Mac `receive` 依現有 schema 拒絕（`result coverage must be a non-empty list`），因此尚未採用。已在 [PR #411 #6493631777](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6493631777) 要求同 request 僅修正 metadata：coverage 改一列 array，附 canonical manifest preimage，不重做 fixture review。PR105 source SHA 仍 `a3d314c180bfccea23a380ed86a4b709fee55528`；修正結果須先在此 SHA 用 `receive`，完成後才可提交本 handoff 變更。
+- 獨立只讀檢查確認：release-aggregator 的 inbox 目前由 coordinator pass 呼叫 GitHub REST polling，run-once 文件預設每 60 秒；無 inbound webhook listener。結果驗證器只把結果落地，frozen request 沒有原始 source thread 綁定；agent-coord-kit 的 Codex thread queue 需本機 coordinator 主動呼叫，亦無 GitHub event receiver。舊 launchd 依家長先前指示保持停用，未恢復、未新增排程、未改碼。
+- 自動接續缺的不是 Dot webhook（PR #2 新 comment delivery 已獨立驗證），而是 GitHub 結果事件抵達 Mac 後，安全驗證並喚醒對應 Erin Codex session 的 push receiver／授權執行點。需先由家長指定是否允許恢復既有 60 秒本機 polling、批准新 push receiver 所需基礎設施，或暫時維持人工 `find`／`receive`；目前沒有已授權的事件入口，不宣稱自動續接已完成。
+
+## Erin 房間 PR #2 接線：獨立通知已驗證，標準 client 回程待完成（2026-10-29T09:44:53Z）
+
+- 直接在私有房間 PR #2 發送合成通訊請求 [#6493131098](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493131098)，沿用 Dot 指定的 request ID `dot-erin-room2-transport-check-20261028`、event ID `mac-erin-room2-transport-check-v1` 與 nonce `ERIN-ROOM2-20261028`。Dot 在同房回覆 [#6493165491](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493165491)，回顯皆相符，回報 PR #2 `issue_comment/created` webhook delivery `f1a1b1a0-d37b-11f1-90d2-0d83b96dbab3`、非 PR #411 relay、非人工巡檢；這證實該次新房間事件獨立通知到 Dot。
+- Erin Mac coordinator 以一次定向 `gh api` 讀回並人工核對後，在 PR #2 留來源收件回執 [#6493232888](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493232888)。採用範圍僅限通訊回執；來源 session 自動喚醒未驗證，duplicate/recovery 未測，不代表正式程式審查或任何產品批准。
+- 純通訊回執不符合來源 client 的 `kind=result`／request、source、manifest、bundle 綁定 schema，因此另以 `stasischen/erin` PR105 HEAD `a3d314c180bfccea23a380ed86a4b709fee55528`、`docs/tasks/DOT_SOURCE_CLIENT_20261027/rooms/erin.json` 凍結隔離 synthetic fixture，綁定房間 PR #2。標準 request `b4b48c859dddff9261246f84cede7beff233528f1d36a3f198d6851825619b74`（manifest `6f46192db67b460d96ff9d6048554844fcd3d50656bf88f9f6f34e5c5faf45d0`；bundle `4921dedf51799783412170adb4800ea62db30edffce370ead435b449232cd8a9`）已發布於 [PR #2 #6493248556](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6493248556)。只含零值標籤的固定小缺陷，不讀 Erin source、不執行程式、不改 repo、不做瀏覽器或產品審查。
+- 來源 client 的一次性 `find` 尚未看到符合標準 marker 的結果；已按 rollout 在舊房 PR #411 發出僅含固定 URL／hash 的通知 [#6493299880](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6493299880)，要求 Dot 把標準結果回 PR #2。等待結果期間不重發、不把任何 PR105 frozen request 移房。正式 client `receive`、來源自動接續、duplicate/recovery 仍未驗；PR105 目前仍 draft、HEAD 未變。收到標準結果後先在此 source SHA 上用 client 精確 `receive`，再依結果更新正式任務及交接；不新增 scheduler 或輪詢。
+
+## StoneHands slice independently approved/applied, full Mac128PASS (2026-10-28T05:58:26.429184+00:00)
+
+Dot full replacement47577bytes/SHA256 fc665a8ff81640dba645d2c6c7d39e6802369b82ec3a561980f814a7e476d4e3 at base529078cea6200ced9d9382073e403db5dca3bef0 includes exact19path scope,16changed paths. New canvas fixture supplies valid dimensioned transparentPNG dataURI and retains drawCalls; no pixel acceptance inferred. All prior15production/test/art postimages matched the corrected priorproposal; only helper added. Canonical result received from actualGitHub, onlyauthorproposalready. Late priornotifications reconciled, unrelatedLingo tasks untouched.
+
+Luna independently approved r4, privatechecked then exactly applied to source,16/16postimages/bytes match; targeted10/10 exit0,14JS/CJSsyntax and generatorAST pass, diffcheckpass. Public review coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r4.md. Core guarded/open/closing render contract, true target warn/hit/dodge, alternating limbs, interrupted-state cleanup, actualmanifest menu crop/load/error/reopen, Maker controls and legacydata regressions verified in that scope. Prior r1/r2/r3 changes and real failure logs remain, not rewritten approve.
+
+Root separately mechanically bumped internal20261028d, verified onlyc->d resourceversions/cache plus newmanifest PNG precache; full Mac node games/survivor/tools/test.cjs --layout exit0,74testfiles/128PASS/164files before-after identical. Full logs/hash/provenance private. First new real selectable Boss is implemented at defaults5; Eye/Mask are absent, not stubs. Automated realChrome/layout is not Dot cloud gameplay; wholecard/UI/defaultmanual difficulty is not accepted yet.
+
+Commit/push this coherent slice, then repin actualfullSHA to Dot for RollingEye; Mask follows, samecard/branch. Preserve Stone+original4 and oldsaved1/3/4 edits, keep future7fixtures clearly synthetic. Only after all3Bosses and fulltests pass create onePR/immutablepreview, Dot self-cloud3sizes, nonauthorMac finalgate/merge/Pages/versionverify. No currentPR/candidate, productionstillb, boss5unstarted. Godot11 applicable data/pureblocks/serial events/16px source and worldcoords/tests addressed, no runtimeport/audio exports claimed.
+
+---
+
+## StoneHands r3: corrected hit-stop test, shared canvas fixture gap (2026-10-28T05:15:54.486274+00:00)
+
+Latest exact53709byte patch / SHA256 6b18ab254381569325be1556019d90215e6632ec1f0fe4fb7f059c9a5fac692f at A434 base explicitly supersedes the earlier menu proposal after sanitized real Mac runtime evidence. Only test postimage changed from ed095; all production/menu/core/PNG bytes match prior static review. Root selected the corrected canonical result for formal receive; earlier result was held, not falsely approved or applied.
+
+Luna r3 review: coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r3.md. Private exact archive/15postimage test shows four suites blocked by shared tests/maker-support.cjs canvas element lacking toDataURL: Boss4/Boss2/Boss3/weakpoint-combat, with6other targeted suites passing.13JS/CJS syntax and generatorAST pass. This is a test DOM API gap, not evidence that browser PNG export is broken; no source apply/fullsuite/layout/cloudQA. Source stayed clean throughout except Luna's new review. Prior scratch a010 hitstop failure was real and preserved, followed by corrected independent test scenarios; no production freeze removed or damage expectations weakened.
+
+Controller authorizes the single exact helper path as19th allowed path, with fresh source/hash manifest. Dot must supply the fixture change in a full replacement, preserving production frame cropping, all old assertions/golden and meaningful separate menu regression; no local controller/reviewer fix. Keep source c/migration124PASS/162bytes unchanged for this coordination-only commit, then rebind actualHEAD. All private logs/raw/scratch stay outside repo; this safe summary is committed. Eye/Mask and wholecard PR/preview/actualDotQA still pending; productionb.
+
+---
+
+## StoneHands r2 full static review: core fixed, menu frame still changes (2026-10-28T04:52:39.180817+00:00)
+
+Exact replacement48097bytes / SHA256 a0104291930d2364f7d63bbbadeefbaeaa9a3bc9b8874b009b5a277ffc8c3839 at base df5670d54209985633aa6ba254e29974090cfea3 remains an author proposal. Luna batch-reviewed all14 changed files and confirmed core/closing exposure and render ordering fixed, with no other static blocker found. Review: coord/reviews/survivor-boss-gallery-4/luna-stone-hands-r2.md. No application, code/tests/generator execution or browser acceptance occurred.
+
+Remaining blocker: trialMenu feeds the full48x16 three-cell sheet to an84x84 img, stretching body plus both hands together. Dot must select the manifest frame or equivalent correct image and add real menu-frame regression; engine/gallery.js is already within18 allowed paths. Root does not author the fix. Next full replacement must bind the actual new coordination-only HEAD and receive independent review again.
+
+Game remains migration-only internalc with prior full74testfiles/124PASS/162unchanged hashes; production stillb, no boss4PR/preview, Eye/Mask pending. Review was committed first as b34aaa8; this followup completes controller card/handoff metadata after an input encoding failure, without rewriting history or changing game files. Full private records and old reviews preserved.
+
+---
+
+## StoneHands提案獨審changes，未套用，退回Dot修正（2026-10-28T04:22:41.883600+00:00）
+
+完整提案41,696bytes/SHA256 ce777cee22c215cfe1ad69f14d2095a102257b35da5d1ab178c1380b0646cf0b，13text加原創48×16三格PNG。主控核過完整來源/preimage/patchbytes/hash/18path與PNG exact256bytes/hash；合法收件只代表作者提案ready。Luna另獨審在base d4542b73968cc1940bcd60e8ecaa7518307a2f5a判changes，見coord/reviews/survivor-boss-gallery-4/luna-stone-hands.md。
+
+阻擋：攻擊手windup舉起時另一隻手仍在home守位，實際圖塊遮住胸口；弱點系統卻在windup開core，上層紅標不代表核心露出。新測試只看倍率/姿勢高度，沒有驗證曝光。Dot須修正清楚可見的曝光姿勢並補兩手/核心窗口的幾何或呈現回歸，含窗口起迄，不讓提示蓋住遮擋就宣稱通過。Root/Luna沒有代寫修正。
+
+此次完全未套用提案，也未跑提案測試/生成器/瀏覽器。遊戲仍migration內部20261028c、先前完整74test檔/124PASS/162hash；目前162檔全相同，只有本公開review/卡/handoff新狀態，不無意義重跑或升遊戲版。正式仍b，無boss4PR/候選。接著以本次新實際HEAD重新綁Dot完整修正版，保持同卡/同分支，舊提案/審查/raw不抹除。過期原始migration通知已對照後來重綁/獨審/全測提交處理為歷史，不重複套用。
+
+---
+
+## boss4增量1完成：僅資料遷移，三王仍待實作（2026-10-28T02:58:52.107634+00:00）
+
+Dot原生已實際承認作者授權並交精確7931-byte patch，SHA256 8ff56592199f582070c7797a5efc5e317de8adf2445983235e1310d9f0fa6ab2，綁base68e2a8e0528658c3bec0d1b91810c27d47255849；標準回件已收，僅code_patch_proposal_only、wholePR=false/card_complete=false。source讀取與hash/語意範圍有分列，不冒稱全部語意看完；原scope-only失敗與未發布prepare歷史保留。
+
+Luna非作者獨審後只精確套用schema.js與新boss-gallery-4.cjs；pre/postimage/bytes完全相符，相關舊2/3與新migration測試通過，紀錄coord/reviews/survivor-boss-gallery-4/luna-migration.md。這段為已知ID的1/3/4王存檔遷移、保留編輯、重排、錯誤拒絕/冪等/不改原件；synthetic7只是測試fixture，沒有把三個新Boss塞placeholder上線。Root沒有代寫邏輯。
+
+Root接回pen後機械升內部版20261028c，同步?v=/sw；完整node games/survivor/tools/test.cjs --layout在Mac exit0，74測試檔/124PASS，162檔before/after完全一致，gitdiffcheck通過。版本生成差異另核僅舊b→c。完整logs/hash/來源原件留repo外。尚無本卡PR/公開候選，正式仍20261028b，沒有把此增量當Boss4功能或Dot雲端驗收通過。
+
+下一段同卡由Dot實作石像雙手，之後眼方塊、面具；每段以實際新提交重新鎖來源，Luna重審再套，Mac每次實質程式增量全測/升版。主控已找到舊gallery-2/3測試固定總數4及pop語意問題，下一請求會明列這兩精確路徑可修改，但保留舊1/3/4王自訂資料migration與原四王行為/紀錄的真回歸，不削弱測試。全部三王完成才開唯一PR/隔離預覽，再Dot自己雲端三尺寸功能操作、非作者Mac finalgate/merge/Pages。boss5未開工。
+
+---
+
+## boss4恢復派送：家長回報已完成Dot原生作者授權（2026-10-28T02:38:56.074841+00:00）
+
+家長已回報完成前述原生確認，主控恢復doing、waitingFor清空，依最新實際HEAD重新建立同卡successor request。Dot負責完整三王程式patch文字提案；Luna不同session獨審及精確套用；Mac負責完整測試/版本/Git/PR/隔離測試站，Dot自己雲端實測，非作者Mac最終審查/合併/Pages。未授予Dot直接repo寫入/PR/merge/安全設定。原生scope仍由Dot實際核對，不拿repo聲明冒充平台設定。
+
+原scope-only changes及不合法coverage object保留，不改raw或假採納；新正式回件要求合法非空coverage list、字串gate_review、來源/manifest/bundle與patch/pre/postimage綁定。現在仍無boss4程式或PR；下一步等真正patch後獨立審查，而非再評估是否啟用流程。boss5未開工。私人原話/原始交換/logs/screenshots留repo外，公開協作紀錄正常commit在本工作分支。
+
+---
+
+## boss4等待Dot原生程式提案作者範圍確認（2026-10-28T01:49:41.699448+00:00）
+
+家長已直接授權接續boss4及Dot作者→Luna獨審/套用→Mac PR/預覽→Dot雲端驗證→非作者Mac合併；受信任跨session讀取亦核對到人類原始指示。不是缺Mac主控的家長同意。Dot原生回件明確表示當前收件範圍只有技術/內容審查與隔離試玩，不包含承接三個新Boss完整實作patch；要求在其原生對話確認該作者範圍。主控已請家長一次補確認Erin正式派卡的程式提案作者角色；不把既有Maker草稿授權拿來擴權，不改平台/安全設定，也不改叫別的作者代寫後自批。
+
+已送精確公開base0fc5331e8a9b695eb81f77fd416580c6b89a1668、46來源清單/15允許路徑及完整request/manifest/prompt preimage；已回讀一致。回件verdict changes、request_scope_check_only，只讀request，未讀來源/產patch/跑測試/試玩。原始回件coverage是object，不符標準非空list，正式收件隔離；僅人工核對來源與綁定後記錄實際block，不假稱adopt，不改raw。私人交換識別、原始人類訊息與完整原件留repo外。沒有真正工具/平台拒絕。
+
+當前branch codex/survivor-boss4，卡blocked/waitingFor:user，尚無PR/新程式/新遊戲測試；正式站仍20261028b。PR104完工卡與部署交接已在boss4開工commit0fc5331提交並push，不會永遠留本機。此次只提交可公開blocked狀態與路線摘要；原Dot請求仍綁原base，未來授權確認後必須依當時實際HEAD重新固定successor request，不把新patch硬套舊base。下一階段Luna獨立精確審查/套用；boss5未開工。不輪詢、不排程、不自動喚醒。
+
+---
+
+## boss4已獲家長授權開工（2026-10-28T01:37:05.410403+00:00）
+
+正式卡survivor-boss-gallery-4，分支codex/survivor-boss4從最新origin/main a0b10ad63774bc9db8950cfdff6094c169a8d5d9建立，尚無PR。三王：石像雙手／翻滾眼方塊／面具石像，規格見coord/tasks/specs/survivor-boss-gallery-4.md。Root只寫協作與機械作業；Dot是程式patch作者，Luna不同session獨審/精確套用，Mac全測/版本/PR/隔離預覽，Dot自己雲端實測，非作者Mac finalgate/merge/Pages確認。當前唯一寫入者Root；交patch給Luna時停筆。boss5未授權開工。
+
+家長問「完工交接為什麼不commit？」；現行規則是merge後完工／部署狀態先本機與PR留言，再隨下一張已授權分支提交，避免只為狀態改main。本次PR104的done卡及正式部署紀錄即隨boss4開工提交，並非協作紀錄永久不進Git；原始對話、screenshots與logs仍私有。以下「未commit待下一分支」保留為當時歷史，已由本次接續處理。
+
+Godot§11：本卡要求資料驅動、共用純規則/秒與世界座標、可序列化事件、manifest原始像素與可移植輸入/輸出案例；只調三王相關接點，不做全引擎重構/JSON抽離/音訊匯出，Godot未實機執行。預期下一遊戲版本20261028c，Dot patch不碰版本生成檔，由Mac另行機械同步。
+
+---
+
+## PR104已獨立批准、merge commit合併及正式上線b（最新完工）
+
+PR104：https://github.com/stasischen/erin/pull/104 。最終非作者判定approve見coord/reviews/survivor-boss-gallery-3/grok.md；被審內容15b7b4b420de212d5589e2adfc06bbf133137df3，review-only HEAD be0786bc335717a5a9c0ed757e8f6aaf7f6a0a1c，merge SHA a0b10ad63774bc9db8950cfdff6094c169a8d5d9。GitHub API確認MERGED與兩parent，使用精確HEAD --merge，無squash／force／checkout或直接push main。GitHub拒共用作者帳號正式approve，已依規則留不同session獨立判定留言，未假稱GitHub正式approval；歷史changes與各partial不抹除。
+
+該merge的既有Pages run40604882840 completed/success：https://github.com/stasischen/erin/actions/runs/40604882840 。全新暫存profile真Chrome實際開https://stasischen.github.io/erin/與https://stasischen.github.io/erin/games/survivor/，兩頁complete、視察正常，遊戲ready／有效canvas、version20261028b、manifest含trial-blocks；這是上線載入確認，不冒充正式站重打整卡，不清使用者資料。Root另核確切merge tree161個source/test/cache hash全符受測13851b6。正式版本現已b，不再是i。
+
+本版新增雙刃刺客4/5連斬／影步／苦無及紅弱點、每王最佳成功時間；修方向鍵釋放、Maker數字控件、共用上方Boss HP與雙子存活者、結算殘留。Mac雙方完整含layout123PASS／73test檔／161hash，Dot自有雲端normal-auto真勝利52.56存讀、五Maker欄UI循環、CUSTOM A12格stun/redmanual/twin/Maker13.01隔離及B可見鏈路共同經非作者整PR核實；CUSTOM不當default-manual配平，精準數學／時序由預設Mac證據分層覆蓋。A格式重發只換envelope，原件保留。影步active旁文.12與range輔助讀值.1是非阻擋顯示差異，實際資料未被編輯；手動節奏／Erin手感及Godot實機未宣稱驗收。
+
+主控下一步預計boss4，仍等家長意見，boss4／5未開工。新流程已實際串通：主控開卡→Dot精確patch→Luna獨立審查與機械套用→Mac完整測試／Git／PR／固定預覽→Dot雲端實測→非作者Mac finalgate／merge／Pages；未新增GitHubCI、排程、模型輪詢或恢復watcher。GROKBOT恢復後依家長指示交回角色，交付本摘要／卡／審查與本機私有原件索引，不自動切換或接卡。
+
+本次done卡與latest只更新本機、未commit，依流程隨下一個家長授權分支提交；不為寫完工狀態直接動main或推已合併分支。原始對話／交換識別／完整logs／screenshots仍repo外。
+
+---
+
 ## A／B作用域證據已收齊，交非作者做整PR最終判定（最新）
 
 受測及公開候選source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b。主控只彙整證據，不自行批准自己早期實作；本提交僅公開coord紀錄，161個受測source/test/cache與該source完全相同。
@@ -295,3 +425,169 @@ PR：https://github.com/stasischen/erin/pull/104 。實作與完整測試對應 
 ### l 版受測修正 SHA
 
 `ab260aa8d96090656a8c168d60a2a9a2c595e941`／20261027l，之後只有交接及卡片狀態的純metadata更新；160個受測程式／測試／快取檔相同。正式重審及新候選仍以PR104最新完整HEAD核對。實作者完成同分支push後停止寫入，不自行審查／合併或送Dot。
+
+## Boss4 階段測試版 PR105 已發布（整卡仍進行中）
+
+- 家長同意提早提供石像雙手階段試玩。Draft PR：[PR105](https://github.com/stasischen/erin/pull/105)。候選固定遊戲來源 `2bb7270f8590f34bdaedb3d4d1255fa7cd50326d`／版本 `20261028d`；測試版：[石像雙手](https://stasischen.github.io/erin-preview/pr-105/2bb7270f8590f34bdaedb3d4d1255fa7cd50326d/games/survivor/)。
+- 候選 manifest SHA-256 `888f7bad4ddea1a36109f26dbbe3d088ef500b7df6c1a07d15d37c9725b16699`。Pages publication commit `5ddd531cf975b009bad35780491e3fff1263cc47`／run `40642665228` completed/success；線上舊285檔及新增71候選檔共356個HTTP200與SHA-256核對一致，舊檔和四份既有manifest payload完整未變。Mac隔離發布工程A/B驗證通過。
+- Mac Studio來源 `node games/survivor/tools/test.cjs --layout` 已在固定程式SHA通過（exit0、74測試檔／128 PASS，164個程式／測試／快取hash一致），`git diff --check` PASS。只有Pages部署，沒有GitHub遊戲CI。PR保持draft；石像雙手是三Boss卡片中的第一個階段，翻滾眼方塊及面具石像未完成、未進此候選，正式站仍為 `20261028b`。
+- Dot的PR105雲端三尺寸階段實玩已送，尚無結果；Mac工程／HTTP驗證不冒充Dot實玩。PR的測試版SHA、manifest及發布commit見PR描述。
+- 下一步：保留目前候選讓家長試玩；收到Dot結果後記錄範圍與問題。繼續同卡Rolling Eye patch（需基於最新PR分支SHA重新綁定）→ Luna獨立審查／精確套用 → Mac完整測試 → Mask Statue；整卡與最終獨立審查完成前不merge。
+
+
+## PR105：收件器漏讀已查明；Rolling Eye 等修正版
+
+- PR105仍是draft，遠端source head `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`。先前回報「沒有Dot結果」是收件器錯誤：#411留言第一行帶 `recipient=mac-manager`，本機精確比對只接受不含recipient的舊格式，因此靜默漏讀。沒有重送舊request；改從GitHub原留言讀回原文，只在本機normalized副本移除該marker欄位，原始JSON/body保留，兩個結果都通過既有request/SHA/hash validator。修接收器工具尚未包含在 Erin 程式碼變更中。
+- Stone Hands frozen 20261028d候選三尺寸補測回 `changes / partial_evidence`：1024×461核心攻擊顯示105、Boss HP 100→95；dash位移三尺寸都觀察到；1024×461有一組警示到撞擊。各尺寸連續左右交替且身份與impact frame清楚仍未證實。這是證據缺口，不是已診斷遊戲缺陷。只補此缺口的新雲端請求已送Dot，僅測固定公開候選，不改Maker/程式/HP。
+- Rolling Eye patch proposal以精確source85e及12個變更路徑（全屬19項允許路徑）綁定，patch與postimage hash機械核對通過；Luna獨立審查判 `changes`：朝向/畫面旋轉與真實格步方向脫節；beam權重為0時序列停滯；Maker顯示不生效的半徑/移速欄。詳見 `coord/reviews/survivor-boss-gallery-4/luna.md`。尚未套用，未跑遊戲測試。
+- 已請Dot基於同一個未變的85e提交修正版，新增朝向、多方向格步、beam=0與Maker實際控制測試；同時請Dot補Stone缺少的三尺寸交替落擊觀察。修正版仍需Luna複審，再機械套用、Mac跑完整 `node games/survivor/tools/test.cjs --layout`，發佈新的SHA固定測試版後才做Dot雲端實玩。PR105整卡、Mask Statue、approve/merge均未完成。
+- PR公開進度：[Dot補測](https://github.com/stasischen/erin/pull/105#issuecomment-6464917262)、[Luna changes與Rolling Eye修正](https://github.com/stasischen/erin/pull/105#issuecomment-6465088180)、[新Stone缺口補測](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465118541)、[Rolling Eye修正版請求](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465082162)。
+
+
+### PR105 請求完整性預檢補充（待Dot重驗）
+
+- Eye revision與Stone Hands證據補測的兩份GitHub回覆都標為 `changes / incomplete`，僅屬 integrity preflight，沒有重跑遊戲或 UI。直接比對本機凍結 `source.json` 後，來源端的 `manifestHash` 可由完整manifest重算吻合；兩份預檢回報的「舊格式重建值」則剛好等於移除 `exchangeRoom` 欄位後的hash，確認這是新舊manifest格式不一致，沒有證據指向bundle或source內容損壞。
+- 已分別向原兩個request送出metadata-only補充，含精確凍結 `request.json`、`source.json` descriptor/manifest preimage及 `SHA-256(UTF-8(json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":"))))` canonicalization。原request、source、scope及bundle都未變；請Dot只重驗manifest完整性，不重跑程式審查或瀏覽器測試。
+- 補充留言：[Eye manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465306269)、[Stone manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465306797)。收到Dot明確重驗前，兩項 request 狀態仍維持 incomplete，Stone先前partial_evidence、Luna對patch的changes也都不變。
+
+
+### PR105 Rolling Eye v3 patch 已收，等待Luna複審
+
+- Dot確認Eye revision原request的manifest preimage已核實：hashed manifest含 `exchangeRoom`；完整preimage及source canonicalization重算完全吻合。見[完整性確認](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465602032)。原source仍為PR105 head `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`。
+- 新v3提案 `approve / proposal_ready_for_independent_review` 只表示可送Luna審查，不是程式審查通過。proposal SHA-256 `e425f7fa473ac53be6ad98337c00c4600d77d4927cb85b445c6283d245e4c520`、patch 51,039 bytes；主控用原normalizer/validator驗request、source、manifest、bundle及作者，並在exact-base scratch驗 `git apply --check`、11文字postimage與1張PNG postimage SHA/bytes、所有12條變更路徑均在19項allowlist。v3新增112×16 RGBA PNG（237 bytes），只在本機查看。
+- v3聲稱修正前版三項Luna findings：實際格步方向驅動朝向/眼部/光束；beam disabled時安全輪轉並拒絕兩招全disabled；隱藏不生效Maker控件。已把精確patch與原始回覆交Luna再審；未套用、未跑CJS、Mac完整 `--layout`、素材產生器或瀏覽器。PR105保持draft。
+- Stone Hands結果仍維持 `partial_evidence`；Stone preimage addendum已送出，但截至本紀錄尚無Dot對其manifest完整性的確認，也未補跑左右手撞擊序列。不得把Eye preflight完成推廣成Stone驗收通過。
+- 本段目前等待Luna v3 verdict及Dot Stone完整性/落擊回覆；請照既定流程接續。
+
+### Rolling Eye v3 Luna 複審：仍需修正面內扭轉
+
+- Luna確認v3已修正前版三項問題，但對完整patch仍判 `changes`。新的blocking reproduction：face0起始走E→N→W，最後face normal回face0但signed roll總和+90°；active transit結束後程式只保存face，renderer回未旋轉face0，丟失眼面扭轉。face art不是90° rotationally symmetric；同一normal也可能對應不同面內twist。詳細審查檔在 `coord/reviews/survivor-boss-gallery-4/luna.md`，v2記錄保留於 `luna-v2.md`。
+- v4修正請求已送Dot，source仍綁PR105 head85e；要求保存完整cube orientation/等價的normal+twist，E→N→W靜止姿態保留+90°，另測不同路徑到相同normal但扭轉不同時的穩定render/frame，並保留v3前三項修正。請求內已明列supersedes，且已附新的exact request/manifest preimage，避免重複完整性阻塞：[v4 patch request](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466814725)、[manifest preimage](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466818564)。
+- PR105仍draft、遠端head未變85e；v3未套用，沒有跑新遊戲測試或瀏覽器測試。[PR更新](https://github.com/stasischen/erin/pull/105#issuecomment-6466823402)。
+
+
+### PR105 Dot 收件漏讀原因與 Stone 窄範圍補測（2026-10-28）
+
+- Dot 的 Stone 補測回覆一直存在於 [PR #411 #6466710501](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466710501)。我先前說「還沒確認收到」是收件器漏讀後的錯誤推論：本機 exchange parser 只接受不含 `recipient=` 的舊 marker，遇到 `recipient=mac-manager` 就因精確比對失敗而跳過。原始留言沒有遺失；此後直接從 GitHub 讀回並以原始 request／source／manifest／bundle 綁定驗證。這是工具接收缺陷，修復及回歸測試尚未包含在 Erin repo。
+- 另有獨立的 manifest preimage 對照問題：Dot 先前重建時漏掉 hashed manifest 的 `exchangeRoom`；[#6465603733](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6465603733) 核對補充後確認完整 preimage。這個 hash 對照問題與「收件器看不到留言」是兩件事。
+- Stone Hands 結果 [#6466710501](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6466710501) 已在本機按固定 request、source SHA `2bb7270f8590f34bdaedb3d4d1255fa7cd50326d`、manifest、bundle 與預覽版本 `20261028d` 驗證。Dot 的結論僅核准三個 viewport 各兩次左右手交替 warning→impact 序列；1024×461、740×360、1180×820 皆有兩段序列。因交換格式把 viewport observations 放在 `coverage`（而現有 intake validator 把該欄當檔案覆蓋率），只在本機標準化副本搬到 `viewport_results` 後跑原 validator；原留言與證據未改。這不是 Stone 全功能、整卡、PR 或合併核准。
+- 補測記錄另發現 740×360 的 raised hand top 與 HUD 重疊。Dot 此次 scope 只核對左右手預警／撞擊序列，故重疊仍是待修的 UI 問題；不把窄範圍 approve 擴大解讀。待 Rolling Eye v4 的同檔修改解決後，另基於當時最新 PR head 向 Dot 要 Stone HUD 修正，再對最後固定候選重測。
+- PR105仍為 draft，remote head維持 `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`；尚未套用任何 patch，也未因這次收件核對重跑遊戲測試。
+
+
+### PR105 Rolling Eye v4 Luna 核准、Mac 套用與完整測試（2026-10-28 11:28 UTC）
+
+- Dot 原始提案 [#6467328114](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6467328114) 綁定既有 request、source `85e22bbfe749aa244b9fa87a46133bd90e3c5a0d`、manifest與bundle；結果 `approve` 僅 `code_patch_proposal_only`，明確不是獨立程式審查、整卡通過或合併授權。完整提案57,641 bytes，SHA-256 `94876616a2e9a629bbb5b2f5cf93e38e32764c8ef4dc533aecdbd7cb16edadb0`，明確取代未套用的v3。
+- Luna獨立複審通過，詳見 `coord/reviews/survivor-boss-gallery-4/luna-v4.md`。24個 `(face, up)` 狀態保留完整朝向；E→N→W休止時維持face0及+90°扭轉；相同外向face的不同扭轉能被區分，beam/weakpoint及共用眼／光束錨點使用一致朝向。v3的beam停用回退及Maker有效設定修正仍保留。
+- 主控核對request、source SHA、manifest canonical hash、bundle hash、patch長度/hash、11個文字preimage/postimage與1個獨立PNG payload；12個變更路徑皆在19項allowlist內。先於精確base scratch成功套用並驗postimage，再將文字patch及PNG分別套用至原PR分支；`version.json`升至 `20261028e`，由正式version工具同步頁面query及service-worker快取。
+- Mac完整 `node games/survivor/tools/test.cjs --layout` 第二輪 exit0、134個PASS行，含Boss4朝向／renderer／beam／Maker案例與layout Chrome；`git diff --check`通過。第一次全套測試發現Boss4新測試一處仍讀舊`gridFace`欄位；換成`gridOrientation.face`後，定向測試揭露第二個fixture在舊`state.trial`未清時重啟，沿用舊beam權重；在fixture起始先`resetGame()`後定向與全套都通過。這兩處僅測試fixture修正，遊戲邏輯未增改。
+- 目前尚未建立新commit、push PR或發布新preview；PR105仍draft、remote head仍是85e。下一步將明確列出檔案建立同分支commit/push，依append-only隔離流程發布新SHA候選，請Dot只對該候選做雲端實玩。舊Stone候選在740×360的raised hand/HUD重疊仍另待修；先避免與Eye同檔修改衝突，再按最新PR head另送Dot修正，不能把Eye v4核准或Stone窄範圍approve擴大為整卡/PR通過。
+
+
+### PR105 Rolling Eye v4 固定預覽已發布，交Dot雲端實玩（2026-10-28 11:39 UTC）
+
+- PR105 draft 的遊戲程式提交為 `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`，版本 `20261028e`。測試站只追加新SHA目錄，Pages commit `d40a7711338a6046a261715c35c552ee4fd94068`／run `40680856243` completed/success；新候選manifest SHA-256 `ea18f6514c35fba62d8675ab4f42f444fee16e1a549739cae8a932194a1f3b0e`，73個manifest payload。上線後428個舊/新檔案逐一HTTP200與SHA-256核對一致，原356檔及五份舊manifest payload完全不變。Mac A/B工程檢查通過；無遊戲CI。
+- 唯一固定遊玩URL：[PR105 source 09bfd3e／20261028e](https://stasischen.github.io/erin-preview/pr-105/09bfd3e0877e3b723cd2581ecb44b53dae57ea65/games/survivor/)。三尺寸Eye v4專項雲端測試已送至[#411 #6468015572](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468015572)，完整manifest preimage已隨request bundle提供，避免另外重建hash。要求Dot只測自己的雲端Chrome實際操作、三尺寸canvas/HUD、E→N→W靜止面內扭轉、外向面Eye/beam warning與命中時序；不改code、HP、隱藏狀態或Maker，不碰正式站。回覆格式明確把觀察放`viewport_results`、`coverage:null`。
+- 送件時PR105 head正是上述source SHA。request結果只評固定預覽Eye實玩，不代表獨立程式審查、整卡、PR或merge；收件後須再核request、manifest、bundle、source及comment作者。舊Stone候選740×360 raised-hand/HUD重疊明列為已知的另一項缺口，Eye範圍不修它也不遮蔽它。未來如有coord-only紀錄提交，不改候選遊戲檔；Eye結果仍只對固定source `09bfd3e`有效。
+- PR105尚未approve/merge，Mask Statue未完成。等待Dot結果後先記錄其實測範圍；再另向Dot要求修Stone HUD重疊，Luna複審、Mac完整測試、新SHA候選及Dot驗收後才可進下一階段。
+
+
+### Rolling Eye v4 Dot partial evidence與針對性補測（2026-10-28 12:18 UTC）
+
+- 原始回覆 [#6468600347](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468600347) 已讀回，通過既有request/source/manifest/bundle/作者normalizer與validator；`changes / partial_evidence`，scope只限固定預覽的Eye實玩。source仍是 `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`、版本 `20261028e`；回覆不得套用到PR後續的新HEAD或宣稱程式缺陷。
+- 三個iframe/canvas尺寸1024×461、740×360、1180×820皆核對一致。1024實測到一次Eye warning→實體beam→可見HP下降，beam起點與眼中心對齊；但路徑只確實完成E、N，下一玩家位置造成S而非W，故沒有E→N→W或相同法線靜止+90°畫面對照。740實際路徑E→N→E，缺W與扭轉對照，也沒完成beam warning→命中/傷害。1180曾觀察到N→W，但較早有未逐格計數的E移動，不能證明起始面連續E→N→W；沒完成beam鏈。不得以Mac規則測試補畫面證據。
+- 原始Dot觀察另指出1024時Boss血條蓋住眼睛上部；740時玩家上身接近並被Boss HUD遮住。1180外頁窗較短且捲動，部分頂端HUD/右邊緣在外頁視口以外，不等於canvas內裁切；仍未完成整個HUD邊緣驗收。初次畫面Boss均可見，未觀察到畫面外生成。上述視覺遮擋待另作HUD問題處理，不能跟扭轉驗收混為一談。
+- 已送針對性證據補測 [#6468770049](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468770049)，candidate仍固定同一immutable URL/source09bfd3e；request manifest列明目前PR head `8b8db3d14df64abf4516dd03a82b6f998669d1ef`僅coord檔變更，遊戲檔與sw.js逐byte相同。補測只重做1024 E→N→W靜止對照、740/1180外向面beam warning→實際beam/HP變化，並附普通玩家位置引導；不改code、Maker、HP或隱藏狀態。`coverage:null`、畫面記錄放`viewport_results`。
+- 目前任務維持blocked等待補測回覆。後續先核新回覆仍限同一固定候選及指定片段，再由Dot另提供HUD遮擋修正patch、Luna複審、Mac完整測試及新SHA候選；Stone raised-hand/HUD舊缺口與Mask Statue也尚未清除。
+
+### PR #411 已有回覆的接收／採用狀態釐清（2026-10-28 12:20 UTC）
+
+- Dot 已在約定的PR回覆，沒有漏掉回覆本身：Stone補測 [#6463244565](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6463244565) 對應request `e05006d…`；Rolling Eye完整patch提案 [#6463785368](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6463785368) 對應request `4b68295…`。兩份都有本機GitHub readback與normalized intake receipt。
+- 收件流程曾因Dot marker多帶`recipient=mac-manager`、而舊receiver只比對不含recipient的格式，將回覆靜默漏進自動收件；手動從GitHub原留言核對後，normalized副本只修marker欄位，JSON與證據不變。這解釋了為何狀態曾顯示「沒收到」；後續不應再把它描述為仍待確認是否收到。
+- 07:58 Eye回覆的`approve` scope是`code_patch_proposal_only`、status是`proposal_ready_for_independent_review`，表示提案可交Luna複審，並非patch已直接採納。Luna複審在原提案找到三項需修正處；後來修正版再經Luna approve，Mac才套用並提交source `09bfd3e`。所以「Dot有回覆／Mac收到」為是；「07:58原提案原樣採用」為否；「修正版已採用」為是。
+- 先前把「沒有收到確認」和「提案尚未採用」合寫，讓人誤以為PR #411上沒有回覆，這是我對收件狀態及proposal scope描述不精確。毋須重送已完成的請求；目前等的是另一個固定source `09bfd3e` 的瀏覽器證據補測 `#6468770049`。
+
+
+### Rolling Eye v4 固定候選 gap 補測 #6468910347（2026-10-28 12:29 UTC）
+
+- 已從PR #411讀回 [Dot回覆](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6468910347)，綁定原request #6468770049、request `54175fe093703ff469c73c4eaacf00e3e68dd5f6c85f3e12667dc252bffa787a`、固定遊戲source `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`、manifest `7c8b2ffe22c95cb34a5e51d2bcd293ea217cb3cb3d11137cf4d071e95f09f3c6`及bundle `1a9bdd913b6457e2183ea063ecdad999a6d3688a0ab8babf6eb5d676851d0e46`；既有exchange normalizer／validator通過。PR105目前HEAD `6996b391307e9f6cf178ba55a7df86d418b181b5`僅比tested source多coord紀錄，遊戲檔與sw.js未變；結果只適用immutable `20261028e`候選。
+- 740×360已補齊Eye睜眼／光束預警→同錨點橙色beam穿過玩家→受擊變暗及HP下降；1180×820已看到預警→beam穿過玩家、受擊粒子及變暗／恢復，HP條在外頁視口外，沒有宣稱HP數值。兩尺寸的beam-chain缺口標為已補。
+- 1024×461仍是`partial_evidence`：一般玩家操作重走結果為E→N→S；玩家往左側後先出現南向移動，完成後才看到西向預警。這不符合要求的連續E→N→W，因此未用後續西移代替第三步；起始法線返回後的靜止+90°畫面對照仍缺。沒讀寫hidden state，不據此推論程式缺陷。
+- 全回覆為`changes / partial_evidence`，`coverage:null`，`whole_pr_approval=false`、`independent_code_approval=false`、`card_complete=false`、`merge_authority=false`。只更新證據狀態；不等於PR或整卡通過。下一步仍需處理1024單一缺口，再分開處理HUD遮擋及未完成的Mask Statue。
+
+
+### Rolling Eye v4 1024×461 專項補測已送（2026-10-28 14:14 UTC）
+
+- Dot上一輪回覆已確認740×360與1180×820光束鏈證據完成；1024×461仍是E→N→S，沒有要求的E→N→W與靜止+90°對照。已依此只發一個1024尺寸新請求：[PR #411 #6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)，request `33e8b7b1715399874cf6dc1a895b54201d6fa1c56ad39a240cb7936760a5a37d`，manifest `8a77ab6dda271c246806cd09561416fdd93046b6fd22d70233bf75b78be549bd`，bundle `220fcf6ac15f954a193135f5960cd2fc683f12576de2f83ab50f3e206f3f76ec`。公開留言readback確認request id、manifest、bundle及候選SHA。
+- 該request唯一候選仍是source `09bfd3e0877e3b723cd2581ecb44b53dae57ea65`／版本`20261028e`固定預覽；送件當下PR head為`1a30bee7d791a3e38f130d845f4305d99ab8cfcb`，其相對候選只有coord紀錄差異，遊戲檔與`sw.js`完全未變。新結果只適用該候選；禁止hidden state、devtools、Maker、程式修改或正式站。
+- 本次只要求在1024×461用正常遊戲輸入記錄連續E→N→W實際預警，並比較初始與同法線返回後的靜止眼面扭轉。上次E→N→S後才出現W不能代替要求路徑；若仍分岔，照實回報並維持partial。等待Dot結果；不代表整卡、程式碼審查、PR或merge通過。
+
+
+### Boss4 HUD patch與Rolling Eye 1024補測並行派送（2026-10-28 14:17 UTC）
+
+- 收到家長指出不應停在等待後，確認先前只送了1024實測、沒有送HUD修改請求。已另發Dot code patch proposal：[PR #411 #6471404535](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471404535)，request `4965af3237abb0efaffbea2702f0c19f587be567334fd1d464151b1908ba166b`，base/head `5acc25a82e841f1f99c538301a52083517cbff02`、manifest `8b72f136640387a45e6f0303627a1fe466cdb1e68ea38b8cb1e34fed50a14aa1`、bundle `7001d6c4da08e0d8b0e6caebd03fa6b562ea7b05a97628736c1febccbca9925e`；PR留言readback已核對。
+- HUD request只允許提案修改`games/survivor/style.css`，要求用共用響應式佈局處理1024 Eye上部、740玩家上身及石像手部預警與Boss HUD重疊，維持HP/架勢/名稱可讀；禁止遊戲邏輯、隱藏狀態、正式站、repo寫入、push或merge。若單一CSS不夠，Dot須停下說明所需路徑，不能擴大範圍。這只是code proposal，須Luna獨立審查/精確套用後由Mac測試、新發固定候選，再交Dot瀏覽器驗收。
+- 此patch request固定在當時PR HEAD `5acc25a`；送件後協調紀錄提交不改遊戲檔。與1024瀏覽器補測request #6471339722（固定遊戲source `09bfd3e`）是兩個不同source、不同範圍的請求。兩者都等Dot回覆，但HUD patch審查可先啟動，不需等1024實測。
+
+
+### Boss4 HUD patch 回件：缺少唯讀 viewport 上下文（2026-10-28 14:30 UTC）
+
+- Dot回覆 [#6471522223](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471522223)，對應HUD patch request [#6471404535](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471404535)。本機normalizer/validator核對request、author、marker、source、manifest、bundle與schema一致。結果為`changes / partial_evidence`、scope `code_patch_proposal_only`、`changed_files=[]`、`patch=null`；不包含可套用程式碼，也不是PR/卡片核准。
+- Dot完成7個指定唯讀檔的hash檢查，沒有執行程式、apply check、Mac測試或HUD預覽驗收。它指出CSS把Boss HUD疊在整個canvas上，單純移到角落/透明化不能保證不遮玩家與攻擊tell；縮放或裁切canvas還可能讓viewport與輸入座標失同步。因此它沒有猜測CSS patch，而要求下一階段先讀`games/survivor/game.js`中的`fitVisibleViewport`、canvas/worldViewport/camera、pointer座標及其固定模組，並提供同base bytes/hash。
+- 目前凍結patch request base `5acc25a82e841f1f99c538301a52083517cbff02`，PR105現HEAD `0dbd092f2f7af521150ddabed2c4b6323317d46d`；兩者間只增加`coord/handoff/latest.md`和Boss4 task JSON，沒有遊戲程式變更。該差異不會把舊proposal升格為目前HEAD核准。style.css-only提案無patch，不採納/套用。
+- 依原request allowlist，本輪未讀`game.js`，未修改、測試或擴大Dot權限。後續須先由家長決定是否允許Dot將`game.js`及它實際點名的viewport/render/input依賴僅列read-only；收到允許後另以當時PR最新HEAD重凍結request。Eye的1024-only雲端實測request #6471339722仍獨立待回。
+
+
+### 家長批准Dot唯讀viewport上下文；HUD提案重新派送（2026-10-29 02:26 UTC）
+
+- 家長明確同意Dot查看`games/survivor/game.js`及必要模組。原HUD回覆[#6471522223](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471522223)是partial、沒有patch；它要求先追蹤viewport/canvas/camera/pointer輸入契約，故沒有採納舊CSS-only方案。
+- 已用當時PR105最新head `bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`重凍結並重送[#6486182355](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486182355)，request `d455b741adf784f457cea74f03788e265931a958e321fc107e88f2fb8146b134`；manifest `55b28710b18326d2c567bb47d0e673d3d9d9b718b69e679cb71f22a62b348697`、bundle `fa5bc63634a73e89ba16e666081935ad8debe198a2486bb4192363bdb1e11153`。公開留言readback已驗證request/source/hash欄位。
+- 新request只允許唯讀`game.js`和它實際需要的`games/survivor/`本地viewport/render/input模組；Dot須報告每個實際讀取路徑及SHA-256。任何patch寫入仍限`games/survivor/style.css`；若需修改其他模組須列出最小清單並再取得授權。此階段不要求瀏覽器驗收或Mac測試，不得改repo/push/merge。
+- PR105現HEAD仍為`bc7d8e4`、保持draft。另一個Rolling Eye 1024×461固定候選實測[#6471339722](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471339722)繼續並行等待；其結果僅對source `09bfd3e`有效。
+
+
+### HUD context 回件與待決顯示取捨（2026-10-29 04:22 UTC）
+
+- Dot於2026-10-29 02:36 UTC回覆 [#6486337797](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486337797)，對應request #6486182355。既有exchange normalizer/validator確認request、author、marker、source `bc7d8e4`、manifest `55b28710...`及bundle `fa5bc636...`一致。Dot回報讀取10個遊戲來源檔及bytes/SHA；路徑與hash列於回覆。未跑程式／Mac測試／瀏覽器驗收，也未修復重疊。
+- Dot的結論是Boss HUD與canvas同層疊放；若CSS自行保留區域，canvas可用矩形會改變而牽動zoom、world viewport、camera與pointer座標。它認為要在共享viewport契約中安排HUD專區，最低新增提案可寫路徑為`games/survivor/engine/loop.js`（另保留`games/survivor/style.css`），但實際修改範圍仍待獨立審查。任何額外模組若實作證明需要，Dot要先列路徑再取得授權。
+- 這需要家長決定顯示政策：保留完整戰鬥世界和Boss可見性、將遊戲畫面等比縮小以讓出HUD專區；或維持目前畫面比例、接受可見世界範圍縮減。依Boss4規格「鏡頭幾乎看得到整個競技場、Boss永遠在畫面內或邊緣」，目前較符合前者，但需家長確認。未獲新寫入範圍核准前不請Dot產生`loop.js`修改、不套用。
+- 回件source為`bc7d8e4c16cae08d3ca8d5ff9e8efe359e9fc085`；當時PR HEAD為`d2c9d02fa38a368f939626f10d7ba6c387b94602`，兩者只差coord紀錄。HUD修正無patch；不代表HUD通過。1024×461固定候選實測request #6471339722仍獨立pending。
+
+
+### 家長選擇縮小可見世界；HUD patch已續派（2026-10-29 04:25 UTC）
+
+- 家長明確選擇「接受可見範圍縮小」：保留目前世界/角色比例，讓出HUD專區，stage背景仍填滿螢幕、無黑邊。此決定足以繼續既有Dot patch流程，我不再等待第二次確認。
+- HUD上下文Dot回覆[#6486337797](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6486337797)表示CSS-only不足，viewport同步至少要動`engine/loop.js`。已基於當時PR HEAD `e44dfe7a351b5a3f86c0a319785159598e0db16d`送出具體patch提案request [#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)，request `be51cf4ac090029082c58327dd8762d9a9ad502c179c77e571c57d14d1f7b841`，manifest `ff77953588a249d8149f4971a54d52249fabdb4d4a9bbe6651deb139dcf3e763`，bundle `7e894090e5b67a8c461899b2e186aae593117fd288b46d75659ec70b79ca9503`。patch提案可寫路徑僅`games/survivor/engine/loop.js`和`games/survivor/style.css`；Dot不寫repo、不執行測試。其他檔只讀，如證明需增加write path先列明再求核准。
+- 此方案要求reserved HUD rectangle同步canvas backing、worldViewport/camera與pointer座標；world/object比例不變、視野可縮小，仍確保玩家、Boss與attack tell可見。Luna須獨立複審精確patch；Mac精確套用、跑完整`--layout`、升版並發新固定候選；之後Dot才做三尺寸HUD實測。
+- 已補讀之前漏查的1024實測回覆 [#6471445903](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6471445903)，normalizer核對request #6471339722、source `09bfd3e`、manifest、bundle與作者通過。正常試煉只完成E→N；北向完成後下一預警仍為E，Dot即停下，因此連續E→N→W與靜止+90°比較仍未通過。結果為`changes / partial_evidence`，沒有hidden-state操作，也不據此宣稱遊戲缺陷。此固定候選結果保留作歷史；HUD patch產生的新候選仍須重做對應三尺寸遊戲/朝向驗收。
+- 本次只改coord。HUD提案source是送件時HEAD `e44dfe7`；之後coord-only提交不改遊戲程式。PR105維持draft。
+
+
+### 家長明確核准Dot提出HUD patch（2026-10-29 04:25 UTC）
+
+- 家長明確同意Dot針對HUD提出patch。此核准對應已發出的[#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)，範圍仍限`games/survivor/engine/loop.js`與`games/survivor/style.css`的patch proposal，base `e44dfe7a351b5a3f86c0a319785159598e0db16d`，設計採保留world/object比例、縮小可見世界區域、保留全螢幕背景無黑邊。
+- Dot不得直接寫repo、push、開PR或merge；收到patch後交Luna獨立複審，再由Mac對精確base套用及測試。已有request在處理中，不重送。
+
+
+### HUD幾何證據補件與patch request（2026-10-29 08:56 UTC）
+
+- Dot的HUD patch result [#6487955801](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487955801)已綁定驗證，狀態`changes / incomplete`、`patch:null`、`changed_files:[]`、沒有增加寫入路徑。它接受家長已選「保留world/object比例、縮小可見世界」；但沒有足夠固定幾何證據保證玩家、Boss和完整攻擊tell在三尺寸均可見，未提供可能降低該條件的patch。
+- Dot點名唯讀缺口`games/survivor/render/gallery.js`、`games/survivor/engine/gallery-encounters.js`、`games/survivor/data/defaults.js`，用來算Boss/招式預警的實際世界邊界。本地無需新增寫權；原批准patch allowlist仍只含`games/survivor/engine/loop.js`與`games/survivor/style.css`。
+- 已基於當時最新PR HEAD `13de2068f6e20f956157aa57259c52db7307dd7f`發出合併幾何補查與patch提案的新request [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413)，request `6f027d3386923f61e1124b64cc807c3798750779793a3a6a465fc613b58900fb`、manifest `49095a2b696cf40f318077c69384f30b0bf62968641fe127d752668cbc154ae2`、bundle `3b30707e6a1711e3b8c36351908ad04e68ef4d83830954b45ba1bc14cd525d87`；公開readback核對request/hash與三個path。要求讀幾何、核bounds後若可行直接交loop.js+style.css patch，否則明列證據/幾何阻礙；不改repo、不執行測試。
+- Rolling Eye 1024測試#6471445903已驗證為E→N，下一預警E，停止；E→N→W和靜止+90°仍未完成。該固定candidate證據維持partial；HUD patch如產生新SHA，須在新預覽重做三尺寸與Eye朝向功能檢查。
+
+
+### Boss4 HUD 幾何補查：無 patch，等待預警可見性政策（2026-10-29 09:24 UTC）
+
+- Dot 對固定 request [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413) 的回覆已在 [#6492501348](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492501348) 讀回，綁定 source `13de2068f6e20f956157aa57259c52db7307dd7f`、request `6f027d3386923f61e1124b64cc807c3798750779793a3a6a465fc613b58900fb`、manifest `49095a2b696cf40f318077c69384f30b0bf62968641fe127d752668cbc154ae2` 與 bundle `3b30707e6a1711e3b8c36351908ad04e68ef4d83830954b45ba1bc14cd525d87`。Dot 回報讀完新增三個幾何來源及四個直接依賴；沒有提供 patch、沒有寫 repo、沒有執行遊戲、測試或瀏覽器驗收。
+- 正式本機 `exchange_result.py` 驗證 request ID、source SHA、manifest 與 bundle 後，因回覆的 `coverage` 是 object（接收器要求非空 list，列項還須有 `read_complete` 與 `hash_verified`）拒絕正規化；因此這份原始留言尚未正式採納，不把自述資料當已獨立核驗的審查結果。未改寫或補造 Dot 的回覆。
+- 靜態幾何指出政策衝突：1024×461 原 zoom 約 `1.21458`，可視世界高度約 `379.56`；nova 活躍末段的完整垂直外緣接近 `384`（progress 0.99 時 `380.4`），故即使 HUD 高度為零也放不下完整圖形；預留 HUD 會更小。Mac 另用固定來源程式與算式核對此單一反例；這是靜態界限，不是實測回歸或遊戲測試結果。
+- 原先已選保留 world/object 比例、縮小可視世界、背景無黑邊；仍需家長明確決定大型預警超出可視區時可否被裁，以及是否要求每個完整 tell 留在視窗內。未得到決定前不向 Dot 要求新邏輯、不套用程式 patch。PR105 仍為 draft；遊戲程式和版本未變，舊候選測試不代表 HUD 已修。
+
+
+### Dot 收件房間路徑核實（2026-10-29 09:24 UTC）
+
+- Lingo 房間 PR [#1](https://github.com/stasischen/lingo-agent-exchange/pull/1) 有 Dot 回報獨立 webhook delivery 到達；但它也要求原 Lingo 來源端再確認是否收到／採用及自動或人工接續，現有留言未證明原 session 自動恢復。Erin 房間 [#2](https://github.com/stasischen/lingo-agent-exchange/pull/2) 尚無 Mac 來源 synthetic request；Dot 明確要求補做同房 request／receipt 和來源側接收方式核對。
+- Source client [release-aggregator PR #431](https://github.com/stasischen/release-aggregator/pull/431) 已合併：可依 `exchangeRoom` 配置把新的 request、publish、find、receive 綁定到 Lingo／Erin 房間；其 task brief 明定要先完成各房間 live synthetic acceptance 才切新流，現有 frozen #411 work directory 不搬移，也沒有 source-session 自動喚醒／scheduler。故 PR105 目前固定在 PR #411 的請求仍留原房；在 Erin PR #2 acceptance 前，不把新房間描述成已完成切換。
+- Invest 房間 [PR #3 receipt](https://github.com/stasischen/lingo-agent-exchange/pull/3#issuecomment-6467264007) 記載 Dot 收到獨立 webhook delivery，但 source receipt 明寫由人工沿原執行任務接續，沒有證明 Windows 原 session 自動喚醒。GB10/MSI 透過 Invest 的既有執行連線屬已提供的操作狀態；房間留言未證明它們自行監聽。
+- Kit [PR #11](https://github.com/stasischen/agent-coord-kit/pull/11) 仍是 open draft，增加 offline continuation/replay ledger 與去重／恢復測試，但自身說明明列尚未接 coordinator、scheduler、webhooks、live rooms 或 production dispatch，亦未驗 Windows locking、live receipt/adoption 或端到端派工。直接送入既有 execution task 是另一條路由；房間 PR 不能替代它，也不證明它自動續接。

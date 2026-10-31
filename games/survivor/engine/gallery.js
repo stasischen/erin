@@ -84,7 +84,7 @@ function trialMenu(message='王的試煉',data=null) {
   const records=loadTrialRecords(MAKER_MODE||!!trialDraft);
   for(const b of trialSettings().bosses) {
     const button=document.createElement('button');button.type='button';button.className='trial-choice';button.setAttribute('aria-label',b.name);button.title=b.name;
-    const image=document.createElement('img');image.src=SurvivorArt.lookup(b.artId).sheet;image.alt='';button.appendChild(image);
+    const image=trialMenuImage(b.artId);button.appendChild(image);
     const name=document.createElement('span');name.textContent=b.name;button.appendChild(name);
     const best=document.createElement('small');best.textContent=records[b.id]?`最佳 ${records[b.id].toFixed(2)} 秒`:'最佳 —';button.appendChild(best);
     button.onclick=()=>startTrial(b.id);choices.appendChild(button);
@@ -190,4 +190,17 @@ function confirmTrialMenu(leave) {
   document.getElementById('trialConfirm').hidden=true;
   if(leave)trialMenu();
   else {showOverlay('paused');document.getElementById('trialEntry').focus?.();}
+}
+
+// Menu uses the same manifest frame adapter as battle; its onload hook refreshes tagged images.
+function trialMenuImage(id){
+ const image=document.createElement('img');image.alt='';image.dataset.survivorArt=id;
+ const frame=SurvivorArt.picture(id,'idle',0);
+ if(frame){image.src=frame.toDataURL();return image;}
+ const art=SurvivorArt.lookup(id),canvas=document.createElement('canvas');
+ canvas.width=art.frameSize[0];canvas.height=art.frameSize[1];
+ const colors=SurvivorArtManifest.assets[id].placeholder||{outline:'#35434c',body:'#9cabb1',eyes:'#b9e7cf'},g=canvas.getContext('2d');
+ g.scale(canvas.width/16,canvas.height/16);g.fillStyle=colors.outline;g.fillRect(4,1,8,14);
+ g.fillStyle=colors.body;g.fillRect(5,2,6,5);g.fillRect(3,8,10,4);g.fillStyle=colors.eyes;g.fillRect(6,5,4,1);
+ image.src=canvas.toDataURL();return image; // Loading/error stays a manifest-derived placeholder, never the raw sheet.
 }

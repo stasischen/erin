@@ -22,6 +22,13 @@ function summonTeacher() {
 
 // 老師招式的預告、位置和命中都用世界座標；離開鏡頭仍持續追擊。
 function clearBossMoves() {
+  // A cancelled charge must not remain in the no-repeat history, or a single-move
+  // trial boss can never select its only attack again.
+  if(state.trial&&state.boss&&state.boss.trialActor){
+    const definition=state.trial.definition;
+    const chargeIds=new Set(state.bossMoves.filter(move=>definition.moves.find(item=>item.id===move.id)?.blocks.moves.some(block=>block.effect.charge)).map(move=>move.id));
+    if(chargeIds.size)state.boss.previous=(state.boss.previous||[]).filter(id=>!chargeIds.has(id));
+  }
   for (const move of state.bossMoves) state.bossMovePool.push(move);
   state.bossMoves = [];
   if(state.trial&&state.boss&&state.boss.trialActor){

@@ -49,7 +49,9 @@ function withTrialBody(body,action){
 function initTrialEncounter(){
  const t=state.trial;if(t.definition.id==='gatekeeper')return;
  const make=(role,index)=>({...state.boss,...SurvivorTrialRules.entry(t.arena,state.boss.r,index,t.definition.id==='frostfire'?2:1),posture:SurvivorPosture.initial(),role,trialActor:true,alive:true,actorId:role||t.definition.id,artId:role==='fire'?'character/fire-twin':t.definition.artId,moves:[],phase:1,rest:index?.95:.4});
- t.actors=t.definition.id==='frostfire'?[make('frost',0),make('fire',1)]:[make(null,0)];t.actors.forEach(b=>Object.assign(b,SurvivorTrialRules.boundary(b,t.arena).position));t.fields=[];state.boss=t.actors[0];state.bossMoves=state.boss.moves;
+ t.actors=t.definition.id==='frostfire'?[make('frost',0),make('fire',1)]:[make(null,0)];t.actors.forEach(b=>Object.assign(b,SurvivorTrialRules.boundary(b,t.arena).position));t.fields=[];
+ const grid=trialGridSpec(t.definition);if(grid)for(const b of t.actors){Object.assign(b,SurvivorTrialBlocks.gridEntry(b,t.arena,grid.effect.gridRoll.cell));b.gridOrientation=SurvivorTrialBlocks.gridState(0);b.displacementMultiplier=0;}
+ state.boss=t.actors[0];state.bossMoves=state.boss.moves;
 }
 function trialBossDefeated(body){
  const t=state.trial;if(!t||!t.actors){state.boss=null;finishRun(true);return;}
@@ -72,16 +74,22 @@ function encounterDodgeThreat(){
    if(SurvivorPosture.perfect(time,window)&&time<=f.life+(f.warning||0))return f;
  }
  for(const b of trialBodies().filter(b=>b.posture.stun<=0&&!(b.stunTimer>0)))for(const m of b.moves){
-   if(m.dodged||!['windup','active'].includes(m.ai.phase)||trialUsesBlocks(t.definition)&&m.ai.phase!=='windup')continue;
+   if(m.dodged||!['windup','active'].includes(m.ai.phase)||trialUsesBlocks(t.definition)&&!trialGridSpec(t.definition)&&m.ai.phase!=='windup')continue;
    const s=t.definition.moves.find(d=>d.id===m.id).blocks.moves[0];let time=m.ai.phase==='windup'?m.ai.left:0;
    const origin=['dive','icefall','meteor'].includes(m.id)?m.target:b;
    let shape=encounterShape(m,s.shape),near=SurvivorGalleryRules.contains(shape,origin,p);
    if(trialUsesBlocks(t.definition)){
-    if(s.effect.projectiles){
+    if(s.effect.gridRoll||s.effect.beam){
+     const region=trialGridRegion(b,m,s);near=SurvivorTrialRules.contains(region.shape,region.origin,region.angle,p);
+     if(s.effect.gridRoll){const speed=region.shape.length/s.timing.active,origin=m.ai.phase==='active'?b:m.origin;
+      const contact=SurvivorPosture.contact(origin.x-p.x,origin.y-p.y,Math.cos(region.angle)*speed,Math.sin(region.angle)*speed,b.r+p.r);
+      time+=contact;near=near&&contact<=(m.ai.phase==='active'?m.ai.left:s.timing.active);}
+    }
+    else if(s.effect.projectiles){
      const q=s.effect.projectiles;
      const contact=Math.min(...SurvivorGalleryRules.volley(b,m.angle,q.count,s.shape.angle*Math.PI/180,q.speed).map(shot=>SurvivorPosture.contact(shot.x-p.x,shot.y-p.y,shot.vx,shot.vy,q.radius+p.r)));
      time+=contact;near=contact<=q.life;
-    }else near=SurvivorTrialRules.contains(s.shape,b,m.angle,p);
+    }else near=SurvivorTrialRules.contains(s.shape,s.effect.limb?m.target:b,m.angle,p);
    }
    if(['dive','icefall','meteor'].includes(m.id))time+=m.ai.phase==='windup'?s.timing.active:m.ai.left;
    if(m.id==='frost-dash'){const hit=SurvivorPosture.contact(b.x-p.x,b.y-p.y,Math.cos(m.angle)*s.effect.speed,Math.sin(m.angle)*s.effect.speed,b.r+p.r);time+=hit;near=hit<=(m.ai.phase==='active'?m.ai.left:s.timing.active);}
@@ -108,11 +116,13 @@ function updateTrialEncounter(dt){
 }
 function updateTrialActor(dt){
  const t=state.trial,b=state.boss,def=t.definition;
+ if(trialGridSpec(def))dt=Math.min(.05,Math.max(0,dt));
  b.flash=countdown(b.flash||0,dt);b.wobble+=dt*3;b.stunTimer=countdown(b.stunTimer||0,dt);b.slowTimer=countdown(b.slowTimer||0,dt);
  b.posture=SurvivorPosture.step(b.posture,null,GAME_DATA.boss.posture,dt).state;
  const transition=SurvivorGalleryRules.transition(b.hp,b.maxHp,def.phases[1].threshold,t.actors.some(a=>a.hp<=0),state.bossPhase);
  const repeated=state.bossMoves[0],defer=trialUsesBlocks(def)&&(b.posture.stun>0||repeated&&def.moves.find(move=>move.id===repeated.id).blocks.moves[0].effect.sequence&&['windup','active'].includes(repeated.ai.phase));
  if(transition.events.length&&!defer){state.bossPhase=transition.phase;clearBossMoves();state.bossRest=1;t.events.push(...transition.events.map(e=>({...e,id:b.actorId})));burst(b.x,b.y,'#ffca72',16);}
+ if(trialGridSpec(def)){updateTrialGridActor(dt);return;}
  if(b.posture.stun>0||b.stunTimer>0){clearBossMoves();b.recoveryLeft=0;return;}
  if(trialUsesBlocks(def)){updateTrialBlockActor(dt);return;}
  if(!state.bossMoves.length){
