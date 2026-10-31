@@ -3,7 +3,7 @@
 家長在設計稿上選定一個方向後，把下面「本次方向」改成 A、B 或 C，再交給 Codex。
 流程照 docs/ART_FAST_TRACK.md：只改允許的美術檔，家長看截圖驗收。
 
-本次方向：B 月光森林
+本次方向：（已改用 D 黏土＋霓虹，見 docs/ART_RUNBOOK_D_CLAY_NEON.md）
 
 ## 共通規則（三個方向都一樣）
 
