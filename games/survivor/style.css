@@ -273,8 +273,9 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 
 /* Fixed encounter HP: two actor rows fit above combat; pointer input passes through. */
 .boss-hud {
-  top: calc(max(10px, var(--safe-top)) + 44px);
-  width: min(420px, calc(100% - max(12px, var(--safe-left)) - max(12px, var(--safe-right))));
+  top: calc(max(10px, var(--safe-top)) + 50px);
+  left: max(10px, var(--safe-left)); transform: none;
+  width: min(260px, calc(100% - max(12px, var(--safe-left)) - max(12px, var(--safe-right))));
   height: auto; min-height: 40px; padding: 4px 8px; pointer-events: none;
 }
 .boss-summary, .boss-health-rows { flex: 1; min-width: 0; }
