@@ -2,6 +2,7 @@
 globalThis.SurvivorManifest = Object.freeze([
   "art-manifest.js",
   "render/art.js",
+  "render/clay.js",
   "render/monsters.js",
   "engine/schools.js",
   "engine/effect-blocks.js",
