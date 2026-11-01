@@ -288,3 +288,30 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
   min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 .boss-health-row .boss-track, .boss-summary .boss-track { min-width: 0; width: 100%; }
+
+/* D5: moonlit-clay arcade HUD. */
+.hud { top:0; left:0; right:0; height:86px; z-index:2; }
+.hud .health-wrap { position:absolute; top:calc(max(10px,var(--safe-top)) + 5px); left:max(10px,var(--safe-left)); display:flex; align-items:center; gap:8px; width:208px; max-width:calc(100vw - 250px); min-width:0; height:62px; padding:4px; border:1px solid rgba(120,207,255,.5); border-radius:14px; background:rgba(24,20,48,.72); }
+.hud-avatar { display:block; flex:0 0 54px; width:54px; height:54px; border:2px solid #78cfff; border-radius:50%; background:radial-gradient(circle at 35% 28%,#3b4b83,#211b43 72%); box-shadow:0 0 10px rgba(53,185,255,.45); image-rendering:auto; }
+.hud-player-details { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:22px 8px; align-items:center; column-gap:6px; flex:1; min-width:0; }
+.hud-player-name { overflow:hidden; color:#e8f6ff; font:800 14px/20px ui-rounded,system-ui,sans-serif; white-space:nowrap; text-overflow:ellipsis; }
+.hud-player-level { color:#78cfff; font:800 12px/18px ui-rounded,system-ui,sans-serif; white-space:nowrap; }
+.hud .health-label { display:none; }
+.hud .health-track { grid-column:1/-1; width:100%; min-width:0; height:8px; border:1px solid rgba(245,161,188,.72); border-radius:999px; background:rgba(194,96,127,.35); box-shadow:0 0 8px rgba(245,161,188,.36); }
+.hud .health-fill { border-radius:999px; box-shadow:0 0 8px rgba(245,161,188,.65); }
+.hud .experience-wrap { position:absolute; top:max(0px,var(--safe-top)); left:0; right:0; display:block; width:auto; min-width:0; height:4px; flex:none; }
+.hud .experience-label,.hud .level-label { display:none; }
+.hud .experience-track { position:absolute; top:0; left:0; right:0; width:auto; min-width:0; height:4px; border:0; border-radius:0; background:rgba(120,207,255,.15); overflow:visible; }
+.hud .experience-fill { background:linear-gradient(90deg,#78cfff,#d6f6ff); box-shadow:0 0 8px rgba(120,207,255,.8); }
+.hud .status { position:absolute; top:calc(max(10px,var(--safe-top)) + 1px); left:50%; transform:translateX(-50%); overflow:visible; padding:0; color:#e8f6ff; background:transparent; font:800 clamp(24px,4vmin,34px)/1.15 ui-rounded,system-ui,sans-serif; text-shadow:0 0 12px rgba(53,185,255,.8); }
+.hud .status[hidden] { display:none; }
+.hud-counters { position:absolute; top:calc(max(10px,var(--safe-top)) + 8px); right:calc(max(10px,var(--safe-right)) + 110px); display:flex; align-items:center; gap:6px; }
+.hud-counter { display:flex; align-items:center; gap:6px; min-width:54px; height:32px; padding:3px 8px; border:1px solid rgba(120,207,255,.45); border-radius:999px; color:#e8f6ff; background:rgba(24,20,48,.72); font:800 14px/1 ui-rounded,system-ui,sans-serif; }
+.hud-counter-symbol { display:block; width:8px; height:8px; flex:0 0 8px; border-radius:50%; background:#f5a1bc; box-shadow:0 0 7px rgba(245,161,188,.8); }
+.hud-counter-symbol .pixel-icon { display:none; }
+.hud-counter-gems .hud-counter-symbol { width:9px; height:9px; flex-basis:9px; border-radius:1px; background:#70e7ba; box-shadow:0 0 7px rgba(112,231,186,.8); transform:rotate(45deg); }
+.pause-button { color:#e8f6ff; background:rgba(24,20,48,.86); border-color:rgba(120,207,255,.75); box-shadow:0 0 10px rgba(53,185,255,.42); }
+.skill-button,.special-button { border-color:#ffa94d; box-shadow:0 0 14px rgba(255,169,77,.65),0 3px 8px #122a40; }
+.skill-button { flex-basis:84px; width:84px; height:84px; }
+.skill-button > span,.special-button > span { background:radial-gradient(circle at 35% 25%,#765064,#322345 76%); }
+.boss-hud { top:calc(max(10px,var(--safe-top)) + 78px); }
