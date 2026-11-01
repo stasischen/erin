@@ -1,4 +1,23 @@
 let lastSlotMarkup = "";
+let hudPlayerLevel=null,hudKillCount=null,hudGemCount=null;
+function setupArcadeHud() {
+  const hud=document.querySelector('.hud'),health=document.querySelector('.health-wrap');
+  if(!hud||!health||!document.createElement||!health.querySelector||typeof health.replaceChildren!=='function'||typeof hud.appendChild!=='function')return;
+  const track=health.querySelector('.health-track');
+  if(!track)return;
+  const avatar=document.createElement('canvas');avatar.className='hud-avatar';avatar.width=108;avatar.height=108;avatar.setAttribute('aria-hidden','true');
+  const details=document.createElement('div');details.className='hud-player-details';
+  const name=document.createElement('strong');name.className='hud-player-name';name.textContent='水星人';
+  hudPlayerLevel=document.createElement('span');hudPlayerLevel.className='hud-player-level';hudPlayerLevel.textContent='Lv.1';
+  details.append(name,hudPlayerLevel,track);health.replaceChildren(avatar,details);
+  const context=avatar.getContext('2d');
+  if(context&&globalThis.SurvivorArt){context.scale(2,2);context.translate(27,48);context.scale(.48,.48);SurvivorArt.drawCharacter('character/player',{context,animation:'idle',elapsed:0});}
+  const counters=document.createElement('div');counters.className='hud-counters';counters.setAttribute('aria-hidden','true');
+  const makeCounter=(icon,kind)=>{const item=document.createElement('span');item.className=`hud-counter hud-counter-${kind}`;const symbol=document.createElement('span');symbol.className='hud-counter-symbol';symbol.innerHTML=SurvivorIcons.html(icon);const value=document.createElement('b');value.textContent='0';item.append(symbol,value);counters.appendChild(item);return value;};
+  hudKillCount=makeCounter('monster','kills');hudGemCount=makeCounter('gem','gems');hud.appendChild(counters);
+}
+setupArcadeHud();
+
 // Read presentation data only; never change encounter actors or legacy armor.
 function bossHudEntries() {
   if (!['playing', 'paused', 'settings', 'levelup'].includes(state.mode)) return [];
@@ -60,8 +79,11 @@ function updateHud() {
   const maxHealth = maxPlayerHealth();
   const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;
-  healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ff8585 0 48%, #e13e4d 49%)" : "linear-gradient(#5be08b 0 48%, #24b75c 49%)";
+  healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ffb4c8 0 48%, #c2607f 49%)" : "linear-gradient(#ffd3df 0 48%, #f5a1bc 49%)";
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
+  if(hudPlayerLevel)hudPlayerLevel.textContent=`Lv.${state.level}`;
+  if(hudKillCount)hudKillCount.textContent=String(state.schoolCombat&&state.schoolCombat.kills||0);
+  if(hudGemCount)hudGemCount.textContent=String(state.gems.reduce((count,gem)=>count+(gem.alive?1:0),0));
   levelLabel.hidden=!!state.trial;statusEl.hidden=!!state.trial;
   const experienceWrap=document.querySelector('.experience-wrap');
   if(experienceWrap)experienceWrap.hidden=!!state.trial;
@@ -110,7 +132,8 @@ function updateActionControls() {
     [skillButton, state.skillCooldown, gameSettings.bombCooldown, "泡泡炸彈"]
   ]) {
     const ready = button === dashButton ? state.dashCharges > 0 && state.dashTimer <= 0 : remaining <= 0;
-    button.style.background = `conic-gradient(#9df6ff ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
+    const chargeColor=button===skillButton?'#ffa94d':'#78cfff';
+    button.style.background = `conic-gradient(${chargeColor} ${Math.max(0, 1 - remaining / total) * 360}deg, #375776 0deg)`;
     if (button === dashButton) {
       const segments = [], count = maxDashCharges();
       for (let i=0;i<count;i++) {
