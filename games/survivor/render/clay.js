@@ -1,7 +1,7 @@
 // D1 主角黏土造型：所有漸層與姿勢只在載入時預繪，遊戲逐幀只貼圖。
 (function(root) {
   'use strict';
-  const W=64,H=80,PAD=20,CW=W+PAD*2,S=2;
+  const W=64,H=80,PAD=20,VPAD=10,CW=W+PAD*2,CH=H+VPAD*2,S=2;
   const colors={hood:['#ffffff','#d6f6ff','#78cfff','#388de6','#2464bb'],body:['#78cfff','#388de6','#2464bb','#183b70'],skin:['#fff6ea','#f0cfa4','#c9936b'],limb:['#d6f6ff','#78cfff','#388de6'],leg:['#c9936b','#936246','#5a3a2b']};
   const cache={};
   const clamp=n=>Math.max(0,Math.min(1,n));
@@ -29,8 +29,8 @@
     g.closePath();g.fillStyle='#ffe08a';g.fill();g.strokeStyle='#fff6c5';g.lineWidth=.8;g.stroke();
   }
   function makePose(name,step=0) {
-    const canvas=document.createElement('canvas');canvas.width=CW*S;canvas.height=H*S;
-    const g=canvas.getContext('2d');g.scale(S,S);g.translate(PAD,0);
+    const canvas=document.createElement('canvas');canvas.width=CW*S;canvas.height=CH*S;
+    const g=canvas.getContext('2d');g.scale(S,S);g.translate(PAD,VPAD);
     let shiftX=0,tilt=0,sx=1,sy=1,armL=12*Math.PI/180,armR=-12*Math.PI/180,liftL=0,liftR=0,closed=false;
     if(name==='run'){tilt=step?-5:5;shiftX=0;sx=1.02;sy=.98;armL=(step?25:-25)*Math.PI/180;armR=-armL;liftL=step?0:4.5;liftR=step?4.5:0;}
     if(name==='windup'){sx=1.12;sy=.86;armL=140*Math.PI/180;armR=-140*Math.PI/180;}
@@ -77,12 +77,12 @@
     if(name==='recovery'){frames=cache.recovery;index=Math.round(4*clamp((options.phaseElapsed||0)/Math.max(.15,options.phaseDuration||.15)));}
     if(!Array.isArray(frames))frames=[frames];
     const sprite=frames[index]||cache.idle;
-    const y=-H+(options.groundOffset||0);
+    const y=-H-VPAD+(options.groundOffset||0);
     g.save();
     if(name==='idle')g.scale(1,1+.03*Math.sin((options.elapsed||0)*Math.PI*2/.8));
     if(name==='run')g.translate(0,-2);
-    g.drawImage(sprite,-W/2-PAD,y,CW,H);
-    if(options.flash){const flashFrames=cache.flash[name]||cache.flash.idle;g.globalCompositeOperation='lighter';g.globalAlpha=.72;g.drawImage(flashFrames[index]||flashFrames[0],-W/2-PAD,y,CW,H);}
+    g.drawImage(sprite,-W/2-PAD,y,CW,CH);
+    if(options.flash){const flashFrames=cache.flash[name]||cache.flash.idle;g.globalCompositeOperation='lighter';g.globalAlpha=.72;g.drawImage(flashFrames[index]||flashFrames[0],-W/2-PAD,y,CW,CH);}
     g.restore();return true;
   }
   const monsterCache={},tintedCache=new WeakMap();
