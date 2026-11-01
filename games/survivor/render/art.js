@@ -195,7 +195,9 @@
     if(!art)return false;
     if(art.sheet)return draw(id,{...options,time:options.elapsed===undefined?options.time:options.elapsed,tint:options.flash?'#ffffff':options.tint});
     const clay=root.SurvivorClay;
-    return id==='character/player'&&!!(clay&&clay.drawPlayer)&&clay.drawPlayer(options.context,{...options,animation:art.animation});
+    if(!clay)return false;
+    if(id==='character/player')return !!(clay.drawPlayer&&clay.drawPlayer(options.context,{...options,animation:art.animation}));
+    return id.startsWith('character/')&&!!(clay.drawMonster&&clay.drawMonster(options.context,id.slice(10),{...options,animation:art.animation}));
   }
   function iconHtml(id) {
     const art=lookup(id);if(!art||!art.sheet)return null;

@@ -297,11 +297,12 @@ function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", d
   const hop = Math.abs(Math.sin(bounce)) * 2 + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
   drawingContext.save(); drawingContext.translate(x, y - hop);
+  const artId='character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
+  if(SurvivorArt.drawCharacter(artId,{context:drawingContext,x:-r,y:-r,width:r*2,height:r*2,animation,elapsed:seconds,...artContext,flash,tint})) {drawingContext.restore();return;}
   const sprite = spriteId ? null : SPRITES[enemyId];
   if (sprite) {
     drawOutlinedSprite(drawingContext, sprite, -r, -r, r * 2, r * 2, flash ? "#ffffff" : tint); drawingContext.restore(); return;
   }
-  const artId='character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
   const skin = SurvivorMonsters.picture(artId.slice(10), animation, seconds, artContext);
   if (skin) {
     drawingContext.imageSmoothingEnabled = false;
