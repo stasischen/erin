@@ -60,7 +60,7 @@ function drawBossMovesPlaceholder() {
     if(!move.active)warningFeedback(moveFeedback(bossDefinition(move),'move'),move.warning);
     if(bossKind(move)==='leap' || bossKind(move)==='tracking') {
       const point=move.points[0],x=move.x+deltaX(point.x,move.x),y=move.y+deltaY(point.y,move.y);
-      ctx.beginPath();ctx.arc(x,y,point.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+      const progress=move.active?1:1-move.warning/Math.max(.001,bossDefinition(move).warning);SurvivorNeon.warning(ctx,x,y,point.r,progress,move.active);
       if(move.recovery) {ctx.fillStyle='#ffcf49';ctx.font='bold 25px system-ui';ctx.fillText('★ ★',state.boss.x-25,state.boss.y-65);}
     } else if(bossKind(move)==='sniper') {
       ctx.lineWidth=2;ctx.strokeStyle='#e3394e';ctx.beginPath();ctx.moveTo(move.x,move.y);ctx.lineTo(move.x+Math.cos(move.angle)*1400,move.y+Math.sin(move.angle)*1400);ctx.stroke();
@@ -83,7 +83,7 @@ function drawBossMovesPlaceholder() {
       for (const rawPoint of move.points) {
         const point = { ...rawPoint, x: move.x + deltaX(rawPoint.x, move.x), y: move.y + deltaY(rawPoint.y, move.y) };
         if (bossKind(move) === "rain") drawLandingShadow(point.x, point.y, 16, move.active ? 1 : 1 - move.warning / bossDefinition(move).warning);
-        ctx.beginPath(); ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        const progress=move.active?1:1-move.warning/Math.max(.001,bossDefinition(move).warning);SurvivorNeon.warning(ctx,point.x,point.y,point.r,progress,move.active);
         if (bossKind(move) === "rain") {
           const height = move.active ? 0 : move.warning / bossDefinition(move).warning * 70;
           ctx.fillStyle = "#fff8dd"; ctx.fillRect(point.x - 12, point.y - height - 16, 24, 30); ctx.strokeRect(point.x - 12, point.y - height - 16, 24, 30);
@@ -495,6 +495,7 @@ function drawOneUltimatePlaceholder(v) {
 function render() {
   SurvivorArt.lookup("scene/world");
   updateCamera();
+  const glowGems=state.gems.filter(item=>item.alive).length<=80;
   ctx.save();
   if(state.zoom) {
     ctx.setTransform(state.pixelRatio*state.zoom,0,0,state.pixelRatio*state.zoom,state.viewLeft*state.pixelRatio,state.viewTop*state.pixelRatio);
@@ -526,7 +527,7 @@ function render() {
       drawProjectileArt(shot);
     }
     for (const gem of state.gems) {
-      drawGemArt(gem);
+      drawGemArt(gem,glowGems);
     }
     for (const shot of state.enemyShots) {
       drawEnemyShotArt(shot);
@@ -742,11 +743,9 @@ function drawPacingWarningsPlaceholder() {
     if(!e.alive) continue;
     const a=e.action, shooting=e.shotWarning>0;
     if(!a && !shooting) continue;
-    ctx.save();ctx.strokeStyle=a && a.kind==='shield'?'#b4ecff':'#ff9a83';
-    ctx.fillStyle=a && a.kind==='blast' ? 'rgba(255,65,65,'+(.12+.2*Math.abs(Math.sin(a.warning*16)))+')' : 'rgba(255,110,90,.12)';ctx.lineWidth=3;
     const feedback=enemyFeedback(e,'legacy');warningFeedback(feedback,(a&&a.warning)||e.shotWarning||0);
     const r=a && a.kind==='blast'?GAME_DATA.pacing.blastRadius:a && a.kind==='shield'?GAME_DATA.pacing.shieldRadius:e.r+10;
-    ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    const remaining=(a&&a.warning)||e.shotWarning||0;SurvivorNeon.warning(ctx,e.x,e.y,r,1/(1+Math.max(0,remaining)));ctx.save();ctx.strokeStyle='#ff6a3d';ctx.lineWidth=3;
     if(a && a.kind==='charge') {
       ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds,e.y+Math.sin(a.angle)*GAME_DATA.pacing.chargeSpeed*GAME_DATA.pacing.chargeSeconds);ctx.stroke();
     }
@@ -797,8 +796,8 @@ function drawPhasedAttacksPlaceholder() {
         else if(c.shape==='sector') {const h=c.angle*Math.PI/360;ctx.moveTo(0,0);ctx.arc(0,0,c.radius*p,-h,h);ctx.closePath();}
         else {const radius=c.shape==='ring'?c.innerRadius+(c.radius-c.innerRadius)*p:c.radius*p;ctx.arc(0,0,radius,0,Math.PI*2);if(c.shape==='ring'){ctx.moveTo(c.innerRadius,0);ctx.arc(0,0,c.innerRadius,0,Math.PI*2,true);}}
       };
-      path(1);ctx.save();ctx.globalAlpha=.2;ctx.fill();ctx.restore();ctx.stroke();
-      path(progress);ctx.fill();
+      if(c.shape==='circle'){SurvivorNeon.warning(ctx,a.x,a.y,c.radius,progress);path(progress);ctx.strokeStyle=a.phase==='active'?'#fff':'#ffa94d';ctx.lineWidth=2;ctx.stroke();}
+      else {ctx.strokeStyle='#ff6a3d';ctx.fillStyle=warning?'rgba(255,106,61,.12)':'rgba(255,106,61,.25)';path(1);ctx.save();ctx.globalAlpha=.2;ctx.fill();ctx.restore();ctx.stroke();path(progress);ctx.fill();}
       if(state.practiceHitboxes) {path(1);ctx.strokeStyle='#fff5ae';ctx.lineWidth=1;ctx.stroke();}
     }
     ctx.restore();
@@ -832,15 +831,8 @@ function drawWaveEventWarningPlaceholder() {
 
 function drawProjectileArt(shot) {
   return SurvivorArt.paint('projectile/water', {context:ctx,...{x:shot.x-shot.r,y:shot.y-shot.r,width:shot.r*2,height:shot.r*2,time:state.elapsed,animation:'active',aim:{x:shot.vx,y:shot.vy}}}, () => {
-      const colors = shot.colors || ['water'];
-      ctx.fillStyle = BUILD_TUNING[colors[0]].color;
-      if (colors.length > 1) { const gradient=ctx.createLinearGradient(shot.x-shot.r,shot.y,shot.x+shot.r,shot.y);gradient.addColorStop(0,BUILD_TUNING[colors[0]].color);gradient.addColorStop(1,BUILD_TUNING[colors[1]].color);ctx.fillStyle=gradient; } ctx.strokeStyle = "#0759a8"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      if (shot.schools && shot.schools.includes("wind")) {
-        const speed = Math.max(1, Math.hypot(shot.vx, shot.vy));
-        ctx.strokeStyle = "#23815e"; ctx.lineWidth = 3;
-        for (const offset of [-6, 6]) { ctx.beginPath(); ctx.moveTo(shot.x, shot.y + offset); ctx.lineTo(shot.x - shot.vx / speed * 30, shot.y - shot.vy / speed * 30 + offset); ctx.stroke(); }
-      }
+      SurvivorNeon.projectile(ctx,shot,state.projectiles.length<=60);
+      if (shot.schools && shot.schools.includes("wind")) {const speed=Math.max(1,Math.hypot(shot.vx,shot.vy));ctx.strokeStyle='#70e7ba';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(shot.x,shot.y);ctx.lineTo(shot.x-shot.vx/speed*20,shot.y-shot.vy/speed*20);ctx.stroke();}
       if ((shot.colors || shot.schools || []).includes("thunder") || shot.charged) drawBolt(shot.x - 5, shot.y - 12, shot.x + 5, shot.y + 12);
       if (shot.transformed) { ctx.strokeStyle='#e7ffef';ctx.lineWidth=2;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+7,0,Math.PI*2);ctx.stroke(); }
       if (shot.piercing) {
@@ -853,11 +845,9 @@ function drawProjectileArt(shot) {
   });
 }
 
-function drawGemArt(gem) {
+function drawGemArt(gem,glowEnabled=true) {
   return SurvivorArt.paint('pickup/gem', {context:ctx,...{x:gem.x-7,y:gem.y-7,width:14,height:14,time:state.elapsed}}, () => {
-      ctx.save(); ctx.translate(gem.x, gem.y + Math.sin(gem.wobble) * 2); ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = GEM_COLOR; ctx.strokeStyle = "#a65300"; ctx.lineWidth = 2; ctx.fillRect(-7, -7, 14, 14); ctx.strokeRect(-7, -7, 14, 14);
-      ctx.fillStyle = "rgba(255,255,255,.72)"; ctx.fillRect(-4, -4, 3, 3); ctx.restore();
+      SurvivorNeon.gem(ctx,gem,glowEnabled);
   });
 }
 
@@ -888,10 +878,10 @@ function drawParticleArt(effect) {
   return SurvivorArt.paint(SurvivorArt.lookup('effect/'+effect.kind)?'effect/'+effect.kind:'effect/particle', {context:ctx,...{x:effect.x-16,y:effect.y-16,width:32,height:32,time:effect.maxLife-effect.life,animation:'active',phaseElapsed:effect.maxLife-effect.life,phaseDuration:effect.maxLife}}, () => {
       const alpha = Math.max(0, effect.life / effect.maxLife); ctx.globalAlpha = alpha; ctx.fillStyle = effect.color;
       if (effect.kind === "water-hit") {
-        ctx.strokeStyle = effect.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(effect.x, effect.y, 5 + (1 - alpha) * 15, 0, Math.PI * 2); ctx.stroke();
-        ctx.font = "bold 16px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#2458a4"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y - 14); ctx.fillText(effect.text, effect.x, effect.y - 14);
+        SurvivorNeon.hit(ctx,effect,Math.min(alpha,effect.life/.12));ctx.font='800 16px "M PLUS Rounded 1c",system-ui';ctx.textAlign='center';ctx.strokeStyle='#35b9ff';ctx.lineWidth=3;ctx.strokeText(effect.text,effect.x,effect.y-14);ctx.fillStyle='#fff';ctx.fillText(effect.text,effect.x,effect.y-14);
       }
-      else if (effect.kind === "number") { ctx.font = `bold ${15*(effect.numberScale||1)}px system-ui`; ctx.textAlign = "center"; ctx.strokeStyle = "#355066"; ctx.lineWidth = 3; ctx.strokeText(effect.text, effect.x, effect.y); ctx.fillText(effect.text, effect.x, effect.y); }
+      else if (effect.kind === "number") SurvivorNeon.damageNumber(ctx,effect,alpha);
+      else if (effect.kind === "spark") {SurvivorNeon.hit(ctx,effect,Math.min(alpha,effect.life/.12));}
       else if (effect.kind === "heal") { ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(effect.text, effect.x, effect.y); }
       else if (effect.kind === "evaporate") { ctx.beginPath(); ctx.ellipse(effect.x, effect.y, 13 * (1.5 - alpha), 18 * alpha, 0, 0, Math.PI * 2); ctx.fill(); }
       else { ctx.fillRect(effect.x - 2, effect.y - 2, 4, 4); }
