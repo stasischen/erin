@@ -238,5 +238,6 @@ SurvivorArtManifest.assets['effect/weakpoint']={...JSON.parse(JSON.stringify(Sur
 
 // 原創雙刃刺客及可替換的積木提示；碰撞／招式計時不從圖像推導。
 SurvivorArtManifest.assets['character/assassin']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['character/gatekeeper'])),sheet:'art/characters/assassin.png',placeholder:{body:'#776b98',outline:'#272638',eyes:'#fff5df'},anchors:{weakpoint:[.5,.5]}};
+for(const id of ['gatekeeper','frost-twin','fire-twin','winged','assassin'])SurvivorArtManifest.assets['character/'+id].renderId='character/'+id;
 for(const id of ['blade-combo','shadowstep','kunai-slide','kunai','white-flash'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['move/feather'])),sheet:null,palette:id==='white-flash'?['#ffffff','#fff0c5','#3f344e']:['#fff0d5','#655582','#302c41']};
 SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/weakpoint'])),palette:['#ff4568','#fff0a5','#ffb85b']};

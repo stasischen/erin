@@ -60,7 +60,7 @@
     const sync=clip.syncToPhase===undefined?['windup','active','recovery'].includes(name.split('_')[0]):clip.syncToPhase;
     const effectiveClip={fps:0,loop:['idle','run'].includes(name.split('_')[0]),...clip};
     const frame=selectFrame(frames,effectiveClip,time,context.phaseDuration,sync||!!(a.vfx&&a.vfx.progressMode==='phase'));
-    return {id,animation:name,sheet:clip.sheet===undefined?a.sheet:clip.sheet,mode:a.mode,frame,
+    return {id,animation:name,sheet:clip.sheet===undefined?a.sheet:clip.sheet,mode:a.mode,frame,renderId:a.renderId,
       frameSize:a.frameSize.slice(),pivot:a.pivot.slice(),hitboxAnchor:a.hitboxAnchor.slice(),anchors:copy(a.anchors||{}),
       directions:a.directions||1,...facing,row:mapped?0:facing.row,layout:copy(clip.layout||a.layout),
       displaySize:copy(a.displaySize),scale:a.scale===undefined?1:a.scale,outline:copy(a.outline),
@@ -193,11 +193,12 @@
   function drawCharacter(id,options={}) {
     const art=lookup(id,options.animation||'idle',options.elapsed||options.time||0,root.SurvivorArtManifest,options);
     if(!art)return false;
-    if(art.sheet)return draw(id,{...options,time:options.elapsed===undefined?options.time:options.elapsed,tint:options.flash?'#ffffff':options.tint});
+    if(art.sheet&&!art.renderId)return draw(id,{...options,time:options.elapsed===undefined?options.time:options.elapsed,tint:options.flash?'#ffffff':options.tint});
     const clay=root.SurvivorClay;
     if(!clay)return false;
-    if(id==='character/player')return !!(clay.drawPlayer&&clay.drawPlayer(options.context,{...options,animation:art.animation}));
-    return id.startsWith('character/')&&!!(clay.drawMonster&&clay.drawMonster(options.context,id.slice(10),{...options,animation:art.animation}));
+    const renderId=art.renderId||id;
+    if(renderId==='character/player')return !!(clay.drawPlayer&&clay.drawPlayer(options.context,{...options,animation:art.animation}));
+    return renderId.startsWith('character/')&&!!(clay.drawMonster&&clay.drawMonster(options.context,renderId.slice(10),{...options,animation:art.animation}));
   }
   function iconHtml(id) {
     const art=lookup(id);if(!art||!art.sheet)return null;

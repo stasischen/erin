@@ -1,6 +1,7 @@
 let lastSlotMarkup = "";
 let hudPlayerLevel=null,hudKillCount=null,hudGemCount=null;
 function setupArcadeHud() {
+  if(typeof document.querySelector!=='function')return;
   const hud=document.querySelector('.hud'),health=document.querySelector('.health-wrap');
   if(!hud||!health||!document.createElement||!health.querySelector||typeof health.replaceChildren!=='function'||typeof hud.appendChild!=='function')return;
   const track=health.querySelector('.health-track');
