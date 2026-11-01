@@ -1,7 +1,7 @@
 // Pre-rendered neon accents for the D art direction. No per-frame blur or gradients.
 globalThis.SurvivorNeon=(()=>{
   const sprites={};
-  const colors={blue:'#35b9ff',green:'#70e7ba',orange:'#ff6a3d',white:'#78cfff'};
+  const colors={blue:'#35b9ff',green:'#70e7ba',orange:'#ff6a3d',white:'#78cfff',pink:'#f5a1bc'};
   function glow(name){
     if(Object.prototype.hasOwnProperty.call(sprites,name))return sprites[name];
     const c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d');
@@ -26,5 +26,10 @@ globalThis.SurvivorNeon=(()=>{
   function warning(g,x,y,r,progress=1){const alpha=.25+.75*Math.max(0,Math.min(1,progress));glowAt(g,'orange',x,y,r*2.5,alpha*.7);g.save();g.globalAlpha=alpha;g.fillStyle='rgba(255,106,61,.12)';g.strokeStyle='#ff6a3d';g.lineWidth=3;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();g.stroke();if(g.ellipse&&g.setLineDash){g.setLineDash([5,5]);g.strokeStyle='#ffa94d';g.lineWidth=2;g.beginPath();g.ellipse(x,y,Math.max(1,r-6),Math.max(1,r-6),0,0,Math.PI*2);g.stroke();g.setLineDash([]);}g.restore();}
   function hit(g,e,alpha){const p=1-alpha;glowAt(g,'white',e.x,e.y,46,alpha);g.save();g.globalCompositeOperation='lighter';g.globalAlpha=alpha;g.strokeStyle='#d6f6ff';g.lineWidth=2;g.beginPath();g.arc(e.x,e.y,6+p*16,0,Math.PI*2);g.stroke();for(let i=0;i<8;i++){const a=i*Math.PI/4,len=9+p*14;g.beginPath();g.moveTo(e.x+Math.cos(a)*4,e.y+Math.sin(a)*4);g.lineTo(e.x+Math.cos(a)*len,e.y+Math.sin(a)*len);g.stroke();}g.restore();}
   function damageNumber(g,e,alpha){const critical=(e.numberScale||1)>1.35,size=critical?34:15*(e.numberScale||1);g.save();g.globalAlpha=alpha;g.textAlign='center';g.font=`800 ${size}px "M PLUS Rounded 1c",system-ui`;g.lineWidth=critical?4:3;g.strokeStyle=critical?'#ff6a3d':'#35b9ff';g.fillStyle=critical?'#ffe08a':'#fff';g.strokeText(critical?e.text+'!':e.text,e.x,e.y);g.fillText(critical?e.text+'!':e.text,e.x,e.y);g.restore();}
-  const api={projectile,gem,warning,hit,damageNumber};globalThis.Survivor=globalThis.Survivor||{};globalThis.Survivor.render=globalThis.Survivor.render||{};globalThis.Survivor.render.neon=api;return api;
+  function weakpointBurst(g,x,y,alpha=1){
+    g.save();g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(1,alpha);glowAt(g,'pink',x,y,76,.9);g.strokeStyle='#ffd3df';g.lineWidth=3;
+    for(let i=0;i<10;i++){const a=i*Math.PI/5,inner=9+(i%2)*3,outer=24+(i%3)*5;g.beginPath();g.moveTo(x+Math.cos(a)*inner,y+Math.sin(a)*inner);g.lineTo(x+Math.cos(a)*outer,y+Math.sin(a)*outer);g.stroke();}
+    g.restore();
+  }
+  const api={projectile,gem,warning,hit,damageNumber,glowAt,weakpointBurst};globalThis.Survivor=globalThis.Survivor||{};globalThis.Survivor.render=globalThis.Survivor.render||{};globalThis.Survivor.render.neon=api;return api;
 })();

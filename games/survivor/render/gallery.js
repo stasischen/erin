@@ -2,15 +2,26 @@
 function drawTrialArena() {
   const t=state.trial,a=t.arena;
   SurvivorArt.paint('scene/trial-arena',null,()=>{
-    ctx.save();ctx.fillStyle='#52626d';ctx.fillRect(state.cameraX,state.cameraY,state.width,state.height);
-    // 牆外石柱作背景裝飾，競技場仍鋪滿全畫面。
-    for(let i=0;i<24;i++){const angle=i*Math.PI/12;ctx.fillStyle=i%2?'#647781':'#374d5a';ctx.fillRect(a.x+Math.cos(angle)*(a.radius+85)-15,a.y+Math.sin(angle)*(a.radius+85)-18,30,36);}
-    ctx.beginPath();ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);ctx.fillStyle='#d2bba1';ctx.fill();ctx.strokeStyle='#3b4659';ctx.lineWidth=24;ctx.stroke();
-    ctx.beginPath();ctx.arc(a.x,a.y,a.radius-12,0,Math.PI*2);ctx.strokeStyle='#f4dfb6';ctx.lineWidth=3;ctx.stroke();
-    for(let r=160;r<a.radius;r+=160){ctx.beginPath();ctx.arc(a.x,a.y,r,0,Math.PI*2);ctx.strokeStyle='#baa68e';ctx.lineWidth=2;ctx.stroke();}
+    ctx.save();ctx.fillStyle='#120f24';ctx.fillRect(state.cameraX,state.cameraY,state.width,state.height);
+    const rx=Math.min(a.radius, state.width*.265), ry=Math.min(a.radius, state.height*.465);
+    ctx.beginPath();ctx.ellipse(a.x,a.y,rx,ry,0,0,Math.PI*2);ctx.fillStyle='#2d2656';ctx.fill();
+    ctx.strokeStyle='rgba(120,207,255,.16)';ctx.lineWidth=14;ctx.stroke();
+    ctx.strokeStyle='#78cfff';ctx.lineWidth=3;ctx.stroke();
+    ctx.beginPath();ctx.ellipse(a.x,a.y,Math.max(1,rx-10),Math.max(1,ry-10),0,0,Math.PI*2);ctx.strokeStyle='rgba(214,246,255,.62)';ctx.lineWidth=1;ctx.stroke();
+    ctx.globalAlpha=.22;ctx.strokeStyle='#78cfff';ctx.lineWidth=1;
+    for(let r=.35;r<.9;r+=.22){ctx.beginPath();ctx.ellipse(a.x,a.y,rx*r,ry*r,0,0,Math.PI*2);ctx.stroke();}
+    ctx.globalAlpha=1;
     if(t.entry>0)for(const b of trialBodies()){ctx.beginPath();ctx.arc(b.x,b.y,b.r+25+Math.sin(state.elapsed*8)*5,0,Math.PI*2);ctx.fillStyle='rgba(255,90,70,.3)';ctx.fill();ctx.strokeStyle='#ff614d';ctx.lineWidth=5;ctx.stroke();}
     ctx.restore();
   });
+}
+function drawTrialHud() {
+  if(!state.trial)return;
+  const width=state.screenWidth||state.width,height=state.screenHeight||state.height,y=height-42,name=state.trial.definition.name;
+  ctx.save();ctx.translate(width/2,y);ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='800 30px "M PLUS Rounded 1c",system-ui';ctx.lineJoin='round';ctx.lineWidth=5;ctx.strokeStyle='#ff6a3d';ctx.strokeText(name,0,-5);
+  ctx.fillStyle='#e8f6ff';ctx.fillText(name,0,-5);
+  const ruleWidth=Math.min(260,ctx.measureText(name).width+32);ctx.strokeStyle='#ffa94d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-ruleWidth/2,13);ctx.lineTo(ruleWidth/2,13);ctx.stroke();ctx.restore();
 }
 function drawTrialShape(shape,origin,angle,active) {
   ctx.save();ctx.translate(origin.x,origin.y);ctx.rotate(angle);ctx.beginPath();
@@ -59,7 +70,8 @@ function trialPicture() {
     trialPlaceholders[id]=trialPlaceholder;
   }return trialPlaceholder;
 }
-Survivor.render.gallery={drawTrialArena,drawTrialMoves};
+globalThis.Survivor=globalThis.Survivor||{};globalThis.Survivor.render=globalThis.Survivor.render||{};
+globalThis.Survivor.render.gallery={drawTrialArena,drawTrialMoves,drawTrialBodies,drawTrialHud};
 
 function drawTrialEncounter(){
  const t=state.trial;

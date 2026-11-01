@@ -216,6 +216,7 @@ globalThis.SurvivorArtManifest = {
  const template=SurvivorArtManifest.assets['character/gatekeeper'];
  for(const [id,color] of [['frost-twin','#65cfff'],['fire-twin','#fa9157'],['winged','#b09ae3']])SurvivorArtManifest.assets['character/'+id]={...JSON.parse(JSON.stringify(template)),sheet:'art/characters/'+id+'.png',placeholder:{body:color,outline:'#333044',eyes:'#ffdd80'}};
  for(const id of ['frost-dash','nova','cross','icefall','meteor','dive','feathers','spiral','tornado','ice','feather'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(template)),sheet:null,mode:'procedural'};
+Object.assign(template,{renderId:'character/chocolate-bear'});
 })();
 
 // v2 的選填欄位不改舊條目；示範圖不替換正式角色，玩法及原外觀保持不變。

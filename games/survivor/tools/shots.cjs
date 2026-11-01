@@ -11,7 +11,9 @@ const cardIndex = process.argv.indexOf('--card');
 const CARD = cardIndex >= 0 ? process.argv[cardIndex + 1] : 'a0';
 if (!/^[a-z0-9-]+$/.test(CARD)) throw new Error('請用 --card 指定小寫卡號，例如 d1。');
 const OUT = path.join(os.homedir(), '.local/share/erin/art-review', CARD);
-const SIZES = [[1024,461],[740,360],[1180,820]];
+const sizeIndex=process.argv.indexOf('--size');
+const sizeMap={'1024x461':[1024,461],'740x360':[740,360],'1180x820':[1180,820]};
+const SIZES=sizeIndex<0?[[1024,461],[740,360],[1180,820]]:[sizeMap[process.argv[sizeIndex+1]]||(()=>{throw new Error('未知尺寸，請用 1024x461、740x360 或 1180x820。')})()];
 const STATES = ['opening','battle','levelup'];
 const MIME = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2'};
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -61,7 +63,7 @@ function cdpClient(socket) {
 }
 async function evaluate(cdp,expression) {
   const reply = await cdp.send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});
-  if (reply.exceptionDetails) throw new Error(reply.exceptionDetails.text || expression);
+  if (reply.exceptionDetails) throw new Error(JSON.stringify(reply.exceptionDetails));
   return reply.result && reply.result.value;
 }
 async function waitFor(cdp,expression,label,timeout=12000) {
@@ -126,11 +128,25 @@ async function captureRun(cdp,baseUrl,width,height) {
   await sleep(350);
   const levelup = path.join(OUT,`${prefix}-levelup.png`);
   await screenshot(cdp,levelup);
+  if(CARD==='d6'){
+    await evaluate(cdp,`document.querySelector('#trialEntry').click()`);
+    await waitFor(cdp,'!document.querySelector("#trialPanel").hidden','王的試煉選單');
+    await evaluate(cdp,`[...document.querySelectorAll('#trialChoices .trial-choice')].find(button=>button.title==='巨斧守門人').click()`);
+    await waitFor(cdp,'state.trial && state.boss','Boss 試煉開場');
+    await evaluate(cdp,`state.player.damageDisabled=true`);
+    await waitFor(cdp,'state.boss && state.trial.entry<=0','Boss 登場動畫');
+    await evaluate(cdp,`state.mode='paused'; triggerBossWeakpoint(state.boss,'wall-stun',1); updateBossWeakpoints(.16); state.boss.impactFlash=.12; state.boss.feedbackNumberScale=1.7; render()`);
+    await waitFor(cdp,'state.boss.weakpoints && state.boss.weakpoints.core && state.boss.weakpoints.core.phase==="open"','Boss 弱點開啟',12000);
+    await sleep(100);
+    const boss = path.join(OUT,`${prefix}-boss.png`);
+    await screenshot(cdp,boss);
+    console.log(`PASS ${prefix}: boss=${boss}`);
+  }
   console.log(`PASS ${prefix}: opening=${opening} battle=${battle} levelup=${levelup}`);
 }
 async function main() {
   fs.mkdirSync(OUT,{recursive:true});
-  for (const [w,h] of SIZES) for (const state of STATES) {
+  for (const [w,h] of SIZES) for (const state of [...STATES,...(CARD==='d6'?['boss']:[])]) {
     const file = path.join(OUT,`${w}x${h}-${state}.png`);
     if (fs.existsSync(file)) throw new Error(`拒絕覆寫既有截圖：${file}`);
   }
@@ -154,7 +170,8 @@ async function main() {
     const baseUrl = `http://127.0.0.1:${server.address().port}/games/survivor/`;
     for (const [width,height] of SIZES) await captureRun(cdp,baseUrl,width,height);
     const files = fs.readdirSync(OUT).filter(name => name.endsWith('.png'));
-    if (files.length !== 9) throw new Error(`預期 9 張截圖，實際找到 ${files.length} 張`);
+    const expected=SIZES.length*(CARD==='d6'?4:3);
+    if (files.length !== expected) throw new Error(`預期 ${expected} 張截圖，實際找到 ${files.length} 張`);
     console.log(`完成：${files.length} 張截圖，固定隨機種子 16807，輸出 ${OUT}`);
   } finally {
     if (socket) socket.close();

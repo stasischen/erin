@@ -46,7 +46,7 @@ function bossArtShapes(move) {
   return [shape({type:'circle',radius:50},move,move.angle)];
 }
 function drawBossMovesPlaceholder() {
-  if(state.trial) {drawTrialMoves();return;}
+  if(state.trial) {globalThis.Survivor.render.gallery.drawTrialMoves();return;}
   for (const move of state.bossMoves) {
     // 美術是附加層；判定預警仍依原幾何畫出。
     for(const skin of bossArtShapes(move))SurvivorArt.draw('move/boss-'+move.id,{context:ctx,...skin,animation:move.recovery>0?'recovery':move.active?'active':'windup',time:state.elapsed,...bossArtContext(move)});
@@ -506,7 +506,7 @@ function render() {
   if(camera.rotation){ctx.translate(state.width/2,state.height/2);ctx.rotate(camera.rotation);ctx.translate(-state.width/2,-state.height/2);}
   ctx.translate(-state.cameraX+camera.x,-state.cameraY+camera.y);
   drawClassroom();
-  if(state.trial)drawTrialArena();
+  if(state.trial)globalThis.Survivor.render.gallery.drawTrialArena();
   drawBossZone();
   for (const offset of visibleWorldOffsets()) {
   ctx.save(); ctx.translate(offset.x, offset.y);
@@ -532,20 +532,23 @@ function render() {
     for (const shot of state.enemyShots) {
       drawEnemyShotArt(shot);
     }
-    if(state.trial&&state.trial.actors)drawTrialBodies();
+    if(state.trial&&state.trial.actors)globalThis.Survivor.render.gallery.drawTrialBodies();
     if (state.boss && !(state.trial&&state.trial.actors)) {
       const b = state.boss, x = b.x, y = b.y;
       const hop = Math.abs(Math.sin(b.wobble)) * 2 + bossAirHeight();
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
-      const scale = b.r / 32;
-      drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(state.trial?state.trial.definition.artId:'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale,{displayScale:scale}),undefined,SurvivorArt.lookup(state.trial?state.trial.definition.artId:'character/teacher').outline);
+      const scale = b.r / 32,trialArt=state.trial&&state.trial.definition.artId;
+      if(trialArt==='character/gatekeeper'){
+        const move=state.bossMoves[0],animation=b.impactFlash?'hurt':move?move.ai.phase:'idle',fit=Math.min(1/(state.zoom||1),Math.max(.1,(state.height/2-14)/(116*2.5)));
+        ctx.save();ctx.translate(x,y-hop);ctx.scale(fit*2.5,fit*2.5);SurvivorArt.drawCharacter(trialArt,{context:ctx,animation,elapsed:state.elapsed,flash:!!b.impactFlash});ctx.restore();
+      }else drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(trialArt||'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale,{displayScale:scale}),undefined,SurvivorArt.lookup(trialArt||'character/teacher').outline);
       drawBossWeakpoints(b,hop);
       if(b.posture && (b.posture.stun>0 || b.posture.value>=GAME_DATA.boss.posture.maximum*.75)) {
         const weak=b.posture.stun>0;ctx.fillStyle=weak?'#fff0a5':'#ffb95c';
         ctx.fillRect(x-18,y-hop-66,36,36);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-14,y-hop-62,28);
       }
-      ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${state.trial?state.trial.definition.name:GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);
+      if(!state.trial){ctx.fillStyle = "#293d51"; ctx.font = "bold 13px system-ui"; ctx.textAlign = "center"; ctx.fillText(state.bossShout > 0 ? "安靜！" : b.pursuing ? "快走追上！" : `${GAME_DATA.boss.name} · ${state.bossPhase}階段`, x, y + 52);}
     }
     for (const hazard of state.enemyHazards) {
       if (hazard.owner) { ctx.fillStyle='rgba(74,46,39,.22)'; ctx.beginPath(); ctx.arc(hazard.x,hazard.y,hazard.r,0,Math.PI*2); ctx.fill(); }
@@ -608,6 +611,7 @@ function render() {
   ctx.restore();
   ctx.save();
   if(state.zoom)ctx.setTransform(state.pixelRatio,0,0,state.pixelRatio,0,0);
+  if(state.trial&&globalThis.Survivor.render.gallery.drawTrialHud)globalThis.Survivor.render.gallery.drawTrialHud();
   if (state.joy) {
     const radius = GAME_DATA.joystick.radius;
     const inset = joystickBounds(state.screenWidth||state.width, state.screenHeight||state.height, radius).minX;
