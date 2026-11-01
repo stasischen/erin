@@ -122,10 +122,11 @@ function drawTrialEncounter(){
 function drawTrialBodies(){
  for(const body of trialBodies())withTrialBody(body,()=>{
    if(body.vanished)return;
-   const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0;
+   const m=body.moves[0],air=m&&m.id==='dive'&&['windup','active'].includes(m.ai.phase)?m.ai.phase==='windup'?60:60*m.ai.left/m.duration:0,art=SurvivorArt.lookup(body.artId);
    const x=body.x,y=body.y,scale=body.r/32*(m&&m.ai.phase==='windup'?1+Math.sin(state.elapsed*12)*.05:1);
    drawGroundShadow(x,y,body.r,air);
-   drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,SurvivorArt.lookup(body.artId).outline);
+   if(art&&art.renderId){const fit=Math.min(1/(state.zoom||1),Math.max(.1,(state.height/2-14)/(116*2.5)))*(state.trial.definition.id==='frostfire'?.5:1);ctx.save();ctx.translate(x,y-air);ctx.scale(fit*2.5,fit*2.5);SurvivorArt.drawCharacter(body.artId,{context:ctx,animation:body.impactFlash?'hurt':m&&m.ai.phase||'idle',elapsed:state.elapsed,flash:!!body.impactFlash});ctx.restore();}
+   else drawOutlinedSprite(ctx,trialPicture(),...SurvivorArt.bounds(body.artId,x-32*scale,y-air-36*scale,64*scale,64*scale,{displayScale:scale}),undefined,art.outline);
    drawBossWeakpoints(body,air);
    const weak=body.posture.stun>0;
    if(weak||body.posture.value>=GAME_DATA.boss.posture.maximum*.75){ctx.fillStyle=weak?'#fff0a5':'#ffb95c';ctx.fillRect(x-16,y-air-70,32,32);SurvivorIcons.draw(ctx,weak?'weakpoint':'posture',x-12,y-air-66,24);}

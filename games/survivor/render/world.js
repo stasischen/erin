@@ -493,6 +493,7 @@ function drawOneUltimatePlaceholder(v) {
 }
 
 function render() {
+  if(document.body)document.body.classList.toggle('boss-trial',!!state.trial);
   SurvivorArt.lookup("scene/world");
   updateCamera();
   const glowGems=state.gems.filter(item=>item.alive).length<=80;
@@ -539,7 +540,7 @@ function render() {
       if(b.pursuing) {ctx.fillStyle='#54bfff';for(const side of [-1,1]) {ctx.beginPath();ctx.ellipse(x+side*39,y-35+Math.sin(b.wobble)*4,3,7,.3*side,0,Math.PI*2);ctx.fill();}}
       drawGroundShadow(x, y, b.r, hop);
       const scale = b.r / 32,trialArt=state.trial&&state.trial.definition.artId;
-      if(trialArt==='character/gatekeeper'){
+      if(trialArt&&SurvivorArt.lookup(trialArt).renderId){
         const move=state.bossMoves[0],animation=b.impactFlash?'hurt':move?move.ai.phase:'idle',fit=Math.min(1/(state.zoom||1),Math.max(.1,(state.height/2-14)/(116*2.5)));
         ctx.save();ctx.translate(x,y-hop);ctx.scale(fit*2.5,fit*2.5);SurvivorArt.drawCharacter(trialArt,{context:ctx,animation,elapsed:state.elapsed,flash:!!b.impactFlash});ctx.restore();
       }else drawOutlinedSprite(ctx, teacherPicture(b.impactFlash || b.flash && !b.meleeFlash || state.bossShout > 0), ...SurvivorArt.bounds(trialArt||'character/teacher',x - 26 * scale, y - hop - 34 * scale, 52 * scale, 68 * scale,{displayScale:scale}),undefined,SurvivorArt.lookup(trialArt||'character/teacher').outline);
