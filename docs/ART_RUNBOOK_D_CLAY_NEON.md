@@ -1,6 +1,6 @@
 # 美術 Runbook：D 黏土角色＋霓虹特效
 
-版本 1（2026-10-31）。設計稿由家長在 Claude 畫布上確認（「小怪獸 美術設計稿」D 排三張）；Codex 看不到畫布，**以本文件為準**。
+版本 1.1（2026-11-01，依 D1 實作回報裁定 5 點）。設計稿由家長在 Claude 畫布上確認（「小怪獸 美術設計稿」D 排三張）；Codex 看不到畫布，**以本文件為準**。
 本方向取代 `coord/tasks/specs/art-direction-v1.md` 的 A／B／C 像素方向；`../erin-art/STYLE_GUIDE.md` 的像素規則（1px 外框、32 色鎖定、禁止半透明、nearest）**不適用於 D**。
 流程照 `docs/ART_FAST_TRACK.md`：只改允許的檔案、家長看截圖驗收、不走 Dot／Luna／Grok。
 
@@ -9,9 +9,9 @@
 ## 0. 總原則
 
 1. **角色是黏土，危險和回饋是霓虹。** 角色不發光（只有一圈細輪廓光）；子彈、預警、寶石、命中、HUD 線條發光。玩家要一眼分出「怪物」和「危險」。
-2. **先用程式畫黏土**（漸層＋光澤），載入時預先畫進離屏 canvas 當圖片用；之後才考慮換 3D 渲染圖。換圖時只換 art-manifest 的 sheet，遊戲碼不動。
+2. **先用程式畫黏土**（漸層＋光澤），載入時預先畫進離屏 canvas 當圖片用；之後才考慮換 3D 渲染圖。換圖時只換 art-manifest 的 sheet，遊戲碼不動。做法：world.js 等呼叫端只呼叫 `render/art.js` 的「畫角色（id, 姿勢）」；art.js 看 manifest 的 sheet，有圖就畫圖，`sheet: null` 就交給 SurvivorClay。呼叫端不直接呼叫 SurvivorClay。
 3. **不改玩法。** hitbox、速度、傷害、AI、出招時序都不動；動作只是讀現有狀態（idle／run／windup／active／recovery／hurt／stun）來決定姿勢。
-4. **效能底線**：iPhone／iPad Safari 上 200 隻怪維持 60fps。每幀禁止 `shadowBlur`、`filter`、新建漸層；發光一律用預先畫好的光暈圖＋`globalCompositeOperation = 'lighter'`。
+4. **效能底線**：iPhone／iPad Safari 上 200 隻怪維持 60fps。D1～D6 先用 Mac Chrome 量（200 怪平均 60fps、p95 ≤ 17ms 即可），iPad 實機在 D7 統一驗。每幀禁止 `shadowBlur`、`filter`、新建漸層；發光一律用預先畫好的光暈圖＋`globalCompositeOperation = 'lighter'`。
 
 ## 1. 色彩
 
@@ -63,7 +63,7 @@
 
 ## 3. 動作（擠壓與拉伸）
 
-整個身體以**腳底中心**為原點變形；不畫新幀，只改部件位置與角度。
+整個身體以**腳底中心**為原點變形；不另外設計新的圖，每個姿勢都是同一組部件改位置與角度。實作上在載入時把每個姿勢（含 recovery 過渡的幾個中間樣本）預先畫成圖、遊戲中依狀態選圖，這是正確做法。
 
 | 遊戲狀態 | 姿勢 | 身體變形 | 手 | 腳 | 眼 |
 |---|---|---|---|---|---|
@@ -73,7 +73,7 @@
 | active | 出招 | 上移 .07em、`scale(0.90, 1.14)` | 前揮 −60° | 著地 | 張開 |
 | recovery | 回到待機，150ms 緩動 | — | — | — | — |
 | hurt | 受擊 | 右移 .05em、傾斜 10°，**閃白 1 幀**（疊白色 lighter） | 70° | 著地 | 閉眼（兩條斜線） |
-| stun | 暈眩 | 同 hurt，頭上轉三顆小星 `#ffe08a` | — | — | 閉眼 |
+| stun（只在該角色本來就有暈眩狀態時，例如 Boss／怪物；玩家目前沒有，不為此改引擎） | 暈眩 | 同 hurt，頭上轉三顆小星 `#ffe08a` | — | — | 閉眼 |
 
 史萊姆／布丁沒有手腳：run = 左右傾斜 ±5° 交替；windup／active 同上表的身體變形。
 
@@ -113,20 +113,20 @@
 ## 7. 檔案與允許範圍
 
 - 新增：`games/survivor/render/clay.js`（黏土角色設定＋預先繪製）、`games/survivor/render/neon.js`（光暈圖＋特效）。
-- 可改：`render/**`、`art-manifest.js`、`style.css`、`ui/**` 的外觀部分、`assets/`（字型）、`tools/shots.cjs`。
+- 可改：`render/**`、`art-manifest.js`、`manifest.js`（載入清單）、`version.json` 與 `tools/version.cjs --write` 產生的頁面／`sw.js` 變更、`style.css`、`ui/**` 的外觀部分、`assets/`（字型）、`tools/shots.cjs`。
 - 禁止：`engine/**`、`data/**`、`stages.js`、`game.js` 的邏輯、任何數值。需要新的狀態資訊（例如「目前在蓄力第幾毫秒」）而現有資料沒有時，**停下來問家長**，不要自己改引擎。
 
 ## 8. 分卡（每卡一個分支 `art/dN`、一個 draft PR）
 
 | 卡 | 內容 | 完成標準 |
 |---|---|---|
-| D0 | 截圖工具 `tools/shots.cjs`（若 A0 已完成就沿用） | 一個指令產出割草 3 尺寸×（開場／戰鬥中／升級）＋Boss 單挑 3 尺寸 |
+| D0 | 截圖工具 `tools/shots.cjs`（若 A0 已完成就沿用） | 一個指令產出割草 3 尺寸×（開場／戰鬥中／升級）共 9 張；Boss 單挑 3 張到 D6 再加 |
 | D1 | `render/clay.js`＋主角（含第 3 節全部姿勢） | 主角走路有擠壓拉伸；姿勢跟著狀態切換；200 隻怪仍 60fps |
 | D2 | 史萊姆、布丁、巧克力熊，其餘怪物先用最接近的造型＋換色 | 畫面上不再出現程式色塊小人 |
 | D3 | 地面、格線、中央暈光、場景色 | 背景符合第 1 節 |
 | D4 | `render/neon.js`：子彈、寶石、預警圈、命中、傷害數字、震動 | 第 4 節全部項目；預警有暗→亮過程 |
 | D5 | 割草 HUD（第 5 節） | 三尺寸都不重疊、不出界 |
-| D6 | Boss 單挑（第 6 節） | 弱點清楚可見；命中有慢動作和碎片 |
+| D6 | Boss 單挑（第 6 節），並讓 shots.cjs 加出 Boss 單挑 3 尺寸 | 弱點清楚可見；命中有慢動作和碎片 |
 | D7 | 收尾：效能檢查、細節修正 | 手機實機 60fps；家長驗收 |
 
 每卡流程：實作 → `node games/survivor/tools/test.cjs --layout` 全過 → 截圖 → 對照本文件列出最不符合的 3 點並修正（最多 3 輪）→ 推送 draft PR → 用繁中 3～5 句回報（改了什麼、截圖在哪、哪裡還不滿意）→ **停下，不自己開下一張卡**。
