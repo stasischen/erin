@@ -120,7 +120,17 @@ function drawBossMovesPlaceholder() {
 
 
 const BACKGROUND_TILES = {};
-// 84px 大地磚、三個相近色；裝飾是扁平地面刻紋，沒有臉、眼睛或亮點。
+let BACKGROUND_GLOW;
+function backgroundGlow() {
+  if (BACKGROUND_GLOW !== undefined) return BACKGROUND_GLOW;
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=672;
+  const g=canvas.getContext('2d');if(!g||!g.createRadialGradient){BACKGROUND_GLOW=null;return null;}
+  const glow=g.createRadialGradient(336,336,0,336,336,336);
+  if(!glow||typeof glow.addColorStop!=='function'){BACKGROUND_GLOW=null;return null;}
+  glow.addColorStop(0,'rgba(56,141,230,0.22)');glow.addColorStop(.55,'rgba(56,141,230,0.08)');glow.addColorStop(1,'rgba(56,141,230,0)');
+  g.fillStyle=glow;g.fillRect(0,0,672,672);BACKGROUND_GLOW=canvas;return canvas;
+}
+// 84px 格磚維持舊地圖拼接週期；D 風格的 48px 格線另外疊畫。
 function backgroundTile(kind, density) {
   const replacement = SurvivorArt.picture('background/'+kind);
   if (replacement) return replacement;
@@ -129,8 +139,7 @@ function backgroundTile(kind, density) {
   if (BACKGROUND_TILES[key]) return BACKGROUND_TILES[key];
   const tile = document.createElement("canvas"); tile.width = 336; tile.height = 252;
   const g = tile.getContext("2d"); g.imageSmoothingEnabled = false;
-  const cookie = kind === "cookie-forest" || kind === "playground";
-  const colors = cookie ? ["#bcb3a3", "#b7ae9e", "#b2a999"] : ["#a5b1a1", "#a0ac9c", "#9ba797"];
+  const colors = ["#1b1633", "#1b1633", "#1b1633"];
   g.fillStyle = colors[0]; g.fillRect(0, 0, 336, 252);
   // 84 整除四邊；圖案遠離邊緣，拼接線兩側都是同一底色。
   for (let y = 0; y < 252; y += 84) for (let x = 0; x < 336; x += 84) {
@@ -141,7 +150,7 @@ function backgroundTile(kind, density) {
   marks.slice(0, Math.round(density * marks.length)).forEach(([x,y]) => {
     // 只有 12×6 的落葉／餅乾碎屑，遠小於怪物，也不使用寶石的圓形輪廓。
     g.fillRect(x - 6, y - 2, 8, 2); g.fillRect(x - 2, y, 8, 2);
-    if (cookie) g.fillRect(x + 3, y + 3, 3, 1);
+    g.fillStyle='rgba(120,207,255,0.035)';g.fillRect(x + 3, y + 3, 3, 1);
   });
   BACKGROUND_TILES[key] = tile; return tile;
 }
@@ -216,6 +225,11 @@ function drawClassroomPlaceholder() {
   const top = Math.floor(state.cameraY / 252) * 252;
   for (let y = top; y < state.cameraY + state.height + 16; y += 252)
     for (let x = left; x < state.cameraX + state.width + 16; x += 336) ctx.drawImage(tile, x, y);
+  const right=state.cameraX+state.width,bottom=state.cameraY+state.height;
+  ctx.fillStyle='rgba(120,207,255,0.07)';
+  for(let x=Math.floor(state.cameraX/48)*48;x<right;x+=48)ctx.fillRect(x,state.cameraY,1,state.height);
+  for(let y=Math.floor(state.cameraY/48)*48;y<bottom;y+=48)ctx.fillRect(state.cameraX,y,state.width,1);
+  const glow=backgroundGlow();if(glow)ctx.drawImage(glow,state.cameraX+state.width/2-336,state.cameraY+state.height/2-336);
 }
 
 // 只繪製鏡頭可能看見的相鄰世界；包含影子、落點、粒子和招式。
