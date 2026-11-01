@@ -262,18 +262,21 @@ function drawHeroPlaceholder() {
   }
   if (look.forms.includes('water')) ctx.globalAlpha *= .65;
   const action=state.manualTiming,context=actorArtContext(p,action);
-  const animation = hurt ? 'hurt' : state.dashTimer>0?'dodge':action&&['windup','active','recovery'].includes(action.phase)?action.phase:p.moving ? 'run' : 'idle';
-  const art = SurvivorArt.picture('character/player', animation, state.elapsed,context);
-  const sprite = SPRITES.player;
-  if (art) {
-    const box=SurvivorArt.bounds('character/player',-20,-30,40,48);
-    drawOutlinedSprite(ctx,art,...box,p.impactFlash?'#ffffff':undefined,SurvivorArt.lookup('character/player').outline);
-  }
-  else if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
-  else {
-    // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
-    ctx.imageSmoothingEnabled = false;
-    drawOutlinedSprite(ctx, heroSchoolPicture(hurt, look.bodyColors), -20, -30, 40, 48,p.impactFlash?'#ffffff':undefined);
+  const stunned=p.stunTimer>0||p.posture&&p.posture.stun>0;
+  const animation = stunned ? 'stun' : hurt ? 'hurt' : state.dashTimer>0?'dodge':action&&['windup','active','recovery'].includes(action.phase)?action.phase:p.moving ? 'run' : 'idle';
+  if (!SurvivorArt.drawCharacter('character/player',{context:ctx,x:-20,y:-30,width:40,height:48,animation,elapsed:state.elapsed,...context,groundOffset:p.r*.85,flash:!!p.impactFlash})) {
+    const art = SurvivorArt.picture('character/player', animation, state.elapsed,context);
+    const sprite = SPRITES.player;
+    if (art) {
+      const box=SurvivorArt.bounds('character/player',-20,-30,40,48);
+      drawOutlinedSprite(ctx,art,...box,p.impactFlash?'#ffffff':undefined,SurvivorArt.lookup('character/player').outline);
+    }
+    else if (sprite) drawOutlinedSprite(ctx, sprite, -p.r, -p.r, p.r * 2, p.r * 2,p.impactFlash?'#ffffff':undefined);
+    else {
+      // 原生 20×24、放大兩倍：尖葉在上，身體仍以碰撞圓為中心。
+      ctx.imageSmoothingEnabled = false;
+      drawOutlinedSprite(ctx, heroSchoolPicture(hurt, look.bodyColors), -20, -30, 40, 48,p.impactFlash?'#ffffff':undefined);
+    }
   }
   if (look.bodyColors.includes('thunder')) {
     // 第一張雷卡就帶火花；變身後原有的環繞光點仍保留。

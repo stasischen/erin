@@ -42,7 +42,7 @@ function drawHeldWeaponPlaceholder() {
   if(a) {
     ctx.save();ctx.strokeStyle=a.charge>=weapon.chargeSeconds?'#ffe28a':'#8bdcff';ctx.lineWidth=3;
     if(weapon.chargeEnabled && a.charge>0 && moveFeedback(weapon,'charge').hint) {ctx.beginPath();ctx.arc(state.player.x,state.player.y,state.player.r+9,-Math.PI/2,-Math.PI/2+Math.PI*2*a.charge/weapon.chargeSeconds);ctx.stroke();}
-    if(weapon.comboEnabled && a.number && moveFeedback(weapon,'combo').hint) {ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(String(a.number)+' / '+weapon.comboEvery,state.player.x-12,state.player.y-state.player.r-14);}
+    if(weapon.comboEnabled && a.number && moveFeedback(weapon,'combo').hint) {ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText(String(a.number)+' / '+weapon.comboEvery,state.player.x-12,state.player.y-94-(state.player.airHeight||0));}
     ctx.restore();
   }
   if(typeof drawManualAim === 'function') drawManualAim();
