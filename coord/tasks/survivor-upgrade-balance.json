@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-upgrade-balance",
+  "title": "升級選擇與數值平衡",
+  "owner": "codex",
+  "state": "doing",
+  "repo": "erin",
+  "branch": "codex/survivor-upgrade-balance",
+  "pr": null,
+  "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
+  "next": "Dot 對固定主線來源提出精確 patch，再由 Luna 獨審套用。",
+  "reviewers": [
+    "luna",
+    "grok"
+  ],
+  "waitingFor": null,
+  "risk": "low",
+  "updated": "2026-11-02T16:06:23.462924+00:00",
+  "updatedBy": "codex"
+}
