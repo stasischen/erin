@@ -94,13 +94,13 @@ function updateHud() {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
     const weapon = slot === "attack" && state.weaponId ? activeWeapon() : null;
     const base = weapon ? SurvivorIcons.html(weapon.icon) + weapon.name : "";
-    const detail = cards.map(card => `${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
+    const detail = cards.map(card => `${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}${SurvivorWeapons.cardPresentation(card,activeWeapon()).name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
     return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${[base,detail].filter(Boolean).join("、") || "尚未取得"}</span></span>`;
   }).join("");
   if (slotMarkup !== lastSlotMarkup) {
     slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;
     if (!PREVIEW_MODE && globalThis.SurvivorPreview) UPGRADES.filter(card => upgradeLevel(card.id)).forEach(card => {
-      const button = document.createElement('button'); button.type = 'button'; button.textContent = card.name + '・看效果';
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = SurvivorWeapons.cardPresentation(card,activeWeapon()).name + '・看效果';
       button.addEventListener('click', () => SurvivorPreview.mount(document.getElementById('ownedPreview'), GAME_DATA, {kind:'card',id:card.id,level:upgradeLevel(card.id),weaponId:state.weaponId}));
       slots.appendChild(button);
     });

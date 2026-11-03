@@ -12,7 +12,7 @@ function showWeaponChoices() {
 }
 
 function cardRequirements(card) {
-  return (card.requires || []).map(id => UPGRADES.find(other => other.id === id).name + " Lv1").join(" ＋ ");
+  return (card.requires || []).map(id => SurvivorWeapons.cardPresentation(UPGRADES.find(other => other.id === id),activeWeapon()).name + " Lv1").join(" ＋ ");
 }
 
 
@@ -48,7 +48,7 @@ function chooseUpgradeCards(excludedIds = []) {
   showUpgradeChoices();
 }
 function renderSkillTree(tree) {
-  tree.innerHTML = (state.schoolRun ? state.schoolRun.schools : GAME_DATA.schools.map(s => s.id)).concat('neutral').map(school => `<div><b style="color:${school === "neutral" ? "#e5c77d" : BUILD_TUNING[school].color}">${SurvivorIcons.html(school === "neutral" ? "passive" : school)}${school === "neutral" ? "中立道具" : BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => school === "neutral" ? card.neutral && (!state.schoolRun || state.schoolRun.neutralPool.includes(card.id)) : card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${SurvivorWeapons.cardNote(card,activeWeapon())}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(card.icon)}${card.name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
+  tree.innerHTML = (state.schoolRun ? state.schoolRun.schools : GAME_DATA.schools.map(s => s.id)).concat('neutral').map(school => `<div><b style="color:${school === "neutral" ? "#e5c77d" : BUILD_TUNING[school].color}">${SurvivorIcons.html(school === "neutral" ? "passive" : school)}${school === "neutral" ? "中立道具" : BUILD_TUNING[school].name}</b> ${UPGRADES.filter(card => school === "neutral" ? card.neutral && (!state.schoolRun || state.schoolRun.neutralPool.includes(card.id)) : card.school === school).map(card => `<span class="${upgradeLevel(card.id) ? "owned" : ""}" title="${SurvivorWeapons.cardNote(card,activeWeapon())}${card.requires && card.requires.length ? "；需要：" + cardRequirements(card) : ""}">${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}${SurvivorWeapons.cardPresentation(card,activeWeapon()).name} Lv${upgradeLevel(card.id)}${card.requires && card.requires.length ? " ← " + cardRequirements(card) : ""}</span>`).join("")}</div>`).join("");
 }
 function showUpgradeChoices() {
   const choices = state.pendingChoices;
@@ -75,17 +75,17 @@ function showUpgradeChoices() {
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
     button.dataset.rarity = card.rarity || (card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common");
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
-    button.setAttribute("aria-label", card.name + (state.pickingWeapon || card.id === "heal" ? "" : "，" + level));
-    button.title = card.name;
-    button.innerHTML = state.pickingWeapon ? `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span>` : `<span class="upgrade-icon">${SurvivorIcons.html(card.icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
+    button.setAttribute("aria-label", SurvivorWeapons.cardPresentation(card,activeWeapon()).name + (state.pickingWeapon || card.id === "heal" ? "" : "，" + level));
+    button.title = SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
+    button.innerHTML = state.pickingWeapon ? `<span class="upgrade-icon">${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}</span>` : `<span class="upgrade-icon">${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
     button.setAttribute("aria-pressed", "false");
     choiceButtons.push(button); upgradeCards.appendChild(button);
     const preview = () => {
       selectedIndex = index; confirm.disabled = false;
-      confirm.setAttribute("aria-label", "選這張：" + card.name);
-      confirm.title = "選這張：" + card.name;
+      confirm.setAttribute("aria-label", "選這張：" + SurvivorWeapons.cardPresentation(card,activeWeapon()).name);
+      confirm.title = "選這張：" + SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
       choiceButtons.forEach(node => node.setAttribute('aria-pressed', String(node === button)));
-      document.getElementById("upgradeName").textContent = card.name;
+      document.getElementById("upgradeName").textContent = SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
       document.getElementById("upgradeDescription").textContent = !state.pickingWeapon && card.effects ? SurvivorWeapons.cardNote(card,activeWeapon()) || card.description : card.description;
       document.getElementById("upgradeLevel").textContent = state.pickingWeapon ? "自動攻擊" : card.id === "heal" ? "立即回血" : level + " · " + (card.school ? BUILD_TUNING[card.school].name + " · " : "") + (BUILD_SLOTS[card.slot] || "支援");
       document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 同流派 5 張解鎖" : card.tier === "fusion" ? "雙流派各 2 張解鎖" : ({common:"普通",rare:"稀有",legendary:"傳說"}[card.rarity] || "")) + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
@@ -126,7 +126,7 @@ function applyUpgrade(index, choices = state.pendingChoices) {
   if (state.schoolRun && !state.schoolRun.starter && card.school) state.schoolRun.starter = card.school;
   if (card.id === 'water-ultimate') { state.ultimateTimers = state.ultimateTimers || {}; state.ultimateTimers.water = BUILD_TUNING.ultimateSeconds; }
   handleSchoolEvents(SurvivorSchools.growth(UPGRADES, before, state.upgrades, GAME_DATA.schoolRules));
-  skillVisual("card", state.player.x, state.player.y - 38, { text: card.icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
+  skillVisual("card", state.player.x, state.player.y - 38, { text: SurvivorWeapons.cardPresentation(card,activeWeapon()).icon || "health", color: card.school ? BUILD_TUNING[card.school].color : "#237bc2", life: .8 });
   playSound("select");
   if (state.rewardPicking) {
     state.rewardPicked.push(card.id); state.rewardChoices--;

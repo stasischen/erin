@@ -43,10 +43,30 @@ console.log('PASS: weapon picker, sector boundaries/spin/cadence, cards/dash/col
 
 // 真實獨立展示沿用所選武器，近距離假怪會被錘子命中。
 const preview=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id:'big-water',level:1,weaponId:'candy-hammer'}}});
-preview('stepPreview(.26);paintPreview()');assert.equal(preview('state.weaponId'),'candy-hammer');assert.ok(preview('state.enemies.some(e=>e.hp<100000)'));assert.equal(preview('state.projectiles.length'),0);
+preview('for(let i=0;i<10;i++)stepPreview(.033);paintPreview()');assert.equal(preview('state.weaponId'),'candy-hammer');assert.ok(preview('state.enemies.some(e=>e.hp<100000)'));assert.equal(preview('state.projectiles.length'),0);
 console.log('PASS: equipped hammer preview uses real melee targets, hits and rendering');
 
 // 真實接觸傷害與 tick 中的最後一擊，不能繼續更新已換場的狀態。
 fresh();run('state.enemies=[book(0)];state.enemies[0].damage=20;globalThis.health=state.player.health;tick(0)');assert.equal(run('health-state.player.health'),4.25);
 fresh();run('state.stageIndex=STAGES.length-1;state.enemies=[];summonTeacher();state.bossIntro=0;state.boss.x=state.player.x+40;state.boss.y=state.player.y;state.boss.hp=1;state.shotTimer=0;tick(0)');assert.equal(run('state.mode'),'won');
 console.log('PASS: live contact mitigation and final boss melee kill through tick');
+
+// Both melee previews must survive the normal frames before the first attack.
+for(const weaponId of ['candy-hammer','candy-sword']) for(const id of ['big-water','wind-blade','thunder-attack']) {
+ const demo=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id,level:1,weaponId}}});
+ demo('for(let i=0;i<10;i++)stepPreview(.033)');
+ assert.ok(demo('state.enemies[0].hp<100000'),weaponId+' '+id+' primary');
+ if(id!=='big-water')assert.ok(demo('state.enemies[1].hp<100000'),weaponId+' '+id+' follow-up');
+ assert.equal(demo('state.projectiles.length'),0);
+}
+// A target beside the thrust is missed before the wide-blade upgrade, hit afterwards.
+fresh();run("state.weaponId='candy-sword';state.enemies=[book(50,29)];fireAtNearest({angle:0,dash:true});");
+assert.equal(run('state.enemies[0].hp'),10000);
+fresh(['multi-water']);run("state.weaponId='candy-sword';state.upgrades['multi-water']=5;state.enemies=[book(50,29)];fireAtNearest({angle:0,dash:true});");
+assert.ok(run('state.enemies[0].hp')<10000);
+// Default labels follow equipment; Maker-authored names and icons survive unchanged.
+fresh();assert.equal(run("SurvivorWeapons.cardPresentation(UPGRADES[0],activeWeapon()).name"),'重錘強化');
+run("globalThis.customCard={...UPGRADES[0],name:'自己的卡',icon:'health'}");
+assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).name'),'自己的卡');
+assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).icon'),'health');
+console.log('PASS: multi-frame melee previews, follow-up damage, widened thrust hit and custom labels');

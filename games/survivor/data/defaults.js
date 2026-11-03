@@ -371,7 +371,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ],
       "rarity": "common",
-      "descriptionSword": "揮擊角度變大。"
+      "descriptionSword": "橫斬角度與突刺寬度增加。"
     },
     {
       "id": "onion-dash",

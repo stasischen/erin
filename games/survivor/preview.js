@@ -102,13 +102,13 @@
     if (!force && active && active.host===host && active.data===data && JSON.stringify(active.spec)===JSON.stringify(spec)) return;
     const debugOptions=active && active.debugOptions,debugBefore=active && active.debugBefore;
     stop();
-    const title = document.createElement('strong'); title.textContent = '效果展示・' + (spec.kind === 'move' ? data.boss.moves.find(m=>m.id===spec.id).name : spec.id==='heal' ? '回血' : data.cards.find(c=>c.id===spec.id).name);
+    const title = document.createElement('strong'); title.textContent = '效果展示・' + (spec.kind === 'move' ? data.boss.moves.find(m=>m.id===spec.id).name : spec.id==='heal' ? '回血' : (globalThis.SurvivorWeapons?SurvivorWeapons.cardPresentation(data.cards.find(c=>c.id===spec.id),data.weapons.find(w=>w.id===spec.weaponId)||data.weapons[0]):data.cards.find(c=>c.id===spec.id)).name);
     const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     const remembered=debugMemory[JSON.stringify(spec)]||{};
     frame._debugOptions=remembered.options || debugOptions;frame._debugBefore=remembered.before || debugBefore;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261103a', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261103b', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

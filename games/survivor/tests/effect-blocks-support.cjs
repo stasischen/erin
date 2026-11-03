@@ -7,8 +7,9 @@ function scenario(old,setup,steps){
   const run=create();
   // Intentional balance delta only: legacy healing now restores ceil(base HP / 20).
   // Frozen source stays unchanged; every other state/event still compares exactly.
+  // Add only the new visual charge flag to the frozen swing; preserve all combat outputs.
   if(old) {
-    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(name==='tick' ? body.replace('state.player.health + 1','state.player.health + Math.ceil(GAME_DATA.tuning.playerHealth / 20)') : body));
+    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(name==='tick' ? body.replace('state.player.health + 1','state.player.health + Math.ceil(GAME_DATA.tuning.playerHealth / 20)') : body.replace('const visual = {...event,','const visual = {...event,elementCharged:properties.charged,').replace('{...rear,colors:','{...rear,elementCharged:properties.charged,colors:')));
   }
   run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;
     globalThis.enemy=(dx=20,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0});

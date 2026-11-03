@@ -241,3 +241,8 @@ SurvivorArtManifest.assets['character/assassin']={...JSON.parse(JSON.stringify(S
 for(const id of ['gatekeeper','frost-twin','fire-twin','winged','assassin'])SurvivorArtManifest.assets['character/'+id].renderId='character/'+id;
 for(const id of ['blade-combo','shadowstep','kunai-slide','kunai','white-flash'])SurvivorArtManifest.assets['move/'+id]={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['move/feather'])),sheet:null,palette:id==='white-flash'?['#ffffff','#fff0c5','#3f344e']:['#fff0d5','#655582','#302c41']};
 SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/weakpoint'])),palette:['#ff4568','#fff0a5','#ffb85b']};
+
+// Shared melee accents: school color follows the equipped build, silhouette follows weapon.
+SurvivorArtManifest.assets['layer/draw-hammer-swing'].schoolPalette={
+  water:{body:'#78cfff',neon:'blue'},wind:{body:'#70e7ba',neon:'green'},thunder:{body:'#f5a1bc',neon:'pink'}
+};

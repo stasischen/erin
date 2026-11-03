@@ -5,10 +5,10 @@
     "3010162cd869fa89708fa141197d40627047ab2797db4af81489e4aa97548b7d",
     "2056b48efa0da9afba3c8010a68981dd3afdcb4813fb8b1afabb9333a2c9c513",
     "737830f43a3f9aa342984da3023ef8808394ca845c5d24fe116ff2821552f25c",
-    "2e242e32607a40d600f58995e812ea22d02f84df76666c03ed00c97e9671e0ca",
+    "f9774425e8c138a7e26bbb3aff0285e40b3dcc0bebb029292eb1abe8cc8ae088",
     "40961f08c2038bf98a497f903b44580a8fe8e1cab5f52ab0460fd4e287b39f0c"
   ],
   "battle": "fe9c4372e1287b323877e4617d3d8bc869759b9131b17e5f262249245a531164",
   "battleNumberDecimals": 6,
-  "canvasNote": "2026-11-02 art/polish: shared neon strokes; historical battle baseline unchanged"
+  "canvasNote": "2026-11-03: only canvas[4] updated for thicker double-arc hammer; other five canvas hashes and historical battle baseline unchanged"
 }

@@ -8,7 +8,7 @@ globalThis.SurvivorWeapons = (() => {
     const shape=charged ? (weapon.chargeShape==='spin'?'sector':weapon.chargeShape) : attack.dash ? 'line' : finisher ? weapon.comboShape : weapon.baseShape;
     const thrust=shape==='line', spin=shape==='spin';
     const scale=charged ? weapon.chargeSize : finisher || thrust ? weapon.comboSize : 1;
-    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size,
+    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size*(1+Math.min(.5,powers.extraArc||0)),
       recovery:finisher && !charged ? weapon.finisherRecovery : 0, step:thrust ? weapon.stepDistance : 0,
       arc:spin ? Math.PI * 2 : Math.min(charged ? Math.PI : Math.PI * 2, weapon.arcDegrees * Math.PI / 180 + powers.extraArc),
       radius:weapon.radius * powers.size * scale, damage:powers.damage * weapon.damageMultiplier * (charged ? weapon.chargeMultiplier : finisher || attack.dash ? weapon.comboMultiplier : 1), push:weapon.push + powers.push + (charged || thrust ? weapon.comboPush : 0) };
@@ -31,7 +31,18 @@ globalThis.SurvivorWeapons = (() => {
     if (weapon.kind !== 'melee') return card.description;
     return (weapon.id==='candy-sword' && card.descriptionSword) || card.descriptionMelee || card.description;
   }
-  return { swing, intersects, receivedDamage, cardNote, aim };
+  function cardPresentation(card, weapon) {
+    const original=globalThis.SURVIVOR_DEFAULTS?.cards.find(c=>c.id===card.id);
+    if(weapon.kind!=='melee' || !original || card.name!==original.name) return card;
+    const sword=weapon.id==='candy-sword', noun=sword?'劍':'錘';
+    const names={'big-water':sword?'巨刃強化':'重錘強化','rapid-water':'疾速揮'+noun,
+      'multi-water':sword?'闊刃斬擊':'廣域揮錘','piercing-water':sword?'延伸劍鋒':'延伸錘擊',
+      'splash-water':sword?'碎裂斬擊':'震盪重擊','water-attack':'水紋'+noun+'擊',
+      'wind-attack':sword?'疾風劍鋒':'疾風錘擊','thunder-attack':'雷霆'+noun+'擊',
+      'water-drop':sword?'蓄勢重斬':'蓄勢重錘','wind-blade':sword?'追風斬':'追風錘'};
+    return names[card.id]?{...card,name:names[card.id],icon:card.icon===original.icon?weapon.icon:card.icon}:card;
+  }
+  return { swing, intersects, receivedDamage, cardNote, cardPresentation, aim };
 })();
 
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
@@ -63,12 +74,12 @@ function swingWithImpacts(dash,command) {
   if (boosted) state.dashAttack = 0;
   const feedbackEvent={...event,feedbackId:event.charged?'charge':dash?'dash':event.heavy?'combo':'primary'};
   const feedback=weaponFeedback(feedbackEvent);
-  const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
+  const visual = {...event,elementCharged:properties.charged,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
   skillVisual('hammer-swing',state.player.x,state.player.y,visual); queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
   if (effectLevel('item-rear') && !event.spin && !event.charged) {
     const rear={...event,angle:event.angle+Math.PI};
-    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
+    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,elementCharged:properties.charged,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
     for(const t of targets) if(!hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,rear)) hits.push(t);
   }
   for (const t of hits) {

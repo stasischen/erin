@@ -3,17 +3,19 @@ function drawHammerSwing(v, progress) {
   return SurvivorArt.paint('layer/draw-hammer-swing', null, () => drawHammerSwingPlaceholder.apply(this, arguments));
 }
 function drawHammerSwingPlaceholder(v, progress) {
-  const heavy=v.heavy || v.boosted, width=heavy?20:11;
+  const heavy=v.heavy || v.boosted, sword=v.weaponId==='candy-sword', width=sword?(heavy?12:7):(heavy?24:14);
   if(v.slash===false && !(state.practiceHitboxes)) return;
   ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle);
   const alpha=ctx.globalAlpha;
   if(v.slash===false) ctx.globalAlpha=0;
-  const color='#78cfff';
+  const palette=SurvivorArtManifest.assets['layer/draw-hammer-swing'].schoolPalette;
+  const schools=v.elementCharged?['thunder']:(v.colors||['water']);
+  const ink=palette[schools[0]]||palette.water, color=ink.body;
   if(v.thrust) {
     // 尖細突刺光，沿出手方向伸長；不畫矩形判定區。
-    const tip=v.radius*(.65+.35*progress);
-    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(12,-width*.4);ctx.lineTo(tip,0);ctx.lineTo(12,width*.4);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='#fff9de';ctx.lineWidth=heavy?4:2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(tip,0);SurvivorNeon.stroke(ctx,'blue');
+    const tip=v.radius*(.65+.35*progress), bladeWidth=Math.max(width*.4,v.width*.35);
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(12,-bladeWidth);ctx.lineTo(tip,0);ctx.lineTo(12,bladeWidth);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#fff9de';ctx.lineWidth=heavy?4:2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(tip,0);SurvivorNeon.stroke(ctx,ink.neon);
   } else {
     const direction=v.reverse?-1:1, head=-v.arc/2+v.arc*(v.reverse?1-(.2+.8*progress):(.2+.8*progress));
     const tail=head-direction*Math.min(v.arc*(.2+.8*progress),1.8), outer=v.radius, inner=Math.max(1,outer-width);
@@ -25,7 +27,17 @@ function drawHammerSwingPlaceholder(v, progress) {
       ctx.arc(0,0,outer-(outer-inner)*(i+1)/8,b,a,direction>0);ctx.closePath();ctx.fill();
     }
     ctx.globalAlpha=alpha*.65;ctx.lineWidth=heavy?3:1.5;
-    ctx.beginPath();ctx.arc(0,0,outer,tail,head,direction<0);SurvivorNeon.stroke(ctx,'blue');
+    ctx.beginPath();ctx.arc(0,0,outer,tail,head,direction<0);SurvivorNeon.stroke(ctx,ink.neon);
+  }
+  if(!sword && !v.thrust) {
+    ctx.globalAlpha=alpha*(1-progress);ctx.lineWidth=heavy?4:2;
+    ctx.beginPath();ctx.arc(0,0,v.radius*.7,-v.arc/2,v.arc/2);SurvivorNeon.stroke(ctx,ink.neon);
+  }
+  if(schools.length>1 || v.elementCharged) {
+    ctx.globalAlpha=alpha*.8;ctx.lineWidth=2;ctx.beginPath();
+    const second=palette[schools[1]]||ink;
+    ctx.moveTo(v.radius*.35,-5);ctx.lineTo(v.radius*.58,4);ctx.lineTo(v.radius*.72,-5);ctx.lineTo(v.radius*.9,0);
+    SurvivorNeon.stroke(ctx,second.neon);
   }
   ctx.restore();
   if(state.practiceHitboxes) {
