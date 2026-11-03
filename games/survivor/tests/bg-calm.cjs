@@ -16,13 +16,13 @@ for (const value of ['-1','1.01','null','"0.2"']) {
 }
 run('old=SurvivorData.defaults();old.visuals.spriteOutline="false"');
 assert.equal(run('SurvivorData.validate(old).valid'),false);
-// 無裝飾時只保留低對比地磚與邊緣刻線；背景仍快取。
+// 無裝飾時只保留低對比大地磚，不再疊一像素細線；背景仍快取。
 for (const kind of ['candy-forest','cookie-forest']) {
   run('drawCalls.length=0');
   run(`backgroundTile('${kind}',0)`);
   const rects=JSON.parse(run('JSON.stringify(drawCalls.filter(c=>c[0]==="fillRect"))'));
-  assert.equal(rects.length,73); // 底色＋12 塊地磚（每塊含五條細邊／刻線）
-  assert.ok(rects.slice(1).every(c=>(c[3]===80 && c[4]===80) || c[3]===1 || c[4]===1));
+  assert.equal(rects.length,13); // 底色＋12 塊大地磚。
+  assert.ok(rects.slice(1).every(c=>c[3]===80 && c[4]===80));
   run(`globalThis.tile=backgroundTile('${kind}',0)`);
   assert.equal(run(`backgroundTile('${kind}',0)===tile`),true);
 }
