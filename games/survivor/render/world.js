@@ -130,7 +130,7 @@ function backgroundGlow() {
   glow.addColorStop(0,'rgba(56,141,230,0.22)');glow.addColorStop(.55,'rgba(56,141,230,0.08)');glow.addColorStop(1,'rgba(56,141,230,0)');
   g.fillStyle=glow;g.fillRect(0,0,672,672);BACKGROUND_GLOW=canvas;return canvas;
 }
-// 84px 格磚維持舊地圖拼接週期；D 風格的 48px 格線另外疊畫。
+// Broad matte tiles only: fine parallel lines shimmer under a moving scaled camera.
 function backgroundTile(kind, density) {
   const replacement = SurvivorArt.picture('background/'+kind);
   if (replacement) return replacement;
@@ -145,17 +145,12 @@ function backgroundTile(kind, density) {
   for (let y = 0; y < 252; y += 84) for (let x = 0; x < 336; x += 84) {
     g.fillStyle = (x / 84 + y / 84) % 2 ? '#1d1937' : colors[1];
     g.fillRect(x + 2, y + 2, 80, 80);
-    g.fillStyle='rgba(166,180,225,.045)';g.fillRect(x+3,y+3,78,1);g.fillRect(x+3,y+3,1,78);
-    g.fillStyle='rgba(0,0,0,.14)';g.fillRect(x+3,y+81,79,1);
-    // Tiny inset corner marks read as floor ornament, never collectible objects.
-    g.fillStyle='rgba(120,207,255,.08)';g.fillRect(x+9,y+9,7,1);g.fillRect(x+9,y+9,1,7);
   }
   const marks = [[42,42], [210,126], [294,210], [126,42]];
   g.fillStyle = colors[2];
   marks.slice(0, Math.round(density * marks.length)).forEach(([x,y]) => {
     // 只有 12×6 的落葉／餅乾碎屑，遠小於怪物，也不使用寶石的圓形輪廓。
     g.fillRect(x - 6, y - 2, 8, 2); g.fillRect(x - 2, y, 8, 2);
-    g.fillStyle='rgba(120,207,255,0.035)';g.fillRect(x + 3, y + 3, 3, 1);
   });
   BACKGROUND_TILES[key] = tile; return tile;
 }
@@ -228,12 +223,10 @@ function drawClassroomPlaceholder() {
   const tile = backgroundTile(currentStage().background, currentStage().decorationDensity);
   const left = Math.floor(state.cameraX / 336) * 336;
   const top = Math.floor(state.cameraY / 252) * 252;
+  ctx.save();ctx.imageSmoothingEnabled=true;
   for (let y = top; y < state.cameraY + state.height + 16; y += 252)
     for (let x = left; x < state.cameraX + state.width + 16; x += 336) ctx.drawImage(tile, x, y);
-  const right=state.cameraX+state.width,bottom=state.cameraY+state.height;
-  ctx.fillStyle='rgba(120,207,255,0.025)';
-  for(let x=Math.floor(state.cameraX/48)*48;x<right;x+=48)ctx.fillRect(x,state.cameraY,1,state.height);
-  for(let y=Math.floor(state.cameraY/48)*48;y<bottom;y+=48)ctx.fillRect(state.cameraX,y,state.width,1);
+  ctx.restore();
   const glow=backgroundGlow();if(glow)ctx.drawImage(glow,state.cameraX+state.width/2-336,state.cameraY+state.height/2-336);
 }
 

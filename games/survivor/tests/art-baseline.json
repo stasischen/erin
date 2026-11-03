@@ -1,14 +1,14 @@
 {
   "sourceSha": "6d28ed2838c3af7201305d8332d34faf72017b3c",
   "canvas": [
-    "8b92c8cf7f95e3fd0ea60e665f67183189bade118f6aafaa438e6e5ee216e12e",
+    "6f69c85180b73d21cf1e0b8c4594b47acdda5f2690dcf49846d8e82298521ee9",
     "3010162cd869fa89708fa141197d40627047ab2797db4af81489e4aa97548b7d",
     "2056b48efa0da9afba3c8010a68981dd3afdcb4813fb8b1afabb9333a2c9c513",
     "737830f43a3f9aa342984da3023ef8808394ca845c5d24fe116ff2821552f25c",
     "f9774425e8c138a7e26bbb3aff0285e40b3dcc0bebb029292eb1abe8cc8ae088",
-    "40961f08c2038bf98a497f903b44580a8fe8e1cab5f52ab0460fd4e287b39f0c"
+    "29755e6bc3f755db188d07a6cd24797188a4f61f5e1d484adb1bf71bba6b2b90"
   ],
   "battle": "fe9c4372e1287b323877e4617d3d8bc869759b9131b17e5f262249245a531164",
   "battleNumberDecimals": 6,
-  "canvasNote": "2026-11-03: only canvas[4] updated for thicker double-arc hammer; other five canvas hashes and historical battle baseline unchanged"
+  "canvasNote": "2026-11-03c: canvas[0] and [5] updated only for matte ground without fine grid; other four canvas hashes and historical battle baseline unchanged"
 }

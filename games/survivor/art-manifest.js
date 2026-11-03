@@ -246,3 +246,9 @@ SurvivorArtManifest.assets['effect/weakpoint-red']={...JSON.parse(JSON.stringify
 SurvivorArtManifest.assets['layer/draw-hammer-swing'].schoolPalette={
   water:{body:'#78cfff',neon:'blue'},wind:{body:'#70e7ba',neon:'green'},thunder:{body:'#f5a1bc',neon:'pink'}
 };
+SurvivorArtManifest.assets['layer/draw-held-weapon'].clayPalette={
+  handle:['#fff1cf','#dca76d','#825139'],
+  hammer:['#fff1f7','#efacce','#a45f9e'],
+  blade:['#f4fdff','#8dddf0','#468aba'],
+  trim:['#fff9d9','#f2ce88','#b0804f']
+};

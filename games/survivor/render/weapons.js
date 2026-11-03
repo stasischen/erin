@@ -48,6 +48,55 @@ function drawHammerSwingPlaceholder(v, progress) {
   }
 }
 
+// Smooth, pre-painted toy weapons. UI icons remain separate from world objects.
+const CLAY_WEAPON_IMAGES={};
+function clayWeaponImage(id) {
+  if(CLAY_WEAPON_IMAGES[id])return CLAY_WEAPON_IMAGES[id];
+  const image=document.createElement('canvas');image.width=192;image.height=112;
+  const g=image.getContext('2d'), palette=SurvivorArtManifest.assets['layer/draw-held-weapon'].clayPalette;
+  g.scale(2,2);g.translate(12,28);g.lineJoin='round';g.lineCap='round';
+  const fill=(colors,y=-18,h=36)=>{
+    const grad=g.createLinearGradient?.(0,y,0,y+h);
+    if(!grad?.addColorStop)return colors[1];
+    colors.forEach((c,i)=>grad.addColorStop(i/(colors.length-1),c));return grad;
+  };
+  const pill=(x1,y1,x2,y2,width,colors)=>{
+    g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.lineWidth=width+2;g.strokeStyle=colors[2];g.stroke();
+    g.lineWidth=width;g.strokeStyle=fill(colors,-width/2,width);g.stroke();
+  };
+  pill(-3,0,31,0,9,palette.handle);
+  if(id==='candy-hammer') {
+    pill(37,-12,37,12,25,palette.hammer);
+    pill(27,-11,27,11,7,palette.trim);pill(48,-11,48,11,7,palette.trim);
+    g.fillStyle='rgba(255,255,255,.55)';g.beginPath();g.ellipse(35,-12,7,3,-.12,0,Math.PI*2);g.fill();
+  } else {
+    g.beginPath();g.moveTo(13,-8);g.quadraticCurveTo(38,-12,62,-3);g.quadraticCurveTo(69,0,62,3);
+    g.quadraticCurveTo(38,12,13,8);g.closePath();g.fillStyle=fill(palette.blade,-10,20);g.fill();
+    g.strokeStyle=palette.blade[2];g.lineWidth=1.5;g.stroke();
+    g.beginPath();g.moveTo(19,-4);g.quadraticCurveTo(39,-6,60,-1);g.strokeStyle='#edfbff';g.lineWidth=3;g.stroke();
+    pill(12,-12,12,12,6,palette.trim);
+    g.fillStyle=palette.hammer[1];g.beginPath();g.arc(12,0,4,0,Math.PI*2);g.fill();
+  }
+  // A soft clay mitten closes around the grip, attaching the prop to the character.
+  g.fillStyle=fill(['#fff0d9','#ecc79e','#bc8c69'],-5,10);g.beginPath();g.ellipse(1,0,6,6,0,0,Math.PI*2);g.fill();
+  CLAY_WEAPON_IMAGES[id]=image;return image;
+}
+function drawClayHeldWeapon(weapon) {
+  const p=state.player, hop=(p.moving?Math.abs(Math.sin(p.walkPhase))*2:0)+(p.airHeight||0);
+  const swing=state.vfx.slice().reverse().find(v=>v.kind==='hammer-swing' && v.weaponId===weapon.id && v.life>0);
+  const charge=weapon.chargeSeconds?Math.min(1,(state.weaponAttack?.charge||0)/weapon.chargeSeconds):0;
+  let angle=-1.05-charge*.65, side=p.facing||1, extension=0;
+  if(swing) {
+    const progress=1-swing.life/swing.maxLife;
+    angle=swing.thrust?swing.angle:swing.angle-swing.arc/2+swing.arc*(swing.reverse?1-progress:progress);
+    side=Math.cos(swing.angle)<0?-1:1;extension=swing.thrust?Math.sin(progress*Math.PI)*14:0;
+  }
+  ctx.save();ctx.imageSmoothingEnabled=true;
+  ctx.translate(p.x+side*22+(swing?Math.cos(swing.angle)*extension:0),p.y-23-hop+(swing?Math.sin(swing.angle)*extension:0));
+  if(!swing)ctx.scale(side,1);
+  ctx.rotate(angle);ctx.drawImage(clayWeaponImage(weapon.id),-12,-28,96,56);ctx.restore();
+}
+
 function drawHeldWeapon() {
   return SurvivorArt.paint('layer/draw-held-weapon', null, () => drawHeldWeaponPlaceholder.apply(this, arguments));
 }
@@ -61,7 +110,7 @@ function drawHeldWeaponPlaceholder() {
   }
   if(typeof drawManualAim === 'function') drawManualAim();
   if(weapon.kind!=='melee') return;
-  SurvivorIcons.draw(ctx,weapon.icon,state.player.x+state.player.facing*20-10,state.player.y-5,24);
+  drawClayHeldWeapon(weapon);
 }
 Survivor.render = Survivor.render || {};
 Survivor.render.weapons = {drawHammerSwing,drawHeldWeapon};
