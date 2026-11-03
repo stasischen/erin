@@ -1,5 +1,15 @@
 # 目前交接
 
+## 統一圖示與主角縮小測試版（2026-11-03）
+
+全套黏土圖示與水星人縮小15%已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/862522b4b42ecf147a16e4f54041e3246377cb03/games/survivor/
+
+來源862522b4b42ecf147a16e4f54041e3246377cb03，版本20261103d。美術快車道，80共用圖示改黏土風、試煉頭像改現有黏土Boss、場上主角與手持武器縮小15%；HUD頭像、碰撞與傷害不變。真Chrome三尺寸選武器/移動/完整蓄力通過，80圖示全部解碼，四個試煉頭像載入且可返回。test.cjs --layout exit0/126PASS，末尾純美術色票及頭像變更另跑pixel-icons/boss-gallery-2/art-manifest通過，diff check通過。
+
+預覽提交8b3877b427ca6a93683b7466262586e4eb47573e，Pages41581728888成功。發布前75檔隔離驗證，保留既有1149檔；發布後72候選檔逐位元核對一致。下一步等家長試玩，不自動合併正式站。
+
+---
+
 ## 地板與手持黏土武器測試版（2026-11-03）
 
 地板細格線與手持黏土武器修正版已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82/games/survivor/

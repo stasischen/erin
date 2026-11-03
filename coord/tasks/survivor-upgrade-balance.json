@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "地板細格線與手持黏土武器修正版已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82/games/survivor/",
+  "next": "全套黏土圖示與水星人縮小15%已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/862522b4b42ecf147a16e4f54041e3246377cb03/games/survivor/",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-03T01:53:22.943322+00:00",
+  "updated": "2026-11-03T05:05:32.898517+00:00",
   "updatedBy": "codex",
   "waitingFor": "user"
 }
