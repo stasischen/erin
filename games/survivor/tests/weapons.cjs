@@ -32,7 +32,7 @@ fresh();assert.equal(run('absorbSchoolHit(20)'),17);run('state.schoolCombat.bubb
 fresh();run('state.enemies=[book(500)];fireAtNearest();');assert.equal(run('state.swingCount'),0);
 fresh();run('state.enemies=[];summonTeacher();state.boss.x=state.player.x+50;state.boss.y=state.player.y;state.boss.hp=1;fireAtNearest();');assert.equal(run('state.boss.hp'),1);run('state.bossIntro=0;fireAtNearest();');assert.equal(run('state.mode'),'transition');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('state.swingCount'),1);
 // Restart clears weapon and counters; picker clock stays frozen and stale callbacks ignored.
-run('startGame();tick(2);');assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),3);assert.equal(run('state.pickingWeapon'),true);
+run("startTrial(trialSettings().bosses[0].id);tick(2);");assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),3);assert.equal(run('state.pickingWeapon'),true);
 run('globalThis.old=state.pendingChoices;applyUpgrade(1);applyUpgrade(0,old);');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('Object.keys(state.upgrades).length'),0);assert.equal(run('state.schoolRun.starter'),null);assert.equal(run('buildAppearance().main'),'water');
 // Bounded visuals after many swings, and legacy/custom Maker data round-trips.
 fresh();run('for(let i=0;i<200;i++)fireAtNearest();');assert.ok(run('state.vfx.length<=VFX_TUNING.limit'));assert.equal(run('state.projectiles.length'),0);

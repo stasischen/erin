@@ -5,6 +5,7 @@ function updateAttackModeButtons() {
   for (const id of ['startAttackMode', 'pauseAttackMode']) {
     const button = document.getElementById(id);
     if (!button) continue;
+    button.hidden=!canChangeAttackMode();
     const manual = GAME_DATA.attackMode === 'manual';
     button.setAttribute('aria-checked', String(manual));
     button.setAttribute('aria-label', '手動攻擊');
@@ -13,14 +14,12 @@ function updateAttackModeButtons() {
   }
 }
 function setAttackMode(mode) {
-  if (!['manual', 'auto'].includes(mode)) return;
+  if (!canChangeAttackMode() || !['manual', 'auto'].includes(mode)) return;
   cancelManualAttack();
   if (state.weaponAttack) state.weaponAttack.charge = 0;
   state.keys.delete('j'); state.keys.delete('k');
   GAME_DATA.attackMode = mode; GAME_DATA.attackModeChosen = true;
-  if (!PREVIEW_MODE) {
-    gameSettings.attackMode = mode; gameSettings.attackModeChosen = true; saveSettings();
-  }
+  sandboxAttackMode = mode; // Only this sandbox; never overwrite player preferences.
   state.shotTimer = effectiveShotInterval();
   updateAttackModeButtons(); updateActionControls();
 }

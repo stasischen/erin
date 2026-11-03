@@ -63,7 +63,8 @@ fresh({'fusion-dash':1}); run('activateDash();'); assert.equal(run('state.fields
 for (const school of ['water','wind','thunder']) {
   fresh({[`${school}-ultimate`]:1}); run('state.elapsed=0; state.ultimateTimer=0; updateUltimate(.01);');
   assert.equal(run('state.ultimateVisual.school'),school);
-  painted('drawUltimate();',school==='water'?'fillRect':school==='wind'?'arc':'ellipse');
+  painted('drawUltimate();',school==='water'?'fillRect':'ellipse');
+  if(school==='thunder')painted('drawUltimate();','quadraticCurveTo');
   if(school==='thunder') assert.ok(visual('lightning'));
   if(school==='wind') { run('globalThis.old=state.ultimateVisual.x; state.elapsed+=.05; updateUltimate(.05);'); assert.notEqual(run('state.ultimateVisual.x'),run('old')); }
 }

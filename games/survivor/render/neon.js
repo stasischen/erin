@@ -13,6 +13,13 @@ globalThis.SurvivorNeon=(()=>{
   // Shared light profile: soft colored edge, saturated body, narrow pale core.
   // Reuses the caller's path; never changes geometry, timing, or creates a blur.
   function stroke(g,name='blue') {
+    const material=SurvivorArtManifest.elements[name];
+    if(material){
+      const width=g.lineWidth;g.save();g.lineJoin='round';g.lineCap='round';
+      g.globalAlpha*=SurvivorArtManifest.elements.alpha;g.strokeStyle=material.edge;g.lineWidth=width+2;g.stroke();
+      g.strokeStyle=material.body;g.lineWidth=width;g.stroke();
+      g.strokeStyle=material.light;g.lineWidth=Math.max(1,width*.22);g.stroke();g.restore();return;
+    }
     const color=colors[name]||colors.blue, width=g.lineWidth, alpha=g.globalAlpha;
     g.save();g.lineJoin='round';g.lineCap='round';g.strokeStyle=color;
     g.globalAlpha=alpha*.10;g.lineWidth=width+9;g.stroke();

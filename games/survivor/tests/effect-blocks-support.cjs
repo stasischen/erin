@@ -33,8 +33,8 @@ for(const id of ids) for(const level of [0,1,3,5]) for(const custom of [false,tr
  UPGRADE_TUNING.autoHealSeconds=.25;BUILD_TUNING.healIntervalMultiplier=.6;BUILD_TUNING.shieldHealthDivisor=7;}
  state.spawnTimer=100;state.bossSpawned=true;`;
  same(base,`fireAtNearest();globalThis.results=[effectiveDamage(),effectiveShotInterval(),maxPlayerHealth()];`);
- // New melee splash route is asserted in weapons.cjs; retain every other frozen case.
- for(const weapon of ['candy-hammer','candy-sword']) if(id!=='splash-water' || level===0) same(base,`state.weaponId='${weapon}';swingAtNearest();globalThis.results=[effectiveDamage(),effectiveShotInterval(),maxPlayerHealth()];`);
+ // New melee splash and Lv3/5 coverage routes are asserted in weapons.cjs; retain every other frozen case.
+ for(const weapon of ['candy-hammer','candy-sword']) if((id!=='splash-water' || level===0) && (id!=='multi-water' || level<3)) same(base,`state.weaponId='${weapon}';swingAtNearest();globalThis.results=[effectiveDamage(),effectiveShotInterval(),maxPlayerHealth()];`);
  for(const dt of [0,.05,.5,3.2]) same(base,`state.player.health=40;state.healTimer=.2;
  state.gems=[{x:state.player.x+110,y:state.player.y,r:5,value:1,alive:true,wobble:0}];state.keys.add('ArrowRight');
  fireAtNearest();for(const s of state.projectiles){s.vx=0;s.vy=0;s.x=state.enemies[0].x;s.y=state.enemies[0].y;}tick(${dt});`);

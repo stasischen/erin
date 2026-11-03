@@ -65,10 +65,15 @@ const expected=JSON.parse(fs.readFileSync(fixture));
 assert.deepEqual(snapshots(createRun()),expected.canvas);
 assert.equal(expected.battleNumberDecimals,6);
 // Preserve the historical hash with its historical rapid-fire tuning; no fixture rewrite.
-const trace=require('./maker-traces.cjs'), historic=createRun();historic('UPGRADE_TUNING.fireRateReduction=.15');
+const trace=require('./maker-traces.cjs'), historic=createRun();historic(`UPGRADE_TUNING.fireRateReduction=.15;
+SurvivorEffectBlocks.recipes.find(r=>r.feature==='thunder-attack').rules[0].actions[0].count=1;
+SurvivorEffectBlocks.recipes.find(r=>r.feature==='thunder-ultimate').rules[0].conditions[0].count=1;
+SurvivorEffectBlocks.recipes.find(r=>r.feature==='wind-ultimate').rules[0].actions[1].count=1;`);
 const prior=trace(historic), current=trace(createRun());
 assert.equal(battleHash(prior),expected.battle);
 current.forEach((row,i)=>{
+ // Only these three high-level coverage changes are replaced by survival-growth's true hit checks.
+ if(row.level===5 && ['thunder-attack','thunder-ultimate','wind-ultimate'].includes(row.id))return;
  if(row.id==='rapid-water') {assert.equal(row.state.interval,.72*(1-row.level*.1));row.state.interval=prior[i].state.interval;}
  assert.deepEqual(row,prior[i]);
 });

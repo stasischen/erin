@@ -320,3 +320,18 @@ SurvivorArtManifest.clayIcons=(()=>{
  };
  return {shapes,palettes:{blue:['#f3fdff','#83d7ef','#3988b7'],green:['#edfff3','#8dd7b1','#438873'],pink:['#fff2f9','#e9acd0','#a0629d'],gold:['#fff9dc','#f1d18a','#ac784a']}};
 })();
+
+// Rounded, opaque element material; danger warnings retain their separate palette.
+SurvivorArtManifest.elements={
+  blue:{body:'#8ecbdf',edge:'#527d97',light:'#d9eff5'},
+  green:{body:'#a2d5ba',edge:'#628f83',light:'#e3f4e5'},
+  thunder:{body:'#ead486',edge:'#9c895d',light:'#fff2c3'},
+  width:4,alpha:.82
+};
+
+SurvivorArtManifest.survivalMaterials={
+  dough:['#f3d6a9','#d6a579','#a57959'], icing:['#ffe3ee','#e6b5cf','#bc8aa9'],
+  honey:['#fff0b7','#e3c77d','#b49154'], bean:['#ead9f2','#bea0d2','#9276aa'],
+  ice:['#e6f7fa','#a6d6e5','#70a5ba'], wings:'#e3f2e9',chips:'#856650',hole:'#293443',
+  highlight:'#fff7e4',shadow:'rgba(32,38,49,.16)',beamAlpha:.65
+};

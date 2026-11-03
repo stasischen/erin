@@ -48,7 +48,14 @@ function ensurePacing() {
 function pacingType() {
   if(PREVIEW_MODE) return ENEMY_TYPES[0].id;
   const run=ensurePacing(), ids=SurvivorPacing.candidates(run,state.stageElapsed);
-  // 每三隻至少一隻沙包，始終保留容易打倒的目標。
+  if(!MAKER_MODE) {
+    const basic=ids.filter(id=>['chase','fast','tank'].includes(ENEMY_TYPES.find(e=>e.id===id)?.behavior));
+    const special=ids.filter(id=>!basic.includes(id));
+    const pressure=state.enemies.filter(e=>e.alive && ['shooter','charger'].includes(e.behavior)).length;
+    const pool=run.cursor++%4===3 && pressure<2 && special.length?special:basic;
+    return SurvivorPacing.pick(pool.length?pool:['jaben'],Math.random());
+  }
+  // Maker retains its authored pool and the original sampling.
   return run.cursor++%3===0 ? 'jaben' : SurvivorPacing.pick(ids,Math.random());
 }
 function updatePacing(dt) {
@@ -67,7 +74,7 @@ function updatePacing(dt) {
   if(run.queue.length && !run.timer) {
     const entry=run.queue[0], kind=entry.kind;
     const effect=GAME_DATA.waveEvents && GAME_DATA.waveEvents[kind] || {typeId:kind==='tide'?'otsubon':kind==='candy-rain'?'pop-candy':'jaben',elite:kind==='elite-squad',position:kind==='ring'?'sides':kind==='tide'?'left':'zone'};
-    const enemy=spawnEnemy({typeId:effect.typeId==='pacing'?undefined:effect.typeId,elite:effect.elite,side:SurvivorPacing.side(effect.position,entry.index),offscreen:effect.position==='random'});
+    const enemy=spawnEnemy({typeId:effect.typeId==='pacing'?undefined:effect.typeId,elite:effect.elite,side:SurvivorPacing.side(effect.position,!MAKER_MODE && kind==='ring'?[0,2][entry.index%2]:entry.index),offscreen:effect.position==='random'});
     if(enemy) run.queue.shift();
     // 精英仍遵守同時上限，滿額跳過，不能堵住事件佇列。
     else if(effect.elite && state.enemies.filter(e=>e.alive&&e.elite).length>=GAME_DATA.elites.limit) run.queue.shift();

@@ -638,8 +638,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [],
       "icon": "wind-ultimate",
       "name": "環繞龍捲風",
-      "description": "龍捲風繞主角旋轉，碰到就傷害",
-      "descriptionMelee": "龍捲風繞主角旋轉，碰到就傷害",
+      "description": "旋風環繞傷敵；Lv3兩個、Lv5三個，重疊不重複傷害。",
+      "descriptionMelee": "旋風環繞傷敵；Lv3兩個、Lv5三個，重疊不重複傷害。",
       "maxLevel": 5,
       "effects": [
         {
@@ -649,7 +649,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ],
       "rarity": "legendary",
-      "descriptionSword": "龍捲風繞主角旋轉，碰到就傷害"
+      "descriptionSword": "旋風環繞傷敵；Lv3兩個、Lv5三個，重疊不重複傷害。"
     },
     {
       "id": "thunder-attack",
@@ -658,7 +658,7 @@ globalThis.SURVIVOR_DEFAULTS = {
       "tier": "entry",
       "icon": "thunder-attack",
       "name": "跳電",
-      "description": "水球跳電到附近另一隻，升級更痛",
+      "description": "命中追加跳電；Lv3連鎖2隻，Lv5連鎖3隻。",
       "descriptionMelee": "揮錘命中會跳電到附近另一隻，升級更痛。",
       "maxLevel": 5,
       "requires": [],
@@ -720,8 +720,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "requires": [],
       "icon": "thunder-ultimate",
       "name": "雷雲",
-      "description": "雷雲定期隨機劈中一隻敵人",
-      "descriptionMelee": "雷雲定期隨機劈中一隻敵人",
+      "description": "雷雲定期劈敵人；Lv3每輪2隻，Lv5每輪3隻，不重複選中。",
+      "descriptionMelee": "雷雲定期劈敵人；Lv3每輪2隻，Lv5每輪3隻，不重複選中。",
       "maxLevel": 5,
       "effects": [
         {
@@ -731,7 +731,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ],
       "rarity": "legendary",
-      "descriptionSword": "雷雲定期隨機劈中一隻敵人"
+      "descriptionSword": "雷雲定期劈敵人；Lv3每輪2隻，Lv5每輪3隻，不重複選中。"
     },
     {
       "id": "fusion-puddle",

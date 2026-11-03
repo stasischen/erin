@@ -55,16 +55,17 @@ function trialAnimation() {
 }
 let trialDraft=null,trialReturnToMaker=false;
 function trialSettings() {return state.trial?state.trial.config:trialDraft||GAME_DATA.gallery;}
-function startTrial(id) {
+function startTrial(id,weaponId=null) {
   const definition=trialSettings().bosses.find(b=>b.id===id);if(!definition)return;
   if(globalThis.SurvivorPreview)SurvivorPreview.stop();
-  resetGame();
+  resetGame();enterRunMode(true);
+  if(!weaponId){state.pendingTrial=id;document.getElementById('trialPanel').hidden=true;showWeaponChoices();return;}
   const arena={x:trialSettings().arenaRadius+200,y:trialSettings().arenaRadius+200,radius:trialSettings().arenaRadius};
   state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,elapsed:0,custom:MAKER_MODE||!!trialDraft,previous:[],events:[]};
   state.player.x=arena.x;state.player.y=arena.y;
   state.boss={...SurvivorTrialRules.entry(arena,definition.radius),r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
   initTrialEncounter();
-  state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId='candy-sword';
+  state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId=weaponId;
   state.practiceHit=null;state.player.damageDisabled=false;
   overlay.classList.add('hidden');document.getElementById('trialPanel').hidden=true;
   state.lastTime=performance.now();updateHud();updateCamera();updateActionControls();scheduleFrame();

@@ -11,6 +11,7 @@ function spawnEnemy(options = {}) {
   const { x, y } = position;
   state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, spriteId:type.spriteId, small:!!options.small, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
   const enemy = state.enemies[state.enemies.length-1];
+  if(!MAKER_MODE)enemy.actionCooldown=2+Math.random()*1.5;
   if (options.elite) makeElite(enemy);
   return enemy;
 }

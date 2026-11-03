@@ -594,6 +594,7 @@
   }));
   function save() { const result=api.save(draft); if(result.valid){dirty=false;message('作品已儲存在這台裝置！');}else message(result.errors.join('；'),true);return result.valid; }
   document.getElementById('save').addEventListener('click',save);
+  document.getElementById('playSurvival').addEventListener('click',()=>{if(save())location.href='?maker=1&play=1&survival=1';});
   document.getElementById('play').addEventListener('click',()=>playGame(selected[tab]));
   document.getElementById('reset').addEventListener('click',()=>{draft=api.defaults();if(globalThis.SurvivorPractice) SurvivorPractice.refresh(draft);if(save()){render();message('已恢復預設作品。');}});
   window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});

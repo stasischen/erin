@@ -23,11 +23,11 @@ for (const [width, height] of [[412,915],[384,832],[915,412],[800,360],[732,310]
 }
 run('window.visualViewport={width:600,height:350,offsetLeft:20,offsetTop:10};fitVisibleViewport()');
 assert.equal(run('gameShell.dataset.short'), '', 'visualViewport does not change former CSS media thresholds');
-for (const file of ['style.css','maker/style.css']) {
+for (const file of ['style.css','upgrade.css','maker/style.css']) {
   const css = fs.readFileSync(path.join(root,file),'utf8');
   assert.ok(!/@media[^{}]*max-(width|height)/.test(css), file+' has a duplicate viewport policy');
 }
-assert.equal((fs.readFileSync(path.join(root,'style.css'),'utf8').match(/^\.upgrade-panel \{/gm)||[]).length, 1);
+assert.equal(['style.css','upgrade.css'].reduce((n,file)=>n+(fs.readFileSync(path.join(root,file),'utf8').match(/^\.upgrade-panel \{/gm)||[]).length,0),1);
 // Cache checker must fail on missing precache entries and stale versions, without writing files.
 const tool = fs.readFileSync(path.join(root,'tools/version.cjs'),'utf8');
 function checkCache(transform) {
@@ -39,7 +39,7 @@ function checkCache(transform) {
   vm.runInNewContext(tool, {__dirname:path.join(root,'tools'),process:{argv:[]},console:quiet,require:name=>name==='node:fs'?fakeFs:require(name)});
 }
 checkCache(s=>s);
-for (const file of ['manifest.js', ...files]) {
+for (const file of ['manifest.js','upgrade.css', ...files]) {
   assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}',`,'')), /not precached/, file);
 }
 assert.throws(()=>checkCache(s=>s.replace(/const CACHE_NAME = '[^']+';/,"const CACHE_NAME = 'stale';")), /CACHE_NAME/);

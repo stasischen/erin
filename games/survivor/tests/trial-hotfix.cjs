@@ -27,20 +27,20 @@ run('work.gallery.arenaRadius=300;work.gallery.bosses[0].moves.find(m=>m.id==="c
 assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[0].moves.find(m=>m.id==="charge").minPhase'),2);
 // 入口的整個預警圓在三尺寸可見，含 Maker 半徑上下限與雙子。
 for(const radius of [200,300])for(const id of ['gatekeeper','frostfire','winged'])for(const [w,h] of [[740,360],[1024,461],[1180,820]]){
- run(`globalThis.saved=GAME_DATA.gallery.arenaRadius;GAME_DATA.gallery.arenaRadius=${radius};startTrial('${id}');GAME_DATA.gallery.arenaRadius=saved;
+ run(`globalThis.saved=GAME_DATA.gallery.arenaRadius;GAME_DATA.gallery.arenaRadius=${radius};startTrial('${id}','candy-sword');GAME_DATA.gallery.arenaRadius=saved;
  Object.assign(state,worldViewport(${w},${h}));updateCamera()`);
  assert.equal(run('trialBodies().every(b=>b.x-b.r-30>=state.cameraX&&b.x+b.r+30<=state.cameraX+state.width&&b.y-b.r-30>=state.cameraY&&b.y+b.r+30<=state.cameraY+state.height)'),true,id+' visible warning');
 }
 // 真實接合：休息／冷卻追近，暈眩與預警期間不偷走位。
 for(const mode of ['rest','cooldown','windup','stun']){
- run(`startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
+ run(`startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
  state.boss.x=state.player.x-150;state.boss.y=state.player.y;state.bossRest=2;
  state.bossMoves=${['cooldown','windup'].includes(mode)?`[{id:'shield',ai:{phase:'${mode}',left:2},angle:0}]`:'[]'};
  state.boss.posture.stun=${mode==='stun'?2:0};globalThis.beforeX=state.boss.x;updateTrial(.05)`);
  assert.equal(run('state.boss.x>beforeX'),['rest','cooldown'].includes(mode),mode);
 }
 // 固定亂數、玩家不主動靠近、滿血第一階段，20 秒內有位移與完整衝鋒預警。
-run(`startTrial('gatekeeper');state.player.damageDisabled=true;Math.random=()=>.99;
+run(`startTrial('gatekeeper','candy-sword');state.player.damageDisabled=true;Math.random=()=>.99;
  globalThis.startX=state.boss.x;globalThis.moved=false;globalThis.warned=false;globalThis.charged=false;
  for(let i=0;i<400;i++){
   updateTrial(.05);moved=moved||state.boss.x!==startX;

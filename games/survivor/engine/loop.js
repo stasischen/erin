@@ -88,6 +88,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
+  state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
   state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -128,12 +129,13 @@ function resetGame() {
 function startGame() {
   if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   resetGame();
+  enterRunMode();
   state.mode = "playing";
   overlay.classList.add("hidden");
   SurvivorIcons.set(pauseButton, "settings");
   state.lastTime = performance.now();
   scheduleFrame();
-  if (PREVIEW_MODE) spawnEnemy(); else showWeaponChoices();
+  if(SURVIVAL_MODE){SurvivorLoadout.initialize();spawnEnemy();}else if(PREVIEW_MODE)spawnEnemy();else showWeaponChoices();
   updateActionControls();
   playSound("click");
 }
@@ -142,9 +144,9 @@ function finishRun(won) {
   if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
+    const progress = { loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
     resetGame();
-    Object.assign(state, { weaponId: progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
+    Object.assign(state, { loadout:progress.loadout, weaponId: progress.loadout?.[0].weaponId || progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
@@ -259,7 +261,8 @@ function tickImpacts(dt,clockDt=dt) {
   if(state.player.perfectFlash>0)state.player.perfectFlash=countdown(state.player.perfectFlash,dt);
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
-  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
+  if(state.loadout)SurvivorLoadout.charge(dt);
+  else if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
@@ -284,8 +287,9 @@ function tickImpacts(dt,clockDt=dt) {
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= playerDt;
-  if (GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
-  if (!state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
+  if (!state.loadout && GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
+  if(state.loadout){SurvivorLoadout.tick(dt);if(state.mode!=='playing')return;}
+  if (!state.loadout && !state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
     if (!enemy.alive || enemy.feedbackFrozen) continue;
     if(state.trial && enemy.emergeTimer>0) {enemy.emergeTimer=countdown(enemy.emergeTimer,dt);continue;}

@@ -39,10 +39,10 @@ assert.equal(run(`SurvivorSchools.pick(sample,{},null,GAME_DATA.schoolRules,[.5]
 assert.equal(run(`SurvivorSchools.pick(sample,{'water-attack':1},{starter:'water'},GAME_DATA.schoolRules,[.5])[0].id`),'b'); // Reduced starter weight no longer dominates the middle draw
 assert.equal(run(`SurvivorSchools.pick(sample,{}, {starter:'water'},GAME_DATA.schoolRules,[.4])[0].id`),'a');
 assert.equal(run(`new Set(SurvivorSchools.pick(sample,{},null,GAME_DATA.schoolRules,[0,0,0]).map(c=>c.id)).size`),3);
-// Startup chooses a weapon only; first school card at level-up sets the starter.
-run('startGame();');assert.equal(run('state.mode'),'levelup');assert.equal(run('state.pickingWeapon'),true);assert.equal(run('Object.keys(state.upgrades).length'),0);
+// Survival starts immediately with water-ball; first school card at level-up sets the starter.
+run('startGame();');assert.equal(run('state.mode'),'playing');assert.equal(run('state.pickingWeapon'),false);assert.equal(run('state.loadout[0].weaponId'),'water-ball');assert.equal(run('Object.keys(state.upgrades).length'),0);
 run('globalThis.timeBefore=state.elapsed;tick(2);globalThis.oldChoices=state.pendingChoices;applyUpgrade(0);');
-assert.equal(run('state.elapsed===timeBefore'),true);assert.equal(run('state.mode'),'playing');assert.equal(run('state.weaponId'),'water-ball');assert.equal(run('state.schoolRun.starter'),null);
+assert.equal(run('state.elapsed>timeBefore'),true);assert.equal(run('state.mode'),'playing');assert.equal(run('state.weaponId'),'water-ball');assert.equal(run('state.schoolRun.starter'),null);
 run('applyUpgrade(1,oldChoices)');assert.equal(run('Object.keys(state.upgrades).length'),0);
 run("state.schoolRun.pool.push('wind-attack');state.pendingChoices=[UPGRADES.find(c=>c.id==='wind-attack')];showUpgradeChoices();applyUpgrade(0);");
 assert.equal(run('state.schoolRun.starter'),'wind');assert.equal(run('state.upgrades["wind-attack"]'),1);

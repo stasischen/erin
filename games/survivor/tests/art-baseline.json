@@ -3,12 +3,12 @@
   "canvas": [
     "6f69c85180b73d21cf1e0b8c4594b47acdda5f2690dcf49846d8e82298521ee9",
     "3010162cd869fa89708fa141197d40627047ab2797db4af81489e4aa97548b7d",
-    "2056b48efa0da9afba3c8010a68981dd3afdcb4813fb8b1afabb9333a2c9c513",
-    "014baf958e59e135fcb01746cb7c29ae85fda5994c82f8aa007a56070372f07d",
-    "f9774425e8c138a7e26bbb3aff0285e40b3dcc0bebb029292eb1abe8cc8ae088",
-    "7984f69bf9a54887e13c5fffdb44e1677365b7bc594df84d2d35ef1fe1589dbb"
+    "a1b6d824b4f09a2065b1f65d5bd8b4a397360d7aad4640568918d85c34c75c98",
+    "51dd0485e511bbfb9d3b4f593ded0ad476a06317a5795903bc5bd3f85e2b5a3c",
+    "7d39dfe0c4c8da62ed78bef1e0242a5e151021d93423835c91c1c9c784a4874e",
+    "9d4cff1034740d1d26f8c3fad7a24a5230dde8bb653a65b5c2f7ec84952140b7"
   ],
   "battle": "fe9c4372e1287b323877e4617d3d8bc869759b9131b17e5f262249245a531164",
   "battleNumberDecimals": 6,
-  "canvasNote": "2026-11-03c: canvas[0] and [5] updated only for matte ground without fine grid; other four canvas hashes and historical battle baseline unchanged"
+  "canvasNote": "2026-11-04: only canvas[2:6] updated for rounded lightning/wind and opaque shared element stroke; player/ground [0:2] and battle baseline unchanged"
 }

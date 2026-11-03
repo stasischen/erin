@@ -1,7 +1,7 @@
 // 真實傷害接合：相同Boss/來源方向跨投射物、爆炸、場、連鎖、Maker範圍。
 const assert=require('node:assert/strict'),run=require('./maker-support.cjs')();
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
-function fresh(){run(`GAME_DATA.hitJuice.enabled=false;startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;state.bossPhasePause=0;
+function fresh(){run(`GAME_DATA.hitJuice.enabled=false;startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0;state.bossPhasePause=0;
  state.boss.x=state.player.x+70;state.boss.y=state.player.y;state.boss.facingAngle=0;state.bossRest=999;state.player.damageDisabled=true;
  state.bossMoves=[{id:'shield',kind:'shield',angle:0,ai:{phase:'windup',left:2},origin:{x:0,y:0},target:{x:0,y:0}}];
  state.boss.weakpoints={back:{phase:'open',left:1,matched:true},core:{phase:'closed',left:0,matched:false}};state.spawnTimer=999;state.shotTimer=999;globalThis.b=state.boss;`);}
@@ -30,5 +30,5 @@ fresh();run(`b.weakpoints={};state.player.x=b.x+70;b.x=state.trial.arena.x+state
  state.bossMoves=[{id:'charge',kind:'charge',ai:{phase:'active',left:1},angle:0,origin:{x:b.x,y:b.y},target:{x:b.x+70,y:b.y}}];updateTrial(.05);updateBossWeakpoints(.15)`);
 assert.equal(run('state.bossMoves.length'),0);assert.equal(run('b.weakpoints.core.phase'),'open');
 // 未掛積木的Boss、普通怪物沿用舊傷害，未新增弱點狀態。
-run("startTrial('winged');state.trial.entry=0;state.bossIntro=0;globalThis.b=trialBodies()[0];b.x=state.player.x+50;b.y=state.player.y;globalThis.hp=b.hp;hitBuildTarget(b,100)");close(run('hp-b.hp'),100);assert.equal(run('b.weakpoints'),undefined);
+run("startTrial('winged','candy-sword');state.trial.entry=0;state.bossIntro=0;globalThis.b=trialBodies()[0];b.x=state.player.x+50;b.y=state.player.y;globalThis.hp=b.hp;hitBuildTarget(b,100)");close(run('hp-b.hp'),100);assert.equal(run('b.weakpoints'),undefined);
 console.log('PASS: real projectile / bomb / field / chain / Maker sources, 20% armor vs back3x, armored bomb survival/death, no9x, metal/small and critical/large impact priority, real wall trigger and unconfigured Boss');

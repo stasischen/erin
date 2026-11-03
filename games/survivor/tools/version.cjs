@@ -32,7 +32,7 @@ const swPath = path.join(repo, 'sw.js');
 let sw = fs.readFileSync(swPath, 'utf8');
 if (writing) {
   sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = 'erin-games-${version}';`);
-  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles].map(file => `games/survivor/${file}`);
+  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles].map(file => `games/survivor/${file}`);
   for (const file of dependencies) if (!sw.includes(`'${file}'`)) {
     sw = sw.replace('const PRECACHE_URLS = [', `const PRECACHE_URLS = [\n  '${file}',`);
   }
@@ -41,7 +41,7 @@ if (writing) {
 const cacheContext = vm.createContext({self: {addEventListener() {}}});
 vm.runInContext(sw + '\nglobalThis.cacheName = CACHE_NAME; globalThis.urls = PRECACHE_URLS;', cacheContext);
 assert.equal(cacheContext.cacheName, `erin-games-${version}`, 'CACHE_NAME differs from version.json');
-for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles]) {
+for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...artFiles]) {
   assert.ok(cacheContext.urls.includes(`/erin/games/survivor/${file}`), `not precached: ${file}`);
 }
 for (const url of cacheContext.urls) {

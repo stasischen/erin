@@ -1,4 +1,5 @@
 function canOffer(card) {
+  if(card.weaponId)return SurvivorLoadout.choices().some(c=>c.id===card.id);
   if(activeWeapon().kind==='melee' && card.id==='item-split') return false;
   return SurvivorSchools.eligible(card, UPGRADES, state.upgrades, state.schoolRun, GAME_DATA.schoolRules, UPGRADE_TUNING.maxUpgradeLevel);
 }
@@ -31,7 +32,7 @@ function showOverlay(mode) {
   if (mode === "paused") { SurvivorIcons.set(iconEl, "pause"); titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; SurvivorIcons.set(pauseButton, "settings"); }
   else if (mode === "over") { SurvivorIcons.set(iconEl, "over"); titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; SurvivorIcons.set(pauseButton, "settings"); }
   else if (mode === "won") { SurvivorIcons.set(iconEl, "win"); titleEl.textContent = "打敗" + GAME_DATA.boss.name + "了！"; textEl.textContent = `${GAME_DATA.boss.name}的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; SurvivorIcons.set(pauseButton, "settings"); }
-  else { SurvivorIcons.set(iconEl, "onion-dash"); titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，衝刺躲字、放泡泡炸彈！"; startButton.textContent = "開始遊戲"; statusEl.textContent = "準備開始"; }
+  else { SurvivorIcons.set(iconEl, "onion-dash"); titleEl.textContent = "小怪獸"; textEl.textContent = "用搖桿或方向鍵移動，衝刺躲字、放泡泡炸彈！"; startButton.textContent = "開始生存"; statusEl.textContent = "準備開始"; }
 }
 
 
@@ -45,6 +46,8 @@ function chooseUpgradeCards(excludedIds = []) {
   else {
     state.pendingChoices = SurvivorSchools.pick(available, state.upgrades, state.schoolRun, {...GAME_DATA.schoolRules, rareWeight:GAME_DATA.schoolRules.rareWeight * (effectLevel("item-clover") ? cardBlock('item-clover','onOffer').actions[0].multiplier : 1)}, [Math.random(), Math.random(), Math.random()]);
   }
+  state.pendingChoices=SurvivorLoadout.guarantee(state.pendingChoices.filter(c=>c.id!=='heal'),excludedIds);
+  if(!state.pendingChoices.length)state.pendingChoices=[{id:'heal',icon:'heal',name:'回血',description:'立即恢復生命'}];
   showUpgradeChoices();
 }
 function renderSkillTree(tree) {
@@ -63,21 +66,21 @@ function showUpgradeChoices() {
   confirm.onclick = () => applyUpgrade(selectedIndex, choices);
   const reroll = document.getElementById("rerollUpgrade");
   reroll.hidden = !!state.pickingWeapon;
-  reroll.disabled = state.pickingWeapon || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer);
+  reroll.disabled = state.pickingWeapon || state.rerollsRemaining <= 0 || !(UPGRADES.some(canOffer)||SurvivorLoadout.choices().length);
   document.getElementById("rerollCount").textContent = String(state.rerollsRemaining);
   reroll.setAttribute("aria-label", `重抽升級卡，剩下 ${state.rerollsRemaining} 次`);
   reroll.title = `重抽升級卡，剩下 ${state.rerollsRemaining} 次`;
   reroll.onclick = rerollUpgradeCards;
   const choiceButtons = [];
-  let lastTap = -Infinity, lastTapIndex = -1;
+  renderUpgradeLoadout();
   state.pendingChoices.forEach((card, index) => {
-    const current = upgradeLevel(card.id), level = `Lv${current} → Lv${current + 1}`;
+    const current = card.weaponId?(SurvivorLoadout.owned(card.id)?.level||0):upgradeLevel(card.id), level = `Lv${current} → Lv${current + 1}`;
     const button = document.createElement("button"); button.className = "upgrade-card"; button.type = "button";
     button.dataset.rarity = card.rarity || (card.tier === "ultimate" ? "legendary" : card.tier === "fusion" ? "epic" : card.requires && card.requires.length ? "rare" : "common");
     if (card.school) button.style.setProperty("--school-color", BUILD_TUNING[card.school].color);
     button.setAttribute("aria-label", SurvivorWeapons.cardPresentation(card,activeWeapon()).name + (state.pickingWeapon || card.id === "heal" ? "" : "，" + level));
     button.title = SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
-    button.innerHTML = state.pickingWeapon ? `<span class="upgrade-icon">${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}</span>` : `<span class="upgrade-icon">${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}</span><small class="card-level">${card.id === "heal" ? "+HP" : "Lv" + (current + 1)}</small>${card.school ? `<span class="card-school">${SurvivorIcons.html(card.school)}</span>` : ""}`;
+    button.innerHTML = upgradeCardMarkup(card,current);
     button.setAttribute("aria-pressed", "false");
     choiceButtons.push(button); upgradeCards.appendChild(button);
     const preview = () => {
@@ -85,27 +88,18 @@ function showUpgradeChoices() {
       confirm.setAttribute("aria-label", "選這張：" + SurvivorWeapons.cardPresentation(card,activeWeapon()).name);
       confirm.title = "選這張：" + SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
       choiceButtons.forEach(node => node.setAttribute('aria-pressed', String(node === button)));
-      document.getElementById("upgradeName").textContent = SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
-      document.getElementById("upgradeDescription").textContent = !state.pickingWeapon && card.effects ? [SurvivorWeapons.cardNote(card,activeWeapon()) || card.description,SurvivorWeapons.upgradeSummary(GAME_DATA,card,activeWeapon(),current)].filter(Boolean).join(' ') : card.description;
-      document.getElementById("upgradeLevel").textContent = state.pickingWeapon ? "自動攻擊" : card.id === "heal" ? "立即回血" : level + " · " + (card.school ? BUILD_TUNING[card.school].name + " · " : "") + (BUILD_SLOTS[card.slot] || "支援");
-      document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 同流派 5 張解鎖" : card.tier === "fusion" ? "雙流派各 2 張解鎖" : ({common:"普通",rare:"稀有",legendary:"傳說"}[card.rarity] || "")) + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
-      if (!state.pickingWeapon && globalThis.SurvivorPreview) SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:current+1,fromLevel:current,weaponId:state.weaponId});
+
     };
-    button.addEventListener('click', () => {
-      const now = performance.now();
-      if (lastTapIndex === index && now - lastTap < 350) { applyUpgrade(index, choices); return; }
-      lastTap = now; lastTapIndex = index; preview();
-    });
-    button.addEventListener('dblclick', () => applyUpgrade(index, choices)); button.addEventListener('focus', preview);
+    button.addEventListener('click', preview);button.addEventListener('focus', preview);
     if (!index) preview();
   });
-  const rewardText = state.pickingWeapon ? "選一把武器" : state.rewardPicking ? `大熊獎勵 · 選第 ${3-state.rewardChoices} 張／共 2 張` : '升級了！選一張卡';
+  const rewardText = state.pickingWeapon ? (state.pendingTrial?"試煉 · 選一把手動武器":"選一把武器") : state.rewardPicking ? `大熊獎勵 · 選第 ${3-state.rewardChoices} 張／共 2 張` : '升級了！選一張卡';
   document.getElementById('upgradeHeading').textContent = rewardText;
   statusEl.textContent = state.pickingWeapon || state.rewardPicking ? rewardText : "選一張升級卡";
 }
 function rerollUpgradeCards() {
   // 只剩回血備案時，保留重抽次數。
-  if (state.pickingWeapon || state.mode !== "levelup" || state.rerollsRemaining <= 0 || !UPGRADES.some(canOffer)) return;
+  if (state.pickingWeapon || state.mode !== "levelup" || state.rerollsRemaining <= 0 || !(UPGRADES.some(canOffer)||SurvivorLoadout.choices().length)) return;
   state.rerollsRemaining--;
   chooseUpgradeCards(state.pendingChoices.map(card => card.id));
 }
@@ -114,12 +108,14 @@ function applyUpgrade(index, choices = state.pendingChoices) {
   const card = state.pendingChoices[index]; if (!card || state.mode !== "levelup" || (!state.pickingWeapon && card.id !== "heal" && !canOffer(card))) return;
   if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   if (state.pickingWeapon) {
+    if(state.pendingTrial){const id=state.pendingTrial;startTrial(id,card.id);return;}
     state.weaponId = card.id; state.pickingWeapon = false; state.pendingChoices = [];
     overlay.classList.add('hidden'); state.mode = 'playing'; spawnEnemy();
     playSound('select'); updateActionControls(); updateHud(); state.lastTime = performance.now(); scheduleFrame(); return;
   }
   const before = { ...state.upgrades };
-  if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
+  if(card.weaponId)SurvivorLoadout.acquire(card.weaponId);
+  else if (card.id === "heal") state.player.health = Math.min(maxPlayerHealth(), state.player.health + Math.ceil(PLAYER_HEALTH / BUILD_TUNING.shieldHealthDivisor));
   else { state.upgrades[card.id] = upgradeLevel(card.id) + 1; if (upgradeLevel(card.id) === 1 && card.effects.some(e => e.feature === "water-ultimate")) state.ultimateTimer = BUILD_TUNING.ultimateSeconds; if (card.effects.some(e => e.feature === "bubble-shield")) { state.player.health = Math.min(maxPlayerHealth(), state.player.health + cardBlock('bubble-shield','onUpgrade').actions[0].amount); } }
   neutralEvent('acquire', state.player.x, state.player.y, card.id);
   state.player.health = Math.min(state.player.health, maxPlayerHealth());

@@ -36,7 +36,7 @@ function fireAtNearest(command = null) {
   const look = buildAppearance();
   const angle = command ? command.angle : SurvivorWeapons.aim(weapon,deltaX(target.x,state.player.x),deltaY(target.y,state.player.y),state.faceX,state.faceY);
   feedbackSound(weaponFeedback({charged:autoCharged,heavy:bigBubble}),"shoot");
-  const count = cardBlock('multi-water','onShot').actions[0].count;
+  const count = cardBlock('multi-water','onShot').actions[0].count+(SurvivorLoadout.config()?.count||1)-1;
   for (let i = 0; i < count && state.projectiles.length < PROJECTILE_LIMIT; i++) {
     const offset = (i - (count - 1) / 2) * cardBlock('multi-water','onShot').actions[0].angle;
     const spread = autoCharged ? Math.max(-Math.PI/2,Math.min(Math.PI/2,offset)) : offset, a = angle + spread;
@@ -125,8 +125,8 @@ function upgradeLevel(id) { return state.upgrades[id] || 0; }
 function effectLevel(feature) {
   return Math.min(5, UPGRADES.reduce((total, card) => total + upgradeLevel(card.id) * card.effects.reduce((n, effect) => n + (effect.feature === feature ? effect.power : 0), 0), 0));
 }
-function effectiveDamage() { return PROJECTILE_DAMAGE * cardBlock('big-water','onShot').actions[1].multiplier; }
-function effectiveShotInterval() { return Math.max(0.12, (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL) * cardBlock('rapid-water','onShot').actions[0].multiplier / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
+function effectiveDamage() { return PROJECTILE_DAMAGE * cardBlock('big-water','onShot').actions[1].multiplier*(SurvivorLoadout.config()?.power||1); }
+function effectiveShotInterval() { return Math.max(0.12, (SurvivorLoadout.interval() || (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL)) * cardBlock('rapid-water','onShot').actions[0].multiplier / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
 function maxPlayerHealth() {
   return Math.max(1, SurvivorEffectBlocks.modify('maxHealth', PLAYER_HEALTH + cardBlock('bubble-shield','onHealth').actions[0].amount, {'item-crown':effectLevel('item-crown')}, GAME_DATA));
 }
@@ -339,6 +339,9 @@ function updateUltimate(dt) {
     if(state.mode !== 'playing') return;
   }
 }
+function ultimateOrbitPoints(orbit) {
+  return Array.from({length:orbit.count},(_,i)=>{const a=state.elapsed*orbit.speed+i*Math.PI*2/orbit.count;return {x:state.player.x+Math.cos(a)*orbit.radius,y:state.player.y+Math.sin(a)*orbit.radius};});
+}
 function updateOneUltimate(dt, selectedSchool) {
   if (state.ultimateVisual) { state.ultimateVisual.life -= dt; if (state.ultimateVisual.life <= 0) state.ultimateVisual = null; }
   const ultimateSchool = selectedSchool;
@@ -348,8 +351,8 @@ function updateOneUltimate(dt, selectedSchool) {
   state.ultimateTimer = countdown(state.ultimateTimer || 0, dt);
   if (state.ultimateTimer > 0) {
     if (card.school === "wind" && state.ultimateVisual) {
-      state.ultimateVisual.x = state.player.x + Math.cos(state.elapsed * orbit.speed) * orbit.radius;
-      state.ultimateVisual.y = state.player.y + Math.sin(state.elapsed * orbit.speed) * orbit.radius;
+      state.ultimateVisual.orbits=ultimateOrbitPoints(orbit);
+      Object.assign(state.ultimateVisual,state.ultimateVisual.orbits[0]);
     }
     return;
   }
@@ -359,8 +362,11 @@ function updateOneUltimate(dt, selectedSchool) {
   const x = state.player.x + Math.cos(state.elapsed * orbit.speed) * orbit.radius;
   const y = state.player.y + Math.sin(state.elapsed * orbit.speed) * orbit.radius;
   if (card.school === "thunder") targets = SurvivorEffectBlocks.select(ultimateBlock,targets,targets.length?Math.random():0);
-  if (card.school === "wind") targets = targets.filter(target => cardBlockMatches(ultimateBlock.conditions[0],target,x,y));
+  const orbits=ultimateOrbitPoints(orbit);
+  if (card.school === "wind") targets = targets.filter(target => orbits.some(p=>cardBlockMatches(ultimateBlock.conditions[0],target,p.x,p.y)));
   state.ultimateVisual = { worldWidth: state.worldWidth, worldHeight: state.worldHeight, school: card.school, x: card.school === "thunder" && targets.length ? targets[0].x : x, y: card.school === "thunder" && targets.length ? targets[0].y : y, life: card.school === "water" ? 1.2 : .5 };
+  state.ultimateVisual.orbits=orbits;
+  state.ultimateVisual.targets=targets.map(t=>({x:t.x,y:t.y}));
   state.ultimateTimer = ultimateBlock.interval;
   for (const target of targets) { if (card.school === "thunder") lightning(target.x, target.y - 90, target.x, target.y); hitBuildTarget(target, damage,{source:{x,y}}); burst(target.x, target.y, BUILD_TUNING[card.school].color, 5); if (state.mode !== "playing") return; }
 }

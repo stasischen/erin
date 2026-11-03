@@ -7,6 +7,7 @@ Survivor.engine['effect-blocks'] = SurvivorEffectBlocks;
 const PREVIEW_MODE = !!globalThis.SURVIVOR_PREVIEW;
 // Maker 資料只在 ?maker=1 試玩時啟用；一般遊戲沿用預設與原設定。
 const MAKER_MODE = PREVIEW_MODE || typeof location !== "undefined" && new URLSearchParams(location.search).get("maker") === "1";
+const SURVIVAL_MODE=!MAKER_MODE || !PREVIEW_MODE && new URLSearchParams(location.search).get('survival')==='1';
 const MAKER_LOAD = PREVIEW_MODE ? { data: globalThis.SURVIVOR_PREVIEW.data, valid: true } : MAKER_MODE ? SurvivorData.load() : null;
 const GAME_DATA = MAKER_MODE ? MAKER_LOAD.data : SurvivorData.defaults();
 // ✏️ Erin 設定區：改下面的數字，就能改變遊戲玩法。
@@ -110,7 +111,7 @@ function loadPlayerSettings() {
 }
 let gameSettings = {...(MAKER_MODE ? SETTING_DEFAULTS : loadSavedSettings()), ...loadPlayerSettings()};
 function applyPlayerSettings() {
-  GAME_DATA.attackMode=gameSettings.attackMode;
+  applyAttackPreference();
   GAME_DATA.joystick={follow:gameSettings.joystickFollow,radius:gameSettings.joystickRadius,deadZone:gameSettings.joystickDeadZone};
   GAME_DATA.hitJuice={enabled:gameSettings.hitFeedback,intensity:gameSettings.feedbackIntensity};
 }

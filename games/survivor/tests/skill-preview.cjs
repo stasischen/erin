@@ -70,15 +70,13 @@ host(`globalThis.previewMounts=[]; globalThis.SurvivorPreview={stop(){},mount:(h
 resetGame();state.mode='playing';state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();`);
 assert.equal(host('state.mode'),'levelup');
 host.elements.upgradeCards.children[1].listeners.click();
-assert.equal(host('previewMounts[previewMounts.length-1].id'),'rapid-water');
+assert.equal(host('previewMounts.length'),0,'player upgrade has no iframe');
 assert.equal(host('upgradeLevel("rapid-water")'),0);
 host.elements.confirmUpgrade.onclick();
 assert.equal(host('upgradeLevel("rapid-water")'),1);assert.equal(host('state.mode'),'playing');
-// Pause / settings owns clickable previews at the actually acquired level.
-host('openSettings();');
-const owned=host.elements.buildSlots.children.find(n=>n.textContent==='連發水球・看效果');
-assert.ok(owned);owned.listeners.click();assert.equal(host('previewMounts[previewMounts.length-1].level'),1);
-console.log('PASS: touch highlight then confirm, acquired-card preview at owned level');
+// Player pause loadout has no effect-preview actions; Maker preview scenes above remain covered.
+host('openSettings();');assert.equal(host('previewMounts.length'),0);
+console.log('PASS: touch highlight then confirm; player upgrade and pause have no previews');
 // 雙點備案：只接受同一張卡的短間隔兩次點擊，不因 focus／滑過就套用。
 const taps=createRun();
 taps(`globalThis.SurvivorPreview={stop(){},mount(){}};globalThis.tapTime=1000;performance.now=()=>tapTime;
@@ -91,10 +89,10 @@ assert.equal(taps('state.mode'),'levelup','點不同卡不算雙點');
 taps('tapTime+=400');taps.elements.upgradeCards.children[1].listeners.click();
 assert.equal(taps('state.mode'),'levelup','超過間隔只預覽');
 taps('tapTime+=100');taps.elements.upgradeCards.children[1].listeners.click();
-assert.equal(taps('state.mode'),'playing');assert.equal(taps('upgradeLevel("rapid-water")'),1);
-taps.elements.upgradeCards.children[1].listeners.dblclick();
-assert.equal(taps('upgradeLevel("rapid-water")'),1,'原生 dblclick 不會重複升級');
-console.log('PASS: focus does not apply, per-card double-tap timing, slow taps only preview, native dblclick applies at most once');
+assert.equal(taps('state.mode'),'levelup');assert.equal(taps('upgradeLevel("rapid-water")'),0);
+assert.equal(taps.elements.upgradeCards.children[1].listeners.dblclick,undefined);taps.elements.confirmUpgrade.onclick();
+assert.equal(taps('upgradeLevel("rapid-water")'),1,'只有確認取得升級');
+console.log('PASS: focus does not apply, double taps never apply, confirmation applies once');
 
 // 第零格即完成定位；命中可位移、循環回位，鏡頭固定對準命中區。
 const close=createRun({preview:{data:JSON.parse(JSON.stringify(data)),spec:{kind:'card',id:'big-water',level:1}}});
