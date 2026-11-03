@@ -107,7 +107,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'gem-magnet',rules:[{trigger:'onPickup',actions:[{type:'pickup-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.magnetPerLevel')))}]}]},
     {feature:'piercing-water',rules:[{trigger:'onShot',actions:[{type:'pierce',count:arg('level'),size:op('add',1,op('multiply',arg('level'),.1))}]}]},
     {feature:'splash-water',rules:[{trigger:'onShotHit',conditions:[{type:'radius',strict:true,radius:op('add',ref('tuning.splashBaseRadius'),op('multiply',arg('level'),ref('tuning.splashPerLevel')))}],actions:[{type:'damage',amount:op('multiply',arg('damage'),ref('build.supportSplashDamage'))}]}]},
-    {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:1}]}]}
+    {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),20))}]}]}
   );
   // 中立道具：保留一次掛載、原有次序及世界單位，亂數／計數由事件傳入。
   const nr = key => ref('neutralRules.'+key);
@@ -132,7 +132,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'item-clover',rules:[{trigger:'onAcquire',conditions:[{type:'firstClover'}],actions:[{type:'reroll',amount:1}]},
       {trigger:'onOffer',actions:[{type:'rare-multiplier',multiplier:nr('luckyRareMultiplier')}]}]},
     {feature:'item-rear',rules:[{trigger:'onShot',conditions:[{type:'volleyPresent'}],actions:[{type:'rear-shot',count:1,angle:Math.PI,multiplier:1}]}]},
-    {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:1}]}]}
+    {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),20))}]}]}
   );
   // 主角與敵人共用 trigger / conditions / actions；接合層只提供事件。
   recipes.push({feature:'posture',rules:[

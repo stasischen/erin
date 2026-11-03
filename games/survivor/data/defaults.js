@@ -178,7 +178,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     "invincibleSeconds": 1,
     "waterSizePerLevel": 0.2,
     "damagePerLevel": 0.25,
-    "fireRateReduction": 0.15,
+    "fireRateReduction": 0.1,
     "extraShotAngle": 0.18,
     "moveSpeedPerLevel": 0.12,
     "magnetPerLevel": 0.4,
@@ -340,8 +340,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "slot": "attack",
       "icon": "rapid-water",
       "name": "連發水球",
-      "description": "發射速度提升",
-      "descriptionMelee": "揮錘更快。",
+      "description": "每級縮短原發射間隔 10%，五級約為原本兩倍射速",
+      "descriptionMelee": "每級縮短原揮錘間隔 10%",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -352,7 +352,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ],
       "rarity": "common",
-      "descriptionSword": "揮劍更快。"
+      "descriptionSword": "每級縮短原揮劍間隔 10%"
     },
     {
       "id": "multi-water",
@@ -473,8 +473,8 @@ globalThis.SURVIVOR_DEFAULTS = {
       "slot": "passive",
       "icon": "auto-heal",
       "name": "自動補血",
-      "description": "慢慢恢復血條",
-      "descriptionMelee": "慢慢恢復血條",
+      "description": "每次恢復基礎血量的 5%（向上取整），升級縮短間隔",
+      "descriptionMelee": "每次恢復基礎血量的 5%（向上取整），升級縮短間隔",
       "maxLevel": 5,
       "requires": [],
       "effects": [
@@ -485,7 +485,7 @@ globalThis.SURVIVOR_DEFAULTS = {
         }
       ],
       "rarity": "common",
-      "descriptionSword": "慢慢恢復血條"
+      "descriptionSword": "每次恢復基礎血量的 5%（向上取整），升級縮短間隔"
     },
     {
       "id": "water-attack",
@@ -1231,8 +1231,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "item-crown",
       "name": "王冠",
-      "description": "詛咒：傷害 +30%，最大血量 -1。",
-      "descriptionMelee": "詛咒：傷害 +30%，最大血量 -1。",
+      "description": "詛咒：傷害 +30%，最大血量 -18。",
+      "descriptionMelee": "詛咒：傷害 +30%，最大血量 -18。",
       "icon": "item-crown",
       "maxLevel": 1,
       "slot": "passive",
@@ -1246,7 +1246,7 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "descriptionSword": "詛咒：傷害 +30%，最大血量 -1。"
+      "descriptionSword": "詛咒：傷害 +30%，最大血量 -18。"
     },
     {
       "id": "item-clover",
@@ -1291,8 +1291,8 @@ globalThis.SURVIVOR_DEFAULTS = {
     {
       "id": "item-cookie",
       "name": "回力餅乾",
-      "description": "持有時每打倒 20 隻，回 1 點血。",
-      "descriptionMelee": "持有時每打倒 20 隻，回 1 點血。",
+      "description": "每打倒 20 隻，恢復基礎血量的 5%（向上取整）。",
+      "descriptionMelee": "每打倒 20 隻，恢復基礎血量的 5%（向上取整）。",
       "icon": "item-cookie",
       "maxLevel": 1,
       "slot": "passive",
@@ -1306,7 +1306,7 @@ globalThis.SURVIVOR_DEFAULTS = {
           "power": 1
         }
       ],
-      "descriptionSword": "持有時每打倒 20 隻，回 1 點血。"
+      "descriptionSword": "每打倒 20 隻，恢復基礎血量的 5%（向上取整）。"
     }
   ],
   "enemies": [
@@ -2205,14 +2205,14 @@ globalThis.SURVIVOR_DEFAULTS = {
   ],
   "schoolRules": {
     "schoolsPerRun": 3,
-    "cardsPerSchool": 5,
+    "cardsPerSchool": 7,
     "transformCards": 3,
     "ultimateCards": 5,
     "fusionCards": 2,
-    "legendaryChance": 0.025,
-    "rareWeight": 0.55,
-    "ownedWeight": 0.65,
-    "starterWeight": 1.5,
+    "legendaryChance": 0.075,
+    "rareWeight": 0.8,
+    "ownedWeight": 0.35,
+    "starterWeight": 0.75,
     "bigDropEvery": 5,
     "bigDropSize": 1.7,
     "bigDropDamage": 1.6,
@@ -2254,7 +2254,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     "wavePush": 55,
     "waveDamage": 18,
     "waveCooldown": 0.6,
-    "itemsPerRun": 5,
+    "itemsPerRun": 9,
     "bombChance": 0.1,
     "bombDelay": 0.6,
     "bombRadius": 70,
@@ -2270,7 +2270,7 @@ globalThis.SURVIVOR_DEFAULTS = {
     "splitAngle": 0.5,
     "magnetMultiplier": 2.5,
     "crownDamage": 0.3,
-    "crownHealth": 1,
+    "crownHealth": 18,
     "luckyRareMultiplier": 1.6,
     "cookieKills": 20
   },

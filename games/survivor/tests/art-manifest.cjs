@@ -64,7 +64,14 @@ const fixture=path.join(__dirname,'art-baseline.json');
 const expected=JSON.parse(fs.readFileSync(fixture));
 assert.deepEqual(snapshots(createRun()),expected.canvas);
 assert.equal(expected.battleNumberDecimals,6);
-assert.equal(battleHash(require('./maker-traces.cjs')(createRun())),expected.battle);
+// Preserve the historical hash with its historical rapid-fire tuning; no fixture rewrite.
+const trace=require('./maker-traces.cjs'), historic=createRun();historic('UPGRADE_TUNING.fireRateReduction=.15');
+const prior=trace(historic), current=trace(createRun());
+assert.equal(battleHash(prior),expected.battle);
+current.forEach((row,i)=>{
+ if(row.id==='rapid-water') {assert.equal(row.state.interval,.72*(1-row.level*.1));row.state.interval=prior[i].state.interval;}
+ assert.deepEqual(row,prior[i]);
+});
 // Visual frame selection cannot enter an active damage phase or emit a hit.
 run("globalThis.before=JSON.stringify(SurvivorTiming.advance({phase:'windup',left:.5},{windup:.5,active:.2,recovery:.3,cooldown:1},.1));testArt.assets['character/player'].animations.active.fps=999");
 run("SurvivorArt.lookup('character/player','active',99,testArt)");

@@ -5,8 +5,10 @@ const create=require('./maker-support.cjs');
 const ids=["big-water", "rapid-water", "multi-water", "onion-dash", "bubble-shield", "gem-magnet", "piercing-water", "splash-water", "auto-heal"];
 function scenario(old,setup,steps){
   const run=create();
+  // Intentional balance delta only: legacy healing now restores ceil(base HP / 20).
+  // Frozen source stays unchanged; every other state/event still compares exactly.
   if(old) {
-    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(body));
+    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(name==='tick' ? body.replace('state.player.health + 1','state.player.health + Math.ceil(GAME_DATA.tuning.playerHealth / 20)') : body));
   }
   run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;
     globalThis.enemy=(dx=20,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0});

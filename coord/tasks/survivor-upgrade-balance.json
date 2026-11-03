@@ -3,18 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "blocked",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "Dot 尚缺可核對原生新任務授權與公開 canonical 卡，未出 patch。家長選擇本卡由 Codex 實作並保留獨立審查，或在 Dot 原生對話確認後沿原卡繼續。未改遊戲。",
+  "next": "家長已授權本卡由 Codex 主導與子代理實作，保留獨立審查與真瀏覽器測試；不再等待 Dot。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": "user",
+  "waitingFor": null,
   "risk": "low",
-  "updated": "2026-11-02T16:12:17.922808+00:00",
+  "updated": "2026-11-03T00:53:53.580572+00:00",
   "updatedBy": "codex"
 }
