@@ -3,18 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "doing",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "家長已授權本卡由 Codex 主導與子代理實作，保留獨立審查與真瀏覽器測試；不再等待 Dot。",
+  "next": "本機整合試玩版完成，三武器自然升級與獨立完整測試124PASS；家長試玩驗收後決定是否授權發布。未push、未開PR、未合併main或改正式站。",
   "reviewers": [
     "luna",
     "grok"
   ],
-  "waitingFor": null,
+  "waitingFor": "user",
   "risk": "low",
-  "updated": "2026-11-03T00:53:53.580572+00:00",
+  "updated": "2026-11-03T01:11:18.101364+00:00",
   "updatedBy": "codex"
 }
