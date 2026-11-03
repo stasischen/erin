@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "art-polish",
+  "title": "月光黏土畫面與特效統一",
+  "owner": "codex",
+  "state": "review",
+  "repo": "erin",
+  "branch": "art/polish",
+  "pr": null,
+  "brief": "coord/tasks/specs/art-polish.md",
+  "next": "本機試玩與12張截圖已備妥，等待家長驗收風格並授權對外發布；未push／未開公開PR／未改正式站。",
+  "reviewers": [
+    "user"
+  ],
+  "waitingFor": "user",
+  "risk": "low",
+  "updated": "2026-11-02T16:00:22.095218+00:00",
+  "updatedBy": "codex"
+}

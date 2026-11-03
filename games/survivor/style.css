@@ -319,3 +319,46 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
   body.boss-trial .game-shell[data-short~="compact"] .hud { height:auto; bottom:0; }
   body.boss-trial .game-shell[data-short~="compact"] .hud .health-wrap { top:auto; bottom:max(10px,var(--safe-bottom)); }
 }
+
+/* Moonlit clay: shared surface treatment, preserving existing responsive geometry. */
+body { font-family: ui-rounded, "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+.overlay { background:rgba(12,10,28,.72); }
+.message-card, .upgrade-panel, .settings-panel, .trial-panel, .trial-confirm {
+  color:#e8f6ff; border:1px solid rgba(146,174,228,.42); border-radius:20px;
+  background:linear-gradient(145deg,#302949,#17172e 72%);
+  box-shadow:0 18px 60px #08071980,inset 0 1px 0 #e2ebff14;
+}
+.message-card { padding:30px; }
+.message-card h2 { color:#f4f4ff; letter-spacing:.12em; text-shadow:0 2px 0 #0e1128; }
+.message-card p { color:#b5bfd8; font-weight:500; }
+.start-button { border:1px solid #a5e5ff; border-radius:12px; color:#102b45;
+  background:linear-gradient(160deg,#c1efff,#73c8ef); box-shadow:0 4px 0 #27638b,0 8px 22px #35b9ff20; }
+.settings-action { border-radius:10px; border:1px solid #7887ae70; background:#35334d; color:#dce9ff; box-shadow:0 3px 0 #111025; }
+.message-card .menu-settings:not(.gear-button) { background:#35334d; color:#c2cde5; }
+.message-card .gear-button { background:#201e37; border:1px solid #7887ae70; }
+.upgrade-panel h2, .settings-panel h2, .trial-panel h2 { color:#e8f6ff; letter-spacing:.06em; }
+.upgrade-panel > p { color:#b5bfd8; }
+.upgrade-card, .upgrade-panel .upgrade-card { border-radius:12px; background:#292840; box-shadow:0 3px 0 #100f23; }
+.upgrade-panel .upgrade-card[aria-pressed="true"] { background:#35445d; outline-color:#b3eaff; box-shadow:0 0 18px #78cfff30; }
+.upgrade-details, .skill-preview-host { border:1px solid #7887ae50; border-radius:12px; background:#16172b; color:#dce9ff; }
+.upgrade-details h3 { color:#c1efff; }
+.upgrade-panel .card-level, .upgrade-panel .card-school { border-radius:5px; background:#17172e; }
+.settings-panel > .settings-actions { background:transparent; }
+.trial-choice { color:#dce9ff; }
+.trial-choice img { border:2px solid #8d9fc5; background:#292840; box-shadow:0 5px 18px #08071960; }
+.trial-confirm { border-radius:14px; }
+.hud .health-wrap { background:rgba(24,20,48,.86); border-color:#7887ae70; }
+.hud-avatar { box-shadow:0 0 8px #35b9ff24; }
+.hud .status { text-shadow:0 2px 4px #080719,0 0 10px #35b9ff38; }
+.hud .health-track, .hud .health-fill { box-shadow:none; }
+.pause-button { border:1px solid #91bdd7; box-shadow:0 3px 0 #0c1027; }
+.skill-button,.special-button { box-shadow:0 0 9px #ffa94d38,0 4px 0 #122038; }
+button { transition:background-color .15s, border-color .15s; }
+@media (hover:hover) {
+  .start-button:hover { background:#d6f6ff; }
+  .settings-action:hover, .upgrade-card:hover { border-color:#c1efff; }
+}
+:where(.game-shell[data-short~="compact"]) .message-card { padding:22px 58px 22px 24px; }
+:where(.game-shell[data-short~="compact"]) .message-card h2 { font-size:32px; margin:0 0 8px; }
+:where(.game-shell[data-short~="compact"]) .message-card p { margin:6px 0 16px; }
+@media (prefers-reduced-motion:reduce) { button { transition:none; } }

@@ -63,22 +63,22 @@ function drawBossMovesPlaceholder() {
       const progress=move.active?1:1-move.warning/Math.max(.001,bossDefinition(move).warning);SurvivorNeon.warning(ctx,x,y,point.r,progress,move.active);
       if(move.recovery) {ctx.fillStyle='#ffcf49';ctx.font='bold 25px system-ui';ctx.fillText('★ ★',state.boss.x-25,state.boss.y-65);}
     } else if(bossKind(move)==='sniper') {
-      ctx.lineWidth=2;ctx.strokeStyle='#e3394e';ctx.beginPath();ctx.moveTo(move.x,move.y);ctx.lineTo(move.x+Math.cos(move.angle)*1400,move.y+Math.sin(move.angle)*1400);ctx.stroke();
+      ctx.lineWidth=2;ctx.strokeStyle='#e3394e';ctx.beginPath();ctx.moveTo(move.x,move.y);ctx.lineTo(move.x+Math.cos(move.angle)*1400,move.y+Math.sin(move.angle)*1400);SurvivorNeon.stroke(ctx,'orange');
     } else if(bossKind(move)==='barriers') {
       ctx.lineWidth=16;ctx.strokeStyle=move.active?'#31595a':'#e35c6d';
-      for(const sign of [-1,1]) {ctx.beginPath();ctx.moveTo(move.x+sign*move.wallWidth,move.y-move.radius);ctx.lineTo(move.x+sign*move.wallWidth,move.y+move.radius);ctx.stroke();}
+      for(const sign of [-1,1]) {ctx.beginPath();ctx.moveTo(move.x+sign*move.wallWidth,move.y-move.radius);ctx.lineTo(move.x+sign*move.wallWidth,move.y+move.radius);SurvivorNeon.stroke(ctx,'orange');}
     } else if (bossKind(move) === "wall") {
       const x = wallX(move); ctx.lineWidth = 20;
       ctx.strokeStyle = move.active ? "#fff5dd" : "rgba(235,83,101,.55)";
-      ctx.beginPath(); ctx.moveTo(x,move.y);ctx.lineTo(x,move.y+move.wallHeight);ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,move.y);ctx.lineTo(x,move.y+move.wallHeight);SurvivorNeon.stroke(ctx,'orange');
       ctx.lineWidth = 2; ctx.strokeStyle = "#d64c65";ctx.strokeRect(move.x,move.y,move.wallWidth,move.wallHeight);
     } else if (["dash","combo"].includes(bossKind(move))) {
       const endX = move.x + deltaX(move.endX, move.x), endY = move.y + deltaY(move.endY, move.y);
       const duration = Math.hypot(deltaX(move.endX, move.x), deltaY(move.endY, move.y)) / bossDefinition(move).speed;
       drawLandingShadow(endX, endY + state.boss.r * .85, state.boss.r, move.active ? 1 - move.life / Math.max(.001, duration) : 0);
       ctx.lineWidth = state.boss.r * 2; ctx.strokeStyle = "rgba(220,65,83,.18)";
-      ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); ctx.stroke();
-      ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); SurvivorNeon.stroke(ctx,'orange');
+      ctx.lineWidth = 4; ctx.strokeStyle = "#c8354b"; ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(endX, endY); SurvivorNeon.stroke(ctx,'orange');
     } else if (bossKind(move) === "rain" || bossKind(move) === "call") {
       for (const rawPoint of move.points) {
         const point = { ...rawPoint, x: move.x + deltaX(rawPoint.x, move.x), y: move.y + deltaY(rawPoint.y, move.y) };
@@ -94,22 +94,22 @@ function drawBossMovesPlaceholder() {
     } else if (bossKind(move) === "ring" || bossKind(move) === "cage") {
       if (bossKind(move) === "cage") {
         const radius=move.active ? move.radius*Math.max(0,move.life/bossDefinition(move).duration) : move.radius;
-        ctx.beginPath();ctx.arc(move.x,move.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.arc(move.x,move.y,radius,0,Math.PI*2);ctx.fill();SurvivorNeon.stroke(ctx,'orange');
       }
       for (const point of ringPoints(move.active ? move : { ...move, life: bossDefinition(move).duration })) {
         ctx.font = "bold 20px system-ui"; ctx.textAlign = "center"; ctx.fillStyle = move.active ? "#b42f54" : "#78626b"; ctx.fillText("字", point.x, point.y + 7);
       }
       if (bossKind(move) === "ring") {
         const radius = move.active ? Math.hypot(deltaX(ringPoints(move)[0].x, move.x), deltaY(ringPoints(move)[0].y, move.y)) : move.radius;
-        ctx.strokeStyle = "#16804b"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(move.x, move.y, radius, move.angle - bossDefinition(move).gap / 2, move.angle + bossDefinition(move).gap / 2); ctx.stroke();
+        ctx.strokeStyle = "#16804b"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(move.x, move.y, radius, move.angle - bossDefinition(move).gap / 2, move.angle + bossDefinition(move).gap / 2); SurvivorNeon.stroke(ctx,'orange');
       }
     } else if (bossKind(move) === "words" || bossKind(move) === "chalk") {
       const spread = bossDefinition(move).spread;
       for (let n = 0; n < move.count; n++) {
         const angle = move.angle + (n - (move.count - 1) / 2) * spread;
-        ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.x + Math.cos(angle) * 170, move.y + Math.sin(angle) * 170); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(move.x, move.y); ctx.lineTo(move.x + Math.cos(angle) * 170, move.y + Math.sin(angle) * 170); SurvivorNeon.stroke(ctx,'orange');
       }
-    } else { ctx.beginPath(); ctx.arc(move.x, move.y, 50, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    } else { ctx.beginPath(); ctx.arc(move.x, move.y, 50, 0, Math.PI * 2); ctx.fill(); SurvivorNeon.stroke(ctx,'orange'); }
     if(!moveFeedback(bossDefinition(move),'move').hint){ctx.restore();continue;}
     const name = BOSS_MOVES.find(row => row.id === move.id).name;
     ctx.font = "bold 17px system-ui"; ctx.textAlign = "center"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
@@ -139,11 +139,16 @@ function backgroundTile(kind, density) {
   if (BACKGROUND_TILES[key]) return BACKGROUND_TILES[key];
   const tile = document.createElement("canvas"); tile.width = 336; tile.height = 252;
   const g = tile.getContext("2d"); g.imageSmoothingEnabled = false;
-  const colors = ["#1b1633", "#1b1633", "#1b1633"];
+  const colors = ["#1b1633", "#201c3b", "#3b3655"];
   g.fillStyle = colors[0]; g.fillRect(0, 0, 336, 252);
   // 84 整除四邊；圖案遠離邊緣，拼接線兩側都是同一底色。
   for (let y = 0; y < 252; y += 84) for (let x = 0; x < 336; x += 84) {
-    g.fillStyle = colors[1]; g.fillRect(x + 3, y + 3, 78, 78);
+    g.fillStyle = (x / 84 + y / 84) % 2 ? '#1d1937' : colors[1];
+    g.fillRect(x + 2, y + 2, 80, 80);
+    g.fillStyle='rgba(166,180,225,.045)';g.fillRect(x+3,y+3,78,1);g.fillRect(x+3,y+3,1,78);
+    g.fillStyle='rgba(0,0,0,.14)';g.fillRect(x+3,y+81,79,1);
+    // Tiny inset corner marks read as floor ornament, never collectible objects.
+    g.fillStyle='rgba(120,207,255,.08)';g.fillRect(x+9,y+9,7,1);g.fillRect(x+9,y+9,1,7);
   }
   const marks = [[42,42], [210,126], [294,210], [126,42]];
   g.fillStyle = colors[2];
@@ -226,7 +231,7 @@ function drawClassroomPlaceholder() {
   for (let y = top; y < state.cameraY + state.height + 16; y += 252)
     for (let x = left; x < state.cameraX + state.width + 16; x += 336) ctx.drawImage(tile, x, y);
   const right=state.cameraX+state.width,bottom=state.cameraY+state.height;
-  ctx.fillStyle='rgba(120,207,255,0.07)';
+  ctx.fillStyle='rgba(120,207,255,0.025)';
   for(let x=Math.floor(state.cameraX/48)*48;x<right;x+=48)ctx.fillRect(x,state.cameraY,1,state.height);
   for(let y=Math.floor(state.cameraY/48)*48;y<bottom;y+=48)ctx.fillRect(state.cameraX,y,state.width,1);
   const glow=backgroundGlow();if(glow)ctx.drawImage(glow,state.cameraX+state.width/2-336,state.cameraY+state.height/2-336);
@@ -339,7 +344,7 @@ function strokeRing(x, y, radius, color, width = 3) {
   return SurvivorArt.paint('layer/stroke-ring', null, () => strokeRingPlaceholder.apply(this, arguments));
 }
 function strokeRingPlaceholder(x, y, radius, color, width = 3) {
-  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); SurvivorNeon.stroke(ctx,'blue');
 }
 function drawBolt(x, y, x2, y2) {
   return SurvivorArt.paint('layer/draw-bolt', null, () => drawBoltPlaceholder.apply(this, arguments));
@@ -348,10 +353,10 @@ function drawBoltPlaceholder(x, y, x2, y2) {
   const dx = deltaX(x2, x), dy = deltaY(y2, y), length = Math.max(1, Math.hypot(dx, dy));
   x2 = x + dx; y2 = y + dy;
   // 固定折線，不每幀亂跳；暫停時畫面也會完全停住。
-  for (const [color, width] of [["#69309b", 7], ["#fff6a0", 3]]) {
+  for (const [color, width] of [["#78cfff", 3]]) {
     ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x, y);
     for (let i = 1; i < 6; i++) { const offset = (i % 2 ? 1 : -1) * Math.min(12, length * .18); ctx.lineTo(x + dx * i / 6 - dy / length * offset, y + dy * i / 6 + dx / length * offset); }
-    ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.lineTo(x2, y2); SurvivorNeon.stroke(ctx,'blue');
   }
 }
 function drawSwirl(x, y, radius, phase) {
@@ -360,7 +365,7 @@ function drawSwirl(x, y, radius, phase) {
 function drawSwirlPlaceholder(x, y, radius, phase) {
   ctx.strokeStyle = "#23815e"; ctx.lineWidth = 4;
   for (let i = 0; i < 3; i++) {
-    ctx.beginPath(); ctx.arc(x, y, radius * (1 - i * .23), phase + i, phase + i + Math.PI * 1.5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, radius * (1 - i * .23), phase + i, phase + i + Math.PI * 1.5); SurvivorNeon.stroke(ctx,'blue');
   }
 }
 function drawFields() {
@@ -373,7 +378,7 @@ function drawFieldsPlaceholder() {
     ctx.beginPath(); ctx.arc(field.x, field.y, field.radius, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = Math.min(1, field.life * 3);
     if (field.school === "water") {
       strokeRing(field.x, field.y, field.radius, "#237bc2");
-      for (let i = -1; i <= 1; i++) { ctx.strokeStyle = "#e5faff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(field.x, field.y + i * field.radius * .35, field.radius * .65, 4, 0, 0, Math.PI); ctx.stroke(); }
+      for (let i = -1; i <= 1; i++) { ctx.strokeStyle = "#e5faff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(field.x, field.y + i * field.radius * .35, field.radius * .65, 4, 0, 0, Math.PI); SurvivorNeon.stroke(ctx,'blue'); }
       if (effectLevel("fusion-puddle")) drawBolt(field.x - field.radius * .5, field.y, field.x + field.radius * .5, field.y);
     } else if (field.school === "wind") drawSwirl(field.x, field.y, field.radius, state.elapsed * 5);
     else {
@@ -413,11 +418,11 @@ function drawSupportVisualsPlaceholder() {
     // 三段吸力弧標示真正的吸取半徑，不用整片光圈遮住敵人。
     const radius = GEM_PULL_RADIUS * (1 + effectLevel("gem-magnet") * UPGRADE_TUNING.magnetPerLevel);
     ctx.strokeStyle = "rgba(130,69,163,.5)"; ctx.lineWidth = 3;
-    for (let i = 0; i < 3; i++) { const a = state.elapsed + i * Math.PI * 2 / 3; ctx.beginPath(); ctx.arc(p.x, p.y, radius, a, a + .35); ctx.stroke(); }
+    for (let i = 0; i < 3; i++) { const a = state.elapsed + i * Math.PI * 2 / 3; ctx.beginPath(); ctx.arc(p.x, p.y, radius, a, a + .35); SurvivorNeon.stroke(ctx,'blue'); }
   }
   if (p.moving && (effectLevel("onion-dash") || effectLevel("wind-speed"))) {
     ctx.strokeStyle = effectLevel("wind-speed") ? "#23815e" : "#8754ad"; ctx.lineWidth = 3;
-    for (const offset of [-10, 0, 10]) { ctx.beginPath(); ctx.moveTo(p.x - state.faceX * 20 - state.faceY * offset, p.y - state.faceY * 20 + state.faceX * offset); ctx.lineTo(p.x - state.faceX * 42 - state.faceY * offset, p.y - state.faceY * 42 + state.faceX * offset); ctx.stroke(); }
+    for (const offset of [-10, 0, 10]) { ctx.beginPath(); ctx.moveTo(p.x - state.faceX * 20 - state.faceY * offset, p.y - state.faceY * 20 + state.faceX * offset); ctx.lineTo(p.x - state.faceX * 42 - state.faceY * offset, p.y - state.faceY * 42 + state.faceX * offset); SurvivorNeon.stroke(ctx,'blue'); }
   }
   ctx.restore();
 }
@@ -433,19 +438,19 @@ function drawSkillVisualsPlaceholder(layer) {
     if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life,phaseElapsed:v.maxLife-v.life,phaseDuration:v.maxLife,radius:v.radius,angle:v.angle||0,origin:{x:v.x,y:v.y},target:Number.isFinite(v.x2)?{x:v.x2,y:v.y2}:undefined})) {ctx.restore();continue;}
     if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
     else if (v.kind === "maker-ring") {
-      ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); ctx.stroke();
-      ctx.strokeStyle="#16804b";ctx.beginPath();ctx.arc(v.x,v.y,v.radius,-v.gap/2,v.gap/2);ctx.stroke();
+      ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); SurvivorNeon.stroke(ctx,'blue');
+      ctx.strokeStyle="#16804b";ctx.beginPath();ctx.arc(v.x,v.y,v.radius,-v.gap/2,v.gap/2);SurvivorNeon.stroke(ctx,'blue');
     } else if (v.kind === "lightning") drawBolt(v.x, v.y, v.x2, v.y2);
     else if (v.kind === "gust") {
       const angle = Math.atan2(deltaY(v.y2, v.y), deltaX(v.x2, v.x));
       ctx.translate(v.x, v.y); ctx.rotate(angle); ctx.strokeStyle = v.color; ctx.lineWidth = 4;
-      for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); ctx.stroke(); }
+      for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); SurvivorNeon.stroke(ctx,'blue'); }
     } else if (v.kind === "card") {
       strokeRing(v.x, v.y + 38, 22 + progress * 25, v.color);
       SurvivorIcons.draw(ctx, v.text, v.x - 12, v.y - 24 - progress * 20, 24);
     } else if (v.kind === "sparkle") {
       ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 5;
-      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); ctx.stroke(); }
+      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); SurvivorNeon.stroke(ctx,'blue'); }
       strokeRing(v.x, v.y, 5, v.color, 4);
     } else {
       strokeRing(v.x, v.y, v.radius * (.25 + progress * .75), v.color, 4);
@@ -478,14 +483,14 @@ function drawOneUltimatePlaceholder(v) {
     const x = v.worldWidth * (1 - v.life / 1.2);
     ctx.fillStyle = "rgba(35,123,194,.38)"; ctx.fillRect(x - 130, 0, 150, v.worldHeight);
     ctx.strokeStyle = "#ecfdff"; ctx.lineWidth = 8; ctx.beginPath();
-    for (let y = 0; y <= v.worldHeight; y += 14) { const edge = x + Math.sin(y / 24) * 17; if (!y) ctx.moveTo(edge, y); else ctx.lineTo(edge, y); } ctx.stroke();
+    for (let y = 0; y <= v.worldHeight; y += 14) { const edge = x + Math.sin(y / 24) * 17; if (!y) ctx.moveTo(edge, y); else ctx.lineTo(edge, y); } SurvivorNeon.stroke(ctx,'blue');
   } else if (v.school === "wind") {
     // 倒錐形、四層旋轉風圈，和地上小旋風容易區分。
     ctx.fillStyle = "rgba(92,205,158,.35)"; ctx.beginPath(); ctx.moveTo(v.x, v.y + 18); ctx.lineTo(v.x - 45, v.y - 75); ctx.lineTo(v.x + 45, v.y - 75); ctx.closePath(); ctx.fill();
     for (let i = 0; i < 4; i++) drawSwirl(v.x, v.y - i * 22, 14 + i * 10, state.elapsed * 7 + i);
   } else {
     ctx.fillStyle = "#64557e"; ctx.strokeStyle = "#e8dcff"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.ellipse(v.x, v.y - 94, 46, 23, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(v.x, v.y - 94, 46, 23, 0, 0, Math.PI * 2); ctx.fill(); SurvivorNeon.stroke(ctx,'blue');
     for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(v.x + i * 23, v.y - 102, 18, 0, Math.PI * 2); ctx.fill(); }
     drawBolt(v.x, v.y - 80, v.x, v.y); strokeRing(v.x, v.y, 22, "#9755bb", 4);
   }
@@ -576,18 +581,18 @@ function render() {
       const bubble = state.bomb || state.bombBlast;
       const radius = state.bomb ? 24 + (1 - bubble.timer / bubble.delay) * 12 : bubble.radius * (1 - bubble.life / 0.35);
       ctx.fillStyle = "rgba(110,225,255,.25)"; ctx.strokeStyle = "#43aee9"; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2); ctx.fill(); SurvivorNeon.stroke(ctx,'blue');
+      if (state.bomb) { ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2); SurvivorNeon.stroke(ctx,'blue'); }
     }
-    if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); ctx.stroke(); }
+    if (state.dashTimer > 0) { ctx.strokeStyle = "#83eaff"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(state.player.x, state.player.y); ctx.lineTo(state.player.x - state.dashX * 45, state.player.y - state.dashY * 45); SurvivorNeon.stroke(ctx,'blue'); }
     if (state.bombBlast && state.bombBlast.schools) for (const [index, school] of state.bombBlast.schools.entries()) {
       ctx.strokeStyle = BUILD_TUNING[school].color; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); SurvivorNeon.stroke(ctx,'blue');
     }
     drawUltimate();
     drawSkillVisuals('actor');
     for (const shot of state.projectiles) if (shot.boosted) {
-      ctx.strokeStyle="#fff4a0";ctx.lineWidth=4;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+5,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="#fff4a0";ctx.lineWidth=4;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+5,0,Math.PI*2);SurvivorNeon.stroke(ctx,'blue');
     }
     for (const g of state.dashGhosts) {
       ctx.save(); ctx.globalAlpha = g.life / .22 * .25;
