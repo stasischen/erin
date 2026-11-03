@@ -3,17 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "doing",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "手機回饋修正已通過三武器真Chrome診斷；待完整測試及新版測試頁發布。",
+  "next": "近戰與手機手動攻速修正版已上測試頁，完整126PASS及獨立審查通過；等家長試玩，PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/3a97f05dbf5eb047785306afee0249bc26fa642f/games/survivor/",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-03T01:33:43.275431+00:00",
-  "updatedBy": "codex"
+  "updated": "2026-11-03T01:38:24.869877+00:00",
+  "updatedBy": "codex",
+  "waitingFor": "user"
 }
