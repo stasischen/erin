@@ -276,7 +276,7 @@ function drawHeroPlaceholder() {
   const action=state.manualTiming,context=actorArtContext(p,action);
   const stunned=p.stunTimer>0||p.posture&&p.posture.stun>0;
   const animation = stunned ? 'stun' : hurt ? 'hurt' : state.dashTimer>0?'dodge':action&&['windup','active','recovery'].includes(action.phase)?action.phase:p.moving ? 'run' : 'idle';
-  if (!SurvivorArt.drawCharacter('character/player',{context:ctx,x:-20,y:-30,width:40,height:48,animation,elapsed:state.elapsed,...context,groundOffset:p.r*.85,flash:!!p.impactFlash})) {
+  if (!SurvivorArt.drawCharacter('character/player',{context:ctx,x:-20,y:-30,width:40,height:48,animation,elapsed:state.elapsed,...context,worldScale:SurvivorArtManifest.assets['character/player'].worldScale,groundOffset:p.r*.85,flash:!!p.impactFlash})) {
     const art = SurvivorArt.picture('character/player', animation, state.elapsed,context);
     const sprite = SPRITES.player;
     if (art) {

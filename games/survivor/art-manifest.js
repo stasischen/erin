@@ -252,3 +252,68 @@ SurvivorArtManifest.assets['layer/draw-held-weapon'].clayPalette={
   blade:['#f4fdff','#8dddf0','#468aba'],
   trim:['#fff9d9','#f2ce88','#b0804f']
 };
+SurvivorArtManifest.assets['character/player'].worldScale=.85;
+// Curved silhouettes shared by DOM and Canvas icons; no font or pixel-grid dependency.
+SurvivorArtManifest.clayIcons=(()=>{
+ const path=d=>`<path d="${d}"/>`, line=d=>`<path d="${d}" fill="none" stroke="url(#clay)" stroke-width="7"/>`;
+ const circle=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}"/>`;
+ const rect=(x,y,w,h,r=5)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`;
+ const s={
+  drop:path('M32 7 C27 18 13 29 13 40 A19 19 0 0 0 51 40 C51 29 37 18 32 7Z'),
+  wave:path('M8 43 Q13 18 34 17 Q52 16 53 30 Q45 20 37 29 Q30 40 55 43 L55 53 L8 53Z'),
+  puddle:'<ellipse cx="32" cy="42" rx="25" ry="12"/>',
+  cloud:path('M15 40 A12 12 0 0 1 14 16 A15 15 0 0 1 40 13 A14 14 0 0 1 51 40Z'),
+  bolt:path('M36 7 L16 34 Q14 38 20 38 L29 38 L25 57 L49 28 Q51 24 46 24 L35 24Z'),
+  wind:line('M10 23 H39 Q53 23 49 13 Q43 6 38 14 M8 34 H50 M12 45 H38 Q50 45 46 54 Q40 60 35 53'),
+  swirl:line('M12 15 Q49 5 52 22 Q55 36 25 34 Q13 34 15 44 Q17 53 35 53 L29 59'),
+  leaf:path('M10 53 Q6 14 54 9 Q57 52 10 53Z')+line('M13 49 L42 23'),
+  shield:path('M32 7 Q42 14 52 14 L50 37 Q48 51 32 58 Q16 51 14 37 L12 14 Q22 14 32 7Z'),
+  heart:path('M32 54 C17 43 6 33 9 21 C13 7 26 9 32 19 C38 9 51 7 55 21 C58 33 47 43 32 54Z'),
+  plus:line('M32 13 V51 M13 32 H51'), minus:line('M13 32 H51'),
+  arrow:path('M9 26 H35 V13 L56 32 L35 51 V38 H9Z'),
+  shoe:path('M20 12 H34 L38 31 Q43 38 55 39 L57 51 H10 L10 32 H20Z'),
+  sword:'<g transform="rotate(-43 32 32)">'+rect(9,27,21,10)+path('M28 24 Q45 20 59 29 Q63 32 59 35 Q45 44 28 40Z')+rect(25,17,6,30,3)+'</g>',
+  hammer:'<g transform="rotate(-43 32 32)">'+rect(7,28,29,9)+rect(30,12,23,40,10)+rect(32,12,5,40,2)+rect(46,12,5,40,2)+'</g>',
+  magnet:path('M12 10 H25 V34 Q25 43 32 43 Q39 43 39 34 V10 H52 V35 Q52 56 32 56 Q12 56 12 35Z'),
+  crown:path('M10 48 L7 17 L22 29 L32 10 L42 29 L57 17 L54 48Z')+rect(11,47,42,8,3),
+  gem:path('M20 9 H44 L57 27 L32 57 L7 27Z')+line('M9 27 H55'),
+  star:path('M32 6 L40 23 L58 25 L45 39 L48 57 L32 48 L16 57 L19 39 L6 25 L24 23Z'),
+  cookie:circle(32,32,24)+'<g fill="#9a6250" stroke="none">'+circle(24,22,3)+circle(41,27,4)+circle(23,40,4)+circle(39,44,3)+'</g>',
+  bird:path('M9 31 Q19 12 37 24 Q40 9 50 15 Q58 19 53 29 L60 34 L51 37 Q46 54 27 51 Q13 47 9 31Z')+'<circle cx="47" cy="23" r="2" fill="#443347"/>',
+  bag:path('M22 10 H42 L37 23 Q58 39 50 51 Q32 61 14 51 Q6 39 27 23Z')+line('M22 23 H42'),
+  clover:[circle(23,20,12),circle(42,20,12),circle(23,39,12),circle(42,39,12),line('M33 35 Q36 49 27 57')].join(''),
+  home:path('M8 29 L32 8 L56 29 L51 29 V54 H38 V38 H26 V54 H13 V29Z'),
+  settings:circle(32,32,17)+[0,1,2,3,4,5,6,7].map(i=>`<g transform="rotate(${i*45} 32 32)">${rect(27,5,10,15,4)}</g>`).join('')+'<circle cx="32" cy="32" r="7" fill="#303650"/>',
+  pause:rect(14,10,12,44,5)+rect(38,10,12,44,5),play:path('M19 10 Q15 8 15 14 V50 Q15 56 20 53 L53 35 Q58 32 53 29Z'),
+  close:line('M17 17 L47 47 M47 17 L17 47'),confirm:line('M12 32 L26 46 L53 17'),
+  reroll:line('M12 27 A21 21 0 0 1 50 18 M52 37 A21 21 0 0 1 14 46')+path('M42 18 H56 V5Z M22 46 H8 V59Z'),
+  face:circle(32,33,23)+'<g fill="#443347" stroke="none">'+circle(24,31,3)+circle(40,31,3)+'</g><path d="M25 43 Q32 49 39 43" fill="none" stroke="#70526c" stroke-width="3"/>',
+  save:rect(10,8,44,48,8)+'<g fill="#f6eddb">'+rect(20,9,24,16,3)+rect(18,36,28,16,3)+'</g>',
+  tree:line('M32 12 V32 M14 46 V32 H50 V46')+circle(32,12,7)+circle(14,49,8)+circle(50,49,8),
+  cup:path('M19 10 H45 V31 Q45 45 32 45 Q19 45 19 31Z')+line('M18 17 H8 V26 Q8 36 21 36 M46 17 H56 V26 Q56 36 43 36 M32 44 V55 M22 56 H42'),
+  music:line('M25 44 V15 L50 10 V39')+'<ellipse cx="18" cy="47" rx="10" ry="7"/><ellipse cx="43" cy="42" rx="10" ry="7"/>',
+  sound:path('M9 23 H21 L37 10 V54 L21 41 H9Z')+line('M46 20 Q57 32 46 44'),
+  phone:rect(18,7,28,50,7)+line('M10 20 Q4 32 10 44 M54 20 Q60 32 54 44'),
+  eye:path('M6 32 Q32 4 58 32 Q32 60 6 32Z')+'<circle cx="32" cy="32" r="10" fill="#303650"/>',
+  pencil:'<g transform="rotate(40 32 32)">'+rect(25,8,14,36,5)+path('M25 42 L32 58 L39 42Z')+'</g>',
+  numbers:line('M10 20 L18 12 V51 M31 19 Q49 4 52 22 Q52 28 32 47 V51 H53')
+ };
+ const small=(shape,x=40,y=39)=>`<g transform="translate(${x} ${y}) scale(.34) translate(-32 -32)">${shape}</g>`;
+ const combo=(base,mark)=>s[base]+small(s[mark]);
+ const multi=(shape)=>`<g transform="translate(2 9) scale(.65)">${s[shape]}</g><g transform="translate(23 0) scale(.65)">${s[shape]}</g>`;
+ const shapes={
+  'candy-sword':s.sword,'candy-hammer':s.hammer,'item-wall':combo('drop','arrow'),'item-candy':combo('cookie','star'),'item-bird':s.bird,'item-bank':s.bag,
+  'item-split':multi('drop'),'item-magnet':s.magnet,'item-crown':s.crown,'item-clover':s.clover,'item-rear':s.arrow+`<g transform="rotate(180 32 32)">${small(s.arrow,18,45)}</g>`,'item-cookie':s.cookie,
+  plus:s.plus,minus:s.minus,music:s.music,'music-off':combo('music','close'),'skill-tree':s.tree,reroll:s.reroll,confirm:s.confirm,
+  'big-water':s.drop,'rapid-water':combo('drop','bolt'),'multi-water':multi('drop')+small(s.plus,14,49),'onion-dash':combo('face','leaf'),'bubble-shield':s.heart,'gem-magnet':combo('magnet','gem'),'piercing-water':combo('drop','sword'),'splash-water':combo('drop','wave'),'auto-heal':combo('heart','plus'),
+  'water-attack':combo('wave','drop'),'water-skill':s.puddle,'water-dash':combo('shoe','drop'),'water-ultimate':s.wave,
+  'wind-attack':s.wind,'wind-dash':s.swirl,'wind-speed':s.shoe,'wind-ultimate':combo('swirl','star'),
+  'thunder-attack':s.bolt,'thunder-skill':combo('drop','bolt')+small(s.plus,15,46),'thunder-counter':combo('shield','bolt'),'thunder-ultimate':combo('cloud','bolt'),
+  'fusion-puddle':combo('puddle','bolt'),'fusion-storm':combo('cloud','swirl'),'fusion-dash':combo('shoe','bolt'),
+  home:s.home,settings:s.settings,pause:s.pause,play:s.play,boss:combo('face','crown'),monster:s.face,maker:s.pencil,save:s.save,close:s.close,win:s.cup,over:combo('face','reroll'),tree:s.tree,numbers:s.numbers,sound:s.sound,mute:combo('sound','close'),vibration:s.phone,common:s.gem,rare:s.star,epic:multi('gem'),legendary:s.crown,
+  'water-drop':combo('drop','plus'),'water-fountain':combo('puddle','arrow'),'water-bubble':combo('shield','drop'),'water-wet':multi('drop')+small(s.wave,42,52),'water-rain':combo('cloud','drop'),
+  'wind-blade':combo('sword','leaf'),'wind-gust':combo('wind','arrow'),'wind-refund':combo('shoe','reroll'),'wind-light':s.leaf,'wind-eye':s.eye,
+  posture:s.shield,weakpoint:combo('gem','eye'),'thunder-charge':combo('bolt','plus'),'thunder-rod':combo('pencil','bolt'),'thunder-step':combo('shoe','star'),'thunder-static':combo('bolt','shield'),'thunder-super':combo('bolt','star')
+ };
+ return {shapes,palettes:{blue:['#f3fdff','#83d7ef','#3988b7'],green:['#edfff3','#8dd7b1','#438873'],pink:['#fff2f9','#e9acd0','#a0629d'],gold:['#fff9dc','#f1d18a','#ac784a']}};
+})();

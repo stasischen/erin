@@ -84,7 +84,7 @@ function trialMenu(message='王的試煉',data=null) {
   const records=loadTrialRecords(MAKER_MODE||!!trialDraft);
   for(const b of trialSettings().bosses) {
     const button=document.createElement('button');button.type='button';button.className='trial-choice';button.setAttribute('aria-label',b.name);button.title=b.name;
-    const image=document.createElement('img');image.src=SurvivorArt.lookup(b.artId).sheet;image.alt='';button.appendChild(image);
+    const image=document.createElement('img');image.src=SurvivorArt.portrait(b.artId);image.alt='';button.appendChild(image);
     const name=document.createElement('span');name.textContent=b.name;button.appendChild(name);
     const best=document.createElement('small');best.textContent=records[b.id]?`最佳 ${records[b.id].toFixed(2)} 秒`:'最佳 —';button.appendChild(best);
     button.onclick=()=>startTrial(b.id);choices.appendChild(button);

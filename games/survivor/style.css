@@ -21,7 +21,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 .start-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #1e5fae; }
 button:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
-.pixel-icon { width: 1.5em; height: 1.5em; vertical-align: middle; image-rendering: pixelated; pointer-events: none; display: inline-block; flex-shrink: 0; }
+.pixel-icon { width: 1.5em; height: 1.5em; vertical-align: middle; image-rendering: auto; pointer-events: none; display: inline-block; flex-shrink: 0; }
 .message-icon .pixel-icon { width: 64px; height: 64px; }
 .skill-preview-host:empty { display: none; }
 .skill-preview-host { margin-top: 8px; margin-right: 0; margin-bottom: 8px; margin-left: 0; padding-top: 8px; padding-right: 8px; padding-bottom: 8px; padding-left: 8px; border: 2px solid #7196ad; background: #142331; color: #eefaff; text-align: left; }
@@ -263,7 +263,7 @@ a:focus-visible { outline: 3px solid #ffe4a1; outline-offset: 3px; }
 .trial-panel h2 { margin:0 0 12px; }
 .trial-choices { display:flex; justify-content:center; flex-wrap:wrap; gap:16px; margin:16px; }
 .trial-choice { max-width:130px; overflow-wrap:anywhere; display:flex; flex-direction:column; align-items:center; gap:8px; background:none; border:0; font:inherit; color:#293d51; cursor:pointer; }
-.trial-choice img { width:84px; height:84px; padding:10px; border-radius:50%; border:4px solid #694f5d; background:#c8af8e; image-rendering:pixelated; }
+.trial-choice img { width:84px; height:84px; padding:10px; border-radius:50%; border:4px solid #756493; background:#29243f; image-rendering:auto; }
 .trial-choice:focus-visible { outline:4px solid #865ac9; border-radius:12px; }
 .trial-entry { border-radius:50%; width:52px; height:52px; padding:8px; }
 

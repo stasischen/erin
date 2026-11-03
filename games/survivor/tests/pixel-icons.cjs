@@ -15,7 +15,10 @@ for (const id of run('SurvivorIcons.ids')) {
   assert.equal(rows.length, 8, id); rows.forEach(row => assert.match(row, /^[.#+]{8}$/, id));
   const html = run(`SurvivorIcons.html(${JSON.stringify(id)})`);
   assert.ok(html.includes('aria-hidden="true"') && html.includes('alt=""'));
-  assert.ok(decodeURIComponent(html).includes('shape-rendering="crispEdges"'));
+  assert.ok(run(`!!SurvivorArtManifest.clayIcons.shapes[${JSON.stringify(id)}]`),id+' has a clay silhouette');
+  assert.ok(html.includes('clay-icon'));
+  assert.ok(decodeURIComponent(html).includes('linearGradient'));
+  assert.ok(!decodeURIComponent(html).includes('crispEdges'));
 }
 for (const bad of ['__proto__','constructor','<script>','unknown',null,{}]) assert.equal(run(`SurvivorIcons.normalize(${JSON.stringify(bad)})`),'common');
 // 已存作品：舊卡片 emoji、變體選擇符、流派及自訂文字會轉換，數值不流失。
@@ -44,4 +47,4 @@ const page = fs.readFileSync(`${__dirname}/../index.html`,'utf8');
 for (const id of ['pauseButton','skillButton','dashButton','save','makerClose']) assert.match(page,new RegExp(`id="${id}"[^>]*aria-label=`));
 assert.ok(page.indexOf('src="icons.js') < page.indexOf('src="data/schema.js'));
 assert.ok(fs.readFileSync(`${__dirname}/../../../sw.js`,'utf8').includes("'games/survivor/icons.js'"));
-console.log('PASS: emoji-free UI/data, distinct 24 card patterns, bounded grid/accessible images, hostile IDs, legacy migration/save, HUD/tree/VFX and cache dependency');
+console.log('PASS: complete clay silhouettes, accessible smooth icons, legacy IDs/migration/save, HUD/tree/VFX and cache dependency');

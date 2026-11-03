@@ -83,6 +83,7 @@ function clayWeaponImage(id) {
 }
 function drawClayHeldWeapon(weapon) {
   const p=state.player, hop=(p.moving?Math.abs(Math.sin(p.walkPhase))*2:0)+(p.airHeight||0);
+  const scale=SurvivorArtManifest.assets['character/player'].worldScale||1;
   const swing=state.vfx.slice().reverse().find(v=>v.kind==='hammer-swing' && v.weaponId===weapon.id && v.life>0);
   const charge=weapon.chargeSeconds?Math.min(1,(state.weaponAttack?.charge||0)/weapon.chargeSeconds):0;
   let angle=-1.05-charge*.65, side=p.facing||1, extension=0;
@@ -92,7 +93,8 @@ function drawClayHeldWeapon(weapon) {
     side=Math.cos(swing.angle)<0?-1:1;extension=swing.thrust?Math.sin(progress*Math.PI)*14:0;
   }
   ctx.save();ctx.imageSmoothingEnabled=true;
-  ctx.translate(p.x+side*22+(swing?Math.cos(swing.angle)*extension:0),p.y-23-hop+(swing?Math.sin(swing.angle)*extension:0));
+  ctx.translate(p.x+side*22*scale+(swing?Math.cos(swing.angle)*extension:0),p.y-23*scale-hop+(swing?Math.sin(swing.angle)*extension:0));
+  ctx.scale(scale,scale);
   if(!swing)ctx.scale(side,1);
   ctx.rotate(angle);ctx.drawImage(clayWeaponImage(weapon.id),-12,-28,96,56);ctx.restore();
 }
