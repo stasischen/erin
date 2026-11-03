@@ -103,12 +103,24 @@
     const debugOptions=active && active.debugOptions,debugBefore=active && active.debugBefore;
     stop();
     const title = document.createElement('strong'); title.textContent = '效果展示・' + (spec.kind === 'move' ? data.boss.moves.find(m=>m.id===spec.id).name : spec.id==='heal' ? '回血' : (globalThis.SurvivorWeapons?SurvivorWeapons.cardPresentation(data.cards.find(c=>c.id===spec.id),data.weapons.find(w=>w.id===spec.weaponId)||data.weapons[0]):data.cards.find(c=>c.id===spec.id)).name);
-    const caption = document.createElement('p'); caption.textContent = describe(data,spec) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
+    const caption = document.createElement('p');
+    const comparison=Number.isFinite(spec.fromLevel)&&globalThis.SurvivorWeapons?SurvivorWeapons.upgradeSummary(data,data.cards.find(c=>c.id===spec.id),data.weapons.find(w=>w.id===spec.weaponId)||data.weapons[0],spec.fromLevel):'';
+    if(comparison) {
+      const selected=spec.previewLevel ?? spec.level;
+      for(const [label,level] of [['目前',spec.fromLevel],['升級後',spec.level]]) {
+        const button=document.createElement('button');button.type='button';button.textContent=label;
+        button.setAttribute('aria-pressed',String(selected===level));
+        button.style.cssText='appearance:none;font:inherit;font-size:12px;font-weight:700;padding:3px 9px;margin-left:6px;min-height:28px;border:1px solid #7887ae70;border-radius:10px;background:#222b40;color:#b9c9df;box-shadow:none;cursor:pointer;';
+        if(selected===level){button.style.background='#a8dcec';button.style.color='#183645';button.style.borderColor='#d7f3fa';}
+        button.addEventListener('click',()=>mount(host,data,{...spec,previewLevel:level}));title.appendChild(button);
+      }
+    }
+    caption.textContent = (comparison || describe(data,spec)) + (spec.kind==='move' && data.boss.moves.find(m=>m.id===spec.id).warning>1.8 ? ' 小場景加速示範。' : '');
     const frame = document.createElement('iframe'); frame.title = title.textContent; frame.tabIndex = -1;
     const remembered=debugMemory[JSON.stringify(spec)]||{};
     frame._debugOptions=remembered.options || debugOptions;frame._debugBefore=remembered.before || debugBefore;
     frame._previewPayload = JSON.parse(JSON.stringify({data,spec}));
-    frame.src = new URL('preview.html?v=20261103d', SurvivorPreview.base).href;
+    frame.src = new URL('preview.html?v=20261103e', SurvivorPreview.base).href;
     host.appendChild(title); host.appendChild(frame); host.appendChild(caption);
     active = {host,data,spec,frame};
     if (typeof IntersectionObserver !== 'undefined') {

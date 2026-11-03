@@ -430,6 +430,13 @@ function drawSkillVisualsPlaceholder(layer) {
     const progress = 1 - v.life / v.maxLife;
     if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life,phaseElapsed:v.maxLife-v.life,phaseDuration:v.maxLife,radius:v.radius,angle:v.angle||0,origin:{x:v.x,y:v.y},target:Number.isFinite(v.x2)?{x:v.x2,y:v.y2}:undefined})) {ctx.restore();continue;}
     if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
+    else if(v.kind==='weapon-wave') {
+      ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.globalAlpha*=1-progress;ctx.lineWidth=3;
+      ctx.beginPath();
+      if(v.thrust){const x=v.radius*progress;ctx.moveTo(x-v.width,-v.width);ctx.quadraticCurveTo(x+v.width,0,x-v.width,v.width);}
+      else ctx.arc(0,0,v.radius*(.35+.65*progress),0,Math.PI*2);
+      SurvivorNeon.stroke(ctx,'blue');
+    }
     else if (v.kind === "maker-ring") {
       ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); SurvivorNeon.stroke(ctx,'blue');
       ctx.strokeStyle="#16804b";ctx.beginPath();ctx.arc(v.x,v.y,v.radius,-v.gap/2,v.gap/2);SurvivorNeon.stroke(ctx,'blue');
@@ -442,8 +449,9 @@ function drawSkillVisualsPlaceholder(layer) {
       strokeRing(v.x, v.y + 38, 22 + progress * 25, v.color);
       SurvivorIcons.draw(ctx, v.text, v.x - 12, v.y - 24 - progress * 20, 24);
     } else if (v.kind === "sparkle") {
-      ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 5;
-      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); SurvivorNeon.stroke(ctx,'blue'); }
+      const light=SurvivorArtManifest.assets['effect/sparkle'].light;ctx.globalAlpha*=light.alpha;
+      ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 2;
+      for (let i = 0; i < light.rays; i++) { const a = i * Math.PI*2 / light.rays; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); SurvivorNeon.stroke(ctx,'blue'); }
       strokeRing(v.x, v.y, 5, v.color, 4);
     } else {
       strokeRing(v.x, v.y, v.radius * (.25 + progress * .75), v.color, 4);

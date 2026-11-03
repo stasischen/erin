@@ -253,6 +253,9 @@ SurvivorArtManifest.assets['layer/draw-held-weapon'].clayPalette={
   trim:['#fff9d9','#f2ce88','#b0804f']
 };
 SurvivorArtManifest.assets['character/player'].worldScale=.85;
+SurvivorArtManifest.assets['effect/weapon-wave']={...JSON.parse(JSON.stringify(SurvivorArtManifest.assets['effect/hammer-swing'])),mode:'procedural'};
+SurvivorArtManifest.assets['effect/water-hit'].light={alpha:.55,glow:.12,radius:12,rays:4};
+SurvivorArtManifest.assets['effect/sparkle'].light={alpha:.45,rays:4};
 // Curved silhouettes shared by DOM and Canvas icons; no font or pixel-grid dependency.
 SurvivorArtManifest.clayIcons=(()=>{
  const path=d=>`<path d="${d}"/>`, line=d=>`<path d="${d}" fill="none" stroke="url(#clay)" stroke-width="7"/>`;

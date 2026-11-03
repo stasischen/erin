@@ -86,10 +86,10 @@ function showUpgradeChoices() {
       confirm.title = "選這張：" + SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
       choiceButtons.forEach(node => node.setAttribute('aria-pressed', String(node === button)));
       document.getElementById("upgradeName").textContent = SurvivorWeapons.cardPresentation(card,activeWeapon()).name;
-      document.getElementById("upgradeDescription").textContent = !state.pickingWeapon && card.effects ? SurvivorWeapons.cardNote(card,activeWeapon()) || card.description : card.description;
+      document.getElementById("upgradeDescription").textContent = !state.pickingWeapon && card.effects ? [SurvivorWeapons.cardNote(card,activeWeapon()) || card.description,SurvivorWeapons.upgradeSummary(GAME_DATA,card,activeWeapon(),current)].filter(Boolean).join(' ') : card.description;
       document.getElementById("upgradeLevel").textContent = state.pickingWeapon ? "自動攻擊" : card.id === "heal" ? "立即回血" : level + " · " + (card.school ? BUILD_TUNING[card.school].name + " · " : "") + (BUILD_SLOTS[card.slot] || "支援");
       document.getElementById("upgradeRequirements").textContent = (card.tier === "ultimate" ? "終極卡 · 同流派 5 張解鎖" : card.tier === "fusion" ? "雙流派各 2 張解鎖" : ({common:"普通",rare:"稀有",legendary:"傳說"}[card.rarity] || "")) + (card.requires && card.requires.length ? " 需要：" + cardRequirements(card) : "");
-      if (!state.pickingWeapon && globalThis.SurvivorPreview) SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:current+1,weaponId:state.weaponId});
+      if (!state.pickingWeapon && globalThis.SurvivorPreview) SurvivorPreview.mount(document.getElementById('upgradePreview'), GAME_DATA, {kind:'card', id:card.id, level:current+1,fromLevel:current,weaponId:state.weaponId});
     };
     button.addEventListener('click', () => {
       const now = performance.now();

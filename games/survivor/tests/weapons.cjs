@@ -56,7 +56,7 @@ for(const weaponId of ['candy-hammer','candy-sword']) for(const id of ['big-wate
  const demo=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id,level:1,weaponId}}});
  demo('for(let i=0;i<10;i++)stepPreview(.033)');
  assert.ok(demo('state.enemies[0].hp<100000'),weaponId+' '+id+' primary');
- if(id!=='big-water')assert.ok(demo('state.enemies[1].hp<100000'),weaponId+' '+id+' follow-up');
+ if(id!=='big-water' && !(weaponId==='candy-sword' && id==='wind-blade'))assert.ok(demo('state.enemies[1].hp<100000'),weaponId+' '+id+' follow-up');
  assert.equal(demo('state.projectiles.length'),0);
 }
 // A target beside the thrust is missed before the wide-blade upgrade, hit afterwards.
@@ -70,3 +70,41 @@ run("globalThis.customCard={...UPGRADES[0],name:'自己的卡',icon:'health'}");
 assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).name'),'自己的卡');
 assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).icon'),'health');
 console.log('PASS: multi-frame melee previews, follow-up damage, widened thrust hit and custom labels');
+
+// New support routes replace only the intentionally changed frozen melee cases.
+for(const weapon of ['candy-hammer','candy-sword']) for(const custom of [false,true]) {
+ fresh(['splash-water']);
+ run(`state.weaponId='${weapon}';GAME_DATA.hitJuice.enabled=false;
+ UPGRADE_TUNING.splashBaseRadius=${custom?40:22};UPGRADE_TUNING.splashPerLevel=${custom?17:10};BUILD_TUNING.supportSplashDamage=${custom?.73:.35};
+ state.enemies=[book(30),book(40),book(140),book(-110)];
+ globalThis.routeHits=[];globalThis.routeHit=hitBuildTarget;hitBuildTarget=(t,n,...rest)=>{routeHits.push([state.enemies.indexOf(t),n]);return routeHit(t,n,...rest)};
+ fireAtNearest({angle:0,dash:true});`);
+ assert.equal(run('state.vfx.filter(v=>v.kind==="weapon-wave").length'),1);
+ const hits=json('routeHits'), extra=hits.slice(2);
+ assert.equal(new Set(extra.map(h=>h[0])).size,extra.length,'one secondary hit per enemy');
+ assert.ok(extra.some(h=>h[0]===0),'primary also receives the stated extra damage');
+ assert.ok(extra.some(h=>h[0]===2),'wave reaches past the main attack');
+ assert.equal(extra.some(h=>h[0]===3),weapon==='candy-hammer','only hammer wave hits behind');
+ assert.ok(extra.every(h=>Math.abs(h[1]-hits[0][1]*(custom?.73:.35))<1e-8));
+ assert.equal(run('state.projectiles.length'),0);
+ run('hitBuildTarget=routeHit');
+ fresh(['splash-water']);run(`state.weaponId='${weapon}';fireAtNearest()`);
+ assert.equal(run('state.vfx.filter(v=>v.kind==="weapon-wave").length'),0,'ordinary swing does not explode');
+}
+fresh(['wind-blade']);run("state.weaponId='candy-sword';GAME_DATA.hitJuice.enabled=false;globalThis.baseHit=hitBuildTarget;globalThis.followHits=[];hitBuildTarget=(t,n,...rest)=>{followHits.push(n);return baseHit(t,n,...rest)};fireAtNearest()");
+assert.equal(run('followHits.length'),2);assert.equal(run('followHits[1]/followHits[0]'),run('GAME_DATA.schoolRules.windBladeDamage'));
+run('hitBuildTarget=baseHit');
+fresh(['wind-blade']);run("state.weaponId='candy-sword';state.enemies=[book(30,0,1)];followHits=[];hitBuildTarget=(t,n,...rest)=>{followHits.push(n);return baseHit(t,n,...rest)};fireAtNearest()");assert.equal(run('state.enemies[0].alive'),false);assert.equal(run('followHits.length'),1,'dead targets are not chased');run('hitBuildTarget=baseHit');
+for(const weaponId of ['candy-hammer','candy-sword']) for(const previewLevel of [0,1]) {
+ const demo=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id:'splash-water',level:1,fromLevel:0,previewLevel,weaponId}}});
+ demo('for(let i=0;i<10;i++)stepPreview(.033)');
+ assert.equal(demo('state.upgrades["splash-water"]'),previewLevel);
+ assert.equal(demo('state.vfx.filter(v=>v.kind==="weapon-wave").length'),previewLevel);
+ assert.ok(demo('state.enemies[0].hp<100000'),'zero-level comparison still attacks');
+ assert.equal(demo('state.enemies[1].hp<100000'),previewLevel>0,'same outer target only receives the unlocked wave');
+ assert.ok(demo('state.enemies[1].homeX-(previewOrigin.x-PREVIEW_COMPOSITION.originX)>previewWaveGeometry().reach+17'));
+}
+fresh();run("globalThis.noteCard=JSON.parse(JSON.stringify(UPGRADES.find(c=>c.id==='splash-water')));noteCard.descriptionMelee='我的敘述'");
+assert.equal(run('SurvivorWeapons.cardNote(noteCard,activeWeapon())'),'我的敘述');
+run("noteCard=JSON.parse(JSON.stringify(UPGRADES.find(c=>c.id==='splash-water')));noteCard.effects=[{feature:'big-water',power:1}]");assert.ok(!run('SurvivorWeapons.cardNote(noteCard,activeWeapon())').includes('震波'));
+console.log('PASS: one finisher wave per target, Maker damage/radius, sword single-target follow-up and true zero-level comparison');

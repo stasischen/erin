@@ -32,7 +32,8 @@ for(const id of ids) for(const level of [0,1,3,5]) for(const dt of [.05,.5,3.2])
  same(base,`updateUltimate(${dt});state.elapsed+=.3;updateUltimate(.1);updateUltimate(.5);`);
  same(base,`state.dashCharges=0;state.dashCooldown=2;schoolDashEnded();schoolDashEnded();`);
  same(base,`fireAtNearest();globalThis.results=[effectiveShotInterval()];schoolShotHit({schools:[],melee:false,vx:30,vy:0,x:state.player.x,y:state.player.y,damage:80,hitList:[state.enemies[0]],pierce:1,blade:false},state.enemies[0]);`);
- for(const weapon of ['candy-hammer','candy-sword']) same(base,`state.weaponId='${weapon}';state.moveRate=.8;swingAtNearest();globalThis.results=[effectiveShotInterval()];`);
+ // Sword single-target follow-up is covered by weapons.cjs; all other cases stay frozen.
+ for(const weapon of ['candy-hammer','candy-sword']) if(weapon!=='candy-sword' || id!=='wind-blade' || level===0) same(base,`state.weaponId='${weapon}';state.moveRate=.8;swingAtNearest();globalThis.results=[effectiveShotInterval()];`);
 }
 for(const dt of [.05,.5,3.2]) for(const hp of [1,10000]) {
  const base=`state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,3]));
