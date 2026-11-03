@@ -253,7 +253,7 @@ console.log('PASS: nine support card stacks, fold/preview persistence, shared ed
   assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
  }
  m.ids.save.fire('click');const data=JSON.parse(m.storage['erin-survivor-maker-v1']);
- assert.equal(data.neutralRules.cookieKills,21);assert.equal(data.neutralRules.crownHealth,2);
+ assert.equal(data.neutralRules.cookieKills,21);assert.equal(data.neutralRules.crownHealth,19); // default 18 + one Maker increment
  assert.equal(data.neutralRules.bankEvery,11);assert.equal(data.cards.find(c=>c.id==='item-clover').effects[0].feature,'item-clover');
  const reload=setup({saved:m.storage});reload.tab('cards');reload.item('item-crown');
  assert.ok(reload.nodes().find(n=>n.className==='card-block-stack'));

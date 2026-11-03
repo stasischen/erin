@@ -84,7 +84,7 @@ for(const school of ['water','wind','thunder']) {
  assert.equal(run('state.mode'),'won');
  run('render(); resetGame(); state.schoolRun=null; state.player.x = 400; state.player.y = 300; updateCamera();'); assert.equal(run('state.ultimateVisual'),null); assert.equal(run('state.ultimateTimer'),0);
 }
-fresh(); select('auto-heal'); run('state.player.health=50;'); step(10); assert.equal(run('state.player.health'),51);
+fresh(); select('auto-heal'); run('state.player.health=50;'); step(10); assert.equal(run('state.player.health'),55); // ceil(90 / 20) healing per tick
 fresh(); select('bubble-shield'); assert.equal(run('state.player.health'),108);
 fresh(); select('gem-magnet'); run('state.gems=[{x:540,y:300,r:8,value:1,alive:true,wobble:0}]; tick(.05);'); assert.ok(run('state.gems[0].x')<540);
 console.log('PASS: unique icons, unordered cards, Lv5, multiple ultimates, legal offers/fallback, water/wind/thunder branches, fusions, ultimate damage/boss wins, pause/restart/pools, support cards');

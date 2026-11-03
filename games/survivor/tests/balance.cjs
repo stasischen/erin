@@ -96,7 +96,7 @@ fresh();
 run('state.upgrades["auto-heal"] = 1; state.player.health = 50; state.healTimer = 9.9; tick(0.05);');
 assert.equal(run('state.player.health'), 50);
 run('tick(0.05); tick(0.01);');
-assert.equal(run('state.player.health'), 51);
+assert.equal(run('state.player.health'), 55); // ceil(90 / 20) healing per tick
 // 粒子滿載仍保留水球命中提示，上限不增加；渲染程式可處理新特效。
 run('for (let i = state.effects.length; i < 90; i++) burst(0, 0, "#fff", 1); resolveWaterHit({ x: 200, y: 200, pierce: 1, alive: true }); render();');
 assert.equal(run('state.effects.length'), 90);
