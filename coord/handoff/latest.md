@@ -1,5 +1,15 @@
 # 目前交接
 
+## 地板與手持黏土武器測試版（2026-11-03）
+
+地板細格線與手持黏土武器修正版已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82/games/survivor/
+
+來源aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82，版本20261103c。美術快車道，單一實作者；未更動規則/數值/存檔，前輪非作者程式審查不冒稱審過本輪美術。完整test.cjs --layout exit0/126PASS、diff check通過。真Chrome三尺寸正常UI選武器、移動、完整蓄力及釋放，已檢視截圖；手機實機閃爍觀感等家長確認。
+
+預覽提交dd765219aba18783c8c379cea7de87f6bf86160c，Pages41562512150成功。發布前75檔隔離驗證，保留既有1077檔；發布後72候選檔逐位元核對一致。Godot適用項與美術自評見本卡規格。
+
+---
+
 ## 手機回饋修正版已上線（2026-11-03）
 
 近戰與手機手動攻速修正版已上測試頁，完整126PASS及獨立審查通過；等家長試玩，PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/3a97f05dbf5eb047785306afee0249bc26fa642f/games/survivor/
