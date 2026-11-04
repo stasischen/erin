@@ -1,5 +1,9 @@
 # 目前交接
 
+## Dot 已回覆（2026-11-05）
+
+Dot已回覆：固定增量程式審查通過，雲端三尺寸正常生存遊玩通過；整體partial_pass，沒有必改缺陷。P3計時文字同秒續玩延遲列FOLLOWUP，部分情境與可開啟截圖尚缺，詳[收件摘要](../reviews/survivor-upgrade-balance/dot-readability-result.md)。不宣稱整PR完整驗收，不合併main。
+
 ## Claude 修正接手與 Dot 送審（2026-11-05）
 
 目前遊戲來源5607ab95ef2a1fb6bdda9528dc6713b58654c4c9，版本20261104g；上一份5768808／f版交接及預覽保留為歷史。新增魔王倒數、低血量紅框、普通同敵傷害數字合併及池引用清理；自動／手動模式沒有修改。一般無query入口「開始生存」是自動攻擊三槽，Boss試煉手動，Maker舊試玩依sandbox設定。不要從原erin目錄或正式站測本輪分支。

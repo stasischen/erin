@@ -270,3 +270,5 @@ Claude自述完整套件exit0／136PASS；主控已核固定diff，另派非作�
 Pages41882567310成功，預覽提交5120378237c27743604b62a8f7ee553edea60e51，既有1858檔保持，新增122候選檔。公開Chrome740x360自然33秒／兩次升級／第二波／技能／暫停續玩exit0。公開全檔逐位元核對未完成：Python連線重設，另一次Chrome載入逾時，已停止重試；不能宣稱122公開檔全驗通過，請Dot先核雲端可達與manifest。
 
 Dot送件已確認：https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638166698；metadata b9d19024eb084ec443fec6405fd0e791986262fa，request SHA256 bc3d0a639e2e66f027e45e1835536e313b4f641d5f5d4df76033f3dbc288294b。沿原board THREAD只送此件，未啟動排程或其他writer。等待Dot獨立程式審查及三尺寸雲端結果，未宣稱批准。
+
+Dot回覆已收： https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638519797 。固定增量approve、雲端partial_pass，沒有必改缺陷；未測與圖片未交付限制見dot-readability-result.md。主控核request及manifest雜湊一致，不冒稱親看Dot截圖或整PR驗收完成。

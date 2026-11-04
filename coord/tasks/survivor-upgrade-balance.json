@@ -3,17 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "已送Dot審查與三尺寸雲端試玩：https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638166698；Mac非作者136PASS/approve及新版Pages完成。待Dot回覆，不合併。公開全檔HTTP核對因連線不穩未完成，正常公開試玩已過。",
+  "next": "Dot固定增量碼審通過、三尺寸自然遊玩partial_pass，無必改；P3續玩文字延遲與雲端未測項保留，見dot-readability-result.md。等待家長下一步，不合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T18:04:50.547978+00:00",
+  "updated": "2026-11-04T22:08:17.528781+00:00",
   "updatedBy": "codex"
 }
