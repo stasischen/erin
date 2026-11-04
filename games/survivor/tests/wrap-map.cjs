@@ -67,8 +67,19 @@ assert.equal(run('deltaX(state.enemies[0].x,5)'),-35); // 主角半徑18＋怪�
 run(`state.boss={x:state.worldWidth-600,y:state.player.y,r:32};`);
 assert.ok(run('Math.abs(bossGuide().angle)===Math.PI'));
 // A bolt crosses just 20 units, never draws a line across the whole map.
-run(`drawCalls.length=0;drawBolt(state.worldWidth-10,100,10,100);`);
-assert.ok(json('drawCalls.filter(c=>c[0]==="lineTo").map(c=>c[1])').every(x=>Math.abs(x-W)<30));
+run(`for(const key of ['save','restore','translate']){const prior=ctx[key];ctx[key]=(...args)=>{drawCalls.push([key,...args]);return prior(...args);};}drawCalls.length=0;drawBolt(state.worldWidth-10,100,10,100);`);
+// The filled lightning shard uses local vertices. Apply its actual Canvas transforms.
+let transform=[1,0,0,1,0,0];const stack=[],worldVertices=[];
+for(const [op,...v] of json('drawCalls')){
+ if(op==='save')stack.push(transform.slice());
+ else if(op==='restore')transform=stack.pop();
+ else if(op==='translate'){transform[4]+=transform[0]*v[0]+transform[2]*v[1];transform[5]+=transform[1]*v[0]+transform[3]*v[1];}
+ else if(op==='rotate'){const [a,b,c,d]=transform,cos=Math.cos(v[0]),sin=Math.sin(v[0]);transform[0]=a*cos+c*sin;transform[1]=b*cos+d*sin;transform[2]=c*cos-a*sin;transform[3]=d*cos-b*sin;}
+ else if(op==='lineTo')worldVertices.push(transform[0]*v[0]+transform[2]*v[1]+transform[4]);
+}
+assert.ok(worldVertices.length>0);
+assert.ok(worldVertices.every(x=>Math.abs(x-W)<30));
+assert.ok(worldVertices.some(x=>Math.abs(x-(W+10))<.001),'wrapped endpoint stays 20 units from origin');
 // Rain landing positions are canonical and remain visible across the corner.
 fresh(5,5);
 run(`state.boss={x:state.worldWidth-80,y:state.worldHeight-80,r:32,hp:2000,maxHp:2000,speed:0,wobble:0};state.bossPhase=3;beginBossMove('rain');render();`);
