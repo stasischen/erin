@@ -220,6 +220,7 @@ function drawClassroom() {
   return SurvivorArt.paint('layer/draw-classroom', null, () => drawClassroomPlaceholder.apply(this, arguments));
 }
 function drawClassroomPlaceholder() {
+  if(SurvivorWaves.enabled()){SurvivorEnvironment.draw();return;}
   const tile = backgroundTile(currentStage().background, currentStage().decorationDensity);
   const left = Math.floor(state.cameraX / 336) * 336;
   const top = Math.floor(state.cameraY / 252) * 252;
@@ -306,9 +307,10 @@ function drawBlob(x, y, r, color, bounce, flash, enemyId = "jaben", drawingConte
 }
 function drawBlobPlaceholder(x, y, r, color, bounce, flash, enemyId = "jaben", drawingContext = ctx, shadowSize, height = 0, spriteId, tint, animation = 'idle', seconds = 0, artContext = {}) {
   const size = shadowSize === undefined ? ((ENEMY_TYPES.find(e => e.id === enemyId) || {}).shadowSize || .9) : shadowSize;
-  const hop = Math.abs(Math.sin(bounce)) * 2 + height;
+  const hop = Math.abs(Math.sin(bounce)) * (artContext.heavy?.6:2) + height;
   drawGroundShadow(x, y, r, hop, size, drawingContext);
   drawingContext.save(); drawingContext.translate(x, y - hop);
+  if(artContext.heavy){const squash=Math.max(0,Math.cos(bounce))* .075+(flash?.035:0);drawingContext.scale(1+squash,1-squash);}
   const artId='character/'+(spriteId || (ENEMY_TYPES.find(e => e.id === enemyId) || {}).spriteId);
   if(SurvivorArt.drawCharacter(artId,{context:drawingContext,x:-r,y:-r,width:r*2,height:r*2,animation,elapsed:seconds,...artContext,flash,tint})) {drawingContext.restore();return;}
   const sprite = spriteId ? null : SPRITES[enemyId];
@@ -406,7 +408,7 @@ function render() {
       const jitter=windup?Math.sin(state.elapsed*85)*2*progress:0;
       const tint=enemy.impactFlash?'#ffffff':phase==='active'&&a.entered?'#ffffff':windup?'#ef8890':recovery?'#939da7':undefined;
       ctx.save();ctx.translate(enemy.x+jitter,enemy.y);ctx.scale(1+squash,1-squash);ctx.translate(-enemy.x,-enemy.y);
-      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint,enemy.stunTimer>0?'stun':enemy.impactFlash?'hurt':phase || 'run',state.elapsed,{...actorArtContext(enemy,a),displayScale:enemy.r/((ENEMY_TYPES.find(e=>e.id===enemy.typeId)||{}).radius||enemy.r)});
+      drawBlob(enemy.x, enemy.y, enemy.r, enemy.color, enemy.wobble, !!enemy.impactFlash || enemy.flash>0 && !enemy.meleeFlash, enemy.typeId, ctx, enemy.shadowSize, enemy.airHeight || 0, enemy.spriteId,tint,enemy.stunTimer>0?'stun':enemy.impactFlash?'hurt':phase || 'run',state.elapsed*(enemy.weightStep||1),{...actorArtContext(enemy,a),heavy:enemy.heavy,displayScale:enemy.r/((ENEMY_TYPES.find(e=>e.id===enemy.typeId)||{}).radius||enemy.r)});
       ctx.restore();
       if(windup || recovery) drawAttackMarker(enemy,windup?'!':'star');
       drawEncounterArmor(enemy);

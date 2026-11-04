@@ -88,7 +88,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.abilities=null;state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
+  state.survivalWave=null;state.abilities=null;state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
   state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -269,14 +269,16 @@ function tickImpacts(dt,clockDt=dt) {
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
 
   if(!state.trial) {updatePacing(dt);updateEncounters(dt);}
+  SurvivorWaves.update();
   state.spawnTimer -= dt;
-  if (!state.trial && !state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.trial && !state.boss && state.stageElapsed >= SurvivorWaves.bossTime() && state.bossIntro <= 0) summonTeacher();
   if (!state.trial && !state.boss) {
     let wave = currentWaves()[0];
     for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
-    const spawnEvery = wave.every / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
+    const spawnEvery = (SurvivorWaves.enabled()?SurvivorWaves.current().every:wave.every) / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
     while (state.spawnTimer <= 0) {
-      for(let i=0;i<(wave.count||1);i++) spawnEnemy({typeId:wave.typeId==='pacing'?undefined:wave.typeId,side:SurvivorPacing.side(wave.position,i),offscreen:wave.position==='random'});
+      if(SurvivorWaves.enabled())SurvivorWaves.spawnBatch();
+      else for(let i=0;i<(wave.count||1);i++) spawnEnemy({typeId:wave.typeId==='pacing'?undefined:wave.typeId,side:SurvivorPacing.side(wave.position,i),offscreen:wave.position==='random'});
       if(wave.sound==='warning') playSound('warning');
       if(wave.hint) {enemyNotice.textContent='新一批怪物進場了！';enemyNotice.hidden=false;state.bookNoticeTimer=2;}
       state.spawnTimer += spawnEvery;
@@ -302,13 +304,13 @@ function tickImpacts(dt,clockDt=dt) {
     if(state.mode!=="playing") return;
     if(!enemy.alive) continue;
     const direction=enemyDirection(enemy,distance), curve=enemy.behavior==='fast' ? Math.sin(enemy.wobble)*.65 : 0;
-    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
+    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(SurvivorWaves.enabled()?1:1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
     enemy.x += (vx-vy*curve)/distance * speed * dt;
     enemy.y += (vy+vx*curve)/distance * speed * dt;
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
     enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
-    enemy.wobble += dt * 6;
+    enemy.wobble += dt * 6 * (enemy.weightStep||1);
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
   if(!GAME_DATA.bodySeparation.enabled) separateTanks();

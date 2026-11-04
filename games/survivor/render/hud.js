@@ -82,13 +82,13 @@ function updateHud() {
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ffb4c8 0 48%, #c2607f 49%)" : "linear-gradient(#ffd3df 0 48%, #f5a1bc 49%)";
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
-  if(hudPlayerLevel)hudPlayerLevel.textContent=`Lv.${state.level}`;
+  if(hudPlayerLevel)hudPlayerLevel.textContent=`${SurvivorWaves.enabled()?"第"+SurvivorWaves.current().number+"波 · ":""}Lv.${state.level}`;
   if(hudKillCount)hudKillCount.textContent=String(state.schoolCombat&&state.schoolCombat.kills||0);
   if(hudGemCount)hudGemCount.textContent=String(state.gems.reduce((count,gem)=>count+(gem.alive?1:0),0));
   levelLabel.hidden=!!state.trial;statusEl.hidden=!!state.trial;
   const experienceWrap=document.querySelector('.experience-wrap');
   if(experienceWrap)experienceWrap.hidden=!!state.trial;
-  levelLabel.textContent = `${state.stageIndex + 1}關 · Lv.${state.level}`;
+  levelLabel.textContent = `${state.stageIndex + 1}關 · ${SurvivorWaves.enabled()?"第 "+SurvivorWaves.current().number+" 波 · ":""}Lv.${state.level}`;
   const slots = document.getElementById("buildSlots");
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));

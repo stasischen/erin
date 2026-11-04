@@ -3,18 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "review",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "九秘技與六主動大招測試頁已發布，等手機試玩回饋；PR113保持草稿。 https://stasischen.github.io/erin-preview/pr-113/6ef9cd0e472259ab4c600450f6f55378d42cfef4/games/survivor/",
+  "next": "重設元素特效、30秒生存波次與兩關固定地景，先真Chrome自然升級與波次過渡，再相關回歸及完整驗證。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T01:10:14.904575+00:00",
-  "updatedBy": "codex",
-  "waitingFor": "user"
+  "updated": "2026-11-04T01:47:11.878146+00:00",
+  "updatedBy": "codex"
 }

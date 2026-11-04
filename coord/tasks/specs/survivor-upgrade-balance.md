@@ -182,3 +182,7 @@ https://stasischen.github.io/erin-preview/pr-113/6ef9cd0e472259ab4c600450f6f5537
 Godot §11：能力資料、槽位與抽卡規則、作用生命週期、畫圖分為四模組，沿用合法目標、傷害、環形座標及manifest色票；沒有新增存檔格式。新能力以共用作用handler實作，獨立五級表仍在catalog，不宣稱已有每欄Maker編輯器或Godot執行驗證。
 
 FOLLOWUPS：手機實機效能與長局配裝平衡未驗；死亡畫面暫留效果物件，重開已清除且無跨局殘留。六組武器合體仍僅設計，不在本輪實作範圍。
+
+## 生存壓力、元素材質與地景（本輪授權）
+
+同卡由 Codex 唯一實作者，主控負責真瀏覽器驗證、完整測試及獨審。預估900–1200行，新增 `engine/survival-waves.js`、`render/materials.js`、`render/environment.js`，允許接合 spawn／pacing／loop／hud／world、現有 effects／abilities／weapons-survival／weapons／neon 渲染、encounters 上限接點、art-manifest、manifest／快取與合理相關回歸。沿原八敵種與兩關，不新增角色、關卡、地形碰撞或存檔格式。詳見 [波次與地景維護](../../../docs/survival-world.md)。

@@ -335,3 +335,10 @@ SurvivorArtManifest.survivalMaterials={
   ice:['#e6f7fa','#a6d6e5','#70a5ba'], wings:'#e3f2e9',chips:'#856650',hole:'#293443',
   highlight:'#fff7e4',shadow:'rgba(32,38,49,.16)',beamAlpha:.65
 };
+
+// Matte environment and effect materials: all new scene colors live here.
+SurvivorArtManifest.environment={
+  'candy-forest':{base:'#172c35',patch:'#213d43',path:'#30484b',edge:'#34585b',leaf:'#47746a',landmark:'#537c79',light:'#79a093',late:'#3d3562'},
+  'cookie-forest':{base:'#332923',patch:'#44392b',path:'#584a37',edge:'#6b5940',leaf:'#766b46',landmark:'#8d7651',light:'#b29b6a',late:'#553a36'}
+};
+SurvivorArtManifest.effectMaterials={shadow:'rgba(12,24,36,.18)',shine:'rgba(255,255,255,.6)',surfaceAlpha:.24,ribbonAlpha:.65};

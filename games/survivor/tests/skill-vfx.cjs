@@ -73,7 +73,7 @@ fresh({'big-water':1,'multi-water':1,'rapid-water':1,'piercing-water':1}); run('
 assert.ok(run('state.projectiles.length>1 && state.projectiles[0].r>state.player.r*2/3 && state.projectiles[0].piercing'));
 assert.ok(run('effectiveShotInterval()<SHOT_INTERVAL')); painted('render();','lineTo');
 fresh({'splash-water':1}); run('state.projectiles=[{x:state.enemies[0].x,y:state.enemies[0].y,vx:0,vy:0,r:12,damage:35,pierce:0,hitList:[],alive:true,rangeLeft:100}]; tick(0);'); assert.ok(visual('splash'));
-for (const id of ['bubble-shield','gem-magnet']) { fresh({[id]:1}); painted('drawSupportVisuals();','arc'); }
+for (const id of ['bubble-shield','gem-magnet']) { fresh({[id]:1}); painted('drawSupportVisuals();',id==='bubble-shield'?'ellipse':'arc'); }
 fresh({'auto-heal':1}); run('state.player.health=50; state.healTimer=100; tick(.01);'); assert.equal(run('state.effects.some(e=>e.kind==="heal")'),true);
 fresh(); run('activateSkill();'); assert.ok(run('state.bomb')); run('updateBomb(1);'); assert.ok(run('state.bombBlast')); assert.ok(visual('gust'));
 // 堆滿粒子也能保留閃電及傷害數字；池與活動物件有上限。

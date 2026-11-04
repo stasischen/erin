@@ -4,35 +4,23 @@ function strokeRing(x, y, radius, color, width = 3) {
   return SurvivorArt.paint('layer/stroke-ring', null, () => strokeRingPlaceholder.apply(this, arguments));
 }
 function strokeRingPlaceholder(x, y, radius, color, width = 3) {
-  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2); SurvivorNeon.stroke(ctx,'blue');
+  SurvivorMaterials.volume(x,y,Math.max(1,radius),'water',.12);
+  SurvivorMaterials.ribbon(x,y,Math.max(1,radius),'water',-.6);
 }
 function drawBolt(x, y, x2, y2) {
   return SurvivorArt.paint('layer/draw-bolt', null, () => drawBoltPlaceholder.apply(this, arguments));
 }
 function drawBoltPlaceholder(x, y, x2, y2) {
-  const dx = deltaX(x2, x), dy = deltaY(y2, y), length = Math.max(1, Math.hypot(dx, dy));
-  x2 = x + dx; y2 = y + dy;
-  // Fewer rounded bends, held still throughout each hit instead of a flashing needle.
-  const points=[{x,y}];
-  for(let i=1;i<4;i++){const offset=(i%2?1:-1)*Math.min(10,length*.14);points.push({x:x+dx*i/4-dy/length*offset,y:y+dy*i/4+dx/length*offset});}
-  points.push({x:x2,y:y2});ctx.lineWidth=SurvivorArtManifest.elements.width;ctx.beginPath();ctx.moveTo(x,y);
-  for(let i=1;i<points.length-1;i++){const p=points[i],n=points[i+1];ctx.quadraticCurveTo(p.x,p.y,(p.x+n.x)/2,(p.y+n.y)/2);}
-  ctx.lineTo(x2,y2);SurvivorNeon.stroke(ctx,'thunder');
+  SurvivorMaterials.bolt(x,y,x2,y2);
 }
 function drawSwirl(x, y, radius, phase) {
   return SurvivorArt.paint('layer/draw-swirl', null, () => drawSwirlPlaceholder.apply(this, arguments));
 }
 function drawSwirlPlaceholder(x, y, radius, phase) {
-  ctx.lineWidth=SurvivorArtManifest.elements.width;
-  // Broad elliptical ribbons distinguish wind from circular water impacts.
-  for(let i=0;i<3;i++){
-    const r=radius*(1-i*.22);ctx.beginPath();ctx.ellipse(x,y-i*radius*.16,r,r*.42,-.18,phase+i,phase+i+Math.PI*1.45);SurvivorNeon.stroke(ctx,'green');
-  }
+  SurvivorMaterials.vortex(x,y,radius,phase,'wind');
 }
 function drawWaterLobe(x,y,radius) {
-  ctx.beginPath();
-  for(let i=0;i<=24;i++){const a=i*Math.PI/12,r=radius*(1+.035*Math.sin(a*6));const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);}
-  ctx.closePath();ctx.lineWidth=3;SurvivorNeon.stroke(ctx,'blue');
+  SurvivorMaterials.burst(x,y,radius,'water',.4);
 }
 function drawWaterDrop(x,y,size,angle) {
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=SurvivorArtManifest.elements.blue.body;
@@ -108,11 +96,9 @@ function drawSkillVisualsPlaceholder(layer) {
     if (SurvivorArt.draw('effect/'+v.kind, {context:ctx,x:v.x-(v.radius||24),y:v.y-(v.radius||24),width:2*(v.radius||24),height:2*(v.radius||24),animation:'active',time:v.maxLife-v.life,phaseElapsed:v.maxLife-v.life,phaseDuration:v.maxLife,radius:v.radius,angle:v.angle||0,origin:{x:v.x,y:v.y},target:Number.isFinite(v.x2)?{x:v.x2,y:v.y2}:undefined})) {ctx.restore();continue;}
     if (v.kind === "hammer-swing") drawHammerSwing(v, progress);
     else if(v.kind==='weapon-wave') {
-      ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.globalAlpha*=1-progress;ctx.lineWidth=3;
-      ctx.beginPath();
-      if(v.thrust){const x=v.radius*progress;ctx.moveTo(x-v.width,-v.width);ctx.quadraticCurveTo(x+v.width,0,x-v.width,v.width);}
-      else drawWaterLobe(0,0,v.radius*(.35+.65*progress));
-      if(v.thrust)SurvivorNeon.stroke(ctx,'blue');
+      ctx.translate(v.x,v.y);ctx.rotate(v.angle);ctx.globalAlpha*=1-progress;
+      if(v.thrust)SurvivorMaterials.ribbon(v.radius*progress,0,v.width,'water',Math.PI/2);
+      else SurvivorMaterials.burst(0,0,v.radius*(.35+.65*progress),'water',progress);
     }
     else if (v.kind === "maker-ring") {
       ctx.lineWidth=5; ctx.strokeStyle="#7b54be"; ctx.beginPath(); ctx.arc(v.x,v.y,v.radius,v.gap/2,Math.PI*2-v.gap/2); SurvivorNeon.stroke(ctx,'blue');
@@ -120,16 +106,14 @@ function drawSkillVisualsPlaceholder(layer) {
     } else if (v.kind === "lightning") drawBolt(v.x, v.y, v.x2, v.y2);
     else if (v.kind === "gust") {
       const angle = Math.atan2(deltaY(v.y2, v.y), deltaX(v.x2, v.x));
-      ctx.translate(v.x, v.y); ctx.rotate(angle); ctx.strokeStyle = v.color; ctx.lineWidth = 4;
-      for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-15 + progress * 20, i * 9); ctx.lineTo(20 + progress * 25, i * 12); ctx.lineTo(13 + progress * 25, i * 12 - 5); SurvivorNeon.stroke(ctx,'blue'); }
+      ctx.translate(v.x,v.y);ctx.rotate(angle);ctx.globalAlpha*=1-progress;
+      for(let i=0;i<2;i++)SurvivorMaterials.ribbon(8+progress*20,i?7:-7,12-i*3,'wind',i?-.4:.4);
     } else if (v.kind === "card") {
       strokeRing(v.x, v.y + 38, 22 + progress * 25, v.color);
       SurvivorIcons.draw(ctx, v.text, v.x - 12, v.y - 24 - progress * 20, 24);
     } else if (v.kind === "sparkle") {
       const light=SurvivorArtManifest.assets['effect/sparkle'].light;ctx.globalAlpha*=light.alpha;
-      ctx.strokeStyle = "#7737b0"; ctx.lineWidth = 2;
-      for (let i = 0; i < light.rays; i++) { const a = i * Math.PI*2 / light.rays; ctx.beginPath(); ctx.moveTo(v.x + Math.cos(a) * 5, v.y + Math.sin(a) * 5); ctx.lineTo(v.x + Math.cos(a) * v.radius, v.y + Math.sin(a) * v.radius); SurvivorNeon.stroke(ctx,'blue'); }
-      strokeRing(v.x, v.y, 5, v.color, 4);
+      for(let i=0;i<3;i++){const a=i*Math.PI*2/3,r=4+progress*Math.min(14,v.radius);SurvivorMaterials.volume(v.x+Math.cos(a)*r,v.y+Math.sin(a)*r,3.5*(1-progress*.5),'water',.7,.7);}
     } else {
       strokeRing(v.x, v.y, v.radius * (.25 + progress * .75), v.color, 4);
       if (v.kind === "discharge") {

@@ -42,7 +42,15 @@ globalThis.SurvivorNeon=(()=>{
   }
   function gem(g,item,enabled=true){const x=item.x,y=item.y+Math.sin(item.wobble)*2;if(enabled)glowAt(g,'green',x,y,34,.85);g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillStyle='#70e7ba';g.fillRect(-5.5,-5.5,11,11);g.fillStyle='rgba(255,255,255,.72)';g.fillRect(-3,-3,2.5,2.5);g.restore();}
   function warning(g,x,y,r,progress=1){const alpha=.25+.75*Math.max(0,Math.min(1,progress));glowAt(g,'orange',x,y,r*2.5,alpha*.7);g.save();g.globalAlpha=alpha;g.fillStyle='rgba(255,106,61,.12)';g.strokeStyle='#ff6a3d';g.lineWidth=3;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();g.stroke();if(g.ellipse&&g.setLineDash){g.setLineDash([5,5]);g.strokeStyle='#ffa94d';g.lineWidth=2;g.beginPath();g.ellipse(x,y,Math.max(1,r-6),Math.max(1,r-6),0,0,Math.PI*2);g.stroke();g.setLineDash([]);}g.restore();}
-  function hit(g,e,alpha){const p=1-alpha,light=SurvivorArtManifest.assets['effect/water-hit'].light;glowAt(g,'white',e.x,e.y,28,alpha*light.glow);g.save();g.globalAlpha=alpha*light.alpha;g.strokeStyle='#a8dcf2';g.lineWidth=1.5;g.beginPath();g.arc(e.x,e.y,4+p*light.radius,0,Math.PI*2);g.stroke();for(let i=0;i<light.rays;i++){const a=i*Math.PI*2/light.rays,len=6+p*8;g.beginPath();g.moveTo(e.x+Math.cos(a)*4,e.y+Math.sin(a)*4);g.lineTo(e.x+Math.cos(a)*len,e.y+Math.sin(a)*len);g.stroke();}g.restore();}
+  function hit(g,e,alpha){
+    const p=1-alpha,light=SurvivorArtManifest.assets['effect/water-hit'].light,c=SurvivorArtManifest.elements.blue;
+    g.save();g.globalAlpha=alpha*light.alpha;
+    for(let i=0;i<3;i++){
+      const a=i*Math.PI*2/3,len=3+p*9,r=2.5*(1-p*.4);g.save();g.translate(e.x+Math.cos(a)*len,e.y+Math.sin(a)*len);g.rotate(a);
+      const fill=g.createLinearGradient(-r,-r,r,r);if(fill?.addColorStop){fill.addColorStop(0,c.light);fill.addColorStop(1,c.body);g.fillStyle=fill;}else g.fillStyle=c.body;
+      g.beginPath();g.ellipse(0,0,r*1.5,r,0,0,Math.PI*2);g.fill();g.restore();
+    }g.restore();
+  }
   function damageNumber(g,e,alpha){const critical=(e.numberScale||1)>1.35,size=critical?34:15*(e.numberScale||1);g.save();g.globalAlpha=alpha;g.textAlign='center';g.font=`800 ${size}px "M PLUS Rounded 1c",system-ui`;g.lineWidth=critical?4:3;g.strokeStyle=critical?'#ff6a3d':'#35b9ff';g.fillStyle=critical?'#ffe08a':'#fff';g.strokeText(critical?e.text+'!':e.text,e.x,e.y);g.fillText(critical?e.text+'!':e.text,e.x,e.y);g.restore();}
   function weakpointBurst(g,x,y,alpha=1){
     g.save();g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(1,alpha);glowAt(g,'pink',x,y,76,.9);g.strokeStyle='#ffd3df';g.lineWidth=3;

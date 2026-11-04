@@ -32,16 +32,15 @@ function drawSurvivalWeapons() {
     ctx.save();ctx.globalAlpha=Math.min(1,g.life*5);
     if(g.kind==='beam'){
       ctx.globalAlpha*=SurvivorArtManifest.survivalMaterials.beamAlpha;
-      for(const q of g.parts){ctx.lineWidth=g.beamWidth*2;ctx.beginPath();ctx.moveTo(g.x,g.y);ctx.lineTo(q.x,q.y);SurvivorNeon.stroke(ctx,'blue');
-        ctx.lineWidth=g.beamWidth*.6;ctx.beginPath();ctx.moveTo(g.x,g.y);ctx.lineTo(q.x,q.y);SurvivorNeon.stroke(ctx,'thunder');}
+      for(const q of g.parts)SurvivorMaterials.beam(g.x,g.y,q.x,q.y,g.beamWidth,g.age);
     }else if(g.kind==='zap'){
-      for(const q of g.parts){ctx.fillStyle='#e7d4e8';for(let i=-1;i<=1;i++){ctx.beginPath();ctx.ellipse(q.x+i*12,q.y-52-(i===0?5:0),16,12,0,0,Math.PI*2);ctx.fill();}drawBolt(q.x,q.y-42,q.x,q.y);}
+      for(const q of g.parts){SurvivorMaterials.cloud(q.x,q.y-52,17);SurvivorMaterials.bolt(q.x,q.y-40,q.x,q.y,10);}
     }else if(g.kind==='field'||g.kind==='bomb'){
       for(const q of g.parts){
-        const waiting=g.age<g.delay;ctx.globalAlpha=waiting?.35:Math.min(.7,g.life*2);ctx.fillStyle=g.kind==='bomb'?'#ecd190':'#8ecbdf';ctx.beginPath();ctx.arc(q.x,q.y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.85;
-        if(waiting){ctx.lineWidth=2;ctx.strokeStyle='#d9bc7b';ctx.beginPath();ctx.arc(q.x,q.y,g.radius*g.age/g.delay,0,Math.PI*2);ctx.stroke();}
+        const waiting=g.age<g.delay;ctx.globalAlpha=waiting?.35:Math.min(.7,g.life*2);ctx.fillStyle=SurvivorMaterials.ink(g.kind==='bomb'?'thunder':'water').body;ctx.beginPath();ctx.arc(q.x,q.y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.85;
+        if(waiting){ctx.lineWidth=2;ctx.strokeStyle=SurvivorMaterials.ink('thunder').edge;ctx.beginPath();ctx.arc(q.x,q.y,g.radius*g.age/g.delay,0,Math.PI*2);ctx.stroke();}
         else if(g.kind==='field'){drawWaterLobe(q.x,q.y,g.radius);for(let i=-1;i<=1;i++)drawWaterDrop(q.x+i*g.radius*.45,q.y-18-Math.sin(g.age*9+i)*10,6,0);}
-        else{for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.fillStyle='#fff0c4';ctx.beginPath();ctx.arc(q.x+Math.cos(a)*g.radius*.65,q.y+Math.sin(a)*g.radius*.65,5,0,Math.PI*2);ctx.fill();}}
+        else SurvivorMaterials.burst(q.x,q.y,g.radius,'thunder',Math.min(.9,Math.max(0,g.age-g.delay)/(g.seconds||1)));
       }
     }else for(const q of g.parts)if(q.alive!==false)drawSurvivalBody(g.kind,q.x,q.y,g.radius,q.angle||0);
     ctx.restore();

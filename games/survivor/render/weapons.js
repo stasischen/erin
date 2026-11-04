@@ -14,7 +14,7 @@ function drawHammerSwingPlaceholder(v, progress) {
   if(v.thrust) {
     // 尖細突刺光，沿出手方向伸長；不畫矩形判定區。
     const tip=v.radius*(.65+.35*progress), bladeWidth=Math.max(width*.4,v.width*.35);
-    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(12,-bladeWidth);ctx.lineTo(tip,0);ctx.lineTo(12,bladeWidth);ctx.closePath();ctx.fill();
+    ctx.fillStyle=SurvivorMaterials.gradient(ctx,SurvivorMaterials.ink(schools[0]),tip);ctx.beginPath();ctx.moveTo(12,-bladeWidth);ctx.lineTo(tip,0);ctx.lineTo(12,bladeWidth);ctx.closePath();ctx.fill();
     ctx.strokeStyle='#fff9de';ctx.lineWidth=heavy?4:2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(tip,0);SurvivorNeon.stroke(ctx,ink.neon);
   } else {
     const direction=v.reverse?-1:1, head=-v.arc/2+v.arc*(v.reverse?1-(.2+.8*progress):(.2+.8*progress));
@@ -22,7 +22,7 @@ function drawHammerSwingPlaceholder(v, progress) {
     // 多片漸細的新月殘影，只有弧線邊緣發光，中心保持透明。
     for(let i=0;i<8;i++) {
       const a=tail+(head-tail)*i/8,b=tail+(head-tail)*(i+1)/8;
-      ctx.fillStyle=i===7?'#fff9de':color;ctx.globalAlpha=alpha*(i+1)/8;
+      ctx.fillStyle=SurvivorMaterials.gradient(ctx,SurvivorMaterials.ink(schools[0]),outer);ctx.globalAlpha=alpha*(i+1)/8;
       ctx.beginPath();ctx.arc(0,0,outer,a,b,direction<0);
       ctx.arc(0,0,outer-(outer-inner)*(i+1)/8,b,a,direction>0);ctx.closePath();ctx.fill();
     }

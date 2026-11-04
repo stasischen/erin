@@ -1,9 +1,12 @@
 // 版號由 games/survivor/version.json 管理；執行 tools/version.cjs --write 同步。
 // /erin/ 底下的檔案一律先問網路並更新快取，確保 ?v= 新版會立即生效；
 // 只有離線時才忽略查詢字串，退回已快取的同名檔案。
-const CACHE_NAME = 'erin-games-20261104b';
+const CACHE_NAME = 'erin-games-20261104c';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
+  'games/survivor/engine/survival-waves.js',
+  'games/survivor/render/materials.js',
+  'games/survivor/render/environment.js',
   'games/survivor/engine/ability-catalog.js',
   'games/survivor/engine/abilities.js',
   'games/survivor/engine/ability-actions.js',

@@ -46,6 +46,7 @@ function ensurePacing() {
   return state.pacing;
 }
 function pacingType() {
+  if(SurvivorWaves.enabled())return SurvivorWaves.pick();
   if(PREVIEW_MODE) return ENEMY_TYPES[0].id;
   const run=ensurePacing(), ids=SurvivorPacing.candidates(run,state.stageElapsed);
   if(!MAKER_MODE) {
@@ -158,6 +159,7 @@ Survivor.engine.pacing={rules:SurvivorPacing,resetPacing,ensurePacing,updatePaci
 // 平台接合層：純規則回傳階段，這裡才套用傷害、投射物及聲音。
 function updatePhasedAttack(e,dt) {
   const config=(ENEMY_TYPES.find(t=>t.id===e.typeId)||{}).phaseAttack;
+  if(SurvivorWaves.enabled()&&config?.shape==='projectiles'&&!['shooter','charger'].includes(e.behavior))return false;
   if(!config || !config.enabled || e.miniboss) return false;
   let a=e.phaseAttack;
   if(!a || a.phase==='ready') {
