@@ -244,3 +244,17 @@ Godot §11：本輪僅將既有完整函式與快取移入單責任檔；共用�
 家長要求先Maker編輯器再預設資料，玩法與存檔不變；Maker入口只在設定，不在開始畫面。搬動超過300行已先說明。Maker保留唯一draft/dirty/selection閉包，以ctx getter/setter供五個factory模組使用；主檔618→119行。原入口DOM移到settingsPanel，關閉回原ready/paused及設定；暫停局不自動續玩，舊Maker試玩關閉仍導航回主頁。版本20261104f，本輪不拆schema。
 
 第一里程碑真Chrome740×360：開始頁Maker不可見、設定進入六分頁、編輯/save/reload、ready/paused出入設定且時間不前進、兩種真正試玩按鈕與回設計室通過。後續完整maker-ui發現四個深層spread共享引用漏ctx，集中修復並保留全部原斷言；15段Maker功能PASS及settings-menu/preview-host/refactor/version通過。再真Chrome實際編輯卡片最高級與Boss弱點倍率、保存並驗值、全流程無Runtime exception，見私人maker-split-fixed.log。沒有改任何數值基準或schema。
+
+### Maker與預設資料拆分結果
+
+來源5768808d3aa6c4454132f352be1ac1811b60ebc2，版本20261104f。Maker主檔618→119行，五個factory共用唯一草稿與選取狀態；原defaults2624→259行，完整預設分14個資料模組，按武器／支援／水風雷卡片／敵人／各Boss／關卡維護。完整物件深度比較、49張卡片陣列順序、舊作品驗證結果與獨立副本全部一致。schema與存檔key未改，沒有改歷史數值或美術基準。
+
+完整Mac `node games/survivor/tools/test.cjs --layout` exit0／134行PASS，diff check通過；非作者首輪approve並補核完整日誌見maker-data-review.md。真Chrome先完成Maker入口／六分頁／深卡片與弱點／保存重載／兩種試玩，再拆資料；最終三尺寸自然33秒、升級、第二波、技能與暫停續玩通過。獨立另驗三尺寸resize、試煉、真正preview/practice iframe前進與練習暫停續玩。私人日誌maker-data-final、maker-data-independent、maker-data-boundary、maker-data-natural-verified、defaults-identity-final、maker-data-full保留本機。
+
+自然流程第一次最後一張截圖恰遇升級，遮住skill按鈕；私有腳本改為先完成自然選卡再點技能，未修改產品。補充存檔比較改用既有完整fixture，並比較舊新完整驗證結果，避免把積木重新編譯後的值誤當存檔回歸。
+
+Godot §11：本輪僅拆責任與資料來源；唯一狀態、原驗證及儲存接口不變。index／preview／practice與VM共用資料清單，版本工具與離線快取完整收錄。沒有新框架或Godot執行驗證。FOLLOWUPS沿前輪手機硬體／自然長局，schema未拆；這輪未新增角色、關卡或玩法。
+
+候選發布前125檔／832執行期請求、A/B七key隔離、正式sentinel及舊worker/快取保留皆通過。私有驗證工具只依新位置先開設定再點Maker，儲存隔離斷言不變並經獨立核對。
+
+發布結果：Pages41792656294成功，預覽提交7a64af8b83259e3045e309318410a14dd7c845f0；保留1736既有檔，122候選檔HTTP及內容一致。公開頁740×360 Maker設定入口、六分頁、編輯保存重載、兩種試玩，以及自然33秒兩次升級／第二波／技能／暫停續玩皆通過。PR113維持草稿，正式站未改；收尾僅文件，版本不另增。

@@ -3,17 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "doing",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "Maker先拆分並移設定入口；真Chrome與相關測試已過，接著拆預設資料並核完整值/存檔相容，最後全套獨審更新預覽。",
+  "next": "拆分、設定入口、完整測試、獨審與公開驗證完成；等待家長試玩意見，不自動合併。https://stasischen.github.io/erin-preview/pr-113/5768808d3aa6c4454132f352be1ac1811b60ebc2/games/survivor/",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T07:14:45.551712+00:00",
+  "updated": "2026-11-04T07:32:49.704255+00:00",
   "updatedBy": "codex"
 }
