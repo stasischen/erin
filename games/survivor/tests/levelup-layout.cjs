@@ -264,7 +264,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     async function reloadMaker(){
       const nextLoaded=new Promise(resolve=>{loadedPage={sessionId,resolve};});await call('Page.reload');await nextLoaded;
       for(let i=0;i<100;i++){try{if(await evaluate("document.readyState==='complete'&&!!document.querySelector('#makerLink')&&typeof window.openSurvivorMaker==='function'"))break;}catch{}await new Promise(r=>setTimeout(r,20));}
-      await touch('#makerLink');await evaluate(openGallery);
+      await touch('#settingsButton');await touch('#makerLink');await evaluate(openGallery);
     }
     await reloadMaker();
     assert.deepEqual(await evaluate(`['前半場連斬刀數','後半場連斬刀數'].map(label=>Number(document.querySelector('input[aria-label="'+label+'"]').value))`),[7,8]);

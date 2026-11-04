@@ -40,3 +40,18 @@
 | 每幀tick呼叫順序、時間步長、繪圖／邏輯frame排程與暫停 | `engine/loop.js` |
 
 `tick`／`tickImpacts` 與 frame、pause 保持完整原文與順序，不因檔案行數繼續切成零碎步驟。原 `Survivor.engine.loop` getters 和全域函式保持相容；新的兩個責任模組也提供同名存取器。三步拆分使用同一次版本更新，Maker、schema、defaults 與所有測試基準不變。
+
+## Maker 編輯器
+
+Maker 控制項需要共同草稿，這部分以明確的 `ctx` 接合，不是函式原文逐字搬運。`maker/maker.js` 保有唯一的 draft、dirty、分頁與選取狀態；各模組讀寫同一份草稿，不另存副本。儲存仍由原 SurvivorData API 處理，作品格式與儲存鍵不變。
+
+| 要修改的內容 | 檔案 |
+| --- | --- |
+| 草稿生命週期、分頁外殼、儲存／試玩、設定返回 | `maker/maker.js` |
+| 共用輸入、選單、數值、回饋與時間軸 | `maker/widgets.js` |
+| 武器、卡片與效果積木 | `maker/cards-weapons.js` |
+| 敵人、Boss、弱點與攻擊積木 | `maker/actors.js` |
+| 關卡、出怪節奏、波次與碰撞重量 | `maker/stages.js` |
+| 玩家預設設定與共用數值編輯 | `maker/rules.js` |
+
+`maker/manifest.js` 是編輯器腳本的唯一順序清單；瀏覽器由 `maker/load.js` 載入，版本工具與 VM 測試也讀同一清單。Maker 入口位於設定面板；一般遊戲關閉 Maker 後返回原準備／暫停狀態的設定，不自動繼續戰鬥。試玩作品的「回設計室」同樣從設定進入，試玩模式關閉設計室仍回遊戲首頁。

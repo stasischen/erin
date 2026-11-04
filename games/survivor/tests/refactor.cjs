@@ -16,6 +16,13 @@ const written = [], context = vm.createContext({URL, document: {currentScript: {
 vm.runInContext(fs.readFileSync(path.join(root, 'manifest.js'), 'utf8'), context);
 vm.runInContext(fs.readFileSync(path.join(root, 'game.js'), 'utf8'), context);
 assert.deepEqual(written, files.map(file => `<script src="${file}?v=test-version"></script>`));
+// Maker browser and VM use one ordered manifest as well.
+written.length=0;
+context.document.currentScript.src='http://localhost/erin/games/survivor/maker/load.js?v=test-version';
+vm.runInContext(fs.readFileSync(path.join(root,'maker/manifest.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'maker/load.js'),'utf8'),context);
+const makerFiles=Array.from(context.SurvivorMakerManifest);
+assert.deepEqual(written,makerFiles.map(file=>`<script src="${file}?v=test-version"></script>`));
 // Same coordinate policy for portrait rotation, landscape and visualViewport changes.
 for (const [width, height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[600,700],[660,700]]) {
   run(`window.innerWidth=${width};window.innerHeight=${height};fitVisibleViewport()`);
@@ -39,8 +46,8 @@ function checkCache(transform) {
   vm.runInNewContext(tool, {__dirname:path.join(root,'tools'),process:{argv:[]},console:quiet,require:name=>name==='node:fs'?fakeFs:require(name)});
 }
 checkCache(s=>s);
-for (const file of ['manifest.js','upgrade.css', ...files]) {
-  assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}',`,'')), /not precached/, file);
+for (const file of ['manifest.js','upgrade.css','maker/manifest.js','maker/load.js', ...makerFiles, ...files]) {
+  assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}'`,'')), /not precached/, file);
 }
 assert.throws(()=>checkCache(s=>s.replace(/const CACHE_NAME = '[^']+';/,"const CACHE_NAME = 'stale';")), /CACHE_NAME/);
 // Tick keeps the classic/public API identity while accepting an optional independent clock.

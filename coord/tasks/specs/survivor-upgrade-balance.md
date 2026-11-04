@@ -238,3 +238,9 @@ FOLLOWUPS：手機硬體效能與自然完整兩關長局未驗；地景目前�
 Godot §11：本輪僅將既有完整函式與快取移入單責任檔；共用接口與狀態仍唯一，tick順序不變；文檔提供修改入口。不宣稱改成Godot或新的依賴系統。FOLLOWUPS沿前輪手機硬體/自然長局、受擊旋轉地塊對齊及高密度傷害字；不為拆檔另加玩法修正。
 
 發布結果：Pages41783438632成功；保留1636既有檔，100候選檔HTTP與內容逐位元一致。公開網址740×360清涼路線自然33秒、兩次升級、第二波、觸控技能及暫停續玩通過（refactor-public.log）。
+
+## Maker與預設資料依序拆分（本輪授權）
+
+家長要求先Maker編輯器再預設資料，玩法與存檔不變；Maker入口只在設定，不在開始畫面。搬動超過300行已先說明。Maker保留唯一draft/dirty/selection閉包，以ctx getter/setter供五個factory模組使用；主檔618→119行。原入口DOM移到settingsPanel，關閉回原ready/paused及設定；暫停局不自動續玩，舊Maker試玩關閉仍導航回主頁。版本20261104f，本輪不拆schema。
+
+第一里程碑真Chrome740×360：開始頁Maker不可見、設定進入六分頁、編輯/save/reload、ready/paused出入設定且時間不前進、兩種真正試玩按鈕與回設計室通過。後續完整maker-ui發現四個深層spread共享引用漏ctx，集中修復並保留全部原斷言；15段Maker功能PASS及settings-menu/preview-host/refactor/version通過。再真Chrome實際編輯卡片最高級與Boss弱點倍率、保存並驗值、全流程無Runtime exception，見私人maker-split-fixed.log。沒有改任何數值基準或schema。

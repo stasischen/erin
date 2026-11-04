@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#142331" />
   <title>小怪獸</title>
-  <link rel="stylesheet" href="style.css?v=20261104e" />
-  <link rel="stylesheet" href="upgrade.css?v=20261104e" />
-  <link rel="stylesheet" href="maker/style.css?v=20261104e" />
+  <link rel="stylesheet" href="style.css?v=20261104f" />
+  <link rel="stylesheet" href="upgrade.css?v=20261104f" />
+  <link rel="stylesheet" href="maker/style.css?v=20261104f" />
   <link rel="manifest" href="../../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -67,6 +67,7 @@
             <button id="vibrationToggle" class="settings-action" type="button"></button>
           </div>
           <div class="settings-actions">
+          <button id="makerLink" class="settings-action menu-settings" type="button"><span data-icon="maker" aria-hidden="true"></span> 自己設計</button>
             <button id="resetSettingsButton" class="settings-action" type="button">恢復預設</button>
             <button id="closeSettingsButton" class="settings-action settings-done" type="button">完成</button>
           </div>
@@ -76,7 +77,6 @@
           <h2 id="messageTitle">小怪獸</h2>
           <p id="messageText">用方向鍵、WASD 或手指搖桿移動，躲開甲本！</p>
           <button id="trialEntry" class="settings-action trial-entry" type="button" aria-label="王的試煉" title="王的試煉"><span data-icon="boss" aria-hidden="true"></span></button>
-          <button id="makerLink" class="settings-action menu-settings" type="button"><span data-icon="maker" aria-hidden="true"></span> 自己設計</button>
           <button id="settingsButton" class="settings-action menu-settings gear-button" type="button" aria-label="設定" title="設定"><span data-icon="settings" aria-hidden="true"></span></button>
           <div id="pauseBuild" class="pause-build" hidden>
           <h3>本局配裝與共用專長</h3>
@@ -102,14 +102,14 @@
     </section>
     <footer class="help">移動：方向鍵／WASD／搖桿　空白鍵：衝刺　E：泡泡炸彈　Esc：暫停</footer>
   </main>
-  <script src="icons.js?v=20261104e"></script>
-  <script src="data/defaults.js?v=20261104e"></script>
-  <script src="data/schema.js?v=20261104e"></script>
-  <script src="preview.js?v=20261104e"></script>
-  <script src="manifest.js?v=20261104e"></script><script src="game.js?v=20261104e"></script>
+  <script src="icons.js?v=20261104f"></script>
+  <script src="data/defaults.js?v=20261104f"></script>
+  <script src="data/schema.js?v=20261104f"></script>
+  <script src="preview.js?v=20261104f"></script>
+  <script src="manifest.js?v=20261104f"></script><script src="game.js?v=20261104f"></script>
   <script>document.querySelectorAll("[data-icon]").forEach(node => SurvivorIcons.set(node, node.dataset.icon));</script>
-  <script src="practice-host.js?v=20261104e"></script>
-  <script src="maker/maker.js?v=20261104e"></script>
+  <script src="practice-host.js?v=20261104f"></script>
+  <script src="maker/manifest.js?v=20261104f"></script><script src="maker/load.js?v=20261104f"></script>
   <script src="../../register-sw.js" defer></script>
 </body>
 </html>
