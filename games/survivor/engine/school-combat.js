@@ -15,7 +15,7 @@ function schoolDamage(target, damage) {
   return damage * neutralDamageMultiplier() * (wet ? block.actions[0].multiplier : 1);
 }
 function absorbSchoolHit(damage) {
-  damage=SurvivorAbilities.absorb(damage);if(damage<=0)return 0;
+  const incoming=damage;damage=SurvivorAbilities.absorb(damage);if(incoming>0&&damage<=0)return 0;
   const block=cardBlock('water-bubble','onHurt');
   if (state.schoolCombat && block.conditions.every(c=>SurvivorEffectBlocks.matches(c,{damage,bubble:state.schoolCombat.bubble}))) {
     state.schoolCombat.bubble = block.actions[0].active;

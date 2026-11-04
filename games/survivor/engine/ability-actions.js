@@ -2,9 +2,9 @@
 globalThis.SurvivorAbilityActions=(()=>{
   const distance=(a,b)=>Math.hypot(deltaX(a.x,b.x),deltaY(a.y,b.y));
   const targets=()=>combatTargets();
-  const ordinary=t=>t!==state.boss&&!t.trialActor&&!t.miniboss;
+  const ordinary=t=>t!==state.boss&&!t.trialActor&&!t.miniboss&&!t.elite;
   const effects=()=>state.abilities.effects;
-  function add(base,kind,extra={}){if(effects().length>=48)return;const e={...base,kind,age:0,clock:0,hits:new Set(),...extra};effects().push(e);return e;}
+  function add(base,kind,extra={}){if(state.mode!=='playing'||!state.abilities||effects().length>=48)return;const e={...base,kind,age:0,clock:0,hits:new Set(),...extra};effects().push(e);return e;}
   function slow(t,seconds=.8){t.slowTimer=Math.max(t.slowTimer||0,seconds);t.makerSlow=BUILD_TUNING.slowMultiplier;}
   function area(e,damage=e.damage,push=0,seen=new Set()){
     for(const t of targets())if(!seen.has(t)&&distance(t,e)<=e.radius+t.r){seen.add(t);if(damage)hitBuildTarget(t,damage,{source:e});if(state.mode!=='playing')return;if(push)shiftTarget(t,e.x,e.y,push,true);}
@@ -53,7 +53,7 @@ globalThis.SurvivorAbilityActions=(()=>{
     if(e.kind==='shield'&&broken){if(e.level>=3)burstArea({...e,x:state.player.x,y:state.player.y},0,gameSettings.bombKnockback);if(e.level>=5)add({...e,x:state.player.x,y:state.player.y},'slow',{duration:3});}
     if(e.kind==='fortress'&&e.level>=5)burstArea({...e,x:state.player.x,y:state.player.y},e.damage+Math.max(0,e.remaining));
   }
-  function absorb(damage){const s=state.abilities.shield;if(!s||s.ended)return damage;const taken=Math.min(damage,s.remaining);s.remaining-=taken;if(s.remaining<=0){shieldEnded(s,true);s.age=s.duration;}return damage-taken;}
+  function absorb(damage){if(damage<=0)return damage;const s=state.abilities.shield;if(!s||s.ended)return damage;const taken=Math.min(damage,s.remaining);s.remaining-=taken;if(s.remaining<=0){shieldEnded(s,true);s.age=s.duration;}return damage-taken;}
   function speed(){return effects().some(e=>e.kind==='corridor'&&e.level>=3&&inCorridor(state.player,e))?1.35:1;}
   function lure(enemy){return effects().find(e=>e.kind==='clone'&&ordinary(enemy)&&distance(enemy,e)<=e.radius&&(e.level<5||Math.floor(e.age)%2===e.phase))||state.player;}
   function finish(e){

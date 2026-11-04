@@ -45,3 +45,14 @@ const legacy=create({maker:true});legacy('startGame();applyUpgrade(0)');assert.e
 const tuning=fresh();tuning(`globalThis.before=SurvivorAbilities.settings('active-tide',1);gameSettings.bombDamage*=2;gameSettings.bombRadius*=2;gameSettings.bombCooldown*=2;globalThis.after=SurvivorAbilities.settings('active-tide',1)`);for(const key of ['damage','radius','cooldown'])assert.equal(tuning(`after.${key}/before.${key}`),2);
 const pause=fresh();pause("SurvivorAbilities.acquire('active-tide');showOverlay('paused')");assert.ok(pause.elements.buildSlots.innerHTML.includes('潮汐爆破 Lv1'));assert.ok(!pause.elements.buildSlots.innerHTML.includes('技能</b> <span>尚未取得'));
 console.log('PASS: 15 abilities Lv1/3/5, unlock/slots/locked branch/pity, real shield/heal/freeze/haste/lure/pull, unique waves/orbits, stage/reset and legacy/Maker settings');
+// Review regressions: legacy signed inputs, elite immunity, and a cast ending the stage.
+const signed=fresh();signed(`SurvivorAbilityActions.start('secret-jelly',1);globalThis.shieldBefore=state.abilities.shield.remaining`);
+assert.equal(signed('absorbSchoolHit(-1)'),-1);assert.equal(signed('state.abilities.shield.remaining'),signed('shieldBefore'));
+signed('state.abilities=null;state.loadout=null');assert.equal(signed('absorbSchoolHit(-1)'),-1);
+const elite=fresh();elite(`GAME_DATA.elites.abilities=['split'];makeElite(state.enemies[0]);SurvivorAbilityActions.start('active-ice',3)`);
+assert.equal(elite('state.enemies[0].elite'),'split');assert.equal(elite('state.enemies[0].stunTimer||0'),0);assert.ok(elite('state.enemies[0].slowTimer>0'));
+elite(`globalThis.elitePulls=0;const shift=shiftTarget;shiftTarget=(t,x,y,d,...args)=>{if(t===state.enemies[0]&&d<0)elitePulls++;return shift(t,x,y,d,...args)};SurvivorAbilityActions.start('secret-clone',1);SurvivorAbilityActions.start('secret-magnet',1);SurvivorAbilityActions.tick(.05)`);
+assert.equal(elite('SurvivorAbilities.lure(state.enemies[0])===state.player'),true);assert.equal(elite('elitePulls'),0);
+const transition=fresh();transition(`SurvivorAbilities.acquire('active-tide');state.boss={x:state.player.x+40,y:state.player.y,r:20,hp:1,maxHp:1,speed:0};SurvivorAbilityActions.start('active-tide',5)`);
+assert.equal(transition('state.mode'),'transition');assert.equal(transition('state.abilities.effects.length'),0);assert.equal(transition("SurvivorAbilities.level('active-tide')"),1);
+console.log('PASS: negative damage never restores shield, elites only slow and ignore lure/pull, stage-ending tide cannot append old effects');
