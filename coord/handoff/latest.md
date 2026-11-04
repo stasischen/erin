@@ -1,5 +1,17 @@
 # 目前交接
 
+## Claude 修正接手與 Dot 送審（2026-11-05）
+
+目前遊戲來源5607ab95ef2a1fb6bdda9528dc6713b58654c4c9，版本20261104g；上一份5768808／f版交接及預覽保留為歷史。新增魔王倒數、低血量紅框、普通同敵傷害數字合併及池引用清理；自動／手動模式沒有修改。一般無query入口「開始生存」是自動攻擊三槽，Boss試煉手動，Maker舊試玩依sandbox設定。不要從原erin目錄或正式站測本輪分支。
+
+家長要求照流程送Dot。主控沿原worktree與PR113接手；非作者Mac本人完整套件exit0／136PASS及首輪approve，詳readability-review.md；[Dot固定請求](../reviews/survivor-upgrade-balance/dot-readability-request.md)。尚未取得Dot雲端結果，不宣稱驗收完成，不合併main。
+
+Pages41882567310成功，預覽提交5120378237c27743604b62a8f7ee553edea60e51，既有1858檔保持，新增122候選檔。公開Chrome740x360自然33秒／兩次升級／第二波／技能／暫停續玩exit0。公開全檔逐位元核對未完成：Python連線重設，另一次Chrome載入逾時，已停止重試；不能宣稱122公開檔全驗通過，請Dot先核雲端可達與manifest。
+
+新版測試頁：https://stasischen.github.io/erin-preview/pr-113/5607ab95ef2a1fb6bdda9528dc6713b58654c4c9/games/survivor/
+
+---
+
 ## Claude 審查交接（2026-11-05）
 
 家長要求交由 Claude review；[完整交接](claude-review-maker-data.md)已同步本分支，包含固定比較範圍、測試證據、重現步驟及限制。遊戲與測試頁維持下列來源，PR113仍為草稿；下一步等待 Claude 審查結果，不自動改碼或合併。這次只更新文件，未重跑遊戲測試或變更版本。

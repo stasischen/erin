@@ -3,17 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "review",
+  "state": "peer_review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "已發布Claude審查交接：coord/handoff/claude-review-maker-data.md；等待Claude review結果，遊戲與測試頁不變，不自動合併。",
+  "next": "g版Mac非作者審查／136PASS及Pages完成，準備送Dot固定請求與三尺寸雲端驗收；公開自然試玩已過，全檔HTTP核對因連線不穩未完成。Dot結果未回，不合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T16:11:11.479326+00:00",
+  "updated": "2026-11-04T18:04:08.638028+00:00",
   "updatedBy": "codex"
 }
