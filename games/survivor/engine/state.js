@@ -282,7 +282,7 @@ let sharedAudio = null;
 
 function takeFromPool(pool, values) {
   const item = pool.pop() || {};
-  delete item.hitStop;delete item.feedbackFrozen;delete item.feedbackNumberScale;delete item.numberScale;
+  delete item.hitStop;delete item.feedbackFrozen;delete item.feedbackNumberScale;delete item.numberScale;delete item.owner;delete item.total;
   Object.assign(item, values);
   if (Number.isFinite(item.x) && Number.isFinite(item.y)) clampToMap(item);
   return item;

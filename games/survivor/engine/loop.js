@@ -268,7 +268,13 @@ function tickImpacts(dt,clockDt=dt) {
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { finishRun(false); return; }
-  statusEl.textContent = `${Math.floor(state.elapsed)} 秒`;
+  // 計時器下方小字倒數魔王，讓玩家知道還要撐多久；魔王出場或試煉時不顯示。
+  const bossLeft=!state.trial&&!PREVIEW_MODE&&!state.boss&&state.bossIntro<=0?Math.ceil(SurvivorWaves.bossTime()-state.stageElapsed):0;
+  const statusKey=Math.floor(state.elapsed)+'|'+bossLeft;
+  if(statusEl.dataset.key!==statusKey){
+    statusEl.dataset.key=statusKey;statusEl.textContent=`${Math.floor(state.elapsed)} 秒`;
+    if(bossLeft>0){const eta=document.createElement('small');eta.className='boss-eta';eta.textContent=`魔王 ${bossLeft} 秒後來`;statusEl.appendChild(eta);}
+  }
 }
 
 // 小型背景圖塊預先繪製並快取；逐幀只貼鏡頭內圖塊，不配置世界大小的圖片。

@@ -81,6 +81,9 @@ function updateHud() {
   const ratio = Math.max(0, state.player.health / maxHealth);
   healthFill.style.width = `${ratio * 100}%`;
   healthFill.style.background = ratio < 0.3 ? "linear-gradient(#ffb4c8 0 48%, #c2607f 49%)" : "linear-gradient(#ffd3df 0 48%, #f5a1bc 49%)";
+  // 血量低於 30% 時畫面四周閃紅框提醒（試煉與一般生存都適用）。
+  const shell=document.querySelector('.game-shell');
+  if(shell)shell.classList[ratio>0&&ratio<0.3?'add':'remove']('low-health');
   experienceFill.style.width = `${state.xp / experienceNeeded() * 100}%`;
   if(hudPlayerLevel)hudPlayerLevel.textContent=`${SurvivorWaves.enabled()?"第"+SurvivorWaves.current().number+"波 · ":""}Lv.${state.level}`;
   if(hudKillCount)hudKillCount.textContent=String(state.schoolCombat&&state.schoolCombat.kills||0);

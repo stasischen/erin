@@ -10,7 +10,9 @@ child.stderr.on('data',b=>{errorText+=b;});
 child.stdio[4].on('data',b=>{buffer+=b;let end;while((end=buffer.indexOf('\0'))>=0){const raw=buffer.slice(0,end);buffer=buffer.slice(end+1);if(!raw)continue;const message=JSON.parse(raw),request=pending.get(message.id);if(message.method==='Page.loadEventFired'&&loadedPage&&message.sessionId===loadedPage.sessionId){loadedPage.resolve();loadedPage=null;}if(request){pending.delete(message.id);message.error?request.reject(Error(JSON.stringify(message.error))):request.resolve(message.result);}}});
 child.on('exit',(code,signal)=>{for(const request of pending.values())request.reject(Error(`Chrome 未完成測試：${signal||code} ${errorText}`));pending.clear();});
 function send(method,params={},sessionId){return new Promise((resolve,reject)=>{const id=++nextId;pending.set(id,{resolve,reject});child.stdio[3].write(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})})+'\0');});}
-const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.kill();process.exitCode=1;},45000);
+// 每個尺寸各給 45 秒；較慢的機器不會因為尺寸數量多就整支逾時。
+let timeout;function armTimeout(){clearTimeout(timeout);timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.kill();process.exitCode=1;},45000);}
+armTimeout();
 (async()=>{
  const geometry=`(()=>{
   const selectors=['#upgradePanel','#upgradeLoadout',...Array.from({length:3},(_,i)=>'#upgradeCards button:nth-child('+(i+1)+')'),'#confirmUpgrade','#rerollUpgrade'];
@@ -28,7 +30,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   if(devicePixelRatio!==3||!matchMedia('(pointer: coarse)').matches)throw Error('缺少DPR3或觸控模擬');
   return true;
  })()`;
- for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[1180,820],[461,1024]]){
+ for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[1180,820],[461,1024]]){armTimeout();
   // Page.enable 只在全新 session 呼叫一次。前一尺寸留下的動態 iframe、
   // 輸入焦點與 Page domain 狀態不應帶進下一個尺寸（Grok 已重現第二輪卡住）。
   const {targetId}=await send('Target.createTarget',{url:'about:blank'});

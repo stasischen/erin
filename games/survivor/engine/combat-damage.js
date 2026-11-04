@@ -94,11 +94,20 @@ function burst(x, y, color, count = 8) {
 }
 
 function damageNumber(target, damage) {
+  // 同一隻小怪 0.3 秒內連續受傷時合併成一個數字，避免「44 44 44」疊在一起看不清楚。
+  // 魔王、試煉王、大熊、精英不合併：弱點 3 倍等大傷害要單獨跳出來。
+  const ordinary = target !== state.boss && !target.trialActor && !target.miniboss && !target.elite;
+  const recent = ordinary && state.effects.find(effect => effect.kind === "number" && effect.owner === target && effect.maxLife - effect.life < .3);
+  if (recent) {
+    recent.total += damage; recent.text = `${Math.round(recent.total)}`;
+    recent.x = target.x; recent.y = target.y - target.r; recent.life = recent.maxLife;
+    return;
+  }
   if (state.effects.length >= 90) {
     const spark = state.effects.findIndex(effect => effect.kind === "spark");
     state.effectPool.push(state.effects.splice(spark >= 0 ? spark : 0, 1)[0]);
   }
-  state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: target.x, y: target.y - target.r, vx: 0, vy: -28, color: "#fff", life: .7, maxLife: .7, text: `${Math.round(damage)}` }));
+  state.effects.push(takeFromPool(state.effectPool, { kind: "number", x: target.x, y: target.y - target.r, vx: 0, vy: -28, color: "#fff", life: .7, maxLife: .7, text: `${Math.round(damage)}`, owner: target, total: damage }));
 }
 function damageEnemy(enemy, damage = effectiveDamage()) {
   if (!enemy.alive || !canAttackTarget(enemy)) return;
