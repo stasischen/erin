@@ -3,17 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "doing",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "重設元素特效、30秒生存波次與兩關固定地景，先真Chrome自然升級與波次過渡，再相關回歸及完整驗證。",
+  "next": "新版元素材質、五波敵群與兩關地景已上隔離測試頁，等家長手機試玩；不自動合併或開新卡。https://stasischen.github.io/erin-preview/pr-113/2c2cfa62a067e7c111dbbed913c1f48c94fc2574/games/survivor/",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T01:47:11.878146+00:00",
-  "updatedBy": "codex"
+  "updated": "2026-11-04T02:05:51.316349+00:00",
+  "updatedBy": "codex",
+  "waitingFor": "user"
 }

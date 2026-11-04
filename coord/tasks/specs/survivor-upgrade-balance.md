@@ -186,3 +186,17 @@ FOLLOWUPS：手機實機效能與長局配裝平衡未驗；死亡畫面暫留�
 ## 生存壓力、元素材質與地景（本輪授權）
 
 同卡由 Codex 唯一實作者，主控負責真瀏覽器驗證、完整測試及獨審。預估900–1200行，新增 `engine/survival-waves.js`、`render/materials.js`、`render/environment.js`，允許接合 spawn／pacing／loop／hud／world、現有 effects／abilities／weapons-survival／weapons／neon 渲染、encounters 上限接點、art-manifest、manifest／快取與合理相關回歸。沿原八敵種與兩關，不新增角色、關卡、地形碰撞或存檔格式。詳見 [波次與地景維護](../../../docs/survival-world.md)。
+
+### 本輪實測與結果
+
+來源2c2cfa62a067e7c111dbbed913c1f48c94fc2574，版本20261104c。完整Mac `node games/survivor/tools/test.cjs --layout` exit0／133行PASS，diff check通過。首輪收齊兩個舊測試失敗：Boss原120秒斷言與雷光舊絕對座標；改測新生存150秒／舊Maker120秒，並還原Canvas變換核跨縫20單位，未修改戰鬥快照。獨立兩輪後approve，見world-review.md。
+
+真Chrome三尺寸1024×461／740×360／1180×820，自然遊玩至33秒、選升級、第二波、觸控技能及暫停續玩通過，未注入經驗／血量。受控驗證五波18／28／40／52／64、特殊敵限制、最終半徑畫外出生、重複裝飾不疊數值、實際抗擊退、跨關重置與新舊Boss時間。十五能力各Lv1/3/5作用及新版材質已受控檢查；不冒稱自然取得全部配裝。
+
+兩關各兩位置與早晚波次、快取32塊及淘汰後像素一致皆驗；第二輪親看兩關各三個小數鏡頭位置，地塊共用裝置像素邊界後原直線接縫不見。740×360 DPR2受控64敵／三武器／兩秘技短壓力3秒約182幀，未卡死；不是手機硬體或長局平衡認證。私人日誌waves-natural-final、waves-world、waves-pressure、waves-effects、waves-seams、waves-boundary-first、waves-seam-second、waves-full-final留本機。
+
+Godot §11：波次、材質、地景分為三小模組；出生與遭遇共享上限，重量沿共用質量系統，顏色由art-manifest管理；沒有新增存檔格式或Godot執行測試。Maker沿用原數量／生命／速度倍率，尚無獨立波次編輯器。
+
+FOLLOWUPS：手機實機與後期自然長局尚未驗；高密度傷害字可能遮主角；地景像素量化可能一步一像素，受擊旋轉下尚不保證同樣對齊。不追加新機制擋本輪交付。
+
+公開驗證：Pages41758130493成功；88候選檔HTTP及內容一致，保留1459既有檔。公開網址740×360真Chrome自然33秒、兩次升級、第二波、技能與暫停續玩通過。首次私有腳本只等部分函式載入便點開始而逾時，改等完整頁面與字型載入後通過，產品未改；日誌waves-public-final。
