@@ -26,6 +26,8 @@ globalThis.SurvivorManifest = Object.freeze([
   "engine/zzfx.js",
   "engine/music.js",
   "engine/audio.js",
+  "engine/camera-viewport.js",
+  "engine/run-lifecycle.js",
   "engine/loop.js",
   "engine/combat-damage.js",
   "engine/maker-effects.js",

@@ -30,3 +30,13 @@
 | 舊 `Survivor.engine.combat` 介面 | `engine/combat.js` |
 
 本輪沒有修改 Maker 積木規格或驗證資料；只是把其既有執行函式放在同一個責任檔案。新生存秘技／主動仍在原有 `abilities.js` 與 `ability-actions.js`，不另複製邏輯。所有搬出的全域函式與 combat getter 仍指向同一份函式。
+
+## 每幀更新與本局生命週期
+
+| 要修改的內容 | 檔案 |
+| --- | --- |
+| 環形座標、最短距離、邊界、鏡頭、世界尺寸及手機viewport | `engine/camera-viewport.js` |
+| 重置、開始遊戲、換關／勝敗、保留本局配裝與路線 | `engine/run-lifecycle.js` |
+| 每幀tick呼叫順序、時間步長、繪圖／邏輯frame排程與暫停 | `engine/loop.js` |
+
+`tick`／`tickImpacts` 與 frame、pause 保持完整原文與順序，不因檔案行數繼續切成零碎步驟。原 `Survivor.engine.loop` getters 和全域函式保持相容；新的兩個責任模組也提供同名存取器。三步拆分使用同一次版本更新，Maker、schema、defaults 與所有測試基準不變。
