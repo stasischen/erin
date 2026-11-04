@@ -220,3 +220,9 @@ Godot §11：路線資料與選單可見性在engine/routes；五隊形資料／
 FOLLOWUPS：手機硬體效能與自然完整兩關長局未驗；地景目前皆可通行，沒有碰撞。受擊旋轉時地塊像素對齊限制與高密度傷害字沿前輪追蹤。重裝編隊不保證慢怪永久站在最前方；特殊大視窗仍可能使用原安全備援出生位置。
 
 發布結果：Pages41781240699成功，89候選檔HTTP與內容一致，保留1547既有檔。公開網址740×360選清涼路線、自然33秒三次升級、第二波、技能及暫停續玩皆通過（routes-public.log）。
+
+## 依序拆分三個舊大檔（本輪授權）
+
+家長同意依建議順序整理render/world、engine/combat、engine/loop；不在本輪拆Maker、defaults或schema。超過300行的原因為搬運既有完整函式，已先說明；不新增玩法，不改數值、美術或存檔格式。沿原classic-script全域函式與三個namespace facade，相容原Maker／預覽／測試；manifest、快取與版本機械同步至20261104e。保留主迴圈tick原更新順序，不為追行數硬拆。
+
+第一步world 738→176行，分actors、background、boss-effects、enemy-warnings、projectiles；先真Chrome740×360自然33秒三次升級/第二波/技能/暫停續玩，再比對原三檔101函式內容完全一致與refactor/art-manifest通過。維護入口見docs/survivor-module-map.md；原圖與日誌不入repo。

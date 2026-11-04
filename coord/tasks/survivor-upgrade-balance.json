@@ -3,18 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "review",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "三路線六主題與五種進場隊形已上隔離測試頁；等家長手機選路線試玩，不自動合併或開新卡。https://stasischen.github.io/erin-preview/pr-113/4cf8a2e55098b242e96f7de3b0c881f2e90a009c/games/survivor/",
+  "next": "依序機械拆分渲染、戰鬥、主迴圈，每步真Chrome後再下一步；最終完整測試/獨審/同PR隔離測試頁。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T05:47:51.540577+00:00",
-  "updatedBy": "codex",
-  "waitingFor": "user"
+  "updated": "2026-11-04T05:59:59.616773+00:00",
+  "updatedBy": "codex"
 }
