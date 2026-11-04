@@ -15,7 +15,7 @@ function setup(options={}){
   const location={href:'',search:options.search||''}, state={keys:new Set(),mode:'ready'},window={addEventListener(){}};
   const calls=[];
   const context=vm.createContext({SurvivorPreview:{stop(){},refresh(){},mount(host,data,spec){calls.push({kind:'preview',data,spec});}},SurvivorPractice:{close(){},refresh(){},mount(){},unmount(){},open(data,container,onClose,id){calls.push({kind:'practice',data,id});}},console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;ids.settingsPanel.hidden=true;},openSettings(){if(state.mode==='playing')state.mode='paused';ids.settingsPanel.hidden=false;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
-  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/manifest.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of ['render/monsters.js','icons.js',...require('./load-defaults.cjs').files,'data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/manifest.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   for(const file of context.SurvivorMakerManifest)vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   function nodes(node=ids.editor){return node.children.flatMap(c=>[c,...nodes(c)]);}
   function tab(name){tabs.find(n=>n.dataset.tab===name).fire('click');}

@@ -4,6 +4,21 @@
 const CACHE_NAME = 'erin-games-20261104f';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
+  'games/survivor/data/gallery-assassin.js',
+  'games/survivor/data/gallery-winged.js',
+  'games/survivor/data/gallery-frostfire.js',
+  'games/survivor/data/gallery-gatekeeper.js',
+  'games/survivor/data/cards-thunder.js',
+  'games/survivor/data/cards-wind.js',
+  'games/survivor/data/cards-water.js',
+  'games/survivor/data/stages.js',
+  'games/survivor/data/gallery.js',
+  'games/survivor/data/boss.js',
+  'games/survivor/data/enemies.js',
+  'games/survivor/data/cards-support.js',
+  'games/survivor/data/weapons.js',
+  'games/survivor/data/load.js',
+  'games/survivor/data/manifest.js',
   'games/survivor/maker/rules.js',
   'games/survivor/maker/stages.js',
   'games/survivor/maker/actors.js',

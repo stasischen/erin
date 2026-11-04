@@ -55,3 +55,20 @@ Maker 控制項需要共同草稿，這部分以明確的 `ctx` 接合，不是�
 | 玩家預設設定與共用數值編輯 | `maker/rules.js` |
 
 `maker/manifest.js` 是編輯器腳本的唯一順序清單；瀏覽器由 `maker/load.js` 載入，版本工具與 VM 測試也讀同一清單。Maker 入口位於設定面板；一般遊戲關閉 Maker 後返回原準備／暫停狀態的設定，不自動繼續戰鬥。試玩作品的「回設計室」同樣從設定進入，試玩模式關閉設計室仍回遊戲首頁。
+
+## 預設資料
+
+`data/manifest.js` 是完整預設資料的唯一載入清單；三個瀏覽器入口先經 `data/load.js` 載入全部資料，再載入 schema。VM 使用同一清單，不可只讀 `data/defaults.js`。版本工具亦讀此清單檢查檔案、離線快取與入口順序。
+
+| 要修改的預設值 | 檔案 |
+| --- | --- |
+| 玩家偏好、基本玩法、學派／中立規則、碰撞與重量 | `data/defaults.js` |
+| 原三把武器、時間軸、特殊攻擊與回饋 | `data/weapons.js` |
+| 共用支援與中立道具卡 | `data/cards-support.js` |
+| 學派與既有合體卡 | `data/cards-water.js`、`data/cards-wind.js`、`data/cards-thunder.js` |
+| 普通敵人 | `data/enemies.js` |
+| 老師、弱點、區域與共用 Boss 數值 | `data/boss.js` |
+| 試煉 Boss、AI、招式與弱點 | `data/gallery.js` 與 `data/gallery-<Boss id>.js` |
+| 兩關、波次、出怪節奏與精英 | `data/stages.js` |
+
+資料直接記載原本所有追加覆寫完成後的值，不再需要到檔案尾端找第二個設定。卡片保留原索引與陣列順序；所有卡片檔載入完成後才使用資料。最終仍是同一個 `SURVIVOR_DEFAULTS`，作品的獨立複製、驗證與儲存仍由未修改的 schema 負責，沒有新增存檔欄位或儲存鍵。

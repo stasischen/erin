@@ -19,6 +19,13 @@ for (const file of makerFiles) {
   assert.match(file, /^maker\/[a-z-]+\.js$/);
   assert.ok(fs.existsSync(path.join(root, file)), `missing ${file}`);
 }
+const dataContext = vm.createContext({});
+vm.runInContext(fs.readFileSync(path.join(root, 'data/manifest.js'), 'utf8'), dataContext);
+const dataFiles = ['data/manifest.js', 'data/load.js', ...dataContext.SurvivorDataManifest];
+for (const file of dataFiles) {
+  assert.match(file, /^data\/[a-z-]+\.js$/);
+  assert.ok(fs.existsSync(path.join(root, file)), `missing ${file}`);
+}
 // 美術路徑也由同一份清單加入離線快取；換圖不必手改 sw.js。
 const artContext = vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(root, 'art-manifest.js'), 'utf8'), artContext);
@@ -39,7 +46,7 @@ const swPath = path.join(repo, 'sw.js');
 let sw = fs.readFileSync(swPath, 'utf8');
 if (writing) {
   sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = 'erin-games-${version}';`);
-  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...makerFiles, ...artFiles].map(file => `games/survivor/${file}`);
+  const dependencies = ['manifest.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...makerFiles, ...dataFiles, ...artFiles].map(file => `games/survivor/${file}`);
   for (const file of dependencies) if (!sw.includes(`'${file}'`)) {
     sw = sw.replace('const PRECACHE_URLS = [', `const PRECACHE_URLS = [\n  '${file}',`);
   }
@@ -48,7 +55,7 @@ if (writing) {
 const cacheContext = vm.createContext({self: {addEventListener() {}}});
 vm.runInContext(sw + '\nglobalThis.cacheName = CACHE_NAME; globalThis.urls = PRECACHE_URLS;', cacheContext);
 assert.equal(cacheContext.cacheName, `erin-games-${version}`, 'CACHE_NAME differs from version.json');
-for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...makerFiles, ...artFiles]) {
+for (const file of ['manifest.js', 'game.js', 'practice.html', 'practice.css', 'upgrade.css', 'practice-rules.js', 'practice-host.js', 'practice-engine.js', ...files, ...makerFiles, ...dataFiles, ...artFiles]) {
   assert.ok(cacheContext.urls.includes(`/erin/games/survivor/${file}`), `not precached: ${file}`);
 }
 for (const url of cacheContext.urls) {
@@ -57,6 +64,8 @@ for (const url of cacheContext.urls) {
 }
 for (const page of ['index.html', 'preview.html', 'practice.html']) {
   const html = fs.readFileSync(path.join(root, page), 'utf8');
+  const dataManifestIndex = html.indexOf(`data/manifest.js?v=${version}`), dataLoadIndex = html.indexOf(`data/load.js?v=${version}`), schemaIndex = html.indexOf(`data/schema.js?v=${version}`);
+  assert.ok(dataManifestIndex >= 0 && dataLoadIndex > dataManifestIndex && schemaIndex > dataLoadIndex, `${page}: data manifest/loader must precede schema`);
   const manifestIndex = html.indexOf(`manifest.js?v=${version}`), gameIndex = html.indexOf(`game.js?v=${version}`);
   assert.ok(manifestIndex >= 0 && gameIndex > manifestIndex, `${page}: manifest must load first`);
 }
