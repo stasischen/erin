@@ -41,11 +41,17 @@ globalThis.SurvivorEnvironment=(()=>{
     const cols=Math.max(1,Math.ceil(state.worldWidth/336)),rows=Math.max(1,Math.ceil(state.worldHeight/252));
     const w=state.worldWidth/cols,h=state.worldHeight/rows;if(!w||!h)return;
     ctx.save();ctx.imageSmoothingEnabled=true;
+    // Share device-pixel edges so fractional camera motion cannot expose chunk seams.
+    const transform=ctx.getTransform();
+    const snapX=x=>(Math.round(x*transform.a+transform.e)-transform.e)/transform.a;
+    const snapY=y=>(Math.round(y*transform.d+transform.f)-transform.f)/transform.d;
     for(let cy=Math.floor(state.cameraY/h);cy*h<state.cameraY+state.height;cy++)for(let cx=Math.floor(state.cameraX/w);cx*w<state.cameraX+state.width;cx++){
-      const tile=chunk(currentStage().id,cx,cy);ctx.drawImage(tile.canvas,cx*w,cy*h,w,h);
+      const tile=chunk(currentStage().id,cx,cy);
+      const x=snapX(cx*w),y=snapY(cy*h),width=snapX((cx+1)*w)-x,height=snapY((cy+1)*h)-y;
+      ctx.drawImage(tile.canvas,x,y,width,height);
       // Stable clusters deepen as waves progress; no random redraw or full-world cache invalidation.
       const phase=Math.min(4,SurvivorWaves.current().index),ink=SurvivorArtManifest.environment[currentStage().background];
-      if(phase&&ink){ctx.globalAlpha=phase*.035;ctx.fillStyle=ink.late;ctx.fillRect(cx*w,cy*h,w,h);ctx.globalAlpha=1;
+      if(phase&&ink){ctx.globalAlpha=phase*.035;ctx.fillStyle=ink.late;ctx.fillRect(x,y,width,height);ctx.globalAlpha=1;
         for(let i=0;i<phase;i++){const n=hash(tile.cx+i,tile.cy,tile.seed);ctx.fillStyle=ink.landmark;ctx.globalAlpha=.18;ctx.beginPath();ctx.ellipse(cx*w+30+n%Math.max(1,Math.floor(w-60)),cy*h+25+(n>>>8)%Math.max(1,Math.floor(h-50)),12+i*3,4,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
       }
     }
