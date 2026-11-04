@@ -8,12 +8,12 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "拆分、設定入口、完整測試、獨審與公開驗證完成；等待家長試玩意見，不自動合併。https://stasischen.github.io/erin-preview/pr-113/5768808d3aa6c4454132f352be1ac1811b60ebc2/games/survivor/",
+  "next": "已發布Claude審查交接：coord/handoff/claude-review-maker-data.md；等待Claude review結果，遊戲與測試頁不變，不自動合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T07:32:49.704255+00:00",
+  "updated": "2026-11-04T16:11:11.479326+00:00",
   "updatedBy": "codex"
 }
