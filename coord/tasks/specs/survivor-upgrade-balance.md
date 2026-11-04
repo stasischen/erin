@@ -161,3 +161,24 @@ https://stasischen.github.io/erin-preview/pr-113/dd90dcf3c446c011b1f1aec798165b8
 沿用本卡、分支與 PR113，由 Codex 主導實作，非作者驗證。範圍及維護入口見 [生存能力設計](../../../docs/survival-abilities.md)。新增允許 `engine/ability-catalog.js`、`engine/abilities.js`、`engine/ability-actions.js`、`render/abilities.js`，並修改現有 combat／loop／loadout／school-combat、levelup／upgrade-view／hud／world、manifest／upgrade.css、必要測試、此公開規格及維護文件。主控最後同步版本與快取。預估 1300–1600 行是完整十五種能力、共用生命週期與實際回歸的整輪上限，避免將新邏輯堆回大檔。
 
 第一里程碑已於真 Chrome 740×360 以自然經驗升級取得潮汐爆破，觸控施放及暫停續玩通過；再進行相關程式回歸。每局三武器、兩秘技、一主動，不新增存檔格式、能量條或瞄準流程。
+
+### 本輪驗證、發布與限制
+
+## 九秘技與六條主動大招測試版（2026-11-04）
+
+一般生存新增九秘技、六條按鍵大招路線，各五級；三武器／兩秘技／一主動。三種不同同元素能力解鎖秘技；大招選定一路後專精，連兩次未出能力時下一次保留一格，重抽同樣保留。手機顯示路線名與等級。PR113維持草稿，正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/6ef9cd0e472259ab4c600450f6f55378d42cfef4/games/survivor/
+
+來源6ef9cd0e472259ab4c600450f6f55378d42cfef4，版本20261104b。完整 Mac `node games/survivor/tools/test.cjs --layout` exit0／132行PASS，diff check通過；非作者兩輪後approve（abilities-review.md）。三尺寸自然取得潮汐／通道／裁決並真觸控施放及暫停續玩通過；十五能力各Lv1/3/5受控真Chrome作用驗證與圖像檢查通過。獨立真Chrome另驗護盾實際承傷、Boss與精英只緩速、狂歡三武器追加攻擊且全局被動不重複、兩種Maker真試玩入口。
+
+預覽提交84ec4fef9551540abddf1d528674a50e4b9c9622，Pages41751973867成功；發布前88檔／571請求隔離驗證，既有1374檔保持，發布後85候選檔HTTP與內容逐位元一致。下一步等手機試玩，不自動合併或開新卡；本次交接是文件更新，遊戲版本保持。
+
+---
+
+首輪完整套件收齊三項：無盾負傷害舊返回值、基本怪比例的隨機單一怪名斷言、新技能樹缺舊圖示。集中修正並保留734個歷史水系快照；未重生任何frozenJSON。非作者首輪發現精英被硬凍，第二輪真Chrome確認修成僅緩速。另加轉場建立效果防護，海嘯與通道圖形對齊既有作用範圍，未改碰撞與數值。
+
+自然流程未注入血量／經驗或卡片：740×360約36.37秒取得潮汐，1024×461約33.26秒取得通道，1180×820約35.99秒取得裁決。十五能力×三等級的診斷是受控取得／能力生命週期步進；狂歡實際命中由獨立完整引擎步進補驗，不把僅能力步進冒稱自然全武器通關。主要私人日誌：abilities-first、abilities-1024、abilities-1180、abilities-effects、abilities-art-final、abilities-boundary-first/second、abilities-maker-legacy、abilities-full-final；截圖與原件留本機。
+
+Godot §11：能力資料、槽位與抽卡規則、作用生命週期、畫圖分為四模組，沿用合法目標、傷害、環形座標及manifest色票；沒有新增存檔格式。新能力以共用作用handler實作，獨立五級表仍在catalog，不宣稱已有每欄Maker編輯器或Godot執行驗證。
+
+FOLLOWUPS：手機實機效能與長局配裝平衡未驗；死亡畫面暫留效果物件，重開已清除且無跨局殘留。六組武器合體仍僅設計，不在本輪實作範圍。
