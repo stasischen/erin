@@ -8,12 +8,12 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "g版Mac非作者審查／136PASS及Pages完成，準備送Dot固定請求與三尺寸雲端驗收；公開自然試玩已過，全檔HTTP核對因連線不穩未完成。Dot結果未回，不合併。",
+  "next": "已送Dot審查與三尺寸雲端試玩：https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638166698；Mac非作者136PASS/approve及新版Pages完成。待Dot回覆，不合併。公開全檔HTTP核對因連線不穩未完成，正常公開試玩已過。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T18:04:08.638028+00:00",
+  "updated": "2026-11-04T18:04:50.547978+00:00",
   "updatedBy": "codex"
 }
