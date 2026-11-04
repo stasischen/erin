@@ -226,3 +226,15 @@ FOLLOWUPS：手機硬體效能與自然完整兩關長局未驗；地景目前�
 家長同意依建議順序整理render/world、engine/combat、engine/loop；不在本輪拆Maker、defaults或schema。超過300行的原因為搬運既有完整函式，已先說明；不新增玩法，不改數值、美術或存檔格式。沿原classic-script全域函式與三個namespace facade，相容原Maker／預覽／測試；manifest、快取與版本機械同步至20261104e。保留主迴圈tick原更新順序，不為追行數硬拆。
 
 第一步world 738→176行，分actors、background、boss-effects、enemy-warnings、projectiles；先真Chrome740×360自然33秒三次升級/第二波/技能/暫停續玩，再比對原三檔101函式內容完全一致與refactor/art-manifest通過。維護入口見docs/survivor-module-map.md；原圖與日誌不入repo。
+
+### 三步拆分結果
+
+最終來源fb8df5c38956cbd5b3790c4e443103d7455858c2，版本20261104e，67個manifest模組。world 738→176行、combat 515→39行（相容入口）、loop 472→308行；新增11個按責任拆分的檔案，沒有引入新框架或改用另一套模組載入機制。原三檔101個全域函式.toString逐字一致，原三個namespace介面完整；獨立核97新增getter均為同一原函式/物件。完整Mac `node games/survivor/tools/test.cjs --layout` exit0／134行PASS，diff check通過，非作者首輪approve見modules-review.md。沒有修改歷史測試基準、schema、defaults或Maker編輯器。
+
+每步先真Chrome：渲染740×360、戰鬥1024×461、主迴圈1180×820，各自然33秒、升級與第二波、觸控技能、暫停續玩通過。最後三路線受控實際Boss命中擊殺換關保留路線/配裝；獨立真Chrome另驗舊Maker與三槽生存兩個按鈕保存/載入、試煉選武器、真正技能預覽與練習iframe時間前進、三尺寸resize及重開。自然流程未注入血量/經驗；受控換關不冒稱自然通關。私人日誌refactor-render、refactor-combat、refactor-loop、refactor-transitions、refactor-identity、refactor-maker、refactor-boundary、refactor-full留本機。
+
+發布準備原先的精確存檔路徑檢查發現finishRun的RECORD_KEY寫入由loop搬到run-lifecycle，因此主控使用私有工具副本反映新舊精確路徑；完整call/key/count/surface契約保留，prepare程式未改。獨立審查已核工具差異與finishRun逐字一致；正向驗新舊七key相同，負向錯key／重複寫／舊loop額外寫／sessionStorage皆拒絕。候選103檔／678執行請求、A/B七key隔離及正式sentinel/舊worker與快取保留皆通過。這是機械路徑更新，不擴大儲存權限或略過隔離檢查。
+
+Godot §11：本輪僅將既有完整函式與快取移入單責任檔；共用接口與狀態仍唯一，tick順序不變；文檔提供修改入口。不宣稱改成Godot或新的依賴系統。FOLLOWUPS沿前輪手機硬體/自然長局、受擊旋轉地塊對齊及高密度傷害字；不為拆檔另加玩法修正。
+
+發布結果：Pages41783438632成功；保留1636既有檔，100候選檔HTTP與內容逐位元一致。公開網址740×360清涼路線自然33秒、兩次升級、第二波、觸控技能及暫停續玩通過（refactor-public.log）。
