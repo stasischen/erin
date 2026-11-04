@@ -93,10 +93,10 @@ function updateHud() {
   const slotMarkup = Object.keys(BUILD_SLOTS).map((slot) => {
     const cards = UPGRADES.filter((card) => card.slot === slot && upgradeLevel(card.id));
     const weapon = slot === "attack" && state.weaponId ? activeWeapon() : null;
-    const base = slot==='attack' && state.loadout ? state.loadout.map(w=>{const def=SurvivorWeaponCatalog.get(w.weaponId);return SurvivorIcons.html(def.icon)+def.name+' Lv'+w.level;}).join('、') : weapon ? SurvivorIcons.html(weapon.icon) + weapon.name : '';
+    const base = slot==='skill'&&SurvivorAbilities.enabled()?SurvivorAbilities.name()+(state.abilities.active?' Lv'+state.abilities.active.level:'') : slot==='attack' && state.loadout ? state.loadout.map(w=>{const def=SurvivorWeaponCatalog.get(w.weaponId);return SurvivorIcons.html(def.icon)+def.name+' Lv'+w.level;}).join('、') : weapon ? SurvivorIcons.html(weapon.icon) + weapon.name : '';
     const detail = cards.map(card => `${SurvivorIcons.html(SurvivorWeapons.cardPresentation(card,activeWeapon()).icon)}${SurvivorWeapons.cardPresentation(card,activeWeapon()).name} Lv${upgradeLevel(card.id)} · ${card.school ? BUILD_TUNING[card.school].name : "支援"}`).join("、");
-    return `<span><b>${SurvivorIcons.html(slot)}${BUILD_SLOTS[slot]}</b> <span>${[base,detail].filter(Boolean).join("、") || "尚未取得"}</span></span>`;
-  }).join("");
+    return `<span><b>${SurvivorIcons.html(slot)}${slot==='skill'&&SurvivorAbilities.enabled()?'大招':BUILD_SLOTS[slot]}</b> <span>${[base,detail].filter(Boolean).join("、") || "尚未取得"}</span></span>`;
+  }).join("") + survivalAbilityMarkup();
   if (slotMarkup !== lastSlotMarkup) {
     slots.innerHTML = slotMarkup; lastSlotMarkup = slotMarkup;
 
@@ -123,10 +123,12 @@ function updateActionControls() {
   Survivor.audio.sync();
   actionControls.hidden = state.mode !== "playing";
   if (typeof updateManualControls === "function") updateManualControls();
+  const abilityLabel=SurvivorAbilities.enabled()?SurvivorAbilities.name()+(state.abilities.active?' Lv'+state.abilities.active.level:''):'';
+  skillButton.dataset.abilityLabel=abilityLabel;
   actionControls.style.cssText = `--action-size: ${gameSettings.actionButtonSize}px`;
   for (const [button, remaining, total, label] of [
     [dashButton, state.dashCooldown, gameSettings.dashCooldown, "衝刺"],
-    [skillButton, state.skillCooldown, gameSettings.bombCooldown, "泡泡炸彈"]
+    [skillButton, state.skillCooldown, SurvivorAbilities.cooldown(), SurvivorAbilities.name()]
   ]) {
     const ready = button === dashButton ? state.dashCharges > 0 && state.dashTimer <= 0 : remaining <= 0;
     const chargeColor=button===skillButton?'#ffa94d':'#78cfff';

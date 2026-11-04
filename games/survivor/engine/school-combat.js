@@ -1,6 +1,7 @@
 // 接合層：純規則產生的事件在這裡更新狀態與特效。
 function handleSchoolEvents(events) {
   for (const event of events) {
+    if(SurvivorAbilities.enabled()&&event.type==='ultimate-unlocked')continue;
     if (event.type === 'transformed') {
       if (event.schoolId === 'wind') state.dashCharges += GAME_DATA.schoolRules.windFormCharges;
       skillVisual('discharge', state.player.x, state.player.y, {radius:85,color:BUILD_TUNING[event.schoolId].color,life:1});
@@ -14,6 +15,7 @@ function schoolDamage(target, damage) {
   return damage * neutralDamageMultiplier() * (wet ? block.actions[0].multiplier : 1);
 }
 function absorbSchoolHit(damage) {
+  damage=SurvivorAbilities.absorb(damage);if(damage<=0)return 0;
   const block=cardBlock('water-bubble','onHurt');
   if (state.schoolCombat && block.conditions.every(c=>SurvivorEffectBlocks.matches(c,{damage,bubble:state.schoolCombat.bubble}))) {
     state.schoolCombat.bubble = block.actions[0].active;

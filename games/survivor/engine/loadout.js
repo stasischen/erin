@@ -1,7 +1,7 @@
 // Only survival owns multiple weapons. Each slot has independent cadence, combo and charge.
 globalThis.SurvivorLoadout=(()=>{
   const keys=['weaponId','shotTimer','weaponAttack','swingCount','attackRecovery','lastWeaponAttack'];
-  function initialize(){state.loadout=[];state.weaponEffects=[];acquire('water-ball');}
+  function initialize(){SurvivorAbilities.initialize();state.loadout=[];state.weaponEffects=[];acquire('water-ball');}
   function owned(id){return state.loadout?.find(w=>w.weaponId===id);}
   function acquire(id){const slot=owned(id);if(slot){slot.level=Math.min(5,slot.level+1);return;}if(!state.loadout||state.loadout.length>=3)return;state.loadout.push({weaponId:id,level:1,shotTimer:0,weaponAttack:null,swingCount:0,attackRecovery:0,lastWeaponAttack:null});}
   function withWeapon(slot,fn){

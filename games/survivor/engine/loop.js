@@ -88,7 +88,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
+  state.abilities=null;state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
   state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -144,9 +144,10 @@ function finishRun(won) {
   if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
+    const progress = { abilities:state.abilities, skillCooldown:state.skillCooldown, loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
     resetGame();
-    Object.assign(state, { loadout:progress.loadout, weaponId: progress.loadout?.[0].weaponId || progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
+    if(progress.abilities){progress.abilities.effects=[];progress.abilities.shield=null;progress.abilities.linger=0;}
+    Object.assign(state, { abilities:progress.abilities, skillCooldown:progress.skillCooldown, loadout:progress.loadout, weaponId: progress.loadout?.[0].weaponId || progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
@@ -219,7 +220,7 @@ function tickImpacts(dt,clockDt=dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(playerDt, state.dashTimer);
-  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed() * (state.trial ? state.trial.slow : 1);
+  const speed = PLAYER_SPEED * SurvivorAbilities.speed() * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed() * (state.trial ? state.trial.slow : 1);
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (playerDt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (playerDt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -293,7 +294,8 @@ function tickImpacts(dt,clockDt=dt) {
   for (const enemy of state.enemies) {
     if (!enemy.alive || enemy.feedbackFrozen) continue;
     if(state.trial && enemy.emergeTimer>0) {enemy.emergeTimer=countdown(enemy.emergeTimer,dt);continue;}
-    const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
+    const aim=SurvivorAbilities.lure(enemy);
+    const vx = deltaX(aim.x, enemy.x), vy = deltaY(aim.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     if(!targetVisible(enemy)) enemy.phaseAttack=null;
     updateEnemyBehavior(enemy,dt);

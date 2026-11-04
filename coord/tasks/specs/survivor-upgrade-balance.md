@@ -155,3 +155,9 @@ https://stasischen.github.io/erin-preview/pr-113/dd90dcf3c446c011b1f1aec798165b8
 預覽提交9fe5589735033c46b287e3b6d61595cf724be889，Pages41696686120成功。發布前84檔及515執行期請求隔離驗證通過，保留既有1293檔；發布後81候選檔HTTP與內容一致。下一步等手機試玩，不自動開新卡。此次交接與審查記錄為文件更新，不變更遊戲版本。
 
 ---
+
+## 九秘技與六條主動大招（本輪授權）
+
+沿用本卡、分支與 PR113，由 Codex 主導實作，非作者驗證。範圍及維護入口見 [生存能力設計](../../../docs/survival-abilities.md)。新增允許 `engine/ability-catalog.js`、`engine/abilities.js`、`engine/ability-actions.js`、`render/abilities.js`，並修改現有 combat／loop／loadout／school-combat、levelup／upgrade-view／hud／world、manifest／upgrade.css、必要測試、此公開規格及維護文件。主控最後同步版本與快取。預估 1300–1600 行是完整十五種能力、共用生命週期與實際回歸的整輪上限，避免將新邏輯堆回大檔。
+
+第一里程碑已於真 Chrome 740×360 以自然經驗升級取得潮汐爆破，觸控施放及暫停續玩通過；再進行相關程式回歸。每局三武器、兩秘技、一主動，不新增存檔格式、能量條或瞄準流程。

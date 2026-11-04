@@ -126,7 +126,7 @@ function effectLevel(feature) {
   return Math.min(5, UPGRADES.reduce((total, card) => total + upgradeLevel(card.id) * card.effects.reduce((n, effect) => n + (effect.feature === feature ? effect.power : 0), 0), 0));
 }
 function effectiveDamage() { return PROJECTILE_DAMAGE * cardBlock('big-water','onShot').actions[1].multiplier*(SurvivorLoadout.config()?.power||1); }
-function effectiveShotInterval() { return Math.max(0.12, (SurvivorLoadout.interval() || (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL)) * cardBlock('rapid-water','onShot').actions[0].multiplier / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
+function effectiveShotInterval() { return Math.max(0.12, (SurvivorLoadout.interval() || (activeWeapon().kind === "melee" ? activeWeapon().interval : SHOT_INTERVAL)) * cardBlock('rapid-water','onShot').actions[0].multiplier / SurvivorAbilities.haste() / cardBlock('wind-speed','onShot',{moving:state.moveRate||0}).actions[0].multiplier); }
 function maxPlayerHealth() {
   return Math.max(1, SurvivorEffectBlocks.modify('maxHealth', PLAYER_HEALTH + cardBlock('bubble-shield','onHealth').actions[0].amount, {'item-crown':effectLevel('item-crown')}, GAME_DATA));
 }
@@ -326,6 +326,7 @@ function counterDischarge() {
   }
 }
 function updateUltimate(dt) {
+  if(SurvivorAbilities.enabled()){SurvivorAbilities.tick(dt);return;}
   const schools = GAME_DATA.schools.map(s => s.id).filter(id => effectLevel(id+'-ultimate'));
   if (!state.ultimateTimers) state.ultimateTimers = {};
   if (!state.ultimateVisuals) state.ultimateVisuals = {};
@@ -422,6 +423,7 @@ function activateDash() {
   state.manualDashUsed=false; playSound("dash"); updateActionControls();
 }
 function activateSkill() {
+  if(SurvivorAbilities.cast())return;
   if (state.mode !== "playing" || state.skillCooldown > 0 || state.bomb) return;
   state.bomb = { x: state.player.x, y: state.player.y, timer: gameSettings.bombDelay,
     delay: gameSettings.bombDelay, radius: gameSettings.bombRadius, damage: gameSettings.bombDamage, knockback: gameSettings.bombKnockback, schools: ["water", "wind", "thunder"].filter((school) => effectLevel(`${school}-skill`) || school === "wind" && effectLevel("wind-dash")) };

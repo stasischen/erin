@@ -426,7 +426,7 @@ function render() {
       ctx.beginPath(); ctx.arc(state.bombBlast.x, state.bombBlast.y, state.bombBlast.radius * (1 - state.bombBlast.life / .35) + 8 + index * 9, 0, Math.PI * 2); SurvivorNeon.stroke(ctx,'blue');
     }
     drawUltimate();
-    drawSkillVisuals('actor');drawSurvivalWeapons();
+    drawSkillVisuals('actor');drawSurvivalWeapons();drawSurvivalAbilities();
     for (const shot of state.projectiles) if (shot.boosted) {
       ctx.strokeStyle="#fff4a0";ctx.lineWidth=4;ctx.beginPath();ctx.arc(shot.x,shot.y,shot.r+5,0,Math.PI*2);SurvivorNeon.stroke(ctx,'blue');
     }
