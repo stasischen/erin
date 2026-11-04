@@ -4,6 +4,10 @@
 const CACHE_NAME = 'erin-games-20261104e';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
+  'games/survivor/engine/player-actions.js',
+  'games/survivor/engine/element-combat.js',
+  'games/survivor/engine/maker-effects.js',
+  'games/survivor/engine/combat-damage.js',
   'games/survivor/render/projectiles.js',
   'games/survivor/render/enemy-warnings.js',
   'games/survivor/render/boss-effects.js',

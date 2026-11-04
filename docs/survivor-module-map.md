@@ -18,3 +18,15 @@
 | 共用元素材質、秘技、武器特效 | `render/materials.js`、`render/effects.js`、`render/abilities.js`、`render/weapons-survival.js` |
 
 每個新模組提供同名 `Survivor.render[...]` 存取器，原有 world 存取器仍保持相容。不要在 Maker 或預覽另外複製一份渲染實作。背景快取與角色快取仍各只有一份，拆檔不會增加第二個狀態來源。
+
+## 戰鬥
+
+| 要修改的內容 | 檔案 |
+| --- | --- |
+| 可攻擊目標、基本射擊、水球命中、傷害／經驗／命中回饋 | `engine/combat-damage.js` |
+| Maker事件、作者效果執行、作者場地更新 | `engine/maker-effects.js` |
+| 水風雷附傷、元素場地、衝刺尾跡、舊學派終極 | `engine/element-combat.js` |
+| 危險接近判斷、衝刺、按鍵技能、泡泡炸彈 | `engine/player-actions.js` |
+| 舊 `Survivor.engine.combat` 介面 | `engine/combat.js` |
+
+本輪沒有修改 Maker 積木規格或驗證資料；只是把其既有執行函式放在同一個責任檔案。新生存秘技／主動仍在原有 `abilities.js` 與 `ability-actions.js`，不另複製邏輯。所有搬出的全域函式與 combat getter 仍指向同一份函式。
