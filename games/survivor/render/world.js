@@ -450,7 +450,7 @@ function render() {
   if (state.mode === "transition") {
     ctx.fillStyle = "rgba(20,35,49,.78)"; ctx.fillRect(0, 0, state.width, state.height);
     ctx.fillStyle = "#fff3cc"; ctx.font = "bold 28px system-ui"; ctx.textAlign = "center";
-    ctx.fillText(`第${state.stageIndex + 1}關：${currentStage().name}`, state.width/2, state.height/2);
+    ctx.fillText(`第${state.stageIndex + 1}關：${SurvivorRoutes.name()}`, state.width/2, state.height/2);
   }
   ctx.restore();
   ctx.save();

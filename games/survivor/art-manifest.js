@@ -341,4 +341,10 @@ SurvivorArtManifest.environment={
   'candy-forest':{base:'#172c35',patch:'#213d43',path:'#30484b',edge:'#34585b',leaf:'#47746a',landmark:'#537c79',light:'#79a093',late:'#3d3562'},
   'cookie-forest':{base:'#332923',patch:'#44392b',path:'#584a37',edge:'#6b5940',leaf:'#766b46',landmark:'#8d7651',light:'#b29b6a',late:'#553a36'}
 };
+Object.assign(SurvivorArtManifest.environment,{
+  'soda-coast':{base:'#193d49',patch:'#245969',path:'#3a6d74',edge:'#416b75',leaf:'#5b9395',landmark:'#6fa6a4',light:'#a3c8ba',late:'#233b65'},
+  'icecream-snow':{base:'#354657',patch:'#536775',path:'#647885',edge:'#79909a',leaf:'#8ca4ae',landmark:'#a8bdc5',light:'#c9d8d9',late:'#4b456d'},
+  'jam-garden':{base:'#33263d',patch:'#4c3553',path:'#614958',edge:'#6d5265',leaf:'#617c61',landmark:'#947182',light:'#bc9ca0',late:'#593c64'},
+  'caramel-lava':{base:'#302923',patch:'#46392a',path:'#74563a',edge:'#806344',leaf:'#927b52',landmark:'#a08357',light:'#b99d6c',late:'#503429'}
+});
 SurvivorArtManifest.effectMaterials={shadow:'rgba(12,24,36,.18)',shine:'rgba(255,255,255,.6)',surfaceAlpha:.24,ribbonAlpha:.65};

@@ -7,7 +7,7 @@ function spawnEnemy(options = {}) {
   if(!SurvivorWaves.allowed(type))return;
   const scale = options.elite ? GAME_DATA.elites.sizeScale : options.small ? .6 : 1;
   const radius = type.radius * scale * SurvivorWaves.bodyScale(type);
-  const position = options.small && options.position ? {...options.position} : options.offscreen ? offscreenSpawn(radius,SurvivorWaves.enabled()?options.side:undefined) : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side);
+  const position = options.small && options.position ? {...options.position} : options.offscreen ? offscreenSpawn(radius,SurvivorWaves.enabled()?options.side:undefined,undefined,options.along) : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side,undefined,options.along);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
   state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, spriteId:type.spriteId, small:!!options.small, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
@@ -73,14 +73,15 @@ function updateBookShooting(dt) {
 }
 
 // 先在鏡頭外選位置，再回到環形世界；四邊永遠都可以生成。
-function offscreenSpawn(r, side, minimumDistance = state.player.r + r + 160) {
+function offscreenSpawn(r, side, minimumDistance = state.player.r + r + 160, along) {
   // 多留 1 格，避免接縫回圈的浮點誤差把邊緣外的位置判成不安全。
   const gap = r + 17, left = state.cameraX, top = state.cameraY;
+  const fraction=()=>Number.isFinite(along)?Math.max(0,Math.min(1,along)):Math.random();
   const sides = [
-    () => ({ x: left - gap, y: top + Math.random() * state.height }),
-    () => ({ x: left + state.width + gap, y: top + Math.random() * state.height }),
-    () => ({ x: left + Math.random() * state.width, y: top - gap }),
-    () => ({ x: left + Math.random() * state.width, y: top + state.height + gap })
+    () => ({ x: left - gap, y: top + fraction() * state.height }),
+    () => ({ x: left + state.width + gap, y: top + fraction() * state.height }),
+    () => ({ x: left + fraction() * state.width, y: top - gap }),
+    () => ({ x: left + fraction() * state.width, y: top + state.height + gap })
   ];
   // 回圈後必須再檢查，避免跨地圖接縫時出現在看得到的另一側。
   const centerX = left + state.width / 2, centerY = top + state.height / 2;

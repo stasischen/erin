@@ -294,3 +294,8 @@ button { transition:background-color .15s, border-color .15s; }
 :where(.game-shell[data-short~="compact"]) .message-card h2 { font-size:32px; margin:0 0 8px; }
 :where(.game-shell[data-short~="compact"]) .message-card p { margin:6px 0 16px; }
 @media (prefers-reduced-motion:reduce) { button { transition:none; } }
+
+.survival-route {display:block;text-align:left;margin:8px 0 12px;font-size:13px;color:#bdd5e7;}
+.survival-route[hidden] {display:none;}
+.survival-route select {display:block;width:100%;min-height:40px;margin:4px 0;padding:7px 9px;border:1px solid #7faebf;border-radius:10px;background:#203d51;color:#edf7ff;font:700 13px system-ui;}
+.survival-route small {display:block;font-size:11px;}

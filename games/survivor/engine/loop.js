@@ -88,7 +88,7 @@ function resetGame() {
   state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
   state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
   state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.survivalWave=null;state.abilities=null;state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
+  state.survivalRoute=null;state.survivalWave=null;state.abilities=null;state.loadout=null;state.weaponEffects=[];state.weaponContext=null;state.pendingTrial=null;
   state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
   resetMap();
   for (const visual of state.vfx) state.vfxPool.push(visual);
@@ -127,8 +127,10 @@ function resetGame() {
 }
 
 function startGame() {
+  const route=SurvivorRoutes.selected();
   if (globalThis.SurvivorPreview) SurvivorPreview.stop();
   resetGame();
+  state.survivalRoute=route;
   enterRunMode();
   state.mode = "playing";
   overlay.classList.add("hidden");
@@ -144,10 +146,10 @@ function finishRun(won) {
   if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { abilities:state.abilities, skillCooldown:state.skillCooldown, loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
+    const progress = { survivalRoute:state.survivalRoute, abilities:state.abilities, skillCooldown:state.skillCooldown, loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
     resetGame();
     if(progress.abilities){progress.abilities.effects=[];progress.abilities.shield=null;progress.abilities.linger=0;}
-    Object.assign(state, { abilities:progress.abilities, skillCooldown:progress.skillCooldown, loadout:progress.loadout, weaponId: progress.loadout?.[0].weaponId || progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
+    Object.assign(state, { survivalRoute:progress.survivalRoute, abilities:progress.abilities, skillCooldown:progress.skillCooldown, loadout:progress.loadout, weaponId: progress.loadout?.[0].weaponId || progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
     state.player.health = progress.health;
     updateHud(); updateActionControls(); return;
   }
