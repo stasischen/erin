@@ -8,12 +8,12 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "Dot固定增量碼審通過、三尺寸自然遊玩partial_pass，無必改；P3續玩文字延遲與雲端未測項保留，見dot-readability-result.md。等待家長下一步，不合併。",
+  "next": "依家長要求Mac全套重跑exit0／136PASS，規劃文件已更正Mac證據；P3未修、玩法未改。Dot部分驗收限制保留，等待家長下一步，不合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-04T22:08:17.528781+00:00",
+  "updated": "2026-11-05T04:16:07.861605+00:00",
   "updatedBy": "codex"
 }
