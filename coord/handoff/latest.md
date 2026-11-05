@@ -1,5 +1,9 @@
 # 目前交接
 
+## g版 Mac 全套重跑通過（2026-11-05）
+
+依家長要求，主控在2ed68f29e8256cceb89d432b4498586103293d60執行 `node games/survivor/tools/test.cjs --layout`，exit0／136PASS，差異檢查通過；遊戲來源仍5607ab95ef2a1fb6bdda9528dc6713b58654c4c9／20261104g，無runtime差異。已更正後續規劃的Mac未測記載，詳docs/survivor-followup-plan-20261105.md。P3未修、升級節奏未動，Dot部分驗收限制仍保留，不合併。
+
 ## Dot 已回覆（2026-11-05）
 
 Dot已回覆：固定增量程式審查通過，雲端三尺寸正常生存遊玩通過；整體partial_pass，沒有必改缺陷。P3計時文字同秒續玩延遲列FOLLOWUP，部分情境與可開啟截圖尚缺，詳[收件摘要](../reviews/survivor-upgrade-balance/dot-readability-result.md)。不宣稱整PR完整驗收，不合併main。

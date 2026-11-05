@@ -10,7 +10,7 @@
 |---|---|---|
 | Maker／預設資料拆分（`43979f8..5768808`） | Claude 增量審查無阻擋。預設資料逐項相同，只有頂層欄位順序不同；舊作品驗證結果相同；設定 → 自己設計 → 關閉的流程正常；暫停時間不前進 | 本文件 §5 |
 | 可讀性修正（`abf769b..5607ab9`，Claude 實作，家長指示直接併入 PR 113） | Dot 判定 `approve_fixed_increment`／雲端遊玩 `partial_pass`，沒有必改項；有一項 P3 | [Dot 結果](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638519797)、`coord/reviews/survivor-upgrade-balance/dot-readability-result.md` |
-| Mac 全套 | Claude 在雲端 Linux 跑過：exit 0、136 行 PASS（含 `--layout`）。**Mac Studio 尚未重跑 g 版** | — |
+| Mac 全套 | 已有非作者 Mac 完整測試 exit 0／136 PASS；2026-11-05 主控依家長要求，在最新文件提交 `2ed68f29e8256cceb89d432b4498586103293d60` 再跑含 `--layout`，exit 0／136 PASS。遊戲仍為同一 g 版 | `coord/reviews/survivor-upgrade-balance/readability-review.md`、本文件下方重跑紀錄 |
 | 合併 | PR 113 仍是草稿，未合併，正式站不變 | — |
 
 ## 2. P3：暫停或選卡後，計時器文字會延遲恢復（待修，不阻擋）
@@ -104,6 +104,10 @@ Dot 剩下的額度，建議只留給**一定要真人在觸控裝置上操作**
 ## 7. 下一步（需要家長點頭）
 
 1. 是否授權修 §2 的 P3（一行加一條測試；Mac 全套即可，不需要 Dot 雲端）。
-2. Mac Studio 對 `5607ab9` 以後的 HEAD 跑一次 `node games/survivor/tools/test.cjs --layout`，補上 g 版的 Mac 證據。
+2. 已完成：Mac Studio 對 `2ed68f29e8256cceb89d432b4498586103293d60` 重跑全套含版面，exit 0／136 PASS；沒有修改遊戲。
 3. Erin 試 §4.1 的選項 B，並挑 3 張卡試寫卡面文字。
 4. 以上完成後，再決定 PR 113 是否由非作者審查員合併。
+
+## Mac Studio 重跑紀錄（2026-11-05）
+
+主控依家長明確要求執行 `node games/survivor/tools/test.cjs --layout`，exit 0，共136行PASS，含真正Chrome版面／操作案例；`git diff --check` 通過。受測HEAD為 `2ed68f29e8256cceb89d432b4498586103293d60`，與遊戲來源 `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9` 的 games/survivor 與 sw.js 無差異，版本仍20261104g。完整日誌readability-g-mac-rerun-20261105.log留本機。先前「Mac尚未測過」記載已依既有非作者審查紀錄更正。這次只測試與更新文件，沒有實作P3、變更升級節奏或新增驗收結論。
