@@ -1,5 +1,14 @@
 # 目前交接
 
+## P3計時文字已修復（2026-11-05）
+
+家長授權開卡派subagent，卡survivor-timer-status-refresh，沿PR113。作者真Chrome先重現、修後驗證，再加回歸；非作者另真Chrome及Mac全套exit0／136PASS，第一輪approve。產品僅loop判斷一行、測試14行，第一tick恢復暫停／選卡覆寫文字，正常快取保留。來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350，版本20261105a。未派Dot、未改升級節奏／存檔，前輪雲端未測範圍保留。
+
+Pages41967715588成功，預覽提交cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c；保留1980既有檔，新增122候選檔。公開核對未完成：Python下載連線重設，Chrome loaded逾時，已停止重試；不能宣稱公開全檔bytes或公開試玩通過。本機固定候選隔離與真Chrome均通過。
+https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/
+
+推送時Claude另有純文件提交，已正常merge保留；對固定受測來源的遊戲與sw無差異。詳coord/tasks/specs/survivor-timer-status-refresh.md與coord/reviews/survivor-timer-status-refresh/independent.md。PR仍草稿，不合併main。
+
 ## g版 Mac 全套重跑通過（2026-11-05）
 
 依家長要求，主控在2ed68f29e8256cceb89d432b4498586103293d60執行 `node games/survivor/tools/test.cjs --layout`，exit0／136PASS，差異檢查通過；遊戲來源仍5607ab95ef2a1fb6bdda9528dc6713b58654c4c9／20261104g，無runtime差異。已更正後續規劃的Mac未測記載，詳docs/survivor-followup-plan-20261105.md。P3未修、升級節奏未動，Dot部分驗收限制仍保留，不合併。

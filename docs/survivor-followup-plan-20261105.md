@@ -13,7 +13,7 @@
 | Mac 全套 | 已有非作者 Mac 完整測試 exit 0／136 PASS；2026-11-05 主控依家長要求，在最新文件提交 `2ed68f29e8256cceb89d432b4498586103293d60` 再跑含 `--layout`，exit 0／136 PASS。遊戲仍為同一 g 版 | `coord/reviews/survivor-upgrade-balance/readability-review.md`、本文件下方重跑紀錄 |
 | 合併 | PR 113 仍是草稿，未合併，正式站不變 | — |
 
-## 2. P3：暫停或選卡後，計時器文字會延遲恢復（待修，不阻擋）
+## 2. P3：暫停或選卡後，計時器文字會延遲恢復（已修於候選版）
 
 **現象**：`engine/loop.js:273–276` 用「整秒＋魔王倒數」當快取 key，key 沒變就不重寫 `statusEl`。但 `ui/levelup.js:35`（`已暫停`）和 `:109`（`選一張升級卡`）會直接改寫 `statusEl.textContent`，卻沒有清掉這個 key。在同一秒內暫停或選卡後續玩，畫面會繼續顯示「已暫停／選一張升級卡」，最多約 1 秒才恢復成秒數。Dot 雲端有看到這個現象，不會中斷遊戲，也不會影響存檔。
 
@@ -103,7 +103,7 @@ Dot 剩下的額度，建議只留給**一定要真人在觸控裝置上操作**
 
 ## 7. 下一步（需要家長點頭）
 
-1. 是否授權修 §2 的 P3（一行加一條測試；Mac 全套即可，不需要 Dot 雲端）。
+1. 已授權並由subagent修復 §2 P3，非作者審查與Mac全套136PASS；詳 coord/tasks/specs/survivor-timer-status-refresh.md。
 2. 已完成：Mac Studio 對 `2ed68f29e8256cceb89d432b4498586103293d60` 重跑全套含版面，exit 0／136 PASS；沒有修改遊戲。
 3. Erin 試 §4.1 的選項 B，並挑 3 張卡試寫卡面文字。
 4. 以上完成後，再決定 PR 113 是否由非作者審查員合併。
@@ -111,3 +111,7 @@ Dot 剩下的額度，建議只留給**一定要真人在觸控裝置上操作**
 ## Mac Studio 重跑紀錄（2026-11-05）
 
 主控依家長明確要求執行 `node games/survivor/tools/test.cjs --layout`，exit 0，共136行PASS，含真正Chrome版面／操作案例；`git diff --check` 通過。受測HEAD為 `2ed68f29e8256cceb89d432b4498586103293d60`，與遊戲來源 `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9` 的 games/survivor 與 sw.js 無差異，版本仍20261104g。完整日誌readability-g-mac-rerun-20261105.log留本機。先前「Mac尚未測過」記載已依既有非作者審查紀錄更正。這次只測試與更新文件，沒有實作P3、變更升級節奏或新增驗收結論。
+
+## P3 修復結果
+
+家長已明確授權開卡派subagent修，卡survivor-timer-status-refresh。產品一行、精準回歸14行；第一tick立即恢復文字，正常快取保留。版本20261105a，固定來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350。作者與非作者都先真Chrome驗證，非作者Mac全套exit0／136PASS與第一輪approve；未花Dot額度，不改升級節奏或存檔。上方修法及流程段落保留為原規劃，本段為最新結果。

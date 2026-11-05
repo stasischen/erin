@@ -9,3 +9,12 @@
 先用真Chrome重現與修後驗證暫停／選卡返回，再補精準回歸測試；至少驗同一秒覆寫「已暫停」及「選一張升級卡」後恢復、正常文字不重建、Boss在場不出現倒數。不要因測試fixture的DOM差異放寬產品判斷。主控完整Mac test.cjs --layout，非作者審查最多兩輪。沒有改數值、存檔、升級節奏或模式；不合併main。
 
 Godot §11：只修既有HUD文字快取失效判斷，不新增模組或資料格式。沿用既有Chrome工具，私人日誌與截圖不提交。
+
+## 實作及驗證
+
+來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a。subagent先真Chrome重現pause及選卡同秒文字殘留，再改loop判斷一行，新增14行精準測試。修後第一tick恢復秒數與倒數，正常eta DOM保留，Boss在場不出倒數。非作者另真Chrome重跑受控同秒案例並親看圖片，完整Mac test.cjs --layout exit0／136PASS，version及diff check通過，首輪approve見coord/reviews/survivor-timer-status-refresh/independent.md。私人日誌timer-status-before/after/independent/full。
+
+主控候選125檔／920runtime請求及七key隔離驗證通過。推送遇Claude同時新增玩法建議文件，已正常merge保留；cf14bc0至整合後HEAD的games/survivor與sw.js無差異，不重跑同套測試。沒有force push，不合併main；本輪未派Dot，前輪雲端未測限制仍保留。
+
+Pages41967715588成功，預覽提交cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c；保留1980既有檔，新增122候選檔。公開核對未完成：Python下載連線重設，Chrome loaded逾時，已停止重試；不能宣稱公開全檔bytes或公開試玩通過。本機固定候選隔離與真Chrome均通過。
+https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/
