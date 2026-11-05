@@ -14,7 +14,8 @@ for(const stage of ['classroom','playground']) for(const sample of [0,.25,.5,.99
 }
 assert.ok(run('SurvivorPacing.density(GAME_DATA.pacing,10)>SurvivorPacing.density(GAME_DATA.pacing,0)'));
 fresh();run('state.stageElapsed=110;globalThis.ids=Array.from({length:30},()=>pacingType());');
-assert.equal(run('ids.filter(id=>id==="jaben").length>=10'),true);
+// Normal survival reserves three of four draws for basic chasers/fast/tanks.
+assert.equal(run("ids.filter(id=>['chase','fast','tank'].includes(ENEMY_TYPES.find(e=>e.id===id).behavior)).length>=22"),true);
 // 所有八種怪生成都在畫面外、環形世界接縫安全，受上限限制。
 for(const id of ['jaben','otsubon','pudding','mushroom','donut','pop-candy','jelly','fairy']) {
   fresh();run(`state.player.x=2;state.player.y=state.worldHeight-2;updateCamera();globalThis.e=spawnEnemy({typeId:'${id}'});`);

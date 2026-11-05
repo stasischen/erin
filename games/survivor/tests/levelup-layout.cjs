@@ -10,30 +10,27 @@ child.stderr.on('data',b=>{errorText+=b;});
 child.stdio[4].on('data',b=>{buffer+=b;let end;while((end=buffer.indexOf('\0'))>=0){const raw=buffer.slice(0,end);buffer=buffer.slice(end+1);if(!raw)continue;const message=JSON.parse(raw),request=pending.get(message.id);if(message.method==='Page.loadEventFired'&&loadedPage&&message.sessionId===loadedPage.sessionId){loadedPage.resolve();loadedPage=null;}if(request){pending.delete(message.id);message.error?request.reject(Error(JSON.stringify(message.error))):request.resolve(message.result);}}});
 child.on('exit',(code,signal)=>{for(const request of pending.values())request.reject(Error(`Chrome 未完成測試：${signal||code} ${errorText}`));pending.clear();});
 function send(method,params={},sessionId){return new Promise((resolve,reject)=>{const id=++nextId;pending.set(id,{resolve,reject});child.stdio[3].write(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})})+'\0');});}
-const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.kill();process.exitCode=1;},45000);
+// 每個尺寸各給 45 秒；較慢的機器不會因為尺寸數量多就整支逾時。
+let timeout;function armTimeout(){clearTimeout(timeout);timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.kill();process.exitCode=1;},45000);}
+armTimeout();
 (async()=>{
  const geometry=`(()=>{
-  const selectors=['#upgradePanel',...Array.from({length:3},(_,i)=>'#upgradeCards button:nth-child('+(i+1)+')'),'#upgradePreview','#upgradePreview iframe','#confirmUpgrade'];
+  const selectors=['#upgradePanel','#upgradeLoadout',...Array.from({length:3},(_,i)=>'#upgradeCards button:nth-child('+(i+1)+')'),'#confirmUpgrade','#rerollUpgrade'];
   for(const selector of selectors){const n=document.querySelector(selector),r=n.getBoundingClientRect();if(getComputedStyle(n).display==='none'||r.width<=0||r.height<=0||r.left<-.5||r.top<-.5||r.right>innerWidth+.5||r.bottom>innerHeight+.5)throw Error(selector+' 不完整 '+JSON.stringify(r));}
-  const b=document.querySelector('#confirmUpgrade'),r=b.getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(Math.min(r.width,r.height)<64||!b.contains(hit))throw Error('確認鈕不夠大或被遮住');
-  const panel=document.querySelector('#upgradePanel'),preview=document.querySelector('#upgradePreview'),f=preview.querySelector('iframe'),details=document.querySelector('#upgradeDetails'),workspace=document.querySelector('.upgrade-workspace'),row=document.querySelector('#upgradeCards'),actions=document.querySelector('.upgrade-actions');
-  for(const selector of ['#upgradeDetails','#rerollUpgrade']){const n=document.querySelector(selector),r=n.getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(r.width<=0||r.height<=0||r.left<0||r.right>innerWidth+1||r.top<0||r.bottom>innerHeight+1||!n.contains(hit))throw Error(selector+' 不完整或遮住');}
+  if(document.querySelector('#upgradePanel iframe'))throw Error('玩家升級仍有動畫展示');
+  const panel=document.querySelector('#upgradePanel'),row=document.querySelector('#upgradeCards'),loadout=document.querySelector('#upgradeLoadout'),actions=document.querySelector('.upgrade-actions');
   const cards=[...row.querySelectorAll('button')];
-  if(cards.some(c=>Math.abs(c.offsetTop-cards[0].offsetTop)>1||Math.abs(c.offsetHeight-cards[0].offsetHeight)>1||c.offsetWidth<64||c.offsetHeight<56))throw Error('三圖示未平均並排或太小');
-  if(row.offsetTop+row.offsetHeight>workspace.offsetTop+1||workspace.offsetTop+workspace.offsetHeight>actions.offsetTop+1)throw Error('上方圖示、中間展示、下方動作順序錯誤');
+  if(cards.some(c=>Math.abs(c.offsetTop-cards[0].offsetTop)>1||c.offsetWidth<110||c.offsetHeight<120))throw Error('三張完整卡未並排');
+  if(loadout.offsetLeft+loadout.offsetWidth>row.offsetLeft+1||row.offsetTop+row.offsetHeight>actions.offsetTop+1)throw Error('配裝、卡片與確認區重疊');
+  for(const c of cards)for(const selector of ['strong','.card-type','.card-level','.card-copy']){
+    const n=c.querySelector(selector);if(!n?.textContent.trim()||getComputedStyle(n).display==='none')throw Error('卡片資訊缺漏 '+selector);
+  }
   if(panel.scrollHeight>panel.clientHeight+1)throw Error('面板需要捲動');
-  if(!document.querySelector('#upgradeName').textContent||!document.querySelector('#upgradeDescription').textContent||!document.querySelector('#upgradeLevel').textContent||!document.querySelector('#upgradeRequirements').textContent)throw Error('選中卡資訊缺漏');
-  if(details.scrollHeight>details.clientHeight+1)throw Error('預設卡片說明需要捲動');
-  for(const selector of ['#confirmUpgrade','#rerollUpgrade']){const n=document.querySelector(selector);if(n.textContent.trim().replace(/[0-9]/g,'')||!n.querySelector('.pixel-icon')||getComputedStyle(n).borderRadius!=='50%')throw Error('底部必須是圓形純像素圖示');}
-  const area=n=>n.offsetWidth*n.offsetHeight;
-  const used=[row,details,preview,actions,panel.querySelector('h2'),panel.querySelector(':scope > p')].reduce((sum,n)=>sum+area(n),0);
-  const blank=1-used/area(panel),share=area(preview)/area(panel);
-  if(blank>.18)throw Error('面板空白超過18%: '+(blank*100).toFixed(1)+'%');
-  if(f.offsetWidth<preview.clientWidth-16 || f.offsetHeight<40 || f.offsetHeight<preview.clientHeight-44)throw Error('展示未填滿框或太矮');
+  for(const selector of ['#confirmUpgrade','#rerollUpgrade']){const n=document.querySelector(selector),r=n.getBoundingClientRect(),hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);if(Math.min(r.width,r.height)<40||!n.contains(hit)||!n.textContent.trim())throw Error('確認／重抽不可讀或無法觸控');}
   if(devicePixelRatio!==3||!matchMedia('(pointer: coarse)').matches)throw Error('缺少DPR3或觸控模擬');
-  return {blank,share};
+  return true;
  })()`;
- for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[1180,820],[461,1024]]){
+ for(const [width,height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[1024,461],[740,360],[1180,820],[461,1024]]){armTimeout();
   // Page.enable 只在全新 session 呼叫一次。前一尺寸留下的動態 iframe、
   // 輸入焦點與 Page domain 狀態不應帶進下一個尺寸（Grok 已重現第二輪卡住）。
   const {targetId}=await send('Target.createTarget',{url:'about:blank'});
@@ -97,18 +94,15 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     } finally {state.boss=boss;state.elapsed=clock;ctx.restore();}
   })()`),true,'弱點 warning/open/closing/closed 真實像素');
   await evaluate("startGame();true");
+  assert.equal(await evaluate("state.mode==='playing'&&!state.pickingWeapon&&state.loadout.length===1&&state.loadout[0].weaponId==='water-ball'"),true);
+  await evaluate("startTrial(trialSettings().bosses[0].id);true");
   assert.equal(await evaluate(`(()=>{
     if(!state.pickingWeapon||state.pendingChoices.length!==3)throw Error('缺少武器選擇');
-    for(const selector of ['#upgradePanel','#upgradeDetails','#confirmUpgrade','#upgradeCards button:first-child','#upgradeCards button:last-child']) {
+    for(const selector of ['#upgradePanel','#upgradeLoadout','#confirmUpgrade','#upgradeCards button:first-child','#upgradeCards button:last-child']) {
       const n=document.querySelector(selector),r=n.getBoundingClientRect();
       if(r.width<=0||r.height<=0||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)throw Error('武器選擇不完整 '+selector);
-      if(selector.includes('button') || selector==='#confirmUpgrade') {
-        if(Math.min(r.width,r.height)<64 || Math.abs(r.width-r.height)>1)throw Error('武器按鈕需為至少64px圓形');
-        if(!n.querySelector('.pixel-icon')||getComputedStyle(n).borderRadius!=='50%'||n.textContent.trim())throw Error('武器要用圓形純點陣圖示');
-        if(!n.contains(document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2)))throw Error('武器按鈕被遮住');
-      }
     }
-    const details=document.querySelector('#upgradeDetails');if(details.scrollHeight>details.clientHeight+1)throw Error('武器說明需完整顯示');
+    for(const card of document.querySelectorAll('#upgradeCards button'))if(!card.querySelector('strong').textContent||!card.querySelector('.card-copy').textContent)throw Error('武器完整說明缺漏');
     return document.querySelector('#rerollUpgrade').hidden;
   })()`),true);
   await touch('#upgradeCards button:nth-child(2)');await touch('#confirmUpgrade');
@@ -117,19 +111,19 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
   const layout=await evaluate(geometry);
   await evaluate("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();true");
   await touch('#upgradeCards button:nth-child(2)');assert.equal(await evaluate("state.mode==='levelup'&&upgradeLevel('rapid-water')===0"),true);
-  assert.equal(await evaluate("document.querySelector('#upgradeName').textContent==='連發水球'"),true);
+  assert.equal(await evaluate("document.querySelector('#upgradeCards [aria-pressed=\"true\"] strong').textContent==='連發水球'"),true);
   await touch('#confirmUpgrade');assert.equal(await evaluate("state.mode==='playing'&&upgradeLevel('rapid-water')===1"),true);
   await evaluate("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();true");
-  await touch('#upgradeCards button');await touch('#upgradeCards button');assert.equal(await evaluate("state.mode==='playing'&&upgradeLevel('big-water')===1"),true);
+  await touch('#upgradeCards button');await touch('#upgradeCards button');assert.equal(await evaluate("state.mode==='levelup'&&upgradeLevel('big-water')===0"),true);await touch('#confirmUpgrade');assert.equal(await evaluate("state.mode==='playing'&&upgradeLevel('big-water')===1"),true);
   await evaluate("state.pendingChoices=UPGRADES.slice(0,3);showUpgradeChoices();true");
   await call('Input.dispatchKeyEvent',{type:'keyDown',key:'3',code:'Digit3',windowsVirtualKeyCode:51});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'3',code:'Digit3',windowsVirtualKeyCode:51});assert.equal(await evaluate("state.mode==='playing'"),true);
   await evaluate("resetGame();chooseUpgradeCards();globalThis.beforeReroll=state.pendingChoices.map(c=>c.id);true");
-  await touch('#rerollUpgrade');assert.equal(await evaluate("state.mode==='levelup'&&state.rerollsRemaining===1&&state.pendingChoices.every(c=>!beforeReroll.includes(c.id))&&document.querySelector('#rerollCount').textContent==='1'&&document.querySelector('#upgradeCards button').getAttribute('aria-pressed')==='true'&&document.querySelector('#upgradeName').textContent===state.pendingChoices[0].name"),true);
+  await touch('#rerollUpgrade');assert.equal(await evaluate("state.mode==='levelup'&&state.rerollsRemaining===1&&state.pendingChoices.every(c=>!beforeReroll.includes(c.id))&&document.querySelector('#rerollCount').textContent==='1'&&document.querySelector('#upgradeCards button').getAttribute('aria-pressed')==='true'&&document.querySelector('#upgradeCards button strong').textContent===state.pendingChoices[0].name"),true);
   await touch('#rerollUpgrade');assert.equal(await evaluate("state.rerollsRemaining===0&&document.querySelector('#rerollUpgrade').disabled"),true);
   await touch('#rerollUpgrade');assert.equal(await evaluate("state.rerollsRemaining===0"),true);
   await touch('#confirmUpgrade');assert.equal(await evaluate("state.mode==='playing'&&Object.values(state.upgrades).reduce((a,b)=>a+b,0)===1"),true);
-  // 已持有技能位於暫停卡；窄螢幕先捲入畫面再模擬觸碰。
-  await evaluate("togglePause();document.querySelector('#buildSlots button').scrollIntoView({block:'center'});true");await touch('#buildSlots button');assert.equal(await evaluate("!!document.querySelector('#ownedPreview iframe')"),true);
+  // Player loadout stays readable and never opens a misleading effect iframe.
+  await evaluate("togglePause();true");assert.equal(await evaluate("!document.querySelector('#ownedPreview') && !document.querySelector('#pauseBuild iframe') && !!document.querySelector('#buildSlots').textContent"),true);
   await evaluate("showOverlay('paused');openSurvivorMaker();true");await touch('[data-tab="cards"]');
   // 六個分類在頂端，左列選項目，中間只建立一份編輯面板。
   for (const tab of ['weapons','cards','enemies','boss','stages','rules']) {
@@ -272,7 +266,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     async function reloadMaker(){
       const nextLoaded=new Promise(resolve=>{loadedPage={sessionId,resolve};});await call('Page.reload');await nextLoaded;
       for(let i=0;i<100;i++){try{if(await evaluate("document.readyState==='complete'&&!!document.querySelector('#makerLink')&&typeof window.openSurvivorMaker==='function'"))break;}catch{}await new Promise(r=>setTimeout(r,20));}
-      await touch('#makerLink');await evaluate(openGallery);
+      await touch('#settingsButton');await touch('#makerLink');await evaluate(openGallery);
     }
     await reloadMaker();
     assert.deepEqual(await evaluate(`['前半場連斬刀數','後半場連斬刀數'].map(label=>Number(document.querySelector('input[aria-label="'+label+'"]').value))`),[7,8]);
@@ -285,7 +279,7 @@ const timeout=setTimeout(()=>{console.error('FAIL: Chrome 測試逾時');child.k
     await evaluate("document.querySelector('#reset').click();true");await reloadMaker();assert.deepEqual(await evaluate(`['前半場連斬刀數','後半場連斬刀數'].map(label=>Number(document.querySelector('input[aria-label="'+label+'"]').value))`),[4,5]);await evaluate("document.querySelector('[data-item=weakpoint]').click();true");assert.deepEqual(await controls(),weakBaseline);
     console.log('PASS: Chrome Maker AX slider5/bounds1..8, input+plus then7/8 and .25/4/1.8 save/reload/reset/reload; teacher/gatekeeper and legacy0/1 switch unchanged');
   }
-  console.log(`PASS: ${width}×${height} DPR3 展示 ${(layout.share*100).toFixed(1)}%／空白 ${(layout.blank*100).toFixed(1)}%／觸控／三卡／64px確認／雙點／鍵盤／重抽次數與新選項／暫停展示／Maker全分頁末端與名稱欄／練習場全螢幕／選單捲動／真實多指衝刺與鍵盤／怪物拉桿即時預覽與試這隻`);
+  console.log(`PASS: ${width}×${height} DPR3 左配裝／三張完整文字卡／40px確認／雙點不誤選／鍵盤／重抽次數與新選項／玩家無展示／Maker全分頁末端與名稱欄／練習場全螢幕／選單捲動／真實多指衝刺與鍵盤／怪物拉桿即時預覽與試這隻`);
   } finally {
    loadedPage=null;
    // 關閉 target 同時釋放其 session、子 iframe、排程及按鍵／觸控狀態。

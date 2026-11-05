@@ -1,16 +1,19 @@
 function spawnEnemy(options = {}) {
-  if (state.enemies.filter(e=>e.alive).length >= ENEMY_LIMIT) return;
+  if (state.enemies.filter(e=>e.alive).length >= SurvivorWaves.limit()) return;
   if(options.elite && state.enemies.filter(e=>e.alive&&e.elite).length>=GAME_DATA.elites.limit) return;
   const configuredTypes = ENEMY_TYPES.map((type,i)=> i===0 ? {...type,speed:gameSettings.enemySpeed,hp:gameSettings.enemyHealth} : i===1 ? {...type,speed:gameSettings.secondEnemySpeed,hp:gameSettings.secondEnemyHealth} : type);
   const typeId=options.typeId || pacingType();
   const type=configuredTypes.find(t=>t.id===typeId) || configuredTypes[0];
+  if(!SurvivorWaves.allowed(type))return;
   const scale = options.elite ? GAME_DATA.elites.sizeScale : options.small ? .6 : 1;
-  const radius = type.radius * scale;
-  const position = options.small && options.position ? {...options.position} : options.offscreen ? offscreenSpawn(radius) : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side);
+  const radius = type.radius * scale * SurvivorWaves.bodyScale(type);
+  const position = options.small && options.position ? {...options.position} : options.offscreen ? offscreenSpawn(radius,SurvivorWaves.enabled()?options.side:undefined,undefined,options.along) : options.side === undefined ? bossZoneSpawn(radius) : offscreenSpawn(radius,options.side,undefined,options.along);
   if (!position) return; // 視窗大到看見整張地圖時，等有鏡頭外空間再生成。
   const { x, y } = position;
   state.enemies.push({ typeId: type.id, shadowSize: type.shadowSize, behavior: type.behavior, spriteId:type.spriteId, small:!!options.small, x, y, r: radius, speed: type.speed * currentStage().enemySpeedScale, damage: type.damage, color: type.color, hp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), maxHp: type.hp * currentStage().enemyHealthScale * (options.small ? .3 : 1), wobble: Math.random() * Math.PI * 2, alive: true, flash: 0, shotCooldown: Math.random() * bookShotInterval(type.id) });
   const enemy = state.enemies[state.enemies.length-1];
+  if(!MAKER_MODE)enemy.actionCooldown=2+Math.random()*1.5;
+  SurvivorWaves.decorate(enemy);
   if (options.elite) makeElite(enemy);
   return enemy;
 }
@@ -24,7 +27,7 @@ function startBookShooting() {
   const firstLevel = MAKER_MODE ? Math.min(...ENEMY_TYPES.filter(e => e.attack.type !== "none").map(e => e.attack.level)) : gameSettings.enemyShootLevel;
   if (state.bookShootingStarted || state.level < firstLevel) return;
   state.bookShootingStarted = true; state.bookNoticeTimer = 4;
-  enemyNotice.textContent = MAKER_MODE ? "怪物開始用招式了！" : ENEMY_TYPES[0].name + "開始丟字了！"; enemyNotice.hidden = false;
+  enemyNotice.textContent = SurvivorWaves.enabled()?"注意少量遠程怪的起手預警！":MAKER_MODE ? "怪物開始用招式了！" : ENEMY_TYPES[0].name + "開始丟字了！"; enemyNotice.hidden = false;
 }
 
 function updateBookShooting(dt) {
@@ -41,6 +44,7 @@ function updateBookShooting(dt) {
   const ready = state.enemies.filter((enemy) => !enemy.miniboss && enemy.alive && !enemy.feedbackFrozen && !(enemy.stunTimer > 0) && enemy.shotCooldown <= 0 && targetVisible(enemy));
   if (!ready.length) return;
   const allowed = ready.filter(e => {
+    if(SurvivorWaves.enabled()&&!state.enemies.filter(t=>t.alive&&['shooter','charger'].includes(t.behavior)).slice(0,2).includes(e))return false;
     const type=ENEMY_TYPES.find(t=>t.id===e.typeId);
     return type && !type.phaseAttack.enabled && type.attack.type!=="none" && state.level >= (MAKER_MODE || e.typeId!=="jaben" && e.typeId!=="otsubon" ? type.attack.level : gameSettings.enemyShootLevel);
   });
@@ -69,14 +73,15 @@ function updateBookShooting(dt) {
 }
 
 // 先在鏡頭外選位置，再回到環形世界；四邊永遠都可以生成。
-function offscreenSpawn(r, side, minimumDistance = state.player.r + r + 160) {
+function offscreenSpawn(r, side, minimumDistance = state.player.r + r + 160, along) {
   // 多留 1 格，避免接縫回圈的浮點誤差把邊緣外的位置判成不安全。
   const gap = r + 17, left = state.cameraX, top = state.cameraY;
+  const fraction=()=>Number.isFinite(along)?Math.max(0,Math.min(1,along)):Math.random();
   const sides = [
-    () => ({ x: left - gap, y: top + Math.random() * state.height }),
-    () => ({ x: left + state.width + gap, y: top + Math.random() * state.height }),
-    () => ({ x: left + Math.random() * state.width, y: top - gap }),
-    () => ({ x: left + Math.random() * state.width, y: top + state.height + gap })
+    () => ({ x: left - gap, y: top + fraction() * state.height }),
+    () => ({ x: left + state.width + gap, y: top + fraction() * state.height }),
+    () => ({ x: left + fraction() * state.width, y: top - gap }),
+    () => ({ x: left + fraction() * state.width, y: top + state.height + gap })
   ];
   // 回圈後必須再檢查，避免跨地圖接縫時出現在看得到的另一側。
   const centerX = left + state.width / 2, centerY = top + state.height / 2;

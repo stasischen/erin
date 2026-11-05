@@ -1,4 +1,4 @@
-// 共用 16×16 點陣圖集；DOM 與 Canvas 使用相同格點，不依賴字型或網路圖片。
+// 共用黏土圖示；舊格點只保留識別相容性，不再用來繪製介面。
 (function(root) {
   'use strict';
   const patterns = {
@@ -285,16 +285,32 @@
   function pixels(id) { id = normalize(id); id = aliases[id] || id; return patterns[id][1].split('/'); }
   function color(id) { return palette[ids.indexOf(aliases[id] || id) % palette.length] || palette[0]; }
   function rectangles(id, paint) { pixels(id).forEach((row,y) => Array.from(row).forEach((p,x) => { if(p !== '.') paint(x*2,y*2,p === '+' ? '#ffffff' : color(id)); })); }
-  const urls = {};
+  const urls = {}, images = {};
+  function clayUrl(id) {
+    const art=root.SurvivorArtManifest?.clayIcons, key=aliases[id]||id;
+    if(urls[id]&&art)return urls[id];
+    const family=key==='candy-sword'?'blue':/wind|clover|bird|magnet/.test(key)?'green':/thunder|crown|legendary|win|home|confirm/.test(key)?'gold':/heart|heal|shield|cookie|candy|monster/.test(key)?'pink':'blue';
+    const colors=art?.palettes[family]||['#f3fdff','#83d7ef','#3988b7'];
+    const shape=art?.shapes[key]||'<circle cx="32" cy="32" r="22"/>';
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64"><defs><linearGradient id="clay" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="50" y2="64"><stop stop-color="${colors[0]}"/><stop offset=".42" stop-color="${colors[1]}"/><stop offset="1" stop-color="${colors[2]}"/></linearGradient></defs><g stroke-linejoin="round" stroke-linecap="round"><g transform="translate(0 2)" opacity=".22" fill="${colors[2]}" stroke="${colors[2]}" stroke-width="3">${shape}</g><g fill="url(#clay)" stroke="${colors[2]}" stroke-width="1.6">${shape}</g></g></svg>`;
+    const url='data:image/svg+xml,'+encodeURIComponent(svg);
+    if(art)urls[id]=url;return url;
+  }
   function html(id) {
     id = normalize(id);
     const art = root.SurvivorArt && root.SurvivorArt.iconHtml('icon/'+id);
     if (art) return art;
-    if (!urls[id]) { let rects = ''; rectangles(id,(x,y,c) => {rects += `<rect x="${x}" y="${y}" width="2" height="2" fill="${c}"/>`;}); urls[id] = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects}</svg>`); }
-    return `<img class="pixel-icon" data-survivor-art="icon/${id}" src="${urls[id]}" alt="" aria-hidden="true" draggable="false">`;
+    return `<img class="pixel-icon clay-icon" data-survivor-art="icon/${id}" src="${clayUrl(id)}" alt="" aria-hidden="true" draggable="false">`;
   }
   function set(node,id) { node.innerHTML = html(id); }
-  function draw(ctx,id,x,y,size=24) { if(root.SurvivorArt && root.SurvivorArt.draw('icon/'+normalize(id),{context:ctx,x,y,width:size,height:size})) return; ctx.save(); const step = size/16; rectangles(id,(px,py,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x+px*step),Math.round(y+py*step),Math.ceil(step*2),Math.ceil(step*2));}); ctx.restore(); }
+  function draw(ctx,id,x,y,size=24) {
+    id=normalize(id);
+    if(root.SurvivorArt && root.SurvivorArt.draw('icon/'+id,{context:ctx,x,y,width:size,height:size}))return;
+    if(typeof root.Image!=='function')return;
+    if(!images[id]){images[id]=new root.Image();images[id].src=clayUrl(id);}
+    if(!images[id].complete||!images[id].naturalWidth)return;
+    ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(images[id],x,y,size,size);ctx.restore();
+  }
   function clean(text) { return typeof text === 'string' ? text.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D\u20E3]/gu, '').trim() : text; }
   root.SurvivorIcons = { ids, labels: Object.fromEntries(ids.map(id=>[id,patterns[id][0]])), normalize, html, set, draw, pixels, clean };
 })(globalThis);

@@ -52,3 +52,17 @@ run('globalThis.frameElement={}');run(fs.readFileSync(`${__dirname}/../practice-
 run('GAME_DATA.attackMode="manual";practiceId="candy-sword";practiceReset();for(let i=0;i<20;i++)practiceStep(.05)');assert.equal(run('state.swingCount'),0);
 run('beginManualAttack("attack");releaseManualAttack("attack")');assert.equal(run('state.swingCount'),1);
 console.log('PASS: manual idle, hold/release, direction, empty combo, cancellation/pause, independent pointers, dash press/end, three specials/cooldown, Maker migration and real practice');
+
+// Manual cadence must benefit from the same upgrades as auto attacks, for all weapons.
+for(const weapon of ['water-ball','candy-hammer','candy-sword']) {
+ const sample=levels=>{
+  fresh(weapon);
+  run(`activeWeapon().timing={windup:.1,active:.1,recovery:.3,cooldown:.1};state.upgrades=${JSON.stringify(levels)};state.moveRate=1;beginManualAttack('attack');releaseManualAttack('attack');globalThis.elapsed=0;while(state.manualTiming.phase!=='ready'&&elapsed<2){advanceManualTiming(.005);elapsed+=.005;}`);
+  return run('elapsed');
+ };
+ const base=sample({}),rapid=sample({'rapid-water':5}),moving=sample({'wind-speed':3});
+ assert.ok(rapid<base*.7,weapon+' manual rapid upgrade');
+ assert.ok(moving<base,weapon+' manual moving upgrade');
+ assert.equal(run('activeWeapon().chargeSeconds'),1,'attack-rate cards do not shorten charge hold');
+}
+console.log('PASS: manual attack cadence upgrades apply to all three weapons without changing charge hold');

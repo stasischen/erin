@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const run=require('./maker-support.cjs')({captureWindowEvents:true});
 const plain=code=>JSON.parse(run('JSON.stringify('+code+')'));
 function send(type,key,repeat=false){for(const handler of run.windowListeners[type]||[])handler({key,repeat,target:{tagName:'BODY'},preventDefault(){}});}
-function fresh(){run("resetGame();state.mode='playing';settingsPanel.hidden=true;state.joy=null;state.player.x=400;state.player.y=300;state.player.damageDisabled=true;state.spawnTimer=999;state.eliteTimer=999;state.bearSpawned=true;state.weaponId='candy-sword';updateCamera()");}
+function fresh(){run("resetGame();GAME_DATA.attackMode='manual';state.mode='playing';settingsPanel.hidden=true;state.joy=null;state.player.x=400;state.player.y=300;state.player.damageDisabled=true;state.spawnTimer=999;state.eliteTimer=999;state.bearSpawned=true;state.weaponId='candy-sword';updateCamera()");}
 const directions=[['ArrowLeft',-1,0],['ArrowRight',1,0],['ArrowUp',0,-1],['ArrowDown',0,1]];
 for(const [key,x,y]of [...directions,['a',-1,0],['d',1,0],['w',0,-1],['s',0,1],['A',-1,0],['D',1,0],['W',0,-1],['S',0,1]]){
  fresh();send('keydown',key);send('keydown',key,true);assert.deepEqual(plain('movementInput()'),{x,y},key+' down');

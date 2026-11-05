@@ -1,13 +1,14 @@
 {
   "sourceSha": "6d28ed2838c3af7201305d8332d34faf72017b3c",
   "canvas": [
-    "8b92c8cf7f95e3fd0ea60e665f67183189bade118f6aafaa438e6e5ee216e12e",
+    "6f69c85180b73d21cf1e0b8c4594b47acdda5f2690dcf49846d8e82298521ee9",
     "3010162cd869fa89708fa141197d40627047ab2797db4af81489e4aa97548b7d",
-    "97b2456ea6db672b5a66a2d918706bac187e94b60c1e0602d18eece21d6c01ea",
-    "869ebe763109bc1357a8ddcc356cdf3c89f2a4890fa372334630197b4cee6f31",
-    "313264443d35dea0e3e86a73671fd0318d8d98fcf49bb99c817aae486424c762",
-    "378a5e4a06960533a24d2b161d1d75d041bac63e79ce550f0c86f7d81ea6a23e"
+    "8e592ec675234d2528b1c6a9cc7258b2a1c5ebe8bddf09e1ccc561980a7de201",
+    "8206ec66581a681fb0b16fff9345667480fe8ff33658415d8fd408085cde50f3",
+    "7d39dfe0c4c8da62ed78bef1e0242a5e151021d93423835c91c1c9c784a4874e",
+    "aba37dabdb32d2977980e553c75551a33760b3861bea98d4b85d3a2f8c452bc0"
   ],
   "battle": "fe9c4372e1287b323877e4617d3d8bc869759b9131b17e5f262249245a531164",
-  "battleNumberDecimals": 6
+  "battleNumberDecimals": 6,
+  "canvasNote": "2026-11-04: only canvas[2:6] updated for rounded lightning/wind and opaque shared element stroke; player/ground [0:2] and battle baseline unchanged"
 }

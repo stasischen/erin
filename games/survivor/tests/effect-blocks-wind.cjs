@@ -5,8 +5,9 @@ const create=require('./maker-support.cjs');
 const ids=['wind-attack','wind-dash','wind-speed','wind-ultimate','fusion-storm','wind-blade','wind-gust','wind-refund','wind-light','wind-eye'];
 function scenario(old,setup,steps){
   const run=create();
+  // Add only the new visual charge flag to the frozen swing; preserve all combat outputs.
   if(old) {
-    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(body));
+    for(const [name,body] of Object.entries(legacy)) if(name!=='shot')run(require('./slide-legacy.cjs')(body.replace('const visual = {...event,','const visual = {...event,elementCharged:properties.charged,').replace('{...rear,colors:','{...rear,elementCharged:properties.charged,colors:')));
   }
   run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;Math.random=()=>.5;state.enemies=[];state.boss=null;state.upgrades={};settingsPanel.hidden=true;
     globalThis.enemy=(dx=20,dy=0,hp=10000)=>({typeId:'jaben',x:state.player.x+dx,y:state.player.y+dy,r:17,hp,maxHp:hp,alive:true,speed:0,wobble:0,damage:0,wetTimer:0});
@@ -20,7 +21,11 @@ function scenario(old,setup,steps){
     bomb:state.bomb,bombBlast:state.bombBlast,projectiles:state.projectiles,events,effects:state.effects,vfx:state.vfx,gems:state.gems,neutral:state.neutral,upgrades:state.upgrades,player:state.player,dashCooldown:state.dashCooldown,dashCharges:state.dashCharges,enemyShots:state.enemyShots,results:globalThis.results})`));
 }
 let count=0;
-function same(setup,steps){assert.deepEqual(scenario(false,setup,steps),scenario(true,setup,steps),setup+' / '+steps);count++;}
+function withoutNewVisualPoints(snapshot){
+ for(const v of [snapshot.ultimateVisual,...Object.values(snapshot.ultimateVisuals||{})])if(v){delete v.orbits;delete v.targets;}
+ return snapshot;
+}
+function same(setup,steps){assert.deepEqual(withoutNewVisualPoints(scenario(false,setup,steps)),withoutNewVisualPoints(scenario(true,setup,steps)),setup+' / '+steps);count++;}
 for(const id of ids) for(const level of [0,1,3,5]) for(const dt of [.05,.5,3.2]) {
  const base=`BUILD_TUNING.windSpeed=${dt===.5?.27:.18};BUILD_TUNING.movingRate=${dt===.5?.31:.12};
  GAME_DATA.schoolRules.windBladeRange=${dt===.5?93:140};GAME_DATA.schoolRules.windBladeDamage=${dt===.5?.65:.4};
@@ -28,10 +33,12 @@ for(const id of ids) for(const level of [0,1,3,5]) for(const dt of [.05,.5,3.2])
  same(base,`leaveDashTrail(state.player.x+110,state.player.y,110,state.player.x,state.player.y);updateFields(${dt});updateFields(.1);`);
  same(base,`state.bomb={x:state.player.x,y:state.player.y,radius:80,damage:40,timer:0,knockback:20,schools:['wind']};updateBomb(${dt});`);
  same(base,`updateSchoolCombat(${dt});updateSchoolCombat(10);updateSchoolCombat(.1);globalThis.results=[schoolWindWall()];`);
- same(base,`updateUltimate(${dt});state.elapsed+=.3;updateUltimate(.1);updateUltimate(.5);`);
+ // Multi-orbit damage/overlap at Lv3/5 is covered in survival-growth.cjs.
+ if(id!=='wind-ultimate' || level<3) same(base,`updateUltimate(${dt});state.elapsed+=.3;updateUltimate(.1);updateUltimate(.5);`);
  same(base,`state.dashCharges=0;state.dashCooldown=2;schoolDashEnded();schoolDashEnded();`);
  same(base,`fireAtNearest();globalThis.results=[effectiveShotInterval()];schoolShotHit({schools:[],melee:false,vx:30,vy:0,x:state.player.x,y:state.player.y,damage:80,hitList:[state.enemies[0]],pierce:1,blade:false},state.enemies[0]);`);
- for(const weapon of ['candy-hammer','candy-sword']) same(base,`state.weaponId='${weapon}';state.moveRate=.8;swingAtNearest();globalThis.results=[effectiveShotInterval()];`);
+ // Sword single-target follow-up is covered by weapons.cjs; all other cases stay frozen.
+ for(const weapon of ['candy-hammer','candy-sword']) if(weapon!=='candy-sword' || id!=='wind-blade' || level===0) same(base,`state.weaponId='${weapon}';state.moveRate=.8;swingAtNearest();globalThis.results=[effectiveShotInterval()];`);
 }
 for(const dt of [.05,.5,3.2]) for(const hp of [1,10000]) {
  const base=`state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,3]));
@@ -43,7 +50,7 @@ for(const dt of [.05,.5,3.2]) for(const hp of [1,10000]) {
  BUILD_TUNING.tornadoRadius=60;BUILD_TUNING.tornadoSpeed=3;
  GAME_DATA.schoolRules.gustSeconds=.3;GAME_DATA.schoolRules.gustRadius=75;GAME_DATA.schoolRules.gustPush=33;
  GAME_DATA.schoolRules.eyeWait=.2;GAME_DATA.schoolRules.eyeRadius=70;GAME_DATA.schoolRules.eyePush=17;`;
- same(base,`leaveDashTrail(state.player.x+110,state.player.y,110,state.player.x,state.player.y);updateFields(${dt});updateSchoolCombat(${dt});updateUltimate(${dt});`);
+ same(base,`leaveDashTrail(state.player.x+110,state.player.y,110,state.player.x,state.player.y);updateFields(${dt});updateSchoolCombat(${dt});`);
 }
 // Strict wall/tornado edge and inclusive gust/blade edge; piercing blades cannot recursively create blades.
 for(const distance of [64.999,65,65.001,82,82.001,140,140.001]) for(const blade of [false,true]) same(

@@ -2,36 +2,33 @@ const assert = require('node:assert/strict');
 const createRun = require('./maker-support.cjs');
 const key = 'erin-survivor-player-settings-v1';
 const legacyKey='erin-survivor-settings-v3';
-// A missing or unmarked legacy choice starts manual, preserving other settings.
-for (const saved of [{}, {attackMode:'auto', sound:false}, {attackMode:'auto',attackModeChosen:false}]) {
+// Normal survival ignores historical attack preferences, preserving the preference itself.
+for (const saved of [{}, {attackMode:'auto', sound:false}, {attackMode:'manual',attackModeChosen:true}]) {
   const run = createRun({saved:{[legacyKey]:JSON.stringify(saved)}});
-  assert.equal(run('GAME_DATA.attackMode'), 'manual');
+  assert.equal(run('GAME_DATA.attackMode'), 'auto');
   if (saved.sound === false) assert.equal(run('gameSettings.sound'), false);
 }
 for (const mode of ['manual','auto']) {
   const run = createRun({saved:{[key]:JSON.stringify({attackMode:mode,attackModeChosen:true})}});
-  assert.equal(run('GAME_DATA.attackMode'), mode);
+  const before=run.storage[key];
+  run("startGame();setAttackMode('manual')");assert.equal(run('GAME_DATA.attackMode'),'auto');
+  run('startTrial(trialSettings().bosses[0].id);applyUpgrade(0);applyPlayerSettings()');assert.equal(run('GAME_DATA.attackMode'),'manual');
+  run('startGame()');assert.equal(run('GAME_DATA.attackMode'),'auto');assert.equal(run.storage[key],before);
 }
-const run = createRun();
-run.elements.startAttackMode.listeners.click();
-assert.equal(run('GAME_DATA.attackMode'), 'auto');
-assert.equal(JSON.parse(run.storage[key]).attackModeChosen, true);
-assert.equal(createRun({saved:run.storage})('GAME_DATA.attackMode'), 'auto');
-run.elements.pauseAttackMode.listeners.click();
-assert.equal(run('GAME_DATA.attackMode'), 'manual');
-// A held input cannot become a delayed attack after switching during pause.
+const run = createRun({maker:true});
+run.elements.startAttackMode.listeners.click();assert.equal(run('GAME_DATA.attackMode'),'auto');
+run.elements.pauseAttackMode.listeners.click();assert.equal(run('GAME_DATA.attackMode'),'manual');
+// Sandbox switches still cancel held input; normal players have no mode switch.
 run(`resetGame();state.mode='playing';beginManualAttack('attack');showOverlay('paused');setAttackMode('auto');setAttackMode('manual');releaseManualAttack('attack');`);
-assert.equal(run('state.swingCount'), 0);
+assert.equal(run('state.swingCount'),0);
 run(`state.mode='playing';updateActionControls()`);
-assert.equal(run.elements.attackButton.hidden, false);
-assert.equal(run.elements.specialButton.hidden, false);
+assert.equal(run.elements.attackButton.hidden,false);assert.equal(run.elements.specialButton.hidden,false);
 for (const id of ['water-ball','candy-sword','candy-hammer']) {
   run(`state.weaponId='${id}';updateActionControls()`);
-  assert.equal(run.elements.attackButton.dataset.weaponIcon, run('activeWeapon().icon'));
+  assert.equal(run.elements.attackButton.dataset.weaponIcon,run('activeWeapon().icon'));
 }
-run(`setAttackMode('auto')`);
-assert.equal(run.elements.attackButton.hidden, true);
-assert.equal(run.elements.specialButton.hidden, true);
+run("setAttackMode('auto')");assert.equal(run.elements.attackButton.hidden,true);assert.equal(run.elements.specialButton.hidden,true);
+const player=createRun();player('updateAttackModeButtons()');assert.equal(player.elements.pauseAttackMode.hidden,true);
 // Legacy Maker auto was a default; a new explicit choice must survive reload.
 const data = run('SurvivorData.defaults()');
 for (const chosen of [false, true]) {
@@ -44,4 +41,4 @@ for (const chosen of [false, true]) {
 const noStorage = createRun({storageFails:true});
 noStorage("setAttackMode('auto')");
 assert.equal(noStorage('GAME_DATA.attackMode'),'auto');
-console.log('PASS: manual default, legacy/explicit settings, both menu clicks, persistence/failure, held-input cancellation, four/manual versus two/auto buttons, weapon icons, Maker migration');
+console.log('PASS: fixed survival/trial modes, unchanged saved preferences, Maker switches and migration, held-input cancellation and action controls');

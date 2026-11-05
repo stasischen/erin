@@ -20,8 +20,13 @@ function scenario(old,setup,steps){
     bomb:state.bomb,bombBlast:state.bombBlast,projectiles:state.projectiles,events,effects:state.effects,vfx:state.vfx,gems:state.gems,neutral:state.neutral,upgrades:state.upgrades})`));
 }
 let count=0;
-function same(setup,steps){assert.deepEqual(scenario(false,setup,steps),scenario(true,setup,steps),setup+' / '+steps);count++;}
-for(const level of [0,1,3,5]) for(const superLevel of [0,1,5]) for(const form of [false,true]) {
+function withoutNewVisualPoints(snapshot){
+ for(const v of [snapshot.ultimateVisual,...Object.values(snapshot.ultimateVisuals||{})])if(v){delete v.orbits;delete v.targets;}
+ return snapshot;
+}
+function same(setup,steps){assert.deepEqual(withoutNewVisualPoints(scenario(false,setup,steps)),withoutNewVisualPoints(scenario(true,setup,steps)),setup+' / '+steps);count++;}
+// Lv3/5 chain targets and super interaction move to survival-growth.cjs.
+for(const level of [0,1]) for(const superLevel of [0,1,5]) for(const form of [false,true]) {
   same(`state.upgrades={'thunder-attack':${level},'thunder-super':${superLevel}};
     ${form?"transformed=()=>true;":''}
     state.enemies=[enemy(0),enemy(60),enemy(100),enemy(180),enemy(310)];`,
@@ -35,10 +40,10 @@ for(const level of [0,1,5]) for(const dt of [.05,.5,3.2]) for(const hp of [1,100
   same(base,`updateSchoolCombat(${dt});if(state.mode==='playing')updateSchoolCombat(.1);`);
   same(base,`schoolDashCrossed(state.player.x,state.player.y,state.player.x+120,state.player.y);`);
   same(base,`leaveDashTrail(state.player.x+110,state.player.y,110,state.player.x,state.player.y);updateFields(${dt});`);
-  same(base,`updateUltimate(${dt});if(state.mode==='playing')updateUltimate(.1);`);
+  if(level<3) same(base,`updateUltimate(${dt});if(state.mode==='playing')updateUltimate(.1);`);
 }
 // All cards share feature powers across old Maker compositions; tuning, wrapping and protected boss remain identical.
-for(const id of ids) {
+for(const id of ids.filter(id=>!['thunder-attack','thunder-ultimate'].includes(id))) {
   const setup=`state.upgrades={'${id}':3,'item-crown':1,'water-wet':1};
     UPGRADES.find(c=>c.id==='${id}').effects[0].power=2;
     state.enemies=[enemy(0),enemy(75),enemy(150)];state.enemies[1].wetTimer=2;

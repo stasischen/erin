@@ -10,12 +10,13 @@ class Node {
   fire(event){if(this.listeners[event])this.listeners[event]({target:this,preventDefault(){}});}
 }
 function setup(options={}){
-  const storage={...options.saved}, ids=Object.fromEntries(['editor','makerStatus','save','play','reset','makerPanel','makerLink','makerClose','overlay'].map(id=>[id,new Node()]));
+  const storage={...options.saved}, ids=Object.fromEntries(['editor','makerStatus','save','play','reset','makerPanel','makerLink','makerClose','overlay','settingsPanel'].map(id=>[id,new Node()]));
   const tabs=['weapons','cards','enemies','boss','stages','rules'].map(tab=>{const n=new Node('button');n.dataset.tab=tab;return n;});
   const location={href:'',search:options.search||''}, state={keys:new Set(),mode:'ready'},window={addEventListener(){}};
   const calls=[];
-  const context=vm.createContext({SurvivorPreview:{stop(){},refresh(){},mount(host,data,spec){calls.push({kind:'preview',data,spec});}},SurvivorPractice:{close(){},refresh(){},mount(){},unmount(){},open(data,container,onClose,id){calls.push({kind:'practice',data,id});}},console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
-  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  const context=vm.createContext({SurvivorPreview:{stop(){},refresh(){},mount(host,data,spec){calls.push({kind:'preview',data,spec});}},SurvivorPractice:{close(){},refresh(){},mount(){},unmount(){},open(data,container,onClose,id){calls.push({kind:'practice',data,id});}},console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;ids.settingsPanel.hidden=true;},openSettings(){if(state.mode==='playing')state.mode='paused';ids.settingsPanel.hidden=false;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
+  for(const file of ['render/monsters.js','icons.js',...require('./load-defaults.cjs').files,'data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/manifest.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of context.SurvivorMakerManifest)vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   function nodes(node=ids.editor){return node.children.flatMap(c=>[c,...nodes(c)]);}
   function tab(name){tabs.find(n=>n.dataset.tab===name).fire('click');}
   function click(text,exact=true){const n=nodes().find(n=>n.tag==='button'&&(exact?n._text===text:n._text.includes(text)));assert.ok(n,text);n.fire('click');}
@@ -88,7 +89,8 @@ ui.ids.play.fire('click');assert.equal(ui.location.href,'?maker=1&play=1');
 choose('cards',defaults.cards[0].id);ui.click('＋ 連發水球');const before=ui.storage['erin-survivor-maker-v1'];ui.location.href='';ui.ids.play.fire('click');assert.equal(ui.location.href,'');assert.equal(ui.storage['erin-survivor-maker-v1'],before);assert.ok(ui.ids.makerStatus.textContent.includes('圈'));
 ui.ids.reset.fire('click');assert.deepEqual(saved(),JSON.parse(vm.runInContext('JSON.stringify(SurvivorData.validate(SurvivorData.defaults()).data)',ui.context)));
 ui=setup({fails:true});ui.ids.play.fire('click');assert.equal(ui.location.href,'');assert.ok(ui.ids.makerStatus.textContent.includes('無法儲存'));
-ui=setup({search:'?editor=1'});assert.equal(ui.state.mode,'maker');ui.ids.makerClose.fire('click');assert.equal(ui.state.mode,'ready');
+ui=setup({search:'?editor=1'});assert.equal(ui.state.mode,'maker');ui.ids.makerClose.fire('click');assert.equal(ui.state.mode,'ready');assert.equal(ui.ids.settingsPanel.hidden,false);
+ui=setup();ui.state.mode='paused';ui.state.elapsed=42;ui.ids.makerLink.fire('click');assert.equal(ui.state.mode,'maker');ui.ids.makerClose.fire('click');assert.equal(ui.state.mode,'paused');assert.equal(ui.state.elapsed,42);assert.equal(ui.ids.settingsPanel.hidden,false);assert.equal(ui.ids.makerLink.focused,true);
 ui=setup({maker:true});ui.window.openSurvivorMaker('試玩結束');assert.equal(ui.ids.makerStatus.textContent,'試玩結束');ui.ids.makerClose.fire('click');assert.equal(ui.location.href,'./');
 console.log('PASS: six Maker tabs, one item, every old editor reachable, Chinese rule labels, defaults stay open, independent edits/save/reload, no behavior change from navigation, cycles/storage failure block play, entry/exit');
 
@@ -253,7 +255,7 @@ console.log('PASS: nine support card stacks, fold/preview persistence, shared ed
   assert.equal(m.nodes().find(n=>n.className==='card-block-stack').open,true);
  }
  m.ids.save.fire('click');const data=JSON.parse(m.storage['erin-survivor-maker-v1']);
- assert.equal(data.neutralRules.cookieKills,21);assert.equal(data.neutralRules.crownHealth,2);
+ assert.equal(data.neutralRules.cookieKills,21);assert.equal(data.neutralRules.crownHealth,19); // default 18 + one Maker increment
  assert.equal(data.neutralRules.bankEvery,11);assert.equal(data.cards.find(c=>c.id==='item-clover').effects[0].feature,'item-clover');
  const reload=setup({saved:m.storage});reload.tab('cards');reload.item('item-crown');
  assert.ok(reload.nodes().find(n=>n.className==='card-block-stack'));

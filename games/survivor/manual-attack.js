@@ -61,7 +61,10 @@ function executeAttackInput(event) {
     } else executeManualSpecial(special);
   } else {
     if(state.manualTiming && state.manualTiming.phase!=='ready')return;
-    const timing={...activeWeapon().timing};
+    const baseInterval=activeWeapon().kind==='melee'?activeWeapon().interval:SHOT_INTERVAL;
+    const rate=effectiveShotInterval()/baseInterval;
+    const timing=Object.fromEntries(Object.entries(activeWeapon().timing).map(([key,value])=>
+      [key, typeof value==='number' && ['windup','active','recovery','cooldown'].includes(key)?value*rate:value]));
     state.manualTiming={...SurvivorTiming.start(timing),config:timing,event};
     if(dash)state.manualDashUsed=true;
     // 零起手可立即生效；其餘等待同一套時間軸進入 active。
@@ -73,8 +76,8 @@ function executeAttackInput(event) {
 function executeManualSpecial(event) {return withImpactBatch(()=>manualSpecialImpacts(event));}
 function manualSpecialImpacts(event) {
   if(event.kind==='leap') {
-    const swing={angle:event.angle,arc:Math.PI*.8,radius:event.range,damage:effectiveDamage()*event.damageMultiplier,push:45,heavy:true,shape:'sector',width:20};
-    skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,...(moveFeedback(activeWeapon(),'special').slash?{}:{slash:false}),colors:['water'],life:.3});
+    const swing={weaponId:activeWeapon().id,angle:event.angle,arc:Math.PI*.8,radius:event.range,damage:effectiveDamage()*event.damageMultiplier,push:45,heavy:true,shape:'sector',width:20};
+    skillVisual('hammer-swing',state.player.x,state.player.y,{...swing,...(moveFeedback(activeWeapon(),'special').slash?{}:{slash:false}),colors:buildAppearance().colors,life:.3});
     for(const t of combatTargets().filter(t=>SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,swing))) {
       const hp=t.hp;hitBuildTarget(t,swing.damage);
       if(t.hp<hp && state.mode==='playing')meleeImpact(t,{...swing,feedbackId:'special'});

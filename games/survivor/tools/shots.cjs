@@ -14,7 +14,8 @@ const OUT = path.join(os.homedir(), '.local/share/erin/art-review', CARD);
 const sizeIndex=process.argv.indexOf('--size');
 const sizeMap={'1024x461':[1024,461],'740x360':[740,360],'1180x820':[1180,820]};
 const SIZES=sizeIndex<0?[[1024,461],[740,360],[1180,820]]:[sizeMap[process.argv[sizeIndex+1]]||(()=>{throw new Error('未知尺寸，請用 1024x461、740x360 或 1180x820。')})()];
-const STATES = ['opening','battle','levelup'];
+const EFFECTS = process.argv.includes('--effects');
+const STATES = ['opening','battle','levelup',...(EFFECTS?['effects']:[])];
 const D6_BOSSES=[['巨斧守門人','gatekeeper'],['雙子霜火','frostfire'],['羽翼古神','winged'],['雙刃刺客','assassin']];
 const MIME = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2'};
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -129,6 +130,33 @@ async function captureRun(cdp,baseUrl,width,height) {
   await sleep(350);
   const levelup = path.join(OUT,`${prefix}-levelup.png`);
   await screenshot(cdp,levelup);
+  if(EFFECTS){
+    // Deliberately staged art sheet, separate from the natural gameplay above.
+    await evaluate(cdp,`(()=>{
+      state.mode='paused';document.querySelector('#overlay').classList.add('hidden');
+      ctx.save();ctx.setTransform(state.pixelRatio,0,0,state.pixelRatio,0,0);
+      ctx.fillStyle='#1b1633';ctx.fillRect(0,0,${width},${height});
+      const scale=Math.min(${width}/1024,${height}/461);ctx.scale(scale,scale);
+      ctx.fillStyle='#e8f6ff';ctx.font='800 22px system-ui';ctx.fillText('特效美術對照 · 固定展示',28,36);
+      ctx.font='14px system-ui';ctx.fillStyle='#9a95b0';ctx.fillText('冰藍：友方　橘色：危險　粉色：弱點',28,62);
+      drawHammerSwing({x:110,y:158,angle:0,arc:2.4,radius:70,colors:['water'],heavy:true},.7);
+      drawBolt(260,160,390,160);drawSwirl(510,160,46,.4);
+      drawTrialShape({type:'line',radius:17,length:140},{x:650,y:160},0,false);
+      drawTrialShape({type:'circle',radius:46},{x:900,y:160},0,true);
+      strokeRing(125,335,50,'#78cfff',3);SurvivorNeon.hit(ctx,{x:325,y:335},.7);
+      SurvivorNeon.weakpointBurst(ctx,520,335,.8);
+      drawTrialShape({type:'sector',radius:85,angle:70},{x:680,y:335},0,false);
+      ctx.beginPath();ctx.arc(900,335,45,.6,Math.PI*2-.6);ctx.lineWidth=8;SurvivorNeon.stroke(ctx,'orange');
+      ctx.font='16px system-ui';ctx.textAlign='center';ctx.fillStyle='#cbd9ed';
+      ['蓄力斬擊','閃電','旋風','直線預警','落點預警'].forEach((v,i)=>ctx.fillText(v,125+i*195,235));
+      ['護盾／爆炸','命中火花','弱點命中','扇形預警','缺口火環'].forEach((v,i)=>ctx.fillText(v,125+i*195,420));
+      ctx.restore();
+      const still=document.createElement('img');still.src=document.querySelector('#gameCanvas').toDataURL();
+      still.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:1000';document.body.append(still);
+    })()`);
+    await sleep(100);
+    await screenshot(cdp,path.join(OUT,`${prefix}-effects.png`));
+  }
   if(CARD==='d6'){
     for(const [title,slug] of D6_BOSSES){
       await cdp.send('Page.navigate',{url:'about:blank'});await sleep(100);await cdp.send('Page.navigate',{url:baseUrl});
@@ -177,7 +205,7 @@ async function main() {
     const baseUrl = `http://127.0.0.1:${server.address().port}/games/survivor/`;
     for (const [width,height] of SIZES) await captureRun(cdp,baseUrl,width,height);
     const files = fs.readdirSync(OUT).filter(name => name.endsWith('.png'));
-    const expected=SIZES.length*(CARD==='d6'?3+D6_BOSSES.length:3);
+    const expected=SIZES.length*(STATES.length+(CARD==='d6'?D6_BOSSES.length:0));
     if (files.length !== expected) throw new Error(`預期 ${expected} 張截圖，實際找到 ${files.length} 張`);
     console.log(`完成：${files.length} 張截圖，固定隨機種子 16807，輸出 ${OUT}`);
   } finally {

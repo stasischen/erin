@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-upgrade-balance",
+  "title": "升級選擇與數值平衡",
+  "owner": "codex",
+  "state": "review",
+  "repo": "erin",
+  "branch": "codex/survivor-upgrade-balance",
+  "pr": 113,
+  "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
+  "next": "已依家長開子卡survivor-timer-status-refresh修復P3，Mac136PASS/獨審approve，20261105a測試頁部署成功但公開核對未完成。其餘設計未改，PR保持草稿。",
+  "reviewers": [
+    "luna",
+    "grok"
+  ],
+  "risk": "low",
+  "updated": "2026-11-05T04:27:20.035788+00:00",
+  "updatedBy": "codex"
+}

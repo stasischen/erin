@@ -35,13 +35,16 @@ globalThis.SurvivorSchools = (() => {
   function pick(cards, upgrades, run, rules, draws) {
     const available = cards.slice(), picked = [], owned = counts(cards, upgrades);
     for (let i = 0; i < 3 && available.length; i++) {
-      const weights = available.map(c => {
+      // 資格與重抽排除已由呼叫端處理；優先留一格新能力、一格已有升級。
+      const group = i === 0 ? available.filter(c => !upgrades[c.id]) : i === 1 ? available.filter(c => upgrades[c.id]) : available;
+      const candidates = group.length ? group : available;
+      const weights = candidates.map(c => {
         const schoolWeight = 1 + (owned[c.school] || 0) * rules.ownedWeight + (run && c.school === run.starter ? rules.starterWeight : 0);
         return schoolWeight * (c.rarity === 'rare' ? rules.rareWeight : 1);
       });
       let position = (draws[i] || 0) * weights.reduce((a, b) => a + b, 0), index = weights.length - 1;
       for (let j = 0; j < weights.length; j++) { position -= weights[j]; if (position < 0) { index = j; break; } }
-      picked.push(available.splice(index, 1)[0]);
+      picked.push(available.splice(available.indexOf(candidates[index]), 1)[0]);
     }
     return picked;
   }
