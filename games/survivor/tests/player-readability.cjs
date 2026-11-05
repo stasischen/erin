@@ -24,6 +24,20 @@ console.log('PASS: merged per-target damage numbers within .3s for ordinary enem
 run('startGame();state.mode="playing";state.stageElapsed=10;statusEl.children.length=0;delete statusEl.dataset.key;tick(.016)');
 const eta=run('statusEl.children.map(c=>c.textContent).join()');
 assert.match(eta,new RegExp('^魔王 '+Math.ceil(run('SurvivorWaves.bossTime()')-10-0.016)+' 秒後來$'));
+// 暫停／選卡在同秒覆寫文字；第一個正常 tick 必須恢復秒數與倒數。
+const statusKey=run('statusEl.dataset.key');
+for(const label of ['已暫停','選一張升級卡']){
+  run(`statusEl.textContent=${JSON.stringify(label)};statusEl.children.length=0;tick(.016)`);
+  assert.equal(run('statusEl.dataset.key'),statusKey);
+  assert.equal(run('statusEl.textContent'),run('`${Math.floor(state.elapsed)} 秒`'));
+  assert.equal(run('statusEl.children.length'),1);
+  assert.equal(run('statusEl.children[0].textContent'),eta);
+}
+const cachedEta=run('statusEl.children[0]');run('tick(.016)');
+assert.equal(run('statusEl.children.length'),1);assert.equal(run('statusEl.children[0]'),cachedEta);
 run('state.boss={x:0,y:0,hp:1};statusEl.children.length=0;delete statusEl.dataset.key;state.elapsed+=1;tick(.016)');
+assert.equal(run('statusEl.children.length'),0);
+run('statusEl.textContent="已暫停";tick(.016)');
+assert.equal(run('statusEl.textContent'),run('`${Math.floor(state.elapsed)} 秒`'));
 assert.equal(run('statusEl.children.length'),0);
 console.log('PASS: boss countdown under the timer before the teacher arrives, hidden once the boss is present');

@@ -271,7 +271,7 @@ function tickImpacts(dt,clockDt=dt) {
   // 計時器下方小字倒數魔王，讓玩家知道還要撐多久；魔王出場或試煉時不顯示。
   const bossLeft=!state.trial&&!PREVIEW_MODE&&!state.boss&&state.bossIntro<=0?Math.ceil(SurvivorWaves.bossTime()-state.stageElapsed):0;
   const statusKey=Math.floor(state.elapsed)+'|'+bossLeft;
-  if(statusEl.dataset.key!==statusKey){
+  if(statusEl.dataset.key!==statusKey || !statusEl.textContent.startsWith(`${Math.floor(state.elapsed)} 秒`)){
     statusEl.dataset.key=statusKey;statusEl.textContent=`${Math.floor(state.elapsed)} 秒`;
     if(bossLeft>0){const eta=document.createElement('small');eta.className='boss-eta';eta.textContent=`魔王 ${bossLeft} 秒後來`;statusEl.appendChild(eta);}
   }
