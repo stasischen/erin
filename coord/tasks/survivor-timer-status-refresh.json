@@ -3,16 +3,16 @@
   "id": "survivor-timer-status-refresh",
   "title": "續玩後立即恢復計時文字",
   "owner": "codex",
-  "state": "review",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-timer-status-refresh.md",
-  "next": "P3修復完成、非作者approve與Mac136PASS；Pages已部署，公開核對因連線重設／載入逾時未完成，保留限制。PR113仍草稿，待下一步，不合併。",
+  "next": "整體既有證據彙整已交付：coord/handoff/pr113-evidence-summary.md。P3及136PASS不重做；原主控codex持有公開候選技術待補，待新連線成功證據再核固定候選，無證據不重試、不重派Dot。不待使用者決定設計，不合併部署。",
   "reviewers": [
     "independent-subagent"
   ],
   "risk": "low",
-  "updated": "2026-11-05T04:27:20.035430+00:00",
+  "updated": "2026-11-08T17:18:41.963876+00:00",
   "updatedBy": "codex"
 }

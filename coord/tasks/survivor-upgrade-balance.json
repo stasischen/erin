@@ -3,17 +3,17 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "review",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "已依家長開子卡survivor-timer-status-refresh修復P3，Mac136PASS/獨審approve，20261105a測試頁部署成功但公開核對未完成。其餘設計未改，PR保持草稿。",
+  "next": "整體既有證據彙整已交付：coord/handoff/pr113-evidence-summary.md。P3及136PASS不重做；原主控codex持有公開候選技術待補，待新連線成功證據再核固定候選，無證據不重試、不重派Dot。不待使用者決定設計，不合併部署。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-05T04:27:20.035788+00:00",
+  "updated": "2026-11-08T17:18:41.963260+00:00",
   "updatedBy": "codex"
 }
