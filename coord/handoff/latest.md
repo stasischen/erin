@@ -1,5 +1,13 @@
 # 目前交接
 
+## Boss4 PR105 最新狀態：固定候選補測受 viewport 能力阻擋（2026-11-08）
+
+原房 Dot 回覆已核對並採納：[結果 #6721827713](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6721827713)，綁定 PR105 head `2c7cbb3b6afb5f7119eb59784c4f6e6f16762ea0`、遊戲 source `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`、版本 `20261031d`。雲端瀏覽器只提供完整頁面 1180×757，沒有 viewport resize 能力；指定 1024×461 Rolling Eye 操作 0/3，E→N→W 及停定後可辨 +90° 均未驗證。這是 `partial / blocked_on_required_viewport`，不判成通過或產品缺陷。
+
+Mask Statue 已由 Dot 在固定候選實際查看；遊戲入口「王的試煉」→最右側「面具石像」，紫灰像素石像與中央金黃色面具／眼部；美術判斷仍由家長完成。固定預覽與[原圖](https://stasischen.github.io/erin-preview/pr-105/cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1/games/survivor/art/characters/mask-statue.png)。同卡 PR 留言已更新並讀回：[技術狀態](https://github.com/stasischen/erin/pull/105#issuecomment-6721803084)。
+
+下一步只在原 Dot QA 路徑具備受支援的 1024×461 viewport 後，沿原固定候選最多正常操作三次補測；不重派、不重測、不更換執行器或候選。PR105 保持 Draft；未 approve、merge 或部署。Boss5 仍等待 Boss4 結束與家長指示，未啟動。
+
 ## 校正：共享 Lingo coordinator 正在每 60 秒輪詢；Erin 尚未接入（2026-10-29T10:08:20Z）
 
 - 本機只讀核對到 `com.stasischen.lingo-coordinator` 的 launchd job 為 `running`、週期 60 秒、last exit 0；家長確認設定來源為 release-aggregator PR #411 與 lingo-agent-exchange PR #1，部署版 `41b52b4`。這是共享 Lingo coordinator，不是已停用的 Erin 專屬 `com.stasischen.erin-watch`；先前「舊 Erin watcher 停用」沒有錯，但不能推論 Mac 上完全沒有輪詢器。
