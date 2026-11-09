@@ -3,17 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "doing",
+  "state": "blocked",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
+  "waitingFor": "家長解鎖 Mac Studio，並在原 Erin coordinator 對話回覆「已解鎖」；此為恢復瀏覽器驗收所需，不是玩法或合併決定。",
   "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a 的公開manifest、digest及123/123 payload bytes/SHA吻合；載入、暫停續玩、自然升級選卡已核。2026-11-09續驗先確認無並行驗收，再嘗試公開頁操作；目前Chrome輸入無法啟動遊戲，三尺寸矩陣及完整自然局未完成。既有Mac --layout 136 PASS及非作者approve對應同一遊戲來源；候選至PR HEAD僅coord/docs變更。等Mac可互動後補1024×461、740×360、1180×820與自然完整局；不重派Dot、不部署或合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-09T09:19:00Z",
+  "updated": "2026-11-09T09:48:00Z",
   "updatedBy": "codex"
 }

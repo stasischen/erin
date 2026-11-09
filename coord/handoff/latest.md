@@ -1,18 +1,20 @@
 # 目前交接
 
-## PR113指定續驗狀態（2026-11-09）
+## PR113指定續驗與解鎖通知（2026-11-09）
 
 依序確認沒有其他 session／背景程序正在跑同一候選；再沿既有隔離公開頁操作，並核對剩餘技術證據。Chrome頁正常載入，但開始鍵多次只取得焦點、畫面仍是「準備開始」，沒有進戰鬥，因此未開始三尺寸測試或自然完整局。CUA 原生桌面檢查曾回報：`The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.` 畫面截圖是 960×820，並非要求的三種尺寸；也沒有確認內部 viewport 尺寸。不能把這次列為測試失敗或產品缺陷。
 
 離線技術一致性核對：固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 的版本為 `20261105a`；候選到目前 PR HEAD 只有 `coord/`、`docs/` 紀錄變動，`games/survivor/` 與 `sw.js` 未變。既有該 SHA 的 Mac `node games/survivor/tools/test.cjs --layout` 136 PASS、非作者 approve 仍適用，這次沒有重跑。逐輪程式審查記錄已列於 [證據總表](pr113-evidence-summary.md)，此離線核對不等於三尺寸、完整局或PR整體驗收通過。
 
-下一步等可互動的 Mac Chrome，沿同一候選補 1024×461、740×360、1180×820，再完成一局自然遊玩；無法開始前不判定產品有問題、不合併或部署。
+核對既有 Erin ntfy sender 後確認：它從設定讀取共用路由，但會吞掉錯誤、沒有保存伺服器回執；本機未找到 user-action 發送去重帳本或本任務先前發送紀錄。沿同一已授權路由只送一次「解鎖 Mac Studio，解鎖後回覆已解鎖」的最小提醒；ntfy 伺服器回 `HTTP 200` 並回傳 message receipt，已記在本機 `~/.local/share/erin/logs/pr113-unlock-ntfy-receipt-20261109.json`。這只證明伺服器受理，沒有宣稱手機已收到。
+
+原卡現為 `blocked`，`waitingFor` 明列解鎖 Mac Studio 並在原 Erin coordinator 對話回覆；這是執行前置，不是玩法或合併決定。解鎖後沿同一候選補 1024×461、740×360、1180×820，再完成一局自然遊玩；無法開始前不判定產品有問題、不合併或部署。
 
 ## PR113證據彙整已交付（2026-11-09）
 
 [整體驗收證據總表](pr113-evidence-summary.md)已完成：各輪固定SHA、Mac執行者／既有結果、純視覺紀錄、Dot g版部分通過、a版未驗限制分開列明。主控已讀回原卡與紀錄一致；本次只整理文件，沒有重跑測試、重試／繞路下載、重派Dot、改玩法或合併部署。P3已修，不再列待修。
 
-兩張原卡owner仍為本對話codex；狀態doing表示公開候選技術驗證待補，不是重新實作或等家長決定。固定候選的version.json已取得一次HTTP 200；下一步沿同一候選補核公開檔案及操作，僅憑該單檔可達不算整體驗收。升級節奏／文案等設計選擇由Erin與家長決定，不阻擋這項技術工作。整體證據彙整完成，不等於整PR驗收／合併批准。
+PR113原卡owner仍是本對話codex；目前 `blocked` 是等 Mac 解鎖以完成瀏覽器驗收，不是重新實作或等待玩法決定。固定候選公開檔案核對與既有 P3 操作已完成；這些不等於整體驗收或合併批准。
 
 ### 2026-11-09 固定公開候選唯讀連線診斷
 
