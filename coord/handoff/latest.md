@@ -6,6 +6,10 @@
 
 兩張原卡owner仍為本對話codex；狀態doing表示公開候選技術驗證待補，不是重新實作或等家長決定。下一步僅在有新的連線成功證據後補核既有固定候選；沒有新證據不重試。升級節奏／文案等設計選擇由Erin與家長決定，不阻擋這項技術工作。整體證據彙整完成，不等於整PR驗收／合併批准。
 
+### 2026-11-09 PR113公開候選接續核對
+
+核對 PR113 目前仍為 OPEN／Draft，公開 HEAD `f2b5929093008a166410f728d9762cdcf2fe974f`；PR 文字與原總表指向同一固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／版本`20261105a`、測試頁 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/`、Pages run `41967715588` 成功、預覽發布提交 `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`。本次 GitHub PR 沒有新留言；本機找不到這個候選的公開連線成功產物，也沒有 Python／Chrome 失敗執行原始日誌。可核對的原失敗點仍只有既有交接：Python下載遇到連線重設，Chrome `loaded` 逾時，因此公開全檔 bytes 與公開遊玩都未證實。`~/.local/share/erin/logs/pr113-public-http.json` 及 `pr113-public-preview-validation.json` 是 2026-11-03 的舊版本`20261103a`成功資料，不可挪用為本候選證據。未重試網路操作、未重跑測試、未重派 Dot；沒有待家長輸入或新的通知需求。
+
 ## P3計時文字已修復（2026-11-05）
 
 家長授權開卡派subagent，卡survivor-timer-status-refresh，沿PR113。作者真Chrome先重現、修後驗證，再加回歸；非作者另真Chrome及Mac全套exit0／136PASS，第一輪approve。產品僅loop判斷一行、測試14行，第一tick恢復暫停／選卡覆寫文字，正常快取保留。來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350，版本20261105a。未派Dot、未改升級節奏／存檔，前輪雲端未測範圍保留。
