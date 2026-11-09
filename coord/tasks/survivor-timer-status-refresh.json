@@ -8,11 +8,11 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-timer-status-refresh.md",
-  "next": "整體既有證據彙整已交付：coord/handoff/pr113-evidence-summary.md。P3及136PASS不重做；原主控codex持有公開候選技術待補，待新連線成功證據再核固定候選，無證據不重試、不重派Dot。不待使用者決定設計，不合併部署。",
+  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350 的 version.json 已於2026-11-09 04:44:01–04:44:02 UTC 單次唯讀GET得HTTP/2 200、版本20261105a（只證明此檔可達）。原主控沿同一候選補做既有公開檔案核對與公開操作核驗；不重跑136／P3、不重派Dot、不部署或合併。",
   "reviewers": [
     "independent-subagent"
   ],
   "risk": "low",
-  "updated": "2026-11-08T17:18:41.963876+00:00",
+  "updated": "2026-11-09T04:44:02Z",
   "updatedBy": "codex"
 }

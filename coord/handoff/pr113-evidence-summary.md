@@ -25,15 +25,17 @@
 | g版Mac公開試玩 | 同g版；[收件摘要](../reviews/survivor-upgrade-balance/dot-readability-result.md) | 自然33秒／兩次升級／第二波／技能／暫停續玩通過，不延伸為a版公開通過 |
 | a版候選準備 | `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；[P3原卡](../tasks/specs/survivor-timer-status-refresh.md) | 本機125檔／920執行請求及七key隔離通過，不是公開HTTP全檔驗證 |
 | a版部署 | 預覽提交`cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`；Pages41967715588 | 部署成功，1980既有檔保持、增加122候選檔，不等於公開遊玩驗收 |
-| a版公開驗證 | [固定候選](https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/) | Python連線重設、Chrome載入逾時；公開bytes與公開試玩未完成。本次無新連線證據，未重試或繞路下載 |
+| a版公開驗證 | [固定候選](https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/) | 2026-11-09 一次唯讀GET `version.json` 回HTTP/2 200、版本20261105a；僅確認該檔可達。公開全檔bytes與公開操作仍未驗。原Python連線重設／Chrome載入逾時僅見舊交接轉述，未找到原始失敗日誌；本次沒有政策拒絕 |
 
 Dot request與manifest雜湊已在收件時核對；14個改動來源檔hash相符是Dot回報，不是主控本次重算。六張截圖只有名稱及hash，沒有可開啟附件，主控未親眼核圖；沒有bundle。Dot只驗g版，不冒稱a版雲端驗收。
+
+2026-11-09 04:44:01–04:44:02 UTC，主控對固定候選 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/version.json` 做一次 `curl` GET（connect timeout 5秒、總上限15秒、無retry）：原始結果 `HTTP/2 200`、exit 0、29 bytes，body `{"version":"20261105a"}`，edge IP `185.199.111.153`，request ID `52C4:0BC3:8CA8A:908BE:6AF14F91`。這只證明版本檔當時可達；不代表全部候選檔或遊戲已驗收。下一步由原主控沿同一固定候選完成既有公開檔案核對與公開操作核驗；不重跑136／P3、不重派Dot、不部署。
 
 ## 剩餘範圍、owner與下一步
 
 | 類別 | 尚缺／界線 | owner與具體下一步 |
 |---|---|---|
-| 技術缺口 | a版公開可達、固定來源與公開操作尚未核實 | 原主控codex；有新的連線成功證據後，沿原候選補核載入及暫停／選卡恢復。無新證據不重試下載、不重派 |
+| 技術缺口 | a版`version.json`已單次HTTP 200，但公開全檔bytes、完整載入與公開操作仍未核實 | 原主控codex；沿固定a版候選補核公開檔案與既有操作。不重跑136／P3、不重派Dot、不部署 |
 | 雲端限制 | 自然老師登場、自然回血跨30%、減少動態、精確傷害窗與池重用、試煉／Maker手動戰鬥未在Dot測齊 | 原主控codex保留限制；對照既有Mac受控Boss、低血恢復、減少動態、合併與池清理證據，不重做、不冒稱自然或Dot通過 |
 | 實機／長局 | 真手機硬體、自然完整兩關、所有配裝平衡無完整證據 | 保留已知未驗範圍，不虛報通關、不重開已通過的增量審查 |
 | 設計選擇 | 升級節奏、卡片文案、美術體感與後續玩法提案 | Erin／家長決定；不阻擋本次P3技術收尾，不自行選方案實作 |
