@@ -1,5 +1,11 @@
 # PR113 整體驗收證據總表（2026-11-09）
 
+## 2026-11-09 指定續驗
+
+先檢查相同候選驗收進程，沒有並行工作。其後在固定公開頁嘗試由開始鍵進入自然戰鬥；頁面已載入，但按鈕只取得焦點、無法啟動，AX仍顯示「準備開始」。CUA原生桌面檢查的原始錯誤為 `The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.` 截圖面積為960×820，不是指定尺寸，內部viewport亦未能讀取，因此三尺寸矩陣未開始；自然完整局也未開始。這是工具／桌面互動阻礙，不能推論為產品缺陷。具體本機操作記錄：`~/.local/share/erin/logs/pr113-residual-matrix-20261109.md`。
+
+完成的技術交叉核對：公開候選 SHA 為 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`；該候選到本 PR HEAD 只新增 `coord/` 與 `docs/`，遊戲程式及 `sw.js` 未變。此來源已有 Mac `node games/survivor/tools/test.cjs --layout` 136 PASS、非作者 approve，以及各輪審查檔；本次不重跑已通過套件。此項靜態一致性核對沒有替代三尺寸、完整自然局或家長最終驗收。下一步待 Mac Chrome 能互動後，沿原候選完成三尺寸與一局自然遊玩；不部署、合併或重派 Dot。
+
 本表先由原主控彙整既有證據；2026-11-09後續補上一次固定公開候選全檔唯讀核對與Chrome UI操作紀錄。這不是新自動化測試、新獨立審查或使用者整版驗收；沒有重派Dot、重跑136/P3、自行改玩法、合併或部署。
 
 ## 固定範圍

@@ -8,12 +8,12 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a：公開manifest/digest及123/123 payload bytes/SHA吻合；Chrome頁載入、暫停續玩、自然Lv.2選卡後恢復計時已核實。先前檢查器重複加候選prefix的原始回應已保留並標invalid_url_mapping，不是產品失敗。此次補驗交付；PR113總體review、Dot既有partial與完整局限制仍待原owner按原卡處理，不合併或部署。",
+  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a 的公開manifest、digest及123/123 payload bytes/SHA吻合；載入、暫停續玩、自然升級選卡已核。2026-11-09續驗先確認無並行驗收，再嘗試公開頁操作；目前Chrome輸入無法啟動遊戲，三尺寸矩陣及完整自然局未完成。既有Mac --layout 136 PASS及非作者approve對應同一遊戲來源；候選至PR HEAD僅coord/docs變更。等Mac可互動後補1024×461、740×360、1180×820與自然完整局；不重派Dot、不部署或合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-09T05:07:09Z",
+  "updated": "2026-11-09T09:19:00Z",
   "updatedBy": "codex"
 }

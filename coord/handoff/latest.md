@@ -1,5 +1,13 @@
 # 目前交接
 
+## PR113指定續驗狀態（2026-11-09）
+
+依序確認沒有其他 session／背景程序正在跑同一候選；再沿既有隔離公開頁操作，並核對剩餘技術證據。Chrome頁正常載入，但開始鍵多次只取得焦點、畫面仍是「準備開始」，沒有進戰鬥，因此未開始三尺寸測試或自然完整局。CUA 原生桌面檢查曾回報：`The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.` 畫面截圖是 960×820，並非要求的三種尺寸；也沒有確認內部 viewport 尺寸。不能把這次列為測試失敗或產品缺陷。
+
+離線技術一致性核對：固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 的版本為 `20261105a`；候選到目前 PR HEAD 只有 `coord/`、`docs/` 紀錄變動，`games/survivor/` 與 `sw.js` 未變。既有該 SHA 的 Mac `node games/survivor/tools/test.cjs --layout` 136 PASS、非作者 approve 仍適用，這次沒有重跑。逐輪程式審查記錄已列於 [證據總表](pr113-evidence-summary.md)，此離線核對不等於三尺寸、完整局或PR整體驗收通過。
+
+下一步等可互動的 Mac Chrome，沿同一候選補 1024×461、740×360、1180×820，再完成一局自然遊玩；無法開始前不判定產品有問題、不合併或部署。
+
 ## PR113證據彙整已交付（2026-11-09）
 
 [整體驗收證據總表](pr113-evidence-summary.md)已完成：各輪固定SHA、Mac執行者／既有結果、純視覺紀錄、Dot g版部分通過、a版未驗限制分開列明。主控已讀回原卡與紀錄一致；本次只整理文件，沒有重跑測試、重試／繞路下載、重派Dot、改玩法或合併部署。P3已修，不再列待修。
