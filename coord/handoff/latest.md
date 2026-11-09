@@ -12,15 +12,21 @@
 
 先前 Python 下載連線重設及 Chrome `loaded` 逾時僅有舊交接轉述，未找到對應原始失敗日誌，也沒有政策拒絕證據；本次成功且未遇政策拒絕。下一步由原主控沿同一固定候選完成既有公開檔案核對與公開操作核驗；不重跑136／P3、不重派Dot、不重新部署或合併。
 
-### 2026-11-09 PR113公開候選接續核對
+### 2026-11-09 固定候選公開檔案／實際操作接續
 
-核對 PR113 目前仍為 OPEN／Draft，公開 HEAD `f2b5929093008a166410f728d9762cdcf2fe974f`；PR 文字與原總表指向同一固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／版本`20261105a`、測試頁 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/`、Pages run `41967715588` 成功、預覽發布提交 `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`。本次 GitHub PR 沒有新留言；本機找不到這個候選的公開連線成功產物，也沒有 Python／Chrome 失敗執行原始日誌。可核對的原失敗點仍只有既有交接：Python下載遇到連線重設，Chrome `loaded` 逾時，因此公開全檔 bytes 與公開遊玩都未證實。`~/.local/share/erin/logs/pr113-public-http.json` 及 `pr113-public-preview-validation.json` 是 2026-11-03 的舊版本`20261103a`成功資料，不可挪用為本候選證據。未重試網路操作、未重跑測試、未重派 Dot；沒有待家長輸入或新的通知需求。
+原測試端沒有候選相關執行中進程。使用固定發布manifest `~/.local/share/erin/history/public-preview-stage/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/preview-manifest.json`，SHA256 `ef2c10e26b8338a9d9b3209ca2e8228eb41f2f059e047fab26ca11ff67886e8f`，版本`20261105a`、123個payload項目；公開manifest與detached digest均HTTP200且bytes/hash吻合。第一版檢查器把候選prefix重複加到repo-root-relative manifest `path`，曾產生錯誤404及一個錯誤對比；所有123筆原始回應保留在本機檢查日誌，並標為`invalid_url_mapping`，不是產品結果。對照既有發布repo `stasischen/erin-preview` commit `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`後，確認123/123 manifest路徑皆與該commit檔案bytes/SHA吻合；正確URL為`https://stasischen.github.io/erin-preview/`加manifest `path`。按正確映射逐檔GET後，123/123公開payload皆HTTP200且完整bytes/SHA吻合，未遇政策拒絕。逐項原始結果留本機 `~/.local/share/erin/logs/pr113-public-bytes-cf14bc06-20261109.json`。
+
+同一固定公開遊戲頁面 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/` 在Chrome正常載入並可玩：按「開始生存」進入第1波Lv.1，顯示`0秒／魔王150秒後來`；按暫停再按「繼續遊戲」，恢復畫面顯示`3秒／魔王147秒後來`；正常移動收集經驗自然到Lv.2，選取並確認「水球加大」後回到戰鬥，顯示`21秒／魔王129秒後來`。這是當前公開候選的載入、暫停續玩、自然升級選卡恢復證據；不是三尺寸矩陣、完整局或整體PR驗收。逐步操作紀錄在本機 `~/.local/share/erin/logs/pr113-public-candidate-interaction-20261109.md`。本次只完成固定候選公開檔案核對及指定UI操作，不是整體PR批准；三尺寸矩陣、完整局與原Dot未測範圍仍不能由本次結果推定。未重跑136／P3、未重派Dot、未部署或合併。
+
+### 2026-11-09 04:41 PR113公開候選接續核對（後續已有新證據）
+
+核對 PR113 目前仍為 OPEN／Draft，公開 HEAD `f2b5929093008a166410f728d9762cdcf2fe974f`；PR 文字與原總表指向同一固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／版本`20261105a`、測試頁 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/`、Pages run `41967715588` 成功、預覽發布提交 `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`。截至該次核對時 GitHub PR 沒有新留言；本機找不到這個候選的公開連線成功產物，也沒有 Python／Chrome 失敗執行原始日誌。該時點記錄的原失敗轉述後已被下方新診斷更新。`~/.local/share/erin/logs/pr113-public-http.json` 及 `pr113-public-preview-validation.json` 是 2026-11-03 的舊版本`20261103a`成功資料，不可挪用為本候選證據。未重試網路操作、未重跑測試、未重派 Dot；沒有待家長輸入或新的通知需求。
 
 ## P3計時文字已修復（2026-11-05）
 
 家長授權開卡派subagent，卡survivor-timer-status-refresh，沿PR113。作者真Chrome先重現、修後驗證，再加回歸；非作者另真Chrome及Mac全套exit0／136PASS，第一輪approve。產品僅loop判斷一行、測試14行，第一tick恢復暫停／選卡覆寫文字，正常快取保留。來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350，版本20261105a。未派Dot、未改升級節奏／存檔，前輪雲端未測範圍保留。
 
-Pages41967715588成功，預覽提交cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c；保留1980既有檔，新增122候選檔。公開核對未完成：Python下載連線重設，Chrome loaded逾時，已停止重試；不能宣稱公開全檔bytes或公開試玩通過。本機固定候選隔離與真Chrome均通過。
+Pages41967715588成功，預覽提交cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c；保留1980既有檔，新增122候選檔。當時初次公開核對遇Python下載連線重設及Chrome loaded逾時，因此先前不能宣稱全檔bytes或公開試玩通過；2026-11-09已依正確manifest根路徑補核，結果見上方。本機固定候選隔離與真Chrome均通過。
 https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/
 
 推送時Claude另有純文件提交，已正常merge保留；對固定受測來源的遊戲與sw無差異。詳coord/tasks/specs/survivor-timer-status-refresh.md與coord/reviews/survivor-timer-status-refresh/independent.md。PR仍草稿，不合併main。
