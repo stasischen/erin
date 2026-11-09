@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "家長解鎖 Mac Studio，並在原 Erin coordinator 對話回覆「已解鎖」；此為恢復瀏覽器驗收所需，不是玩法或合併決定。",
-  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a 的公開manifest、digest及123/123 payload bytes/SHA吻合；載入、暫停續玩、自然升級選卡已核。2026-11-09續驗先確認無並行驗收，再嘗試公開頁操作；目前Chrome輸入無法啟動遊戲，三尺寸矩陣及完整自然局未完成。既有Mac --layout 136 PASS及非作者approve對應同一遊戲來源；候選至PR HEAD僅coord/docs變更。等Mac可互動後補1024×461、740×360、1180×820與自然完整局；不重派Dot、不部署或合併。",
+  "waitingFor": "需要可調整的普通 Chrome 視窗或可精確設定 viewport 的控制方式。Mac Chrome「視窗」選單的最小化、縮放、填滿、中央及移動／調整大小命令皆停用；DevTools 尺寸欄誤變為寬 1、高度空白，不能把該操作計為測試。",
+  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a：1024×461 的 DevTools viewport 欄位確認為 1024×461，能進戰鬥；HUD未重疊，遊戲內容未見黑邊。正常開始一局並讓遊戲自然運行至結束：第3波、Lv.1、80秒後血條耗盡。740×360、1180×820尚未驗。Mac 原生視窗尺寸命令皆停用，DevTools 欄位曾錯誤變成寬40、再變寬1且高度空白；這是驗收工具卡點，不判為產品缺陷。待提供一般可拖曳視窗或精確 viewport 操作後只補兩個尺寸及遊玩操作；不重跑既有136 PASS、不重派Dot、不部署或合併。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-09T09:48:00Z",
+  "updated": "2026-11-09T10:40:00Z",
   "updatedBy": "codex"
 }
