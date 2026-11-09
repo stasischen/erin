@@ -289,9 +289,9 @@ Dot回覆已收： https://github.com/stasischen/lingo-agent-exchange/pull/2#iss
 - 19:39:46 加入目前候選補測訊息時，本機 thread 的 `github.mirrored=5`、`github.after=6638519797`、總訊息數為 6；launchd 每 60 秒執行同一 `dispatch.py`。`_bridge_dot()` 在外部 `gh api .../issues/2/comments` 發文之前先檢查 Dot 訊息數；達到 2 就寫入本地 system 訊息、交給 human 並 return。故此次在本機派送前停止：PR #2 沒有 cf14 候選的新請求，也沒有 Dot 對新請求的拒絕或結果。
 - hand-off 路徑會呼叫既有 ntfy 發送函式一次，但該函式吞掉 HTTP 狀態，dispatch log 沒有此通知的 delivery receipt；本機 `pr113-unlock-ntfy-receipt-20261109.json` 是較早的解鎖通知，不是這個決策回執。未另發通知，避免重複；目前只能確認本機觸發了一次發送嘗試，不能宣稱已收到手機回執。
 
-### 待家長最小決定
+### 本次補驗決定（2026-11-09，已結案）
 
-是否允許 Dot 對固定目前遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 做一次只限瀏覽器玩法驗證，不作程式審查、不改碼、不碰 PR 權限？Mac 已確認 `1024×461`、`740×360`、`1180×820` 的 viewport 與 `#stage` 相符，且三尺寸升級選卡畫面正常，這些不重跑；唯一仍未證明的是主角實際位移和自然局結果。舊候選 `partial_pass` 不作目前候選驗收。收到決定前保留 gate，不送下一次請求、不開後續玩法卡、不合併或部署。
+家長接受主控已親眼完成固定候選移動與自然死亡實測，但原始截圖未保存、Dot無法獨立核圖；同意只結案本次補驗。這不構成Dot視覺複核、Dot通過、整張卡完成、PR批准或合併／部署授權。本次沒有重派Dot請求。
 
 ## 固定候選移動與自然局補驗（2026-11-09）
 
@@ -304,3 +304,8 @@ PR113仍為Draft，這次只補 Mac 移動／自然局證據；未重跑 `test.c
 ### 圖片交付核查（2026-11-09）
 
 主控只做一次有界核查：本次 CUA 執行記錄保留呼叫 metadata，但 `read_thread(includeOutputs=true)` 沒有返回影像附件或圖片 bytes；`~/.local/share/erin/screenshots/` 也沒有本次原圖。方向移動前後的即時截圖由呼叫 `call_5d0da1e0d8e74226991311f6406d6557` 與 `call_8a62be9f38c04ae38ddfcd2cb023db53` 顯示；自然死亡結算畫面由 `call_567d24620e0b4994813f7b5cb5ecf4c5` 顯示。這些呼叫編號可追到當時輸入及主控記錄，但不能讓Dot重新開啟原始像素圖，因此不宣稱Dot已親眼確認移動或結算截圖。未重開局、未補拍。主控觀察仍為：方向鍵前後主角相對巧克力大熊及地面物件位置明顯變化；結算第3波Lv.7、血量耗盡、84秒。
+
+
+### 整張 PR113 尚未完成的 gate（2026-11-09）
+
+本次補驗已結案，整張 PR113 仍為Draft。Dot既有雲端 `partial_pass` 固定來源為 `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9`，不覆蓋目前遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；目前候選仍缺Dot三尺寸及卡片功能的雲端實玩結果。GitHub PR #113 當前狀態沒有正式review（`reviewDecision`空、`reviews`為空）。因此不可把本次Mac實測或家長接受截圖限制寫成整張PR通過；依原流程處理剩餘審查，不重送已結案的補驗請求。PR113完成後，再按家長已選順序從最新main開點子1、2、4、5。

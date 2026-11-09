@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "主控Mac實測已完成；Dot原圖複核受限：本次CUA輸出未保留可下載附件或本機原始圖片，不能聲稱Dot已親眼核圖。移動前後與84秒結算的觀察、CUA呼叫編號已記在規格；不重開局、不重派新請求。PR113仍須依既有審查／合併流程完成，之後再由點子1開始並依序2、4、5。",
-  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350（20261105a）在Mac Studio 740×360已完成主控瀏覽器移動前後比對與自然一局：畫面可見主角／場景相對位置改變；第3波Lv.7、84秒自然死亡。三尺寸舊結果沿用。本次沒有重跑測試、改遊戲、重派Dot、合併或部署。原始CUA圖只曾在呼叫輸出中顯示，未留可匯出的檔案；記錄呼叫 ID call_5d0da1e0d8e74226991311f6406d6557（前後畫面）及 call_567d24620e0b4994813f7b5cb5ecf4c5（結算畫面），不是可供Dot開啟的圖片附件。點子1與PR113結算範圍重疊；PR113完成原流程後，從最新main開點子1，再依序2、4、5。",
+  "waitingFor": "本次 Mac 移動／自然局補驗已由家長接受目前證據限制並結案；原圖未保存，不能記為Dot親眼核圖或Dot通過。整張PR113仍未完成：Dot雲端實玩結果只綁較早候選5607ab95ef2a1fb6bdda9528dc6713b58654c4c9，固定候選cf14bc06f25fcb3cd8b93bd6842950b9b8749350仍缺Dot三尺寸及卡片功能驗收；GitHub目前沒有此PR的正式review，仍是Draft。按原流程補齊審查，勿重派本次已結案補驗。",
+  "next": "本次限定補驗已結案：主控Mac在固定候選cf14bc06f25fcb3cd8b93bd6842950b9b8749350（20261105a）確認740×360實際移動，並自然玩至第3波Lv.7、84秒死亡；家長接受原圖未保存、Dot無法獨立視覺複核。這不代表整張卡或PR通過。剩餘gate：Dot對cf14候選三尺寸及卡片功能的雲端實玩結果尚未取得（舊partial_pass綁5607）；GitHub對PR113無正式review，且仍為Draft。未重測／重派／合併／部署。PR113完成後，依已選順序從最新main開始點子1，再做2、4、5。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-09T12:17:21Z",
+  "updated": "2026-11-09T12:43:12Z",
   "updatedBy": "codex"
 }
