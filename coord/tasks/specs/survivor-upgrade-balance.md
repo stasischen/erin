@@ -272,3 +272,9 @@ Pages41882567310成功，預覽提交5120378237c27743604b62a8f7ee553edea60e51，
 Dot送件已確認：https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638166698；metadata b9d19024eb084ec443fec6405fd0e791986262fa，request SHA256 bc3d0a639e2e66f027e45e1835536e313b4f641d5f5d4df76033f3dbc288294b。沿原board THREAD只送此件，未啟動排程或其他writer。等待Dot獨立程式審查及三尺寸雲端結果，未宣稱批准。
 
 Dot回覆已收： https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638519797 。固定增量approve、雲端partial_pass，沒有必改缺陷；未測與圖片未交付限制見dot-readability-result.md。主控核request及manifest雜湊一致，不冒稱親看Dot截圖或整PR驗收完成。
+
+## Mac viewport 補驗與目前待驗範圍（2026-11-09）
+
+對固定公開候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 使用 Chrome viewport capability 實測 `1024×461`、`740×360`、`1180×820`；每一尺寸的 `innerWidth×innerHeight` 與 `#stage` 矩形一致。三尺寸的升級選卡畫面都完整顯示，未見黑邊或卡片互疊。`740×360` 選卡後回到第 3 波，戰鬥 HUD 與大熊血條可見；曾對 Chrome 送出 Right 1200ms，但沒有可比對的玩家位置前後觀察，因此不計為移動通過；本輪未跑到自然結束。viewport 已恢復預設。這是 Mac 瀏覽器檢查，不是 Dot 雲端驗收。
+
+目前 PR HEAD 為 `480acc319b68cdbab068c865ff028a838954f9f7`；相對於公開遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`，後續差異為任務／交接文件，遊戲程式未變。Dot 先前 `partial_pass` 綁較早候選，不能代替本候選結果。依本卡已送出的 Dot 雲端驗收及 AGENTS.md 的固定 SHA 實玩要求，尚缺 Dot 在目前候選上的三尺寸實際試玩及本卡功能操作證據；Mac 已做的尺寸檢查不重跑。未合併、未部署。
