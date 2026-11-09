@@ -279,4 +279,16 @@ Dot回覆已收： https://github.com/stasischen/lingo-agent-exchange/pull/2#iss
 
 公開遊戲候選為 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；其後 PR 僅增加任務／交接文件，遊戲程式未變。Dot 先前 `partial_pass` 綁較早候選，不能代替本候選結果。依本卡已送出的 Dot 雲端驗收及 AGENTS.md 的固定 SHA 實玩要求，尚缺 Dot 在目前候選上的三尺寸實際試玩及本卡功能操作證據；Mac 已做的尺寸檢查不重跑。未合併、未部署。
 
-後續向既有 Dot 交換房詢問只補目前候選雲端試玩；交換流程回覆 PR113 已達兩輪，要求家長決定後才會再派送，因此本次新候選未收到 Dot 結果。尚未移除任何驗收條件，也未再自動送件；等待家長決定是否接受舊候選的部分通過，或暫停 PR113 與後續玩法卡。
+## Dot 派送計數核實（2026-11-09）
+
+核對本機 `~/AgentBoard/threads/20261103-000623-f12a.json`、bridge 實作 `~/.local/share/erin/coord-versions/kit-gap-erin-stable-path-20261108-reviewed/dispatch.py` 與 GitHub exchange PR #2 完整相關留言後，確認「Dot 已審兩輪」是本機計數器文字造成的誤判，不是 Dot 的拒絕：
+
+- Dot 結果一：GitHub request comment `6581900807`，結果 comment `6581959499`，request/event `github-comment-6581900807`／`dot-erin-6581900807-scope-result-v1`，固定 base `364bc0fd446961fdcd3f289f6efef8b15cb41791`，verdict `incomplete_scope`。這是實作範圍／授權澄清，不是程式審查。
+- Dot 結果二：review request comment `6638166698` 綁 source `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9`；結果 comment `6638519797`，event `dot-erin-6638166698-readability-result-v1`，程式增量 `approve_fixed_increment`、雲端 `partial_pass`。這是該 THREAD 唯一實際程式審查結果，且綁較早來源。
+- 本地計數是 `sum(message.from == "dot" for message in messages[1:])`，沒有按 request type 或 verdict 分類，因此把上述兩則都算為審查。PR #2 comment `6739115109` 的 `THREAD` 是 `20261105-122816-6daf`（結算摘要規格），與本卡無關，不在本機 thread 計數內。
+- 19:39:46 加入目前候選補測訊息時，本機 thread 的 `github.mirrored=5`、`github.after=6638519797`、總訊息數為 6；launchd 每 60 秒執行同一 `dispatch.py`。`_bridge_dot()` 在外部 `gh api .../issues/2/comments` 發文之前先檢查 Dot 訊息數；達到 2 就寫入本地 system 訊息、交給 human 並 return。故此次在本機派送前停止：PR #2 沒有 cf14 候選的新請求，也沒有 Dot 對新請求的拒絕或結果。
+- hand-off 路徑會呼叫既有 ntfy 發送函式一次，但該函式吞掉 HTTP 狀態，dispatch log 沒有此通知的 delivery receipt；本機 `pr113-unlock-ntfy-receipt-20261109.json` 是較早的解鎖通知，不是這個決策回執。未另發通知，避免重複；目前只能確認本機觸發了一次發送嘗試，不能宣稱已收到手機回執。
+
+### 待家長最小決定
+
+是否允許 Dot 對固定目前遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 做一次只限瀏覽器玩法驗證，不作程式審查、不改碼、不碰 PR 權限？Mac 已確認 `1024×461`、`740×360`、`1180×820` 的 viewport 與 `#stage` 相符，且三尺寸升級選卡畫面正常，這些不重跑；唯一仍未證明的是主角實際位移和自然局結果。舊候選 `partial_pass` 不作目前候選驗收。收到決定前保留 gate，不送下一次請求、不開後續玩法卡、不合併或部署。

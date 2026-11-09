@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "Dot 交換房回覆 PR113 已用滿兩輪，未接下新的目前候選雲端補測，要求家長決定是否再次派送。請家長決定接受舊候選 partial_pass 作為現有證據，或暫停 PR113 與後續玩法卡，直到另行決定驗收方式。",
-  "next": "Mac Studio 瀏覽器已以 viewport capability 實測固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350：1024×461、740×360、1180×820 三者 innerWidth／innerHeight 與 #stage 實際矩形完全相符；升級選卡畫面在三尺寸均完整顯示、未見黑邊或卡片互疊。740×360 選卡後回到第3波戰鬥，HUD與大熊血條可見；送出 Right 1200ms 按鍵後遊戲由45秒推進到62秒／第3波，但沒有可比對的玩家位置前後座標，不能算移動通過；沒有跑到本輪自然結束。這是 Mac 瀏覽器工程檢查，不冒充 Dot 雲端驗收。交換房已回覆不得再自動派送，待家長決定是否接受綁較早候選的 partial_pass，或暫停目前 PR113 與後續玩法卡；不重跑 Mac 尺寸、不部署、不合併。",
+  "waitingFor": "家長決定是否允許 Dot 對固定目前候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350 做一次僅雲端玩法驗證（不是第三輪程式審查）。Mac 已驗三尺寸升級選卡畫面，不需重跑；仍缺可證明的主角移動及自然局結果。舊候選 partial_pass 不代替目前候選 gate。",
+  "next": "Mac Studio 瀏覽器已以 viewport capability 實測固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350：1024×461、740×360、1180×820 三者 innerWidth／innerHeight 與 #stage 實際矩形完全相符；升級選卡畫面在三尺寸均完整顯示、未見黑邊或卡片互疊。740×360 選卡後回到第3波戰鬥，HUD與大熊血條可見；Right 1200ms 後遊戲由45秒推進到62秒／第3波，但沒有可比對的位置前後證據，不能算移動通過；未跑到自然局結束。新補測請求於本機派送 guard 停止，沒有貼到 GitHub、沒有 Dot 拒絕或新結果。guard 把兩則 Dot 回覆（一次 incomplete_scope、一次程式審查／較早候選 partial_pass）都算成兩輪；本卡保留目前 SHA gate，待家長決定是否允許一次只驗目前候選未完成玩法的 Dot 雲端補測。Mac 已驗項不重跑；不合併、不部署。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-09T11:40:00Z",
+  "updated": "2026-11-09T11:50:00Z",
   "updatedBy": "codex"
 }
