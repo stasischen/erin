@@ -1,5 +1,11 @@
 # 目前交接
 
+## Dot 舊版 HUD 專區提案結果已收件並標記取代（2026-11-09）
+
+已讀回 release-aggregator PR #411 結果 [#6487955801](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487955801) 與原請求 [#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)。結果綁定 Erin PR105 祖先提交 `e44dfe7a351b5a3f86c0a319785159598e0db16d`，核對仍是 PR105 歷史來源；Dot 沒有提供 patch，也沒有執行遊戲、測試或瀏覽器驗收。它只指出舊方案缺少 Boss／攻擊預警固定幾何資料，不能據此判定新缺陷。
+
+這份請求要求「保留物件尺度、縮小可見世界並保證三尺寸完整顯示所有 Boss/tell」；之後家長已決定 Boss HUD 維持浮層、攻擊預警超出畫面可接受。故結果已收件但範圍被新決策取代，不再追補舊方案幾何資料，也不把它算作 patch 或產品驗收。Boss4 原卡、PR105 仍維持原狀：Draft，待支援 1024×461 的 Dot 雲端補測及家長對 Mask Statue 視覺判斷；本次只更新交接記錄。
+
 ## Boss4 PR105 最新狀態：固定候選補測受 viewport 能力阻擋（2026-11-08）
 
 原房 Dot 回覆已核對並採納：[結果 #6721827713](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6721827713)，綁定 PR105 head `2c7cbb3b6afb5f7119eb59784c4f6e6f16762ea0`、遊戲 source `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`、版本 `20261031d`。雲端瀏覽器只提供完整頁面 1180×757，沒有 viewport resize 能力；指定 1024×461 Rolling Eye 操作 0/3，E→N→W 及停定後可辨 +90° 均未驗證。這是 `partial / blocked_on_required_viewport`，不判成通過或產品缺陷。
