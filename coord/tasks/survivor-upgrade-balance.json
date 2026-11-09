@@ -8,7 +8,7 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "Dot 需在其雲端電腦驗固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350（遊戲來源；目前 PR HEAD 480acc319b68cdbab068c865ff028a838954f9f7 其後只有文件／狀態提交），完成三尺寸與本卡遊戲功能試玩。既有 partial_pass 綁較早候選，不取代目前候選驗收。",
+  "waitingFor": "Dot 需在其雲端電腦驗固定遊戲候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350，完成三尺寸與本卡遊戲功能試玩。其後 PR 僅有協調文件提交、遊戲程式未變。既有 partial_pass 綁較早候選，不取代目前候選驗收。",
   "next": "Mac Studio 瀏覽器已以 viewport capability 實測固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350：1024×461、740×360、1180×820 三者 innerWidth／innerHeight 與 #stage 實際矩形完全相符；升級選卡畫面在三尺寸均完整顯示、未見黑邊或卡片互疊。740×360 選卡後回到第3波戰鬥，HUD與大熊血條可見；送出 Right 1200ms 按鍵後遊戲由45秒推進到62秒／第3波，但沒有可比對的玩家位置前後座標，不能算移動通過；沒有跑到本輪自然結束。這是 Mac 瀏覽器工程檢查，不冒充 Dot 雲端驗收。依 AGENTS.md 審查規則及本卡已送 Dot 的雲端 review，尚缺 Dot 對固定目前候選的三尺寸真實試玩與本卡功能操作證據；舊候選 partial_pass 不轉用。無需重跑已通過的 Mac 尺寸，本機 viewport 已恢復預設。不部署、不合併。",
   "reviewers": [
     "luna",

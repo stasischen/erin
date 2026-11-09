@@ -277,4 +277,4 @@ Dot回覆已收： https://github.com/stasischen/lingo-agent-exchange/pull/2#iss
 
 對固定公開候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 使用 Chrome viewport capability 實測 `1024×461`、`740×360`、`1180×820`；每一尺寸的 `innerWidth×innerHeight` 與 `#stage` 矩形一致。三尺寸的升級選卡畫面都完整顯示，未見黑邊或卡片互疊。`740×360` 選卡後回到第 3 波，戰鬥 HUD 與大熊血條可見；曾對 Chrome 送出 Right 1200ms，但沒有可比對的玩家位置前後觀察，因此不計為移動通過；本輪未跑到自然結束。viewport 已恢復預設。這是 Mac 瀏覽器檢查，不是 Dot 雲端驗收。
 
-目前 PR HEAD 為 `480acc319b68cdbab068c865ff028a838954f9f7`；相對於公開遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`，後續差異為任務／交接文件，遊戲程式未變。Dot 先前 `partial_pass` 綁較早候選，不能代替本候選結果。依本卡已送出的 Dot 雲端驗收及 AGENTS.md 的固定 SHA 實玩要求，尚缺 Dot 在目前候選上的三尺寸實際試玩及本卡功能操作證據；Mac 已做的尺寸檢查不重跑。未合併、未部署。
+公開遊戲候選為 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；其後 PR 僅增加任務／交接文件，遊戲程式未變。Dot 先前 `partial_pass` 綁較早候選，不能代替本候選結果。依本卡已送出的 Dot 雲端驗收及 AGENTS.md 的固定 SHA 實玩要求，尚缺 Dot 在目前候選上的三尺寸實際試玩及本卡功能操作證據；Mac 已做的尺寸檢查不重跑。未合併、未部署。
