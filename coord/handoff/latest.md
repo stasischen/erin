@@ -1,10 +1,12 @@
 # 目前交接
 
-## Dot 舊版 HUD 專區提案結果已收件並標記取代（2026-11-09）
+## Dot 舊版 HUD 專區幾何補查已收件並標記取代（2026-11-09）
 
 已讀回 release-aggregator PR #411 結果 [#6487955801](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487955801) 與原請求 [#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)。結果綁定 Erin PR105 祖先提交 `e44dfe7a351b5a3f86c0a319785159598e0db16d`，核對仍是 PR105 歷史來源；Dot 沒有提供 patch，也沒有執行遊戲、測試或瀏覽器驗收。它只指出舊方案缺少 Boss／攻擊預警固定幾何資料，不能據此判定新缺陷。
 
 這份請求要求「保留物件尺度、縮小可見世界並保證三尺寸完整顯示所有 Boss/tell」；之後家長已決定 Boss HUD 維持浮層、攻擊預警超出畫面可接受。故結果已收件但範圍被新決策取代，不再追補舊方案幾何資料，也不把它算作 patch 或產品驗收。Boss4 原卡、PR105 仍維持原狀：Draft，待支援 1024×461 的 Dot 雲端補測及家長對 Mask Statue 視覺判斷；本次只更新交接記錄。
+
+另已讀回這次不同的幾何補查 [結果 #6492501348](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492501348) 與原請求 [#6492318413](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6492318413)，request ID `6f027d33…`，綁定 PR105 歷史來源 `13de2068f6e20f956157aa57259c52db7307dd7f`；來源是 `codex/survivor-boss4` 的祖先，manifest、bundle 與作者身分均符合送件資料。Dot 補足幾何後回 `geometry_conflict_no_patch`：1024×461 時 nova 直徑跨度 380.4，大於完整世界高約 379.56；740×360 保留雙行 HUD 40px 後可見高約 350.72，小於 windup 跨度 363。沒有檔案修改、patch、遊戲／自動測試／瀏覽器驗收，也沒有程式、整體 PR 或合併批准。這確認的是舊「保留原尺度＋HUD 專區＋所有 Boss/tell 同時完整可見」要求組合有幾何衝突；浮層 HUD 決策已取代該需求，故不重派、不追補或更改現行卡片驗收。
 
 ## Boss4 PR105 最新狀態：固定候選補測受 viewport 能力阻擋（2026-11-08）
 
