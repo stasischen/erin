@@ -1,10 +1,11 @@
 # 目前交接
 
-## PR105 原固定候選雲端補驗（2026-11-10；等待 Dot 回覆）
+## PR105 原固定候選雲端補驗（2026-11-10；最後一次 +90°嘗試等待中）
 
-已沿用原 PR105 exchange THREAD `20261108-205749-bbb3`。前次 Dot 結果 [#6763507738](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6763507738) 綁 `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／`20261031d`，結論 partial：E→N→W 與可辨 +90°未證實；14張私有 PNG ZIP 已逐檔核對，原圖不入 repo。家長已接受面具石像外觀；已結案的 Mac 補驗不重開。
+沿用原 PR105 fixed candidate `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／版本 `20261031d`。第一次結果 #6763507738 partial，第二次原 thread 的 lab v2 補測 [#6769628275](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769628275)／request [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201) 實際量測 frame 1024×461、DPR1；外層1331×894/client1316×894、Fullscreen=false。正常 UI 已取得連續 E→N→W，故方向序列通過；同一非對稱角標仍無法辨明順時針 +90°，結論 partial／rotation_sign_unproven。雲端累計已用2/3次。Dot 的10張JPEG只留文字記錄，原房無圖片bytes，不算可檢視交付。
 
-因 Erin 規則允許使用既有固定尺寸 iframe lab v2，已在原 thread 送出只補 Rolling Eye 的要求 [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，固定原候選 1024×461，剩餘最多兩次有意識操作；需記實際 frame 尺寸、DPR 與外層／Fullscreen 分別值，正常 UI 確認 E→N→W 和 +90°。未授權改程式或候選。留言已讀回，尚未有新 Dot 結果；PR105 保持 Draft。
+家長已接受 Mask Statue 外觀；不重看石像、不重開已結案的 Mac 補驗。依原三次上限，最後只補 +90°符號判讀，已在同一 exchange PR #2 新 THREAD 派送 [#6769675431](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769675431)，local thread `20261110-221720-6c84`。固定候選不變，使用既有 lab v2，不重做 E→N→W；若一次後仍無法明確判號即停止。留言已讀回，等待 Dot 最後結果。PR105保持 Draft，未批准、合併或部署；仍需非作者整體審查。
+
 
 ## PR105 Boss4 單次本機補驗結果（2026-11-10）
 
