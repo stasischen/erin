@@ -1,11 +1,10 @@
 # 目前交接
 
-## PR105 原固定候選雲端補驗（2026-11-10；最後一次 +90°嘗試等待中）
+## PR105 原固定候選雲端補驗（2026-11-10；3/3次已結束）
 
-沿用原 PR105 fixed candidate `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／版本 `20261031d`。第一次結果 #6763507738 partial，第二次原 thread 的 lab v2 補測 [#6769628275](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769628275)／request [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201) 實際量測 frame 1024×461、DPR1；外層1331×894/client1316×894、Fullscreen=false。正常 UI 已取得連續 E→N→W，故方向序列通過；同一非對稱角標仍無法辨明順時針 +90°，結論 partial／rotation_sign_unproven。雲端累計已用2/3次。Dot 的10張JPEG只留文字記錄，原房無圖片bytes，不算可檢視交付。
+沿用 PR105 fixed candidate `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／版本 `20261031d`。第一次結果 [#6763507738](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6763507738) 未完成 E→N→W；第二次 [#6769628275](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769628275) 在 lab v2 真實 1024×461／DPR1 以正常 UI 確認連續 E→N→W。第三次是原額度最後一次，只檢查順時針 +90°，request [#6769675431](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769675431)，Dot 結果 [#6769760759](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769760759)：候選、版本與 frame 量測正確；停定後原左上／右下深色折角沒有以可可靠辨識的同一標記形式保留，因此「本版畫面無法證明」順時針 +90°。這是觀察證據不足，不是已證明旋轉錯誤；E→N→W 通過仍保留。3/3 次額度已用完，不再重試；Dot 保存的 6 張 JPEG 沒有 bytes 附在原房，因此不能當作可檢視的影像交付。
 
-家長已接受 Mask Statue 外觀；不重看石像、不重開已結案的 Mac 補驗。依原三次上限，最後只補 +90°符號判讀，已在同一 exchange PR #2 新 THREAD 派送 [#6769675431](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769675431)，local thread `20261110-221720-6c84`。固定候選不變，使用既有 lab v2，不重做 E→N→W；若一次後仍無法明確判號即停止。留言已讀回，等待 Dot 最後結果。PR105保持 Draft，未批准、合併或部署；仍需非作者整體審查。
-
+PR105 保持 Draft，沒有 approve、merge 或部署。待家長決定：送回同一卡讓作者修正角標可觀察性並重走 patch 審查，或接受 +90°項目目前未證實並將這個 gate 留為 partial／延後。仍需非作者獨立整體審查。
 
 ## PR105 Boss4 單次本機補驗結果（2026-11-10）
 
