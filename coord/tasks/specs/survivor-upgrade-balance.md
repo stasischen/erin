@@ -309,3 +309,14 @@ PR113仍為Draft，這次只補 Mac 移動／自然局證據；未重跑 `test.c
 ### 整張 PR113 尚未完成的 gate（2026-11-09）
 
 本次補驗已結案，整張 PR113 仍為Draft。Dot既有雲端 `partial_pass` 固定來源為 `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9`，不覆蓋目前遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；目前候選仍缺Dot三尺寸及卡片功能的雲端實玩結果。GitHub PR #113 當前狀態沒有正式review（`reviewDecision`空、`reviews`為空）。因此不可把本次Mac實測或家長接受截圖限制寫成整張PR通過；依原流程處理剩餘審查，不重送已結案的補驗請求。PR113完成後，再按家長已選順序從最新main開點子1、2、4、5。
+
+
+## Dot 雲端實玩（2026-11-10，partial）
+
+固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`；Dot 回覆 comment [6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694)，event `dot-erin-cf14-cloud-ui-20261110-v1`。
+
+已完成：實際 frame/document 1331×894、DPR 1、無 iframe、外層 window 1363×1023、Fullscreen=false；此尺寸未見遊戲黑邊或 HUD 互疊。Dot 正常開始生存、方向移動、觀察自動攻擊，自然升至 Lv2／Lv3，各選一張並續玩；實際取得水球 Lv2、旋轉餅乾 Lv1。這是部分雲端玩法證據，不是指定尺寸或完整 PR gate。
+
+未完成：1024×461、740×360、1180×820；三武器自然填滿後阻止第四把；原始圖片交付（Dot 報告九張 JPEG 及 SHA，但留言沒有 bytes）。Dot 的 DevTools 操作遭平台政策禁止，未繞過。
+
+只針對缺項在同一原 thread 追加請求 comment [6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)，指示使用既有固定尺寸 iframe lab v2，量 frame innerWidth／innerHeight／DPR，分開記外層 viewport／frame box／Fullscreen，補三尺寸及可行的三槽上限驗證；不重做已完成的1331×894自然兩次選卡流程。等待補測結果。

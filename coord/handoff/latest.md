@@ -1,13 +1,16 @@
 # 目前交接
 
-## PR113 最新候選 Dot 雲端驗收（2026-11-10；等待回覆）
+## PR113 最新候選 Dot 雲端驗收（2026-11-10；部分完成，補測等待中）
 
-PR #113 仍為 Draft；派送 request 時 PR HEAD 為 `d4e876104fa2dd6b54fa8509dff475d4dbf629c2`。其後分支只新增 `coord/` 交接紀錄、未改遊戲來源；目前 PR HEAD 以 GitHub 即時值為準。固定遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。核對原交換房後，未找到綁定此遊戲來源的既有 QA request；已在同一個 exchange PR #2 貼上三尺寸與實際升級流程驗收要求（comment [6769159773](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769159773)，本機 thread `20261110-215444-2f95`）。目前只確認 GitHub 已收下留言並讀回，尚未確認 Dot 收件或回覆；舊 `5607ab95…` 的 partial 不套用到 `cf14…`。Mac 已有完整測試與部分實玩證據不重跑；尚缺目前候選 Dot 三尺寸及功能實測、整張 PR 的正式獨立審查。
+PR #113 仍為 Draft；雲端實測固定遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`，原測試請求綁 PR HEAD `d4e876104fa2dd6b54fa8509dff475d4dbf629c2`。其後分支只新增 `coord/` 紀錄、未改遊戲來源。Dot 的 partial 結果在原交換房 comment [6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694)，事件 `dot-erin-cf14-cloud-ui-20261110-v1`，已讀回並採納；沒有套用舊候選 `5607ab95…`。
 
-家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot 已交付第1項「本局結算摘要」精簡規格，顯示時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用現有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待 PR113 gate 完成並合併後才從最新 main 開第1項，之後依序做2、4、5。
+Dot 在實際 1331×894（DPR 1、無 iframe、Fullscreen=false）正常操作：確認角色移動與自動攻擊，自然到 Lv2、Lv3 各選一張並續玩；水球升至 Lv2、取得旋轉餅乾 Lv1。這些是已完成的部分，後續不重測。三個指定尺寸仍全未測；沒有自然填滿三武器並測第四把，故三槽上限未證實。Dot 表示 DevTools 被平台政策禁止，沒有繞過；雖保存9張原圖，但 comment 只有雜湊、沒有圖片 bytes，故圖片未交付。
 
-PR105 維持 Draft；Dot 對固定候選的既有雲端結果仍是 partial，1024×461 viewport 在其雲端介面不可設定，Rolling Eye 的 E→N→W 與 +90°仍未證實。已結案的 Mac 補驗不重開，面具石像外觀由家長接受；不對同候選重派相同測試，除非 Dot 的受支援 viewport 能力有變。
+已在同一原 thread 請 Dot 只補缺項，改用既有固定尺寸 iframe lab v2：comment [6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)。要求實測 frame innerWidth／innerHeight／DPR，與外層 viewport、frame box、原生 fullscreen 分開；補三尺寸畫面／HUD和正常操作，並在自然條件可行時確認三武器上限。現在等待這份補測結果；Mac 已有完整自動化測試及既有實玩證據不重跑。整張 PR113 仍缺正式獨立審查，不能據此批准或合併。
 
+家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot 已交付第1項「本局結算摘要」精簡規格：時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用既有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待 PR113 gate 完成並合併後才從最新 main 開第1項，之後依序做2、4、5。
+
+PR105 維持 Draft；既有雲端結果仍 partial，1024×461 的 Rolling Eye E→N→W 與 +90°尚未證實。Dot 已收同一 PR105 原 thread 的固定 lab v2 補測請求 [6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，只測缺項、不重看已接受的面具石像，也不重開已結案的 Mac 補驗；等待結果。
 ---
 
 

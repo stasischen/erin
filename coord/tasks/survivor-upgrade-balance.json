@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "Dot 對固定遊戲候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350（版本20261105a）的三尺寸與升級玩法實測結果；另需整張PR113的正式獨立審查。新 request 已貼到既有 exchange PR #2，comment 6769159773、local thread 20261110-215444-2f95；目前只確認貼出並讀回，尚未確認 Dot 已收件或回覆。",
-  "next": "等 Dot 對 cf14 固定候選的真實雲端試玩結果；Mac 已有自動化測試證據不重跑。完成剩餘 gate 與正式審查後再處理 PR113。家長已選玩法點子1、2、4、5依序做；Dot 已交付點子1結算摘要規格且無待決設計問題，但依原指示要等 PR113 完成並合併後，才從最新 main 開點子1，再依序做2、4、5。",
+  "waitingFor": "Dot 使用既有固定尺寸 iframe lab v2 完成目前候選 cf14 的三尺寸與三槽上限補驗；需記 frame 實際 innerWidth／innerHeight／DPR，分開外層 viewport 和原生 fullscreen。另需整張 PR113 的正式獨立審查。Dot 已回覆部分自然玩法結果，尚未提供指定尺寸或三槽上限證據。",
+  "next": "已採納 Dot 對固定來源 cf14／版本20261105a 的 partial 雲端結果：在1331×894完成移動、自動攻擊、兩次自然選卡與續玩；不重測這些完成項。請只用既有固定尺寸 iframe lab v2 補1024×461、740×360、1180×820及自然取得三把後確認第四把不能再取得；補測請求在原THREAD comment 6769368844，等待結果。9張圖片僅有文字與hash、未附bytes，不算已交付原圖。整張PR113仍Draft且無正式獨立審查。PR113 gate完成並合併後，按家長已選順序從最新main開點子1，再做2、4、5。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-10T13:57:00Z",
+  "updated": "2026-11-10T14:07:01Z",
   "updatedBy": "codex"
 }
