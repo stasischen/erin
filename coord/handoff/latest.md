@@ -4,7 +4,7 @@
 
 家長已接受面具石像外觀，僅視覺接受；玩法功能驗收仍獨立。固定 Dot request 是 lingo-agent-exchange PR #2 留言 [#6721779744](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6721779744)，固定 PR105/source/version 為候選 `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／`20261031d`。Dot 原留言 [#6763507738](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6763507738) 於 2026-11-10T09:12:47Z 收件，`event_id dot-erin-boss4-cloud-ui-cc7702e-20261110-attempt1`；同一 event 在 exchange PR #2 只找到一份結果，並由 Erin 主控在本次交接中採納一次。原卡此前只有較早的 0/3 viewport 受阻結果，沒有重複採納本次結果。
 
-Dot 雲端本輪最多三次中的第 1 次：文件與實際 viewport 均 1024×461／DPR 1，已正常操作與暫停／繼續，未注入 state、HP 或時鐘。step-10 東向紅格、step-11 方塊落點約(512,296)、step-12 下一預警為斜向光束；未形成 E→N→W。角標軸向有變，但同一非對稱角標不足以辨認正負，+90°未證實。Dot 稱 14 張 PNG 已保存並讀回，但留言沒有圖片 bytes，主控只收到文字及代表 hash，沒有宣稱已讀回圖片本身。結果為 partial／visual_gate_unproven，不代表產品缺陷或通過；雲端上限數量尚餘 2 次，但 Dot 明確沒有授權重測，需新 request 才能續辦。
+Dot 雲端本輪最多三次中的第 1 次：文件與實際 viewport 均 1024×461／DPR 1，已正常操作與暫停／繼續，未注入 state、HP 或時鐘。step-10 東向紅格、step-11 方塊落點約(512,296)、step-12 下一預警為斜向光束；未形成 E→N→W。角標軸向有變，但同一非對稱角標不足以辨認正負，+90°未證實。原留言未附圖片bytes，初次主控只收到文字及hash；主控於2026-11-10T09:50:48Z確認收到同一QA的14張PNG私有交付。ZIP erin-cloud-trial-cc7702e-20261110-attempt1.zip SHA-256=5baf9efdf6fbccf35d1d63c66426bacd68ec516f3022961ebb3aa752b792486e；SHA256SUMS.txt逐檔、ZIP內容與本機原圖一致。已讀 preflight、step-10/11/12：step-10見東向紅格，step-11方塊已到落點，step-12顯示斜向光束預警；可將最後觀察階段辨為光束招式，但無法確定其後下一次翻滾的時機。這不補足 E→N→W 或 +90°，不改 partial 判定；原圖留在本機私有目錄、不進 repo。結果為 partial／visual_gate_unproven，不代表產品缺陷或通過；雲端上限數量尚餘 2 次，但 Dot 明確沒有授權重測，需新 request 才能續辦。
 
 Mac 唯一額外正常 UI 試玩也已消耗：固定候選選「翻滾巨眼」後首幀可見朝東紅色預警，沒有按方向鍵；最後一次等待 250ms 後觀察時已顯示「再試一次！」，結束畫面 HUD 顯示 20 秒。250ms 只是最後一次等待，無法推斷自開局起經過時間、死亡耗時或原因；E→N→W 與靜止 +90° 仍未驗證。三張 1024×461 JPEG 只保存在本機私有目錄，不進 repo。PR #105 保持 Draft；不合併、不部署、不發通知。仍待足夠固定候選證據與獨立整 PR 審查；任何新的 Mac 試玩需另獲家長授權。
 
