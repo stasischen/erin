@@ -1,5 +1,11 @@
 # 目前交接
 
+## PR105 Boss4 單次本機補驗結果（2026-11-10）
+
+家長已接受面具石像外觀，僅視覺接受；玩法功能驗收仍獨立。Mac Studio 已解鎖後，獲准的唯一額外正常 UI 試玩在固定候選 `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`、1024×461／DPR 1 開始。選「翻滾巨眼」後第一幀可見朝東紅色預警；沒有按方向鍵，約 250ms 後頁面已到「再試一次！」，所以 E→N→W 與靜止同法線 +90° 均未驗到。額外次數已消耗，不按 Retry 開第二局。起始、Boss 起始及結束畫面已存三張本機私有 JPEG，未進 repo。
+
+PR #105 保持 Draft；不合併、不部署、不發通知。後續仍需既有 Dot 固定候選雲端驗收與獨立審查；若再做 Mac 實玩，需另獲家長授權。
+
 ## Dot 舊版 HUD 專區幾何補查已收件並標記取代（2026-11-09）
 
 已讀回 release-aggregator PR #411 結果 [#6487955801](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487955801) 與原請求 [#6487897220](https://github.com/stasischen/release-aggregator/pull/411#issuecomment-6487897220)。結果綁定 Erin PR105 祖先提交 `e44dfe7a351b5a3f86c0a319785159598e0db16d`，核對仍是 PR105 歷史來源；Dot 沒有提供 patch，也沒有執行遊戲、測試或瀏覽器驗收。它只指出舊方案缺少 Boss／攻擊預警固定幾何資料，不能據此判定新缺陷。
