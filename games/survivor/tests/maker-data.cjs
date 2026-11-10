@@ -4,7 +4,9 @@ const createRun=require('./maker-support.cjs'), traces=require('./maker-traces.c
 const baseline=require('./maker-baseline.json');
 // 舊位置快照包含等速／瞬移，改由純規則距離與碰撞案例驗證；保留 48 組卡片的傷害與攻速平衡。
 const balance=rows=>rows.filter(row=>!row.boss).map(({id,level,state})=>({id,level,damage:state.damage,interval:state.interval}));
-assert.deepEqual(balance(traces(createRun(),true)),balance(baseline));
+// Only rapid-fire Lv1/Lv5 intentionally change (.15 -> .10 interval reduction).
+const expectedBalance=balance(baseline).map(row=>row.id==='rapid-water'?{...row,interval:.72*(1-row.level*.1)}:row);
+assert.deepEqual(balance(traces(createRun(),true)),expectedBalance);
 // Maker 的預設作品也必須重現普通模式，不能被舊設定污染。
 assert.deepEqual(traces(createRun({maker:true,saved:{'erin-survivor-settings-v3':JSON.stringify({playerHealth:200,enemySpeed:130})}})),traces(createRun()));
 const run=createRun();
@@ -66,5 +68,5 @@ r('state.boss.hp=1500;updateBoss(0);');assert.equal(r('state.bossPhase'),2);r('s
 for(let i=0;i<31;i++)r('updateBoss(.05);');assert.equal(r('state.player.health'),65);assert.equal(r('state.enemyShots.length'),0);
 // PWA all precached paths exist, including the complete Maker and both data scripts.
 const sw=fs.readFileSync(`${__dirname}/../../../sw.js`,'utf8');
-for(const path of ['icons.js','data/defaults.js','data/schema.js','maker/','maker/index.html','maker/style.css','maker/maker.js']) assert.ok(sw.includes(`games/survivor/${path}`));
+for(const path of ['icons.js','data/manifest.js','data/load.js',...require('./load-defaults.cjs').files,'data/schema.js','maker/','maker/index.html','maker/style.css','maker/maker.js']) assert.ok(sw.includes(`games/survivor/${path}`));
 console.log('PASS: 153 regression traces in normal and Maker modes; schema/limits/cycles/injection; storage roundtrip/failure; all nine primitives; remapped recipes; custom enemy attacks; boss kind/warning/phase/damage; records isolation; PWA entries');

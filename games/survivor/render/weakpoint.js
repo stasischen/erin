@@ -11,7 +11,7 @@ function drawBossWeakpoints(body, hop = 0) {
     const radius = 24, x = point.x, y = point.y - hop, pulse=.65+.35*Math.abs(Math.sin(state.elapsed*(closing?26:12)));
     SurvivorArt.paint(artId, {context: ctx, x: x-radius, y: y-radius, width:radius*2, height:radius*2, time:state.elapsed}, () => {
       ctx.save();ctx.globalAlpha=pulse;SurvivorNeon.glowAt(ctx,'pink',x,y,64,.9);
-      ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,24,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,24,0,Math.PI*2);SurvivorNeon.stroke(ctx,'pink');
       ctx.fillStyle=warning?'#ffa94d':closing?'#ff6a3d':'#f5a1bc';ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#fff0f5';ctx.beginPath();ctx.arc(x-3,y-3,4,0,Math.PI*2);ctx.fill();
       if(!warning&&!closing){ctx.fillStyle='#7dffdc';ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}

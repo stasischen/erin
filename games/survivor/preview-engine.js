@@ -2,6 +2,7 @@
 const previewSpec = globalThis.SURVIVOR_PREVIEW.spec;
 let previewTime = 0, previewFired = false, previewRequest = null, previewLast = 0;
 let previewVisible = frameElement._previewVisible !== false;
+const previewLevel = previewSpec.previewLevel ?? previewSpec.level ?? 1;
 const previewCard = UPGRADES.find(c=>c.id===previewSpec.id);
 if(previewCard && previewSpec.kind==='effect') previewCard.effects=[previewCard.effects[previewSpec.index]];
 gameSettings.music = false; gameSettings.sound = false; gameSettings.vibration = false;
@@ -14,6 +15,16 @@ const previewDash = previewFeatures.some(id=>/dash|fusion-storm/.test(id)) || (p
 const previewRadii = {'water-skill':gameSettings.bombRadius,'thunder-skill':gameSettings.bombRadius,'thunder-counter':BUILD_TUNING.counterRadius,'fusion-puddle':gameSettings.bombRadius,'wind-ultimate':BUILD_TUNING.tornadoRadius+50};
 const previewRadius = Math.max(0,...previewFeatures.map(id=>previewRadii[id]||0),...(previewCard ? previewCard.effects.filter(e=>!e.feature).map(e=>e.radius||0) : []), previewMove && ['ring','cage'].includes(previewMove.kind) ? previewMove.radius : 0);
 let previewOrigin = {x:0,y:0};
+// Compare the same formation and framing, using the proposed level in both views.
+function previewWaveGeometry() {
+  const w=GAME_DATA.weapons.find(w=>w.id===previewSpec.weaponId);
+  if(w?.kind!=='melee' || !previewFeatures.includes('splash-water'))return null;
+  const power=previewCard.effects.find(e=>e.feature==='splash-water').power||1;
+  const level=Math.min(GAME_DATA.tuning.maxUpgradeLevel,(previewSpec.level ?? 1)*power);
+  const extra=SurvivorEffectBlocks.event('splash-water','onShotHit',GAME_DATA,{level,damage:1}).conditions[0].radius;
+  const reach=w.radius*(w.comboEnabled?w.comboSize:w.chargeEnabled?w.chargeSize:1);
+  return {reach,extra,radius:reach+extra,directional:w.id==='candy-sword',width:w.thrustWidth};
+}
 function sizePreview() {
   state.zoom=null;state.screenWidth=null;state.screenHeight=null;
   const width = document.documentElement ? document.documentElement.clientWidth : 640;
@@ -21,8 +32,11 @@ function sizePreview() {
   const ratio = Math.max(.5, width / Math.max(1,height));
   const padding = PREVIEW_COMPOSITION.padding;
   const displacement = previewCard ? Math.max(0,...previewCard.effects.filter(e=>!e.feature && e.type==='knockback').map(e=>Math.abs(e.distance||0))) : 0;
+  const wave=previewWaveGeometry();
+  const waveWidth=wave?(wave.directional?Math.max(PREVIEW_COMPOSITION.originX+24,wave.radius+wave.width-PREVIEW_COMPOSITION.originX):wave.radius+PREVIEW_COMPOSITION.originX):0;
+  const waveHeight=wave?(wave.directional?Math.max(40,wave.width):wave.radius):0;
   const halfWidth = previewMove ? Math.max(250, previewMove.kind==='dash' ? previewMove.distance : 0) : previewDash ? PLAYER_SPEED*gameSettings.dashMultiplier*gameSettings.dashSeconds+padding : 140+displacement;
-  state.height = Math.max(height / PREVIEW_COMPOSITION.scale, (Math.max(halfWidth,previewRadius)+padding)*2/ratio, previewRadius ? (previewRadius+padding)*2 : 80);
+  state.height = Math.max(height / PREVIEW_COMPOSITION.scale, (Math.max(halfWidth,previewRadius,waveWidth)+padding)*2/ratio, Math.max(previewRadius,waveHeight)*2+padding*2);
   state.width = state.height * ratio;
   canvas.width = Math.round(state.width * 3); canvas.height = Math.round(state.height * 3);
   ctx.setTransform(3,0,0,3,0,0); ctx.imageSmoothingEnabled = false;
@@ -44,6 +58,13 @@ function resetPreview() {
   const p = state.player;
   previewOrigin = {x:p.x + (previewMove ? 0 : PREVIEW_COMPOSITION.originX), y:p.y}; updateCamera();
   state.enemies = (activeWeapon().kind==='melee' ? [45,60,75] : PREVIEW_COMPOSITION.targetDistances).map((d,i) => ({homeX:p.x+d,homeY:p.y+(i%2)*24-12,typeId:'jaben',behavior:'still',x:p.x+d,y:p.y+(i%2)*24-12,r:17,speed:0,damage:0,hp:100000,maxHp:100000,wobble:0,alive:true,flash:0,shotCooldown:999}));
+  if(activeWeapon().kind==='melee' && previewFeatures.some(id=>['wind-blade','thunder-attack','thunder-charge','thunder-super'].includes(id))) {
+    // One direct target and one follow-up target outside the cleave show the real extra hit.
+    const follow=state.enemies[1], blade=previewFeatures.includes('wind-blade');
+    follow.x=follow.homeX=p.x+(blade?-50:130);follow.y=follow.homeY=p.y;
+    state.enemies=state.enemies.slice(0,2);
+    if(blade && activeWeapon().id==='candy-sword')state.enemies=state.enemies.slice(0,1);
+  }
   if (previewSpec.kind === 'move') {
     state.enemies = [];
     state.boss = {x:p.x-160,y:p.y,r:32,hp:2000,maxHp:2000,speed:0,wobble:0,flash:0};
@@ -54,8 +75,8 @@ function resetPreview() {
     // 效果積木單獨展示；合體卡同時保留前置，才能看見組合的兩種元素。
     if (card) {
       const acquire = (c,seen=new Set()) => { if(seen.has(c.id)) return; seen.add(c.id); (c.requires||[]).forEach(id=>{const pre=UPGRADES.find(c=>c.id===id);if(pre)acquire(pre,seen);}); state.upgrades[c.id]=1; };
-      if (card.tier === 'fusion') acquire(card);
-      state.upgrades[card.id] = previewSpec.level || 1;
+      if (previewLevel > 0 && card.tier === 'fusion') acquire(card);
+      state.upgrades[card.id] = previewLevel;
     }
     // 在三秒展示內提早觸發，數值仍交給真正的遊戲效果處理。
     for (const id of ['water-fountain','wind-gust','water-rain','thunder-rod','thunder-static']) state.schoolCombat.timers[id] = .35;
@@ -64,7 +85,7 @@ function resetPreview() {
     if (previewFeatures.includes('thunder-charge')) state.schoolCombat.kills = GAME_DATA.schoolRules.chargeKills;
     if (previewFeatures.includes('water-wet')) { state.enemies.forEach(e => e.wetTimer=GAME_DATA.schoolRules.wetSeconds); }
     if (previewFeatures.includes('thunder-static')) { state.enemies[0].x=p.x+p.r+12; state.enemies[0].homeX=state.enemies[0].x; }
-    if (previewCard && previewCard.neutral) {
+    if (previewLevel > 0 && previewCard && previewCard.neutral) {
       neutralEvent('acquire',p.x,p.y,previewCard.id);
       if (previewFeatures.includes('item-bank')) { state.neutral.gems=GAME_DATA.neutralRules.bankEvery-1;neutralEvent('pickup',p.x,p.y); }
       if (previewFeatures.includes('item-cookie')) { state.neutral.kills=GAME_DATA.neutralRules.cookieKills-1; }
@@ -86,14 +107,23 @@ function stepPreview(dt) {
       const p = state.player;
       const effects = previewCard ? previewCard.effects : [];
       const features = effects.map(e=>e.feature).filter(Boolean);
-      if (previewCard && previewCard.neutral) {
+      if (previewLevel > 0 && previewCard && previewCard.neutral) {
         fireAtNearest();
         if(features.includes('item-cookie')) { state.enemies[0].hp=1;damageEnemy(state.enemies[0],2); }
 
       }
       // 導電水窪也示範普攻命中，讓前置水技能在假怪腳下留下會放電的水窪。
       if (features.some(id=>['big-water','rapid-water','multi-water','piercing-water','splash-water','water-attack','wind-attack','thunder-attack','wind-speed','fusion-puddle','water-drop','wind-blade','thunder-charge','water-wet','thunder-super'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='hit')) {
-        state.shotTimer=0; fireAtNearest(); triggerMakerEffects('hit',p.x+45,p.y);
+        if(features.includes('splash-water') && activeWeapon().kind==='melee') {
+          const w=activeWeapon();state.weaponAttack={...state.weaponAttack,number:w.comboEvery-1,idle:0,charge:w.comboEnabled?0:w.chargeSeconds};
+          const {reach,extra}=previewWaveGeometry();
+          state.enemies[0].y=state.enemies[0].homeY=p.y;
+          state.enemies[1].x=state.enemies[1].homeX=p.x+reach+Math.max(state.enemies[1].r+7,extra*.65);
+          state.enemies[1].y=state.enemies[1].homeY=p.y;
+          state.enemies=state.enemies.slice(0,2);
+        }
+        state.shotTimer=0;
+        if(!features.includes('rapid-water') || !manualMode()) {fireAtNearest();triggerMakerEffects('hit',p.x+45,p.y);}
       }
       if(features.some(id=>['water-skill','thunder-skill','fusion-puddle','wind-dash'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='skill')) activateSkill();
       if((previewCard && previewCard.slot === 'dash') || features.some(id=>['water-dash','wind-dash','fusion-storm','fusion-dash','dash-boost'].includes(id)) || effects.some(e=>!e.feature && e.trigger==='dash')) { activateDash(); state.shotTimer = .25; }
@@ -114,6 +144,7 @@ function stepPreview(dt) {
   const simulationSeconds = dt * (move ? Math.max(1,(move.warning+.7)/2.5) : 1);
   // 長預警加速展示，仍逐步跑真實引擎，單步不超過 .05 秒。
   for(let left=simulationSeconds;left>0;left-=.05) {
+    if(previewFired && previewFeatures.includes('rapid-water') && manualMode())executeAttackInput({kind:'attack',angle:0,charged:false,dash:false});
     tick(Math.min(.05,left));
     spacePreviewTargets();
   }
@@ -133,10 +164,10 @@ function spacePreviewTargets() {
   const p = state.player;
   state.enemies.forEach(e=>{
     const dx=e.x-p.x, dy=e.y-p.y, distance=Math.hypot(dx,dy);
-    const minimum=previewFeatures.includes('item-wall') && activeWeapon().kind==='melee' ? 40 : PREVIEW_COMPOSITION.minDistance;
+    const minimum=activeWeapon().kind==='melee' ? Math.min(40,activeWeapon().radius*.6) : PREVIEW_COMPOSITION.minDistance;
     if(distance < minimum) {
       const scale=minimum/Math.max(.001,distance);
-      e.x=p.x+(distance ? dx*scale : PREVIEW_COMPOSITION.minDistance); e.y=p.y+dy*scale;
+      e.x=p.x+(distance ? dx*scale : minimum); e.y=p.y+dy*scale;
     }
   });
 }

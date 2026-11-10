@@ -79,6 +79,7 @@
     const sprite=frames[index]||cache.idle;
     const y=-H-VPAD+(options.groundOffset||0);
     g.save();
+    const scale=options.worldScale||1;g.scale(scale,scale);
     if(name==='idle')g.scale(1,1+.03*Math.sin((options.elapsed||0)*Math.PI*2/.8));
     if(name==='run')g.translate(0,-2);
     g.drawImage(sprite,-W/2-PAD,y,CW,CH);

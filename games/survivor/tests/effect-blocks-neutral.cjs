@@ -7,7 +7,8 @@ const ids=['wall','candy','bird','bank','split','magnet','crown','clover','rear'
 function scenario(old,setup,steps,draw=.05) {
  const run=create();
  run("globalThis.currentWave=waveNeutralHit");
- if(old) for(const [name,body] of Object.entries(legacy)) if(name!=='waveNeutralHit')run(require('./slide-legacy.cjs')(body));
+ // Only the intended cookie heal amount changes in the frozen legacy adapter.
+ if(old) for(const [name,body] of Object.entries(legacy)) if(name!=='waveNeutralHit')run(require('./slide-legacy.cjs')(name==='neutral' ? body.replace("{type:'heal', amount:1}","{type:'heal', amount:Math.ceil(GAME_DATA.tuning.playerHealth / 20)}") : body));
  run("waveNeutralHit=currentWave");
  run(`Math.random=()=>${draw};resetGame();state.mode='playing';GAME_DATA.hitJuice.enabled=false;settingsPanel.hidden=true;
  state.spawnTimer=999;state.shotTimer=999;state.bossSpawned=true;state.enemies=[];state.boss=null;state.upgrades={};

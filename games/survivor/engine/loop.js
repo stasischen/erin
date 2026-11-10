@@ -1,162 +1,3 @@
-// 所有物件共用環形座標；負數也會回到 0～size。
-function wrapCoordinate(value, size) { return size > 0 && (value < 0 || value >= size) ? ((value % size) + size) % size : value; }
-function wrapDelta(to, from, size) {
-  const diff = to - from;
-  return size > 0 && Math.abs(diff) >= size / 2 ? wrapCoordinate(diff + size / 2, size) - size / 2 : diff;
-}
-function deltaX(to, from) { if(state.trial)return to-from; return wrapDelta(to, from, state.worldWidth); }
-function deltaY(to, from) { if(state.trial)return to-from; return wrapDelta(to, from, state.worldHeight); }
-function clampToMap(body) {
-  if(state.trial) {
-    const result=SurvivorTrialRules.boundary(body,state.trial.arena);
-    Object.assign(body,result.position);if(result.hit){body.wallHit=true;if(body.rangeLeft!==undefined)body.alive=false;if(body.vx!==undefined)body.life=0;}
-    return;
-  }
-  body.x = wrapCoordinate(body.x, state.worldWidth);
-  body.y = wrapCoordinate(body.y, state.worldHeight);
-}
-function updateCamera() {
-  if(state.trial) {const camera=SurvivorTrialRules.camera(state.player,state.trial.arena,state.width,state.height);state.cameraX=camera.x;state.cameraY=camera.y;return;}
-  state.cameraX = state.player.x - state.width / 2;
-  state.cameraY = state.player.y - state.height / 2;
-}
-function resetMap() {
-  // 固定世界跨度，不依裝置螢幕大小決定。
-  // 整張世界也是地磚的整數倍，跨過世界接縫時花紋不跳動。
-  const span = 4096 * MAP_SCREENS;
-  state.worldWidth = Math.ceil(span / 336) * 336;
-  state.worldHeight = Math.ceil(span / 252) * 252;
-}
-function fitVisibleViewport() {
-  const viewport = window.visualViewport;
-  const width = viewport ? viewport.width : window.innerWidth;
-  const height = viewport ? viewport.height : window.innerHeight;
-  const rotated = window.innerHeight > window.innerWidth;
-  // One viewport policy for HUD, levelup, settings and Maker, in shell coordinates.
-  // Match the former CSS media queries using the layout viewport; visualViewport
-  // still controls shell geometry and offsets below.
-  const shellWidth = Math.max(window.innerWidth, window.innerHeight);
-  const shellHeight = Math.min(window.innerWidth, window.innerHeight);
-  if (gameShell.dataset) gameShell.dataset.short = [
-    shellHeight <= 520 ? "compact" : "",
-    shellWidth <= 660 ? "small" : "",
-    shellWidth <= 600 ? "narrow" : ""
-  ].filter(Boolean).join(" ");
-  gameShell.style.width = `${rotated ? height : width}px`;
-  gameShell.style.height = `${rotated ? width : height}px`;
-  gameShell.style.left = `${viewport ? viewport.offsetLeft : 0}px`;
-  gameShell.style.top = `${viewport ? viewport.offsetTop : 0}px`;
-  gameShell.style.transform = rotated ? "rotate(90deg) translateY(-100%)" : "none";
-}
-// 固定 320000 平方世界單位，連續縮放鋪滿整個 Canvas，不取整或留邊。
-// 740×360 手機約顯示 811×395 世界單位；大裝置放大，像素圖關閉平滑。
-function worldViewport(cssWidth, cssHeight) {
-  const zoom=Math.sqrt(cssWidth*cssHeight/(800*400));
-  const width=cssWidth/zoom,height=cssHeight/zoom;
-  return {width,height,zoom,screenWidth:cssWidth,screenHeight:cssHeight,
-    viewLeft:0,viewTop:0};
-}
-function applyWorldViewport(cssWidth,cssHeight) {
-  Object.assign(state,worldViewport(cssWidth,cssHeight));
-  state.pixelRatio=Math.min(window.devicePixelRatio||1,2);
-  canvas.width=Math.round(cssWidth*state.pixelRatio);canvas.height=Math.round(cssHeight*state.pixelRatio);
-  ctx.setTransform(state.pixelRatio*state.zoom,0,0,state.pixelRatio*state.zoom,state.viewLeft*state.pixelRatio,state.viewTop*state.pixelRatio);
-  ctx.imageSmoothingEnabled=false;
-}
-function resize() {
-  fitVisibleViewport();
-  // 旋轉或工具列改變高度時，放開舊搖桿，避免沿舊座標繼續走。
-  state.pointerId = null; state.joy = null; state.keys.clear();
-  if (typeof cancelManualAttack === "function") cancelManualAttack();
-  // client 尺寸不含外框，也不受整個容器旋轉影響。
-  const rect = canvas.getBoundingClientRect();
-  applyWorldViewport(Math.max(1,canvas.clientWidth||rect.width),Math.max(1,canvas.clientHeight||rect.height));
-  if (!state.worldWidth) {
-    resetMap(); state.player.x = state.width * MAP_SCREENS / 2; state.player.y = state.height * MAP_SCREENS / 2;
-  }
-
-  clampToMap(state.player); updateCamera();
-}
-
-function resetGame() {
-  state.trial=null;
-  if (typeof cancelManualAttack === "function") cancelManualAttack();
-  state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
-  state.trauma=0; state.inputBuffer=null; state.hitStop=0; state.hitShake=0; state.hitShakePixels=0; state.juiceClock=0;
-  state.stageIndex = MAKER_MODE && typeof location!=='undefined' ? Math.max(0,STAGES.findIndex(s=>s.id===new URLSearchParams(location.search).get('stage'))) : 0; state.stageElapsed = 0; state.stageTransition = 0;
-  resetEncounters();
-  state.enemyHazards = []; state.makerFields = []; state.makerTimers = {};
-  state.schoolRun = PREVIEW_MODE ? null : SurvivorSchools.createRun(GAME_DATA, Array.from({length:64}, () => Math.random()));
-  state.neutral = { kills:0, gems:0, birdAngle:0, birdTimer:0, bombs:[] };
-  state.pickingWeapon = false; state.weaponId = 'water-ball'; state.swingCount = 0; state.weaponAttack=null; state.lastWeaponAttack=null; state.attackRecovery=0; state.schoolCombat = { shots:0, kills:0, chargedUsed:0, timers:{}, bubble:false, still:0, rods:[] };
-  resetMap();
-  for (const visual of state.vfx) state.vfxPool.push(visual);
-  state.vfx = [];
-  for (const field of state.fields) state.fieldPool.push(field);
-  state.fields = []; state.trailDistance = 0; state.ultimateTimer = 0; state.ultimateTimers = {}; state.ultimateVisuals = {}; state.ultimateVisual = null; state.moveRate = 0;
-  state.dashCharges = UPGRADE_TUNING.dashCharges; state.dashAttack = 0; state.slowMotion = 0; state.dashGhosts = [];
-  state.dashBodyPass = 0; state.dashTimer = 0; state.dashCooldown = 0; state.skillCooldown = 0;
-  state.dashX = 1; state.dashY = 0; state.faceX = 1; state.faceY = 0;
-  state.bomb = null; state.bombBlast = null; state.pointerId = null;
-  for (const item of state.projectiles) state.projectilePool.push(item);
-  for (const item of state.gems) state.gemPool.push(item);
-  for (const item of state.effects) state.effectPool.push(item);
-  state.player = { x: state.width * MAP_SCREENS / 2, y: state.height * MAP_SCREENS / 2, r: 18, health: PLAYER_HEALTH, invincible: 0, hitFlash: 0, walkPhase: 0, moving: false, facing: 1 };
-  state.enemies = [];
-  for (const item of state.enemyShots) state.enemyShotPool.push(item);
-  state.enemyShots = [];
-  state.bookShotTimer = 0; state.bookNoticeTimer = 0; state.bookShootingStarted = false;
-  enemyNotice.hidden = true;
-  state.boss = null; state.bossIntro = 0; state.bossZone = null;
-  clearBossMoves(); state.bossPhase = 1; state.bossPhasePause = 0; state.bossRest = 0; state.lastBossMoves = []; state.bossShout = 0; state.bossShake = 0;
-  state.projectiles = [];
-  state.gems = [];
-  state.effects = [];
-  state.elapsed = 0;
-  state.spawnTimer = 0.5;
-  state.shotTimer = 0.15;
-  state.healTimer = 0;
-  state.xp = 0;
-  state.level = 1;
-  state.upgrades = {}; state.pendingChoices = []; state.rerollsRemaining = LEVELUP_REROLLS;
-  state.keys.clear();
-  state.joy = null;
-  state.player.health = PLAYER_HEALTH;
-  updateCamera(); updateHud();
-}
-
-function startGame() {
-  if (globalThis.SurvivorPreview) SurvivorPreview.stop();
-  resetGame();
-  state.mode = "playing";
-  overlay.classList.add("hidden");
-  SurvivorIcons.set(pauseButton, "settings");
-  state.lastTime = performance.now();
-  scheduleFrame();
-  if (PREVIEW_MODE) spawnEnemy(); else showWeaponChoices();
-  updateActionControls();
-  playSound("click");
-}
-
-function finishRun(won) {
-  if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
-  if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
-    // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
-    const progress = { weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
-    resetGame();
-    Object.assign(state, { weaponId: progress.weaponId, swingCount: progress.swingCount, stageIndex: progress.stageIndex, elapsed: progress.elapsed, level: progress.level, xp: progress.xp, upgrades: progress.upgrades, schoolRun: progress.schoolRun, schoolCombat: progress.schoolCombat, neutral:progress.neutral, rerollsRemaining:progress.rerolls, stageTransition: 2, mode: "transition" });
-    state.player.health = progress.health;
-    updateHud(); updateActionControls(); return;
-  }
-  clearBossMoves(); state.bossZone = null; state.bossShake = 0;
-  bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
-  try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
-  playSound(won ? "win" : "over");
-  if (MAKER_MODE && window.openSurvivorMaker) window.openSurvivorMaker(won ? "過關了！繼續設計或再試玩。" : "試玩結束！繼續設計或再試玩。");
-  else showOverlay(won ? "won" : "over");
-}
-
-
 function countdown(value, dt) { return value - dt < 0.000001 ? 0 : value - dt; }
 
 function tick(dt,clockDt=dt) {return withImpactBatch(()=>tickImpacts(dt,clockDt));}
@@ -217,7 +58,7 @@ function tickImpacts(dt,clockDt=dt) {
     const length = Math.hypot(dx, dy); state.faceX = dx / length; state.faceY = dy / length;
   }
   const dashTime = Math.min(playerDt, state.dashTimer);
-  const speed = PLAYER_SPEED * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed() * (state.trial ? state.trial.slow : 1);
+  const speed = PLAYER_SPEED * SurvivorAbilities.speed() * cardBlock('wind-light','onMove').actions[0].multiplier * cardBlock('onion-dash','onMove').actions[0].multiplier * (outsideBossZone() ? 0.8 : 1) * syrupSpeed() * (state.trial ? state.trial.slow : 1);
   const oldX = state.player.x, oldY = state.player.y;
   state.player.x += speed * (dx * (playerDt - dashTime) + state.dashX * gameSettings.dashMultiplier * dashTime);
   state.player.y += speed * (dy * (playerDt - dashTime) + state.dashY * gameSettings.dashMultiplier * dashTime);
@@ -259,20 +100,23 @@ function tickImpacts(dt,clockDt=dt) {
   if(state.player.perfectFlash>0)state.player.perfectFlash=countdown(state.player.perfectFlash,dt);
   const moved = Math.hypot(deltaX(state.player.x, oldX), deltaY(state.player.y, oldY));
   state.player.moving = moved > 0.001;
-  if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
+  if(state.loadout)SurvivorLoadout.charge(dt);
+  else if (GAME_DATA.attackMode !== "manual") state.weaponAttack=SurvivorEffectBlocks.attackTick(state.weaponAttack,activeWeapon(),dt,state.player.moving,teacherBonuses().charge);
   if (state.player.moving) state.player.walkPhase += moved / 12;
   else state.player.walkPhase = 0;
   if (deltaX(state.player.x, oldX)) state.player.facing = deltaX(state.player.x, oldX) > 0 ? 1 : -1;
 
   if(!state.trial) {updatePacing(dt);updateEncounters(dt);}
+  SurvivorWaves.update();
   state.spawnTimer -= dt;
-  if (!state.trial && !state.boss && state.stageElapsed >= gameSettings.waveSeconds && state.bossIntro <= 0) summonTeacher();
+  if (!state.trial && !state.boss && state.stageElapsed >= SurvivorWaves.bossTime() && state.bossIntro <= 0) summonTeacher();
   if (!state.trial && !state.boss) {
     let wave = currentWaves()[0];
     for (const row of currentWaves()) if (state.stageElapsed >= row.start) wave = row;
-    const spawnEvery = wave.every / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
+    const spawnEvery = (SurvivorWaves.enabled()?SurvivorWaves.current().every:wave.every) / gameSettings.spawnScale / SurvivorPacing.density(GAME_DATA.pacing,state.stageElapsed);
     while (state.spawnTimer <= 0) {
-      for(let i=0;i<(wave.count||1);i++) spawnEnemy({typeId:wave.typeId==='pacing'?undefined:wave.typeId,side:SurvivorPacing.side(wave.position,i),offscreen:wave.position==='random'});
+      if(SurvivorWaves.enabled())SurvivorWaves.spawnBatch();
+      else for(let i=0;i<(wave.count||1);i++) spawnEnemy({typeId:wave.typeId==='pacing'?undefined:wave.typeId,side:SurvivorPacing.side(wave.position,i),offscreen:wave.position==='random'});
       if(wave.sound==='warning') playSound('warning');
       if(wave.hint) {enemyNotice.textContent='新一批怪物進場了！';enemyNotice.hidden=false;state.bookNoticeTimer=2;}
       state.spawnTimer += spawnEvery;
@@ -284,25 +128,27 @@ function tickImpacts(dt,clockDt=dt) {
     if (state.bossIntro <= 0) { burst(state.boss.x, state.boss.y, "#fff36b", 32); updateHud(); }
   }
   state.shotTimer -= playerDt;
-  if (GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
-  if (!state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
+  if (!state.loadout && GAME_DATA.attackMode !== 'manual' && dashTime>0 && state.dashTimer===0 && activeWeapon().id==='candy-sword' && activeWeapon().dashThrust) {swingAtNearest(true);if(state.mode!=='playing')return;state.shotTimer=effectiveShotInterval()+state.attackRecovery;state.attackRecovery=0;}
+  if(state.loadout){SurvivorLoadout.tick(dt);if(state.mode!=='playing')return;}
+  if (!state.loadout && !state.player.feedbackFrozen && GAME_DATA.attackMode !== "manual" && state.shotTimer <= 0) { fireAtNearest(); if (state.mode !== "playing") return; state.shotTimer += effectiveShotInterval()+(state.attackRecovery||0); state.attackRecovery=0; }
   for (const enemy of state.enemies) {
     if (!enemy.alive || enemy.feedbackFrozen) continue;
     if(state.trial && enemy.emergeTimer>0) {enemy.emergeTimer=countdown(enemy.emergeTimer,dt);continue;}
-    const vx = deltaX(state.player.x, enemy.x), vy = deltaY(state.player.y, enemy.y);
+    const aim=SurvivorAbilities.lure(enemy);
+    const vx = deltaX(aim.x, enemy.x), vy = deltaY(aim.y, enemy.y);
     const distance = Math.max(0.01, Math.hypot(vx, vy));
     if(!targetVisible(enemy)) enemy.phaseAttack=null;
     updateEnemyBehavior(enemy,dt);
     if(state.mode!=="playing") return;
     if(!enemy.alive) continue;
     const direction=enemyDirection(enemy,distance), curve=enemy.behavior==='fast' ? Math.sin(enemy.wobble)*.65 : 0;
-    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
+    const speed=enemy.speed*eliteSpeed(enemy)*direction*(enemy.stunTimer>0?0:1)*(enemy.slowTimer>0?(enemy.makerSlow||BUILD_TUNING.slowMultiplier):1)*(SurvivorWaves.enabled()?1:1+Math.floor(state.stageElapsed/30)*UPGRADE_TUNING.enemySpeedGrowth);
     enemy.x += (vx-vy*curve)/distance * speed * dt;
     enemy.y += (vy+vx*curve)/distance * speed * dt;
     clampToMap(enemy);
     enemy.stunTimer = countdown(enemy.stunTimer || 0, dt);
     enemy.slowTimer = Math.max(0, (enemy.slowTimer || 0) - dt);
-    enemy.wobble += dt * 6;
+    enemy.wobble += dt * 6 * (enemy.weightStep||1);
     enemy.flash = Math.max(0, enemy.flash - dt);
   }
   if(!GAME_DATA.bodySeparation.enabled) separateTanks();
@@ -422,7 +268,13 @@ function tickImpacts(dt,clockDt=dt) {
   state.player.invincible = Math.max(0, state.player.invincible - dt);
   state.player.hitFlash = Math.max(0, state.player.hitFlash - dt);
   if (state.player.health <= 0) { finishRun(false); return; }
-  statusEl.textContent = `${Math.floor(state.elapsed)} 秒`;
+  // 計時器下方小字倒數魔王，讓玩家知道還要撐多久；魔王出場或試煉時不顯示。
+  const bossLeft=!state.trial&&!PREVIEW_MODE&&!state.boss&&state.bossIntro<=0?Math.ceil(SurvivorWaves.bossTime()-state.stageElapsed):0;
+  const statusKey=Math.floor(state.elapsed)+'|'+bossLeft;
+  if(statusEl.dataset.key!==statusKey || !statusEl.textContent.startsWith(`${Math.floor(state.elapsed)} 秒`)){
+    statusEl.dataset.key=statusKey;statusEl.textContent=`${Math.floor(state.elapsed)} 秒`;
+    if(bossLeft>0){const eta=document.createElement('small');eta.className='boss-eta';eta.textContent=`魔王 ${bossLeft} 秒後來`;statusEl.appendChild(eta);}
+  }
 }
 
 // 小型背景圖塊預先繪製並快取；逐幀只貼鏡頭內圖塊，不配置世界大小的圖片。

@@ -42,6 +42,11 @@ for(const c of data.cards) {
 }
 const itemTexts=data.cards.filter(c=>c.neutral).map(c=>descriptions.SurvivorPreview.describe(data,{kind:'card',id:c.id}));assert.equal(new Set(itemTexts).size,10);
 data.neutralRules.cookieKills=17;assert.match(descriptions.SurvivorPreview.describe(data,{kind:'card',id:'item-cookie'}),/17/);
+for(const hp of [61,200]) {
+ data.tuning.playerHealth=hp;
+ assert.match(descriptions.SurvivorPreview.describe(data,{kind:'card',id:'item-cookie'}),new RegExp('回復 '+Math.ceil(hp/20)+' 點血'));
+ assert.match(descriptions.SurvivorPreview.describe(data,{kind:'card',id:'auto-heal'}),new RegExp('補 '+Math.ceil(hp/20)+' 滴血'));
+}
 data.schoolRules.refundCharge=.7;assert.match(descriptions.SurvivorPreview.describe(data,{kind:'card',id:'wind-refund'}),/0.7/);
 // 兩個沙盒確實凍結所有遊戲計時；工具 UI 的畫面驗收交 Grok。
 const preview=createRun({preview:{data,spec:{kind:'card',id:'big-water'}}});

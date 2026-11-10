@@ -11,7 +11,7 @@ function setup(saved = {}) {
   const storage = { ...saved };
   const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { innerWidth: 800, innerHeight: 600, addEventListener(name, callback) { (windowListeners[name] ||= []).push(callback); } }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
   vm.runInContext(fs.readFileSync(`${__dirname}/../icons.js`, "utf8"), context);
-  vm.runInContext(fs.readFileSync(`${__dirname}/../data/defaults.js`, "utf8"), context);
+  require('./load-defaults.cjs').load(context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/schema.js`, "utf8"), context);
   require('./load-game.cjs').load(context, process.env.SURVIVOR_SOURCE);
   context.windowListeners = windowListeners; context.elements = elements; context.storage = storage; context.drawCalls = drawCalls;
@@ -63,7 +63,8 @@ fresh({'fusion-dash':1}); run('activateDash();'); assert.equal(run('state.fields
 for (const school of ['water','wind','thunder']) {
   fresh({[`${school}-ultimate`]:1}); run('state.elapsed=0; state.ultimateTimer=0; updateUltimate(.01);');
   assert.equal(run('state.ultimateVisual.school'),school);
-  painted('drawUltimate();',school==='water'?'fillRect':school==='wind'?'arc':'ellipse');
+  painted('drawUltimate();',school==='water'?'fillRect':'ellipse');
+  if(school==='thunder')painted('drawUltimate();','quadraticCurveTo');
   if(school==='thunder') assert.ok(visual('lightning'));
   if(school==='wind') { run('globalThis.old=state.ultimateVisual.x; state.elapsed+=.05; updateUltimate(.05);'); assert.notEqual(run('state.ultimateVisual.x'),run('old')); }
 }
@@ -72,7 +73,7 @@ fresh({'big-water':1,'multi-water':1,'rapid-water':1,'piercing-water':1}); run('
 assert.ok(run('state.projectiles.length>1 && state.projectiles[0].r>state.player.r*2/3 && state.projectiles[0].piercing'));
 assert.ok(run('effectiveShotInterval()<SHOT_INTERVAL')); painted('render();','lineTo');
 fresh({'splash-water':1}); run('state.projectiles=[{x:state.enemies[0].x,y:state.enemies[0].y,vx:0,vy:0,r:12,damage:35,pierce:0,hitList:[],alive:true,rangeLeft:100}]; tick(0);'); assert.ok(visual('splash'));
-for (const id of ['bubble-shield','gem-magnet']) { fresh({[id]:1}); painted('drawSupportVisuals();','arc'); }
+for (const id of ['bubble-shield','gem-magnet']) { fresh({[id]:1}); painted('drawSupportVisuals();',id==='bubble-shield'?'ellipse':'arc'); }
 fresh({'auto-heal':1}); run('state.player.health=50; state.healTimer=100; tick(.01);'); assert.equal(run('state.effects.some(e=>e.kind==="heal")'),true);
 fresh(); run('activateSkill();'); assert.ok(run('state.bomb')); run('updateBomb(1);'); assert.ok(run('state.bombBlast')); assert.ok(visual('gust'));
 // 堆滿粒子也能保留閃電及傷害數字；池與活動物件有上限。

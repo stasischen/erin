@@ -1,5 +1,224 @@
 # 目前交接
 
+## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
+
+PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
+
+只補未完成範圍的 lab v2 result [#6769500536](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769500536)，request [#6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)。實際 frame 均與指定值相符，DPR均為1：1024×461（外層1331×894/client1316×894）、740×360（外層1331×894/client1331×894）、1180×820（外層1331×894/client1316×894）；三者原生 fullscreen皆false。三個遊戲frame的canvas與game-shell均填滿frame且位置(0,0)，未見遊戲黑邊或HUD互疊。740×360自然升級選「彩虹吸管」後續玩，1024×461及1180×820實際移動、自動攻擊通過；先前已採納的兩次自然選卡不重做。
+
+仍未以雲端自然局驗證三武器槽填滿後不能拿第四把；Mac既有 `games/survivor/tests/survival-loadout.cjs` 覆蓋三槽、保證合法武器與升級上限，測試已在先前完整套件通過。Dot保存13張外層JPEG但留言沒有圖片bytes／附件，所以不算圖像交付。三尺寸PASS不等於完整PR approval；仍需非作者整體獨立審查，PR保持Draft。
+
+家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot已交付第1項「本局結算摘要」精簡規格：時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用既有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待PR113 gate完成並合併後才從最新main開第1項，之後依序做2、4、5。
+
+PR105維持Draft；既有固定候選Dot result仍partial，E→N→W與+90°未證實。已在原THREAD送出使用固定尺寸lab v2的補測 request [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，目前等待Dot回覆；不重看已接受的面具石像，也不重開Mac補驗。
+---
+
+
+## PR113 固定候選移動與自然局補驗（2026-11-09；本次補驗已結案）
+
+家長限定授權在 Mac Studio 補驗固定候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／版本 `20261105a`；不重跑既有三尺寸、不改遊戲、不重派Dot、不合併或部署。沿用同一公開候選與740×360畫面，Chrome全視窗方向輸入前後截圖可見主角相對巧克力大熊及場景地面物件位置改變；計時由78秒到79秒。這次可確認實際移動，不只憑方向鍵已送出或時間增加推斷。移動前／後畫面曾在CUA呼叫 `call_5d0da1e0d8e74226991311f6406d6557`、`call_8a62be9f38c04ae38ddfcd2cb023db53` 即時顯示，結算畫面曾在 `call_567d24620e0b4994813f7b5cb5ecf4c5` 顯示。一次有界核查確認 `read_thread(includeOutputs=true)` 只有呼叫metadata、沒有影像附件／bytes；本機 Erin 截圖資料夾也沒有本次原圖。Dot無法用這些呼叫編號重開像素圖，所以只記主控親見結果，不冒稱Dot已親眼核圖；未重開局或補拍。
+
+正常選升級卡繼續後，未注入時間／血量／敵人；自然結束畫面顯示第3波、Lv.7、血量耗盡、84秒，最佳紀錄84秒。這是自然死亡結束，不是勝利。1024×461、740×360、1180×820畫面尺寸矩陣不重跑；已有的三尺寸升級畫面紀錄不變。本次沒有重跑 `node games/survivor/tools/test.cjs --layout`。
+
+結果已記回PR113原卡與規格。PR113仍Draft；本次補驗不取代既有Dot閱讀／獨立審查，也未送新請求。家長已接受原圖未保存、Dot無法獨立核圖的限制，並同意只結案本次補驗；不記為Dot視覺複核或通過，也未重派新請求。整張PR113仍未完成：Dot既有partial_pass綁舊候選5607ab95ef2a1fb6bdda9528dc6713b58654c4c9，目前cf14候選仍缺Dot三尺寸與卡片功能雲端實玩；GitHub目前無正式review，PR仍Draft。這次補驗結案不取代剩餘gate。家長已選玩法點子1、2、4、5依序做；點子1結算摘要與PR113重疊，待PR113依原流程完成後再從最新main開工。
+
+## PR113 解鎖後續驗：單尺寸與自然局已完成（2026-11-09）
+
+家長已解鎖 Mac Studio，沒有其他 session／背景程序同時操作固定候選。使用本機 Chrome 開啟 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/`（遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／`20261105a`）。DevTools 裝置工具列欄位實際顯示 1024×461，正常按開始進入戰鬥；畫面內容鋪滿、未見黑邊，左上狀態、上方計時／魔王訊息、右上資源與右下技能沒有重疊。這是 viewport 工具列所報尺寸與該畫面觀察，未以外框大小冒充內部 viewport。
+
+同一局未注入狀態，讓遊戲正常運行至結束：第3波、Lv.1，80秒後血條耗盡，結算顯示本局結束與最佳80秒。此處記錄為完整自然結束局；沒有聲稱勝利或完成升級選卡。740×360與1180×820未測，不能推定通過。
+
+為設定剩餘尺寸，Mac Chrome DevTools 寬度欄先後錯誤顯示40及1，高度欄被清空；停止重試。改查 Chrome「視窗」選單時，最小化、縮放、填滿、中央與「移動與調整大小」相關命令均顯示停用；未改系統顯示或安全設定。這是本機視窗控制卡點，不是遊戲缺陷。後續需要一般可拖曳的 Chrome 視窗或可直接精確設定 viewport 的控制介面，才能補測另外兩種尺寸。
+
+本次沒有改遊戲程式、資料、版本或產品 gate，沒有重跑既有 `--layout` 136 PASS，沒有重派 Dot、合併或部署。原卡保持 blocked，`waitingFor` 已從 Mac 解鎖更新為精確 viewport 控制方式；PR #113 仍為草稿。原先鎖定的候選 bytes、既有程式審查與測試證據不變。
+
+## PR113指定續驗與解鎖通知（2026-11-09）
+
+依序確認沒有其他 session／背景程序正在跑同一候選；再沿既有隔離公開頁操作，並核對剩餘技術證據。Chrome頁正常載入，但開始鍵多次只取得焦點、畫面仍是「準備開始」，沒有進戰鬥，因此未開始三尺寸測試或自然完整局。CUA 原生桌面檢查曾回報：`The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.` 畫面截圖是 960×820，並非要求的三種尺寸；也沒有確認內部 viewport 尺寸。不能把這次列為測試失敗或產品缺陷。
+
+離線技術一致性核對：固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350` 的版本為 `20261105a`；候選到目前 PR HEAD 只有 `coord/`、`docs/` 紀錄變動，`games/survivor/` 與 `sw.js` 未變。既有該 SHA 的 Mac `node games/survivor/tools/test.cjs --layout` 136 PASS、非作者 approve 仍適用，這次沒有重跑。逐輪程式審查記錄已列於 [證據總表](pr113-evidence-summary.md)，此離線核對不等於三尺寸、完整局或PR整體驗收通過。
+
+核對既有 Erin ntfy sender 後確認：它從設定讀取共用路由，但會吞掉錯誤、沒有保存伺服器回執；本機未找到 user-action 發送去重帳本或本任務先前發送紀錄。沿同一已授權路由只送一次「解鎖 Mac Studio，解鎖後回覆已解鎖」的最小提醒；ntfy 伺服器回 `HTTP 200` 並回傳 message receipt，已記在本機 `~/.local/share/erin/logs/pr113-unlock-ntfy-receipt-20261109.json`。這只證明伺服器受理，沒有宣稱手機已收到。
+
+原卡現為 `blocked`，`waitingFor` 明列解鎖 Mac Studio 並在原 Erin coordinator 對話回覆；這是執行前置，不是玩法或合併決定。解鎖後沿同一候選補 1024×461、740×360、1180×820，再完成一局自然遊玩；無法開始前不判定產品有問題、不合併或部署。
+
+## PR113證據彙整已交付（2026-11-09）
+
+[整體驗收證據總表](pr113-evidence-summary.md)已完成：各輪固定SHA、Mac執行者／既有結果、純視覺紀錄、Dot g版部分通過、a版未驗限制分開列明。主控已讀回原卡與紀錄一致；本次只整理文件，沒有重跑測試、重試／繞路下載、重派Dot、改玩法或合併部署。P3已修，不再列待修。
+
+PR113原卡owner仍是本對話codex；目前 `blocked` 是等 Mac 解鎖以完成瀏覽器驗收，不是重新實作或等待玩法決定。固定候選公開檔案核對與既有 P3 操作已完成；這些不等於整體驗收或合併批准。
+
+### 2026-11-09 固定公開候選唯讀連線診斷
+
+在 2026-11-09 04:44:01–04:44:02 UTC 對固定候選的精確 URL `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/version.json` 做一次 `curl` GET（connect timeout 5 秒、總上限 15 秒、無 retry）。原始結果：`HTTP/2 200`、`curl_exit=0`、下載29 bytes；回應本文 `{"version":"20261105a"}`，GitHub edge IP `185.199.111.153`，request ID `52C4:0BC3:8CA8A:908BE:6AF14F91`。確認固定候選目前此版本檔可達，這不是全檔 bytes、完整載入、遊戲操作或整體驗收通過。
+
+先前 Python 下載連線重設及 Chrome `loaded` 逾時僅有舊交接轉述，未找到對應原始失敗日誌，也沒有政策拒絕證據；本次成功且未遇政策拒絕。下一步由原主控沿同一固定候選完成既有公開檔案核對與公開操作核驗；不重跑136／P3、不重派Dot、不重新部署或合併。
+
+### 2026-11-09 固定候選公開檔案／實際操作接續
+
+原測試端沒有候選相關執行中進程。使用固定發布manifest `~/.local/share/erin/history/public-preview-stage/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/preview-manifest.json`，SHA256 `ef2c10e26b8338a9d9b3209ca2e8228eb41f2f059e047fab26ca11ff67886e8f`，版本`20261105a`、123個payload項目；公開manifest與detached digest均HTTP200且bytes/hash吻合。第一版檢查器把候選prefix重複加到repo-root-relative manifest `path`，曾產生錯誤404及一個錯誤對比；所有123筆原始回應保留在本機檢查日誌，並標為`invalid_url_mapping`，不是產品結果。對照既有發布repo `stasischen/erin-preview` commit `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`後，確認123/123 manifest路徑皆與該commit檔案bytes/SHA吻合；正確URL為`https://stasischen.github.io/erin-preview/`加manifest `path`。按正確映射逐檔GET後，123/123公開payload皆HTTP200且完整bytes/SHA吻合，未遇政策拒絕。逐項原始結果留本機 `~/.local/share/erin/logs/pr113-public-bytes-cf14bc06-20261109.json`。
+
+同一固定公開遊戲頁面 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/` 在Chrome正常載入並可玩：按「開始生存」進入第1波Lv.1，顯示`0秒／魔王150秒後來`；按暫停再按「繼續遊戲」，恢復畫面顯示`3秒／魔王147秒後來`；正常移動收集經驗自然到Lv.2，選取並確認「水球加大」後回到戰鬥，顯示`21秒／魔王129秒後來`。這是當前公開候選的載入、暫停續玩、自然升級選卡恢復證據；不是三尺寸矩陣、完整局或整體PR驗收。逐步操作紀錄在本機 `~/.local/share/erin/logs/pr113-public-candidate-interaction-20261109.md`。本次只完成固定候選公開檔案核對及指定UI操作，不是整體PR批准；三尺寸矩陣、完整局與原Dot未測範圍仍不能由本次結果推定。未重跑136／P3、未重派Dot、未部署或合併。
+
+### 2026-11-09 04:41 PR113公開候選接續核對（後續已有新證據）
+
+核對 PR113 目前仍為 OPEN／Draft，公開 HEAD `f2b5929093008a166410f728d9762cdcf2fe974f`；PR 文字與原總表指向同一固定遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`／版本`20261105a`、測試頁 `https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/`、Pages run `41967715588` 成功、預覽發布提交 `cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c`。截至該次核對時 GitHub PR 沒有新留言；本機找不到這個候選的公開連線成功產物，也沒有 Python／Chrome 失敗執行原始日誌。該時點記錄的原失敗轉述後已被下方新診斷更新。`~/.local/share/erin/logs/pr113-public-http.json` 及 `pr113-public-preview-validation.json` 是 2026-11-03 的舊版本`20261103a`成功資料，不可挪用為本候選證據。未重試網路操作、未重跑測試、未重派 Dot；沒有待家長輸入或新的通知需求。
+
+## P3計時文字已修復（2026-11-05）
+
+家長授權開卡派subagent，卡survivor-timer-status-refresh，沿PR113。作者真Chrome先重現、修後驗證，再加回歸；非作者另真Chrome及Mac全套exit0／136PASS，第一輪approve。產品僅loop判斷一行、測試14行，第一tick恢復暫停／選卡覆寫文字，正常快取保留。來源cf14bc06f25fcb3cd8b93bd6842950b9b8749350，版本20261105a。未派Dot、未改升級節奏／存檔，前輪雲端未測範圍保留。
+
+Pages41967715588成功，預覽提交cd42279a40ce4ee0bb7ecb5b057e652fc44fed1c；保留1980既有檔，新增122候選檔。當時初次公開核對遇Python下載連線重設及Chrome loaded逾時，因此先前不能宣稱全檔bytes或公開試玩通過；2026-11-09已依正確manifest根路徑補核，結果見上方。本機固定候選隔離與真Chrome均通過。
+https://stasischen.github.io/erin-preview/pr-113/cf14bc06f25fcb3cd8b93bd6842950b9b8749350/games/survivor/
+
+推送時Claude另有純文件提交，已正常merge保留；對固定受測來源的遊戲與sw無差異。詳coord/tasks/specs/survivor-timer-status-refresh.md與coord/reviews/survivor-timer-status-refresh/independent.md。PR仍草稿，不合併main。
+
+## g版 Mac 全套重跑通過（2026-11-05）
+
+依家長要求，主控在2ed68f29e8256cceb89d432b4498586103293d60執行 `node games/survivor/tools/test.cjs --layout`，exit0／136PASS，差異檢查通過；遊戲來源仍5607ab95ef2a1fb6bdda9528dc6713b58654c4c9／20261104g，無runtime差異。已更正後續規劃的Mac未測記載，詳docs/survivor-followup-plan-20261105.md。P3未修、升級節奏未動，Dot部分驗收限制仍保留，不合併。
+
+## Dot 已回覆（2026-11-05）
+
+Dot已回覆：固定增量程式審查通過，雲端三尺寸正常生存遊玩通過；整體partial_pass，沒有必改缺陷。P3計時文字同秒續玩延遲列FOLLOWUP，部分情境與可開啟截圖尚缺，詳[收件摘要](../reviews/survivor-upgrade-balance/dot-readability-result.md)。不宣稱整PR完整驗收，不合併main。
+
+## Claude 修正接手與 Dot 送審（2026-11-05）
+
+目前遊戲來源5607ab95ef2a1fb6bdda9528dc6713b58654c4c9，版本20261104g；上一份5768808／f版交接及預覽保留為歷史。新增魔王倒數、低血量紅框、普通同敵傷害數字合併及池引用清理；自動／手動模式沒有修改。一般無query入口「開始生存」是自動攻擊三槽，Boss試煉手動，Maker舊試玩依sandbox設定。不要從原erin目錄或正式站測本輪分支。
+
+家長要求照流程送Dot。主控沿原worktree與PR113接手；非作者Mac本人完整套件exit0／136PASS及首輪approve，詳readability-review.md；[Dot固定請求](../reviews/survivor-upgrade-balance/dot-readability-request.md)。已沿原Dot討論串送件並核對GitHub留言：[送件紀錄](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6638166698)。請求metadata b9d19024eb084ec443fec6405fd0e791986262fa，request SHA256 bc3d0a639e2e66f027e45e1835536e313b4f641d5f5d4df76033f3dbc288294b。尚未取得Dot雲端結果，不宣稱驗收完成，不合併main。
+
+Pages41882567310成功，預覽提交5120378237c27743604b62a8f7ee553edea60e51，既有1858檔保持，新增122候選檔。公開Chrome740x360自然33秒／兩次升級／第二波／技能／暫停續玩exit0。公開全檔逐位元核對未完成：Python連線重設，另一次Chrome載入逾時，已停止重試；不能宣稱122公開檔全驗通過，請Dot先核雲端可達與manifest。
+
+新版測試頁：https://stasischen.github.io/erin-preview/pr-113/5607ab95ef2a1fb6bdda9528dc6713b58654c4c9/games/survivor/
+
+---
+
+## Claude 審查交接（2026-11-05）
+
+家長要求交由 Claude review；[完整交接](claude-review-maker-data.md)已同步本分支，包含固定比較範圍、測試證據、重現步驟及限制。遊戲與測試頁維持下列來源，PR113仍為草稿；下一步等待 Claude 審查結果，不自動改碼或合併。這次只更新文件，未重跑遊戲測試或變更版本。
+
+## Maker與預設資料拆分完成（2026-11-04）
+
+Maker主檔618→119行，預設資料主檔2624→259行；完整預設依內容分14模組。Maker從「設定→自己設計」進入，不在開始畫面顯示。原完整資料、49卡順序、玩法與存檔格式維持。
+https://stasischen.github.io/erin-preview/pr-113/5768808d3aa6c4454132f352be1ac1811b60ebc2/games/survivor/
+
+來源5768808d3aa6c4454132f352be1ac1811b60ebc2，版本20261104f。完整Mac test.cjs --layout exit0／134行PASS，非作者首輪approve見maker-data-review.md。每步先真Chrome，六分頁深層編輯、保存重載、兩種試玩、真preview/practice iframe、三尺寸自然33秒升級與第二波皆通過。桌面Chrome不冒充手機硬體或自然完整長局。
+
+發布前125檔／832執行請求存檔隔離檢查通過。發布結果：Pages41792656294成功，預覽提交7a64af8b83259e3045e309318410a14dd7c845f0；保留1736既有檔，122候選檔HTTP及內容一致。公開頁740×360 Maker設定入口、六分頁、編輯保存重載、兩種試玩，以及自然33秒兩次升級／第二波／技能／暫停續玩皆通過。PR113維持草稿，正式站未改；收尾僅文件，版本不另增。
+下一步等家長意見，不自動擴拆schema或合併。
+
+---
+
+## 渲染、戰鬥與主迴圈拆分完成（2026-11-04）
+
+依家長授權依序拆三個舊大檔：world738→176行、combat515→39行相容入口、loop472→308行，新增11個責任模組。101個原函式逐字相同、tick順序及原介面保留；玩法、數值、存檔格式與歷史基準未改。維護對照見docs/survivor-module-map.md。PR113維持草稿，正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/fb8df5c38956cbd5b3790c4e443103d7455858c2/games/survivor/
+
+來源fb8df5c38956cbd5b3790c4e443103d7455858c2，版本20261104e。完整Mac `node games/survivor/tools/test.cjs --layout` exit0／134行PASS，diff check通過；非作者第一輪approve及完整結果補核見modules-review.md。每一步先真Chrome自然33秒升級／第二波／技能／暫停續玩，再下一步；最終三路線受控Boss換關、Maker兩入口、試煉、預覽與練習iframe、三尺寸resize通過。桌面Chrome不冒充手機硬體或自然完整長局。
+
+預覽提交f2c9c570fe32e927c11d8b74a99ec759218acee9，Pages41783438632成功；發布前103檔／678請求隔離驗證，保留既有1636檔，發布後100候選檔HTTP及內容一致。公開頁740×360自然33秒兩次升級、第二波、技能、暫停續玩通過。存檔檢查工具私有副本僅反映finishRun搬檔，完整key/call/surface契約與負向檢查保留，獨立核過；原工具未動。
+
+下一步等家長指示，不自動合併或擴拆Maker/schema/defaults。此交接僅文件，遊戲版本保持。
+
+---
+
+## 六種地圖主題與五種隊形測試版（2026-11-04）
+
+開局可選森林／清涼／甜蜜三條路線，各兩關，共六主題；本局路線換關保留，重開可重選，沒有新增存檔欄位。五種隊形為單側、雙翼、分段交替、斜向、重裝編隊；每十秒輪換，沿原批次數與限制，完整身體畫外出生。PR113仍草稿，正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/4cf8a2e55098b242e96f7de3b0c881f2e90a009c/games/survivor/
+
+來源4cf8a2e55098b242e96f7de3b0c881f2e90a009c，版本20261104d。完整Mac `node games/survivor/tools/test.cjs --layout` exit0／134行PASS，diff check通過；非作者第一輪approve及完整結果補核見routes-review.md。三尺寸自然選路／升級／第二波／觸控技能／暫停續玩，三路線受控Boss擊殺換關、五隊形實際進場、六快取隔離與穩定皆驗。桌面Chrome不冒充手機硬體或自然完整通關。
+
+預覽提交07e3a1f9bed8888fb266ed64ec7329ec25320a03，Pages41781240699成功；發布前92檔／619請求隔離驗證，既有1547檔保持，發布後89候選檔HTTP與內容一致。公開頁740×360清涼路線自然33秒、三次升級、第二波與技能／暫停續玩通過。下一步等家長手機試玩，不自動合併或開新卡；本交接只改文件，遊戲版本保持。
+
+---
+
+## 元素材質、敵群重量與地景測試版（2026-11-04）
+
+薄線主體改為厚實旋風、水體、雷片與光束；每30秒五階生存壓力18／28／40／52／64，八種原敵人逐階混編，重裝實際抗擊退，特殊怪限量，生存Boss150秒。兩關固定葉地／碎餅地、路徑與地標，波次淡色變化；修正小數鏡頭下地塊淡線。沿原兩關與八敵種，未新增存檔格式；PR113仍草稿、正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/2c2cfa62a067e7c111dbbed913c1f48c94fc2574/games/survivor/
+
+來源2c2cfa62a067e7c111dbbed913c1f48c94fc2574，版本20261104c。完整Mac `node games/survivor/tools/test.cjs --layout` exit0／133行PASS，diff check通過；非作者兩輪approve及完整結果補核見world-review.md。三尺寸自然至第二波、升級、觸控技能、暫停續玩；受控五波／地景／能力及64敵短壓力通過。桌面Chrome不冒充手機硬體或自然長局平衡；傷害字遮擋、受擊旋轉地塊對齊列FOLLOWUPS。
+
+預覽提交6be3a7ffef4b48759848b7bbe65ed256eae4c5ed，Pages41758130493成功；發布前91檔／602請求隔離驗證，既有1459檔保持，發布後88候選檔HTTP與內容一致；公開網址740×360自然遊玩33秒完成兩次升級、第二波、技能與暫停續玩。下一步等家長手機試玩，不自動合併或開新卡。這次交接僅文件，遊戲版本保持。
+
+---
+
+## 九秘技與六條主動大招測試版（2026-11-04）
+
+一般生存新增九秘技、六條按鍵大招路線，各五級；三武器／兩秘技／一主動。三種不同同元素能力解鎖秘技；大招選定一路後專精，連兩次未出能力時下一次保留一格，重抽同樣保留。手機顯示路線名與等級。PR113維持草稿，正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/6ef9cd0e472259ab4c600450f6f55378d42cfef4/games/survivor/
+
+來源6ef9cd0e472259ab4c600450f6f55378d42cfef4，版本20261104b。完整 Mac `node games/survivor/tools/test.cjs --layout` exit0／132行PASS，diff check通過；非作者兩輪後approve（abilities-review.md）。三尺寸自然取得潮汐／通道／裁決並真觸控施放及暫停續玩通過；十五能力各Lv1/3/5受控真Chrome作用驗證與圖像檢查通過。獨立真Chrome另驗護盾實際承傷、Boss與精英只緩速、狂歡三武器追加攻擊且全局被動不重複、兩種Maker真試玩入口。
+
+預覽提交84ec4fef9551540abddf1d528674a50e4b9c9622，Pages41751973867成功；發布前88檔／571請求隔離驗證，既有1374檔保持，發布後85候選檔HTTP與內容逐位元一致。下一步等手機試玩，不自動合併或開新卡；本次交接是文件更新，遊戲版本保持。
+
+---
+
+## 十二武器三槽生存測試版（2026-11-04）
+
+十二武器各五級、最多三把同時自動攻擊；Boss試煉保留原三把擇一手動。升級頁移除效果圖，武器／配裝／攻擊／畫圖／介面分模組，六組新武器合體只有設計。PR113保持草稿，正式站未變。
+https://stasischen.github.io/erin-preview/pr-113/dd90dcf3c446c011b1f1aec798165b85bd04230e/games/survivor/
+
+來源dd90dcf3c446c011b1f1aec798165b85bd04230e，版本20261104a；完整本機 `node games/survivor/tools/test.cjs --layout` exit0、130行PASS，diff check通過，非作者審查approve（survival-arsenal-review.md）。真Chrome三尺寸正常流程、十二武器Lv1/3/5傷害及Maker兩入口已驗；不是手機實機或全配裝長局平衡認證。
+
+預覽提交9fe5589735033c46b287e3b6d61595cf724be889，Pages41696686120成功。發布前84檔及515執行期請求隔離驗證通過，保留既有1293檔；發布後81候選檔HTTP與內容一致。下一步等手機試玩，不自動開新卡。此次交接與審查記錄為文件更新，不變更遊戲版本。
+
+---
+
+## 武器成長與升級比較測試版（2026-11-03）
+
+錘子重擊震波、劍收招劍氣／單體追斬、六項核心升級數值及目前／升級後比較、普通閃光減量已上測試頁。PR113保持草稿，不自動合併正式站。
+https://stasischen.github.io/erin-preview/pr-113/e10fbe2d7c0397ba579e96da7a1ef862d26db839/games/survivor/
+
+來源e10fbe2d7c0397ba579e96da7a1ef862d26db839，版本20261103e；完整127PASS、非作者獨立審查approve。三武器正常手動序列自然死亡結算，水球186.85秒跨第二關，錘128.91秒、劍79.02秒；手機尺寸下比較按鈕、真零級預覽及追加命中均驗證。這不是手機實機／後期完整平衡認證，詳見本卡規格與weapon-routes-review.md。
+
+預覽提交a11247874d697cb1948d9ece87170d60bf7d8c3b，Pages41617195280成功；發布前75檔隔離驗證，保留既有1221檔，發布後72檔HTTP及內容一致。下一步等家長手機試玩，不自動接新卡。
+
+---
+
+## 統一圖示與主角縮小測試版（2026-11-03）
+
+全套黏土圖示與水星人縮小15%已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/862522b4b42ecf147a16e4f54041e3246377cb03/games/survivor/
+
+來源862522b4b42ecf147a16e4f54041e3246377cb03，版本20261103d。美術快車道，80共用圖示改黏土風、試煉頭像改現有黏土Boss、場上主角與手持武器縮小15%；HUD頭像、碰撞與傷害不變。真Chrome三尺寸選武器/移動/完整蓄力通過，80圖示全部解碼，四個試煉頭像載入且可返回。test.cjs --layout exit0/126PASS，末尾純美術色票及頭像變更另跑pixel-icons/boss-gallery-2/art-manifest通過，diff check通過。
+
+預覽提交8b3877b427ca6a93683b7466262586e4eb47573e，Pages41581728888成功。發布前75檔隔離驗證，保留既有1149檔；發布後72候選檔逐位元核對一致。下一步等家長試玩，不自動合併正式站。
+
+---
+
+## 地板與手持黏土武器測試版（2026-11-03）
+
+地板細格線與手持黏土武器修正版已上測試頁，完整126PASS，等家長手機驗收；PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82/games/survivor/
+
+來源aec5edeedc3e5ff2aacc5434a6eb01d8a5e80e82，版本20261103c。美術快車道，單一實作者；未更動規則/數值/存檔，前輪非作者程式審查不冒稱審過本輪美術。完整test.cjs --layout exit0/126PASS、diff check通過。真Chrome三尺寸正常UI選武器、移動、完整蓄力及釋放，已檢視截圖；手機實機閃爍觀感等家長確認。
+
+預覽提交dd765219aba18783c8c379cea7de87f6bf86160c，Pages41562512150成功。發布前75檔隔離驗證，保留既有1077檔；發布後72候選檔逐位元核對一致。Godot適用項與美術自評見本卡規格。
+
+---
+
+## 手機回饋修正版已上線（2026-11-03）
+
+近戰與手機手動攻速修正版已上測試頁，完整126PASS及獨立審查通過；等家長試玩，PR113維持草稿，正式站未變。https://stasischen.github.io/erin-preview/pr-113/3a97f05dbf5eb047785306afee0249bc26fa642f/games/survivor/
+
+來源3a97f05dbf5eb047785306afee0249bc26fa642f，版本20261103b。預覽提交d16e1a5325f62194eacfa522b4120f7282632df6，Pages41560879295成功。發布前真Chrome隔離75檔核對通過，保留既有1005檔；發布後72個候選檔HTTP與內容逐位元相同。三武器真Chrome手機尺寸診斷與限制見本卡規格及melee-review.md。下一步等手機試玩，不自動合併正式站。
+
+---
+
+## 升級與視覺整合版已公開供手機試玩（2026-11-03）
+
+家長授權發布測試頁；PR113為草稿，正式站未變。
+
+- 測試入口：https://stasischen.github.io/erin-preview/pr-113/f058861a2ebb2d94b51dbacc673069d798a1c9c4/games/survivor/
+- 來源 f058861a2ebb2d94b51dbacc673069d798a1c9c4，版本20261103a；程式與獨立審查通過的3f6e0d7一致，後續只改coord。
+- 預覽提交322e3012c4f88f26793d1acb686809daa3ae606b，Pages執行41558980176成功。
+- 發布前真Chrome隔離驗證通過：75檔HTTP/hash、存檔A/B隔離；追加保留既有933檔。公開後72個候選檔全部HTTP/hash吻合。
+- 本次公開頁瀏覽器重開受Work設定停用限制，未聲稱手機實機驗證；此前本機三尺寸、三武器試玩及獨立完整124PASS仍有效。
+- 下一步：等家長手機試玩回饋，不自動合併或發布正式站。
+
+---
+
+
 ## A／B作用域證據已收齊，交非作者做整PR最終判定（最新）
 
 受測及公開候選source13851b6fd7c9f7683231b36c9e2613c30f050909／20261028b。主控只彙整證據，不自行批准自己早期實作；本提交僅公開coord紀錄，161個受測source/test/cache與該source完全相同。

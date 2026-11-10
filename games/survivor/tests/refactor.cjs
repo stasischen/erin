@@ -16,6 +16,20 @@ const written = [], context = vm.createContext({URL, document: {currentScript: {
 vm.runInContext(fs.readFileSync(path.join(root, 'manifest.js'), 'utf8'), context);
 vm.runInContext(fs.readFileSync(path.join(root, 'game.js'), 'utf8'), context);
 assert.deepEqual(written, files.map(file => `<script src="${file}?v=test-version"></script>`));
+// Maker browser and VM use one ordered manifest as well.
+written.length=0;
+context.document.currentScript.src='http://localhost/erin/games/survivor/maker/load.js?v=test-version';
+vm.runInContext(fs.readFileSync(path.join(root,'maker/manifest.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'maker/load.js'),'utf8'),context);
+const makerFiles=Array.from(context.SurvivorMakerManifest);
+assert.deepEqual(written,makerFiles.map(file=>`<script src="${file}?v=test-version"></script>`));
+// The three entry pages use the same default-data loader as VM fixtures.
+written.length=0;
+context.document.currentScript.src='http://localhost/erin/games/survivor/data/load.js?v=test-version';
+vm.runInContext(fs.readFileSync(path.join(root,'data/manifest.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'data/load.js'),'utf8'),context);
+const dataFiles=require('./load-defaults.cjs').files;
+assert.deepEqual(written,dataFiles.map(file=>`<script src="${file}?v=test-version"></script>`));
 // Same coordinate policy for portrait rotation, landscape and visualViewport changes.
 for (const [width, height] of [[412,915],[384,832],[915,412],[800,360],[732,310],[1024,768],[600,700],[660,700]]) {
   run(`window.innerWidth=${width};window.innerHeight=${height};fitVisibleViewport()`);
@@ -23,11 +37,11 @@ for (const [width, height] of [[412,915],[384,832],[915,412],[800,360],[732,310]
 }
 run('window.visualViewport={width:600,height:350,offsetLeft:20,offsetTop:10};fitVisibleViewport()');
 assert.equal(run('gameShell.dataset.short'), '', 'visualViewport does not change former CSS media thresholds');
-for (const file of ['style.css','maker/style.css']) {
+for (const file of ['style.css','upgrade.css','maker/style.css']) {
   const css = fs.readFileSync(path.join(root,file),'utf8');
   assert.ok(!/@media[^{}]*max-(width|height)/.test(css), file+' has a duplicate viewport policy');
 }
-assert.equal((fs.readFileSync(path.join(root,'style.css'),'utf8').match(/^\.upgrade-panel \{/gm)||[]).length, 1);
+assert.equal(['style.css','upgrade.css'].reduce((n,file)=>n+(fs.readFileSync(path.join(root,file),'utf8').match(/^\.upgrade-panel \{/gm)||[]).length,0),1);
 // Cache checker must fail on missing precache entries and stale versions, without writing files.
 const tool = fs.readFileSync(path.join(root,'tools/version.cjs'),'utf8');
 function checkCache(transform) {
@@ -39,8 +53,8 @@ function checkCache(transform) {
   vm.runInNewContext(tool, {__dirname:path.join(root,'tools'),process:{argv:[]},console:quiet,require:name=>name==='node:fs'?fakeFs:require(name)});
 }
 checkCache(s=>s);
-for (const file of ['manifest.js', ...files]) {
-  assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}',`,'')), /not precached/, file);
+for (const file of ['manifest.js','upgrade.css','maker/manifest.js','maker/load.js','data/manifest.js','data/load.js', ...dataFiles, ...makerFiles, ...files]) {
+  assert.throws(()=>checkCache(s=>s.replace(`'games/survivor/${file}'`,'')), /not precached/, file);
 }
 assert.throws(()=>checkCache(s=>s.replace(/const CACHE_NAME = '[^']+';/,"const CACHE_NAME = 'stale';")), /CACHE_NAME/);
 // Tick keeps the classic/public API identity while accepting an optional independent clock.

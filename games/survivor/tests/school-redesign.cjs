@@ -7,13 +7,14 @@ function fresh(){run(`resetGame();state.mode='playing';GAME_DATA.hitJuice.enable
 function owns(ids){run(`state.upgrades=Object.fromEntries(${JSON.stringify(ids)}.map(id=>[id,1]));`);}
 function offer(id){return run(`canOffer(UPGRADES.find(c=>c.id===${JSON.stringify(id)}))`);}
 function step(seconds){run(`for(let t=0;t<${seconds}-1e-8;t+=.05)tick(.05);`);}
-// A run contains exactly 3 schools and 5 unique nonlegendary cards per school.
+// A run contains exactly 3 schools and 7 unique nonlegendary cards per school.
 fresh();
 for(let i=0;i<100;i++) {
  run('state.schoolRun=SurvivorSchools.createRun(GAME_DATA,Array.from({length:64},()=>Math.random()));');
  assert.equal(run('state.schoolRun.schools.length'),3);
- for(const school of ['water','wind','thunder']) assert.equal(run(`state.schoolRun.pool.filter(id=>UPGRADES.find(c=>c.id===id).school==='${school}').length`),5);
- assert.equal(run('new Set(state.schoolRun.pool).size'),15);
+ for(const school of ['water','wind','thunder']) assert.equal(run(`state.schoolRun.pool.filter(id=>UPGRADES.find(c=>c.id===id).school==='${school}').length`),7);
+ assert.equal(run('new Set(state.schoolRun.pool).size'),21);
+ assert.equal(run('new Set(state.schoolRun.neutralPool).size'),9);
  assert.equal(run('state.schoolRun.pool.every(id=>{const c=UPGRADES.find(c=>c.id===id);return c.rarity!=="legendary"&&c.tier!=="ultimate"&&!c.schools})'),true);
 }
 run(`globalThis.d=SurvivorData.defaults();d.schools.push({id:'ice',spirit:'冰',form:'冰',attackCard:'ice-attack'});d.cards.push(...d.cards.filter(c=>c.school==='water'&&!c.schools).map(c=>({...c,id:c.id.replace('water','ice'),school:'ice'})));`);
@@ -35,13 +36,13 @@ run("state.upgrades['fusion-storm']=1");assert.deepEqual(value('buildAppearance(
 // Exact weighted sampling, supplied draws, and no duplicates.
 run(`globalThis.sample=[{id:'a',school:'water',rarity:'common'},{id:'b',school:'wind',rarity:'common'},{id:'c',school:'thunder',rarity:'rare'}];`);
 assert.equal(run(`SurvivorSchools.pick(sample,{},null,GAME_DATA.schoolRules,[.5])[0].id`),'b');
-assert.equal(run(`SurvivorSchools.pick(sample,{'water-attack':1},{starter:'water'},GAME_DATA.schoolRules,[.5])[0].id`),'a'); // starter preference changes the same supplied draw
+assert.equal(run(`SurvivorSchools.pick(sample,{'water-attack':1},{starter:'water'},GAME_DATA.schoolRules,[.5])[0].id`),'b'); // Reduced starter weight no longer dominates the middle draw
 assert.equal(run(`SurvivorSchools.pick(sample,{}, {starter:'water'},GAME_DATA.schoolRules,[.4])[0].id`),'a');
 assert.equal(run(`new Set(SurvivorSchools.pick(sample,{},null,GAME_DATA.schoolRules,[0,0,0]).map(c=>c.id)).size`),3);
-// Startup chooses a weapon only; first school card at level-up sets the starter.
-run('startGame();');assert.equal(run('state.mode'),'levelup');assert.equal(run('state.pickingWeapon'),true);assert.equal(run('Object.keys(state.upgrades).length'),0);
+// Survival starts immediately with water-ball; first school card at level-up sets the starter.
+run('startGame();');assert.equal(run('state.mode'),'playing');assert.equal(run('state.pickingWeapon'),false);assert.equal(run('state.loadout[0].weaponId'),'water-ball');assert.equal(run('Object.keys(state.upgrades).length'),0);
 run('globalThis.timeBefore=state.elapsed;tick(2);globalThis.oldChoices=state.pendingChoices;applyUpgrade(0);');
-assert.equal(run('state.elapsed===timeBefore'),true);assert.equal(run('state.mode'),'playing');assert.equal(run('state.weaponId'),'water-ball');assert.equal(run('state.schoolRun.starter'),null);
+assert.equal(run('state.elapsed>timeBefore'),true);assert.equal(run('state.mode'),'playing');assert.equal(run('state.weaponId'),'water-ball');assert.equal(run('state.schoolRun.starter'),null);
 run('applyUpgrade(1,oldChoices)');assert.equal(run('Object.keys(state.upgrades).length'),0);
 run("state.schoolRun.pool.push('wind-attack');state.pendingChoices=[UPGRADES.find(c=>c.id==='wind-attack')];showUpgradeChoices();applyUpgrade(0);");
 assert.equal(run('state.schoolRun.starter'),'wind');assert.equal(run('state.upgrades["wind-attack"]'),1);

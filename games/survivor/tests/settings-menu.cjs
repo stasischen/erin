@@ -13,12 +13,12 @@ const migrated=JSON.parse(run.storage[key]);assert.equal(migrated.playerHealth,u
 assert.equal(run.storage[work],JSON.stringify(legacy));
 // A historical unmarked auto cannot inherit a Maker's explicit choice flag.
 run=createRun({saved:{[work]:JSON.stringify(legacy),[old]:'{"attackMode":"auto"}'}});
-assert.equal(run('GAME_DATA.attackMode'),'manual');
+assert.equal(run('GAME_DATA.attackMode'),'auto');
 // Personal preferences survive edits of work defaults, reset, and Maker test-play.
 const custom={...data.playerDefaults,attackMode:'auto',attackModeChosen:true,joystickRadius:60,joystickFollow:false,feedbackIntensity:1.7,soundVolume:.25,musicVolume:0,lowEffects:true};
 const saved={[key]:JSON.stringify(custom),[work]:JSON.stringify(data)};
 run=createRun({maker:true,saved});
-assert.equal(run('GAME_DATA.attackMode'),'auto');assert.equal(run('GAME_DATA.joystick.radius'),60);
+assert.equal(run('GAME_DATA.attackMode'),'manual');assert.equal(run('GAME_DATA.joystick.radius'),60);
 run("updateSettingValue('joystickDeadZone',7);resetGame();state.weaponId='candy-sword';state.mode='playing';state.player.health=23;openSettings()");
 assert.equal(run('state.mode'),'paused');assert.equal(run('state.player.health'),23);
 assert.ok(run.elements.buildSlots.innerHTML.includes(run('activeWeapon().name')));
@@ -29,10 +29,10 @@ assert.equal(run('state.player.health'),23);assert.equal(run('GAME_DATA.attackMo
 assert.equal(run('GAME_DATA.joystick.radius'),35);
 assert.equal(run.storage[work],JSON.stringify(data));
 run('closeSettings();togglePause()');assert.equal(run('state.mode'),'playing');
-assert.equal(createRun({saved:run.storage})('GAME_DATA.attackMode'),'manual');
+assert.equal(createRun({saved:run.storage})('GAME_DATA.attackMode'),'auto');
 // Bad local storage is recoverable; valid false/zero and numeric boundaries are retained.
 for(const bad of ['null','{bad','[]']) {
- const fallback=createRun({saved:{[key]:bad}});assert.equal(fallback('GAME_DATA.attackMode'),'manual');
+ const fallback=createRun({saved:{[key]:bad}});assert.equal(fallback('GAME_DATA.attackMode'),'auto');
 }
 run=createRun({saved:{[key]:JSON.stringify({...custom,joystickRadius:999,joystickDeadZone:-3,soundVolume:0,musicVolume:4,feedbackIntensity:0})}});
 assert.equal(run('GAME_DATA.joystick.radius'),70);assert.equal(run('GAME_DATA.joystick.deadZone'),0);

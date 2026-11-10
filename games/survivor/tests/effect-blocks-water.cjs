@@ -20,7 +20,11 @@ function scenario(old,setup,steps){
     bomb:state.bomb,bombBlast:state.bombBlast,projectiles:state.projectiles,events,effects:state.effects,vfx:state.vfx,gems:state.gems,neutral:state.neutral,upgrades:state.upgrades,player:state.player,results:globalThis.results})`));
 }
 let count=0;
-function same(setup,steps){assert.deepEqual(scenario(false,setup,steps),scenario(true,setup,steps),setup+' / '+steps);count++;}
+function withoutNewVisualPoints(snapshot){
+ for(const v of [snapshot.ultimateVisual,...Object.values(snapshot.ultimateVisuals||{})])if(v){delete v.orbits;delete v.targets;}
+ return snapshot;
+}
+function same(setup,steps){assert.deepEqual(withoutNewVisualPoints(scenario(false,setup,steps)),withoutNewVisualPoints(scenario(true,setup,steps)),setup+' / '+steps);count++;}
 for(const id of ids) for(const level of [0,1,3,5]) for(const dt of [.05,.5,3.2]) {
   const base=`state.upgrades={'${id}':${level}};
     state.enemies=[enemy(0),enemy(32),enemy(52),enemy(75),enemy(150),enemy(5000)];`;

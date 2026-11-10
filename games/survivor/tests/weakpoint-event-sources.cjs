@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),run=require('./maker-support.cjs')();
 const json=s=>JSON.parse(run('JSON.stringify('+s+')'));
 function fresh(mode='all',conditions=['wall-stun','posture-break']){
- run(`GAME_DATA.hitJuice.enabled=false;GAME_DATA.gallery.bosses[0].weakpoint=SurvivorData.defaults().gallery.bosses[0].weakpoint;resetGame();startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;state.bossPhasePause=0;
+ run(`GAME_DATA.hitJuice.enabled=false;GAME_DATA.gallery.bosses[0].weakpoint=SurvivorData.defaults().gallery.bosses[0].weakpoint;resetGame();startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0;state.bossPhasePause=0;
  state.player.damageDisabled=true;state.bossRest=999;globalThis.b=state.boss;
  globalThis.cfg=state.trial.definition.weakpoint;cfg.parts=[{...cfg.parts[1],mode:'${mode}',conditions:${JSON.stringify(conditions.map(type=>({type})))}}];`);
 }
@@ -49,7 +49,7 @@ for(const reset of ['clearBossWeakpoints(b)','state.bossPhasePause=1;updateBossW
 fresh('any');postureBreak();wall();run('updateBossWeakpoints(.15);globalThis.savedConfig=state.trial.definition.weakpoint;state.trial.definition.weakpoint=null;updateBossWeakpoints(.1)');assert.equal(run('b.weakpointSignals'),undefined);
 run('state.trial.definition.weakpoint=savedConfig;updateBossWeakpoints(0)');assert.equal(run('b.weakpoints.core.phase'),'closed');
 // 新場景、重開同一隻、換成主遊戲老師，皆不採用舊身體的原因。
-for(const reset of ["startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0",'resetGame();state.mode="playing";summonTeacher();state.bossIntro=0']){
+for(const reset of ["startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0",'resetGame();state.mode="playing";summonTeacher();state.bossIntro=0']){
  fresh('any');postureBreak();wall();run('globalThis.old=b;'+reset+';globalThis.b=state.boss;updateBossWeakpoints(0)');
  assert.equal(run('b===old'),false);assert.equal(run('b.weakpointSignals'),undefined);
  assert.ok(Object.values(json('b.weakpoints')).every(p=>p.phase==='closed'));

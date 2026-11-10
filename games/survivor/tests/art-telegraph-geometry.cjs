@@ -4,7 +4,7 @@ run(`globalThis.captured=[];globalThis.originalPaint=SurvivorArt.paint;
 SurvivorArt.paint=function(id,options,fallback){if(id.startsWith('move/'))captured.push({id,...options});return originalPaint(id,options,fallback);};`);
 // Real render state: the locked impact differs from the caster in BOTH axes.
 for(const phase of ['windup','active'])for(const [boss,id,role] of [['frostfire','icefall','frost'],['frostfire','meteor','fire'],['winged','dive',null]]) {
- run(`startTrial('${boss}');state.trial.entry=0;state.trial.actors.forEach(b=>b.moves=[]);
+ run(`startTrial('${boss}','candy-sword');state.trial.entry=0;state.trial.actors.forEach(b=>b.moves=[]);
  globalThis.actor=state.trial.actors.find(b=>b.role===${JSON.stringify(role)});
  actor.x=315;actor.y=305;
  globalThis.definition=state.trial.definition.moves.find(m=>m.id==='${id}').blocks.moves[0];
@@ -17,7 +17,7 @@ for(const phase of ['windup','active'])for(const [boss,id,role] of [['frostfire'
  assert.equal(run('drawCalls.some(c=>c[0]==="translate"&&c[1]===500&&c[2]===480)'),true,'original warning uses the same impact');
 }
 for(const phase of ['windup','active']) {
- run(`startTrial('gatekeeper');state.trial.entry=0;state.boss.x=315;state.boss.y=305;
+ run(`startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.boss.x=315;state.boss.y=305;
  globalThis.skinDefinition=state.trial.definition.moves.find(m=>m.id==='leap').blocks.moves[0];
  state.bossMoves=[{id:'leap',ai:{phase:'${phase}',left:skinDefinition.timing['${phase}']/2},angle:0,target:{x:500,y:480}}];
  captured.length=0;drawCalls.length=0;drawTrialMoves();`);
@@ -26,12 +26,12 @@ for(const phase of ['windup','active']) {
  assert.equal(run('drawCalls.some(c=>c[0]==="translate"&&c[1]===500&&c[2]===480)'),true);
 }
 // Caster-centred nova keeps its own origin and the gap geometry instead of following target.
-run(`startTrial('frostfire');state.trial.entry=0;state.trial.actors.forEach(b=>b.moves=[]);globalThis.fire=state.trial.actors.find(b=>b.role==='fire');fire.x=315;fire.y=305;
+run(`startTrial('frostfire','candy-sword');state.trial.entry=0;state.trial.actors.forEach(b=>b.moves=[]);globalThis.fire=state.trial.actors.find(b=>b.role==='fire');fire.x=315;fire.y=305;
 globalThis.skinDefinition=state.trial.definition.moves.find(m=>m.id==='nova').blocks.moves[0];fire.moves=[{id:'nova',ai:{phase:'windup',left:.5},angle:.3,target:{x:500,y:480},duration:skinDefinition.timing.active}];captured.length=0;drawTrialEncounter();`);
 assert.deepEqual(json("captured.find(c=>c.id==='move/nova').origin"),{x:315,y:305});
 assert.ok(run("captured.find(c=>c.id==='move/nova').shape.gap>0"));
 // Spiral skin regions are the exact warning rays, leaving its fan gap unpainted.
-run(`startTrial('winged');state.trial.entry=0;globalThis.wing=state.trial.actors[0];const spiral=state.trial.definition.moves.find(m=>m.id==='spiral').blocks.moves[0];wing.moves=[{id:'spiral',ai:{phase:'windup',left:.5},angle:0,target:{x:500,y:480},duration:spiral.timing.active,elapsed:0}];captured.length=0;drawTrialEncounter();`);
+run(`startTrial('winged','candy-sword');state.trial.entry=0;globalThis.wing=state.trial.actors[0];const spiral=state.trial.definition.moves.find(m=>m.id==='spiral').blocks.moves[0];wing.moves=[{id:'spiral',ai:{phase:'windup',left:.5},angle:0,target:{x:500,y:480},duration:spiral.timing.active,elapsed:0}];captured.length=0;drawTrialEncounter();`);
 const regions=json("captured.find(c=>c.id==='move/spiral').regions");
 assert.ok(regions.length>1);assert.ok(regions.every(r=>r.shape.type==='line'&&Math.abs(r.angle)>.1));
 // The same class of impact origin is covered in ordinary teacher moves too.

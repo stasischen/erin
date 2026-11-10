@@ -42,7 +42,7 @@ run('delete work.gallery');assert.equal(run('SurvivorData.validate(work).valid')
 run('work=SurvivorData.defaults();work.gallery.arenaRadius=0');assert.equal(run('SurvivorData.validate(work).valid'),false);
 run('work=SurvivorData.defaults();work.gallery.bosses[0].moves[0].blocks.moves[0].effect.damage=NaN');assert.equal(run('SurvivorData.validate(work).valid'),false);
 // 真實接合：無普通波次／事件；入口完整預警、圓牆阻擋，半血換招。
-run("startTrial('gatekeeper');Math.random=()=>.1");
+run("startTrial('gatekeeper','candy-sword');Math.random=()=>.1");
 assert.equal(run('state.trial.entry'),2);
 run('tick(.05)');assert.equal(run('state.bossIntro>0'),true);assert.equal(run('state.enemies.length'),0);
 run('for(let i=0;i<45;i++)tick(.05)');assert.equal(run('state.bossIntro'),0);
@@ -56,21 +56,21 @@ assert.equal(run('state.boss.posture.stun'),2);assert.equal(run('state.bossMoves
 assert.equal(run('teacherBonuses().damage>1'),true);
 // 所有五招跨完預警、出手、收招、冷卻，橫掃兩次；遠離玩家不造成無形傷害。
 for(const id of ['shield','axe','leap','spin','charge']) {
- run(`startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;state.bossPhase=2;
+ run(`startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0;state.bossPhase=2;
  state.player.damageDisabled=true;state.boss.x=state.trial.arena.x;state.boss.y=state.trial.arena.y;
  globalThis.move=state.trial.definition.moves.find(d=>d.id==='${id}');
  state.bossMoves=[{id:'${id}',kind:'${id}',ai:SurvivorBossAI.start(move.blocks.moves[0].timing),angle:0,origin:{x:state.boss.x,y:state.boss.y},target:{x:state.boss.x+50,y:state.boss.y},repeat:0}];`);
  for(let i=0;i<240&&run('state.bossMoves.length');i++)run('updateTrial(.05)');
  assert.equal(run('state.bossMoves.length'),0,id+' completes');
 }
-run("startTrial('gatekeeper');state.trial.entry=0;state.bossIntro=0;state.boss.x=state.player.x-70;state.boss.y=state.player.y;state.bossMoves=[{id:'shield',kind:'shield',ai:{phase:'windup',left:.1},angle:0}]");
+run("startTrial('gatekeeper','candy-sword');state.trial.entry=0;state.bossIntro=0;state.boss.x=state.player.x-70;state.boss.y=state.player.y;state.bossMoves=[{id:'shield',kind:'shield',ai:{phase:'windup',left:.1},angle:0}]");
 assert.equal(run('teacherDodgeThreat().id'),'shield');
 run('teacherPerfectDodge(teacherDodgeThreat())');assert.equal(run('state.boss.posture.value>0'),true);
 run("state.boss.posture.value=GAME_DATA.boss.posture.maximum-1;teacherPerfectDodge({dodged:false})");
 assert.equal(run('state.boss.posture.stun>0'),true);
 
 assert.equal(run('rules.rayLength({x:0,y:0},0,{x:0,y:0,radius:100})'),100);
-run("startTrial('gatekeeper');state.player.damageDisabled=true;state.stageElapsed=500;state.elapsed=500;tick(.05)");
+run("startTrial('gatekeeper','candy-sword');state.player.damageDisabled=true;state.stageElapsed=500;state.elapsed=500;tick(.05)");
 assert.equal(run('state.enemies.length'),0);assert.equal(run('state.miniboss'),null);
 // 玩家彈與敵彈到牆上即消失，不能環繞或在牆上繼續命中。
 run(`globalThis.shot={x:state.trial.arena.x+state.trial.arena.radius+20,y:state.trial.arena.y,r:8,alive:true,rangeLeft:100,vx:20};clampToMap(shot)`);

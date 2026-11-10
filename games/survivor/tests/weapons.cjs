@@ -32,7 +32,7 @@ fresh();assert.equal(run('absorbSchoolHit(20)'),17);run('state.schoolCombat.bubb
 fresh();run('state.enemies=[book(500)];fireAtNearest();');assert.equal(run('state.swingCount'),0);
 fresh();run('state.enemies=[];summonTeacher();state.boss.x=state.player.x+50;state.boss.y=state.player.y;state.boss.hp=1;fireAtNearest();');assert.equal(run('state.boss.hp'),1);run('state.bossIntro=0;fireAtNearest();');assert.equal(run('state.mode'),'transition');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('state.swingCount'),1);
 // Restart clears weapon and counters; picker clock stays frozen and stale callbacks ignored.
-run('startGame();tick(2);');assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),3);assert.equal(run('state.pickingWeapon'),true);
+run("startTrial(trialSettings().bosses[0].id);tick(2);");assert.equal(run('state.elapsed'),0);assert.equal(run('state.swingCount'),0);assert.equal(run('state.pendingChoices.length'),3);assert.equal(run('state.pickingWeapon'),true);
 run('globalThis.old=state.pendingChoices;applyUpgrade(1);applyUpgrade(0,old);');assert.equal(run('state.weaponId'),'candy-hammer');assert.equal(run('Object.keys(state.upgrades).length'),0);assert.equal(run('state.schoolRun.starter'),null);assert.equal(run('buildAppearance().main'),'water');
 // Bounded visuals after many swings, and legacy/custom Maker data round-trips.
 fresh();run('for(let i=0;i<200;i++)fireAtNearest();');assert.ok(run('state.vfx.length<=VFX_TUNING.limit'));assert.equal(run('state.projectiles.length'),0);
@@ -43,10 +43,68 @@ console.log('PASS: weapon picker, sector boundaries/spin/cadence, cards/dash/col
 
 // 真實獨立展示沿用所選武器，近距離假怪會被錘子命中。
 const preview=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id:'big-water',level:1,weaponId:'candy-hammer'}}});
-preview('stepPreview(.26);paintPreview()');assert.equal(preview('state.weaponId'),'candy-hammer');assert.ok(preview('state.enemies.some(e=>e.hp<100000)'));assert.equal(preview('state.projectiles.length'),0);
+preview('for(let i=0;i<10;i++)stepPreview(.033);paintPreview()');assert.equal(preview('state.weaponId'),'candy-hammer');assert.ok(preview('state.enemies.some(e=>e.hp<100000)'));assert.equal(preview('state.projectiles.length'),0);
 console.log('PASS: equipped hammer preview uses real melee targets, hits and rendering');
 
 // 真實接觸傷害與 tick 中的最後一擊，不能繼續更新已換場的狀態。
 fresh();run('state.enemies=[book(0)];state.enemies[0].damage=20;globalThis.health=state.player.health;tick(0)');assert.equal(run('health-state.player.health'),4.25);
 fresh();run('state.stageIndex=STAGES.length-1;state.enemies=[];summonTeacher();state.bossIntro=0;state.boss.x=state.player.x+40;state.boss.y=state.player.y;state.boss.hp=1;state.shotTimer=0;tick(0)');assert.equal(run('state.mode'),'won');
 console.log('PASS: live contact mitigation and final boss melee kill through tick');
+
+// Both melee previews must survive the normal frames before the first attack.
+for(const weaponId of ['candy-hammer','candy-sword']) for(const id of ['big-water','wind-blade','thunder-attack']) {
+ const demo=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id,level:1,weaponId}}});
+ demo('for(let i=0;i<10;i++)stepPreview(.033)');
+ assert.ok(demo('state.enemies[0].hp<100000'),weaponId+' '+id+' primary');
+ if(id!=='big-water' && !(weaponId==='candy-sword' && id==='wind-blade'))assert.ok(demo('state.enemies[1].hp<100000'),weaponId+' '+id+' follow-up');
+ assert.equal(demo('state.projectiles.length'),0);
+}
+// A target beside the thrust is missed before the wide-blade upgrade, hit afterwards.
+fresh();run("state.weaponId='candy-sword';state.enemies=[book(50,29)];fireAtNearest({angle:0,dash:true});");
+assert.equal(run('state.enemies[0].hp'),10000);
+fresh(['multi-water']);run("state.weaponId='candy-sword';state.upgrades['multi-water']=5;state.enemies=[book(50,29)];fireAtNearest({angle:0,dash:true});");
+assert.ok(run('state.enemies[0].hp')<10000);
+// Default labels follow equipment; Maker-authored names and icons survive unchanged.
+fresh();assert.equal(run("SurvivorWeapons.cardPresentation(UPGRADES[0],activeWeapon()).name"),'重錘強化');
+run("globalThis.customCard={...UPGRADES[0],name:'自己的卡',icon:'health'}");
+assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).name'),'自己的卡');
+assert.equal(run('SurvivorWeapons.cardPresentation(customCard,activeWeapon()).icon'),'health');
+console.log('PASS: multi-frame melee previews, follow-up damage, widened thrust hit and custom labels');
+
+// New support routes replace only the intentionally changed frozen melee cases.
+for(const weapon of ['candy-hammer','candy-sword']) for(const custom of [false,true]) {
+ fresh(['splash-water']);
+ run(`state.weaponId='${weapon}';GAME_DATA.hitJuice.enabled=false;
+ UPGRADE_TUNING.splashBaseRadius=${custom?40:22};UPGRADE_TUNING.splashPerLevel=${custom?17:10};BUILD_TUNING.supportSplashDamage=${custom?.73:.35};
+ state.enemies=[book(30),book(40),book(140),book(-110)];
+ globalThis.routeHits=[];globalThis.routeHit=hitBuildTarget;hitBuildTarget=(t,n,...rest)=>{routeHits.push([state.enemies.indexOf(t),n]);return routeHit(t,n,...rest)};
+ fireAtNearest({angle:0,dash:true});`);
+ assert.equal(run('state.vfx.filter(v=>v.kind==="weapon-wave").length'),1);
+ const hits=json('routeHits'), extra=hits.slice(2);
+ assert.equal(new Set(extra.map(h=>h[0])).size,extra.length,'one secondary hit per enemy');
+ assert.ok(extra.some(h=>h[0]===0),'primary also receives the stated extra damage');
+ assert.ok(extra.some(h=>h[0]===2),'wave reaches past the main attack');
+ assert.equal(extra.some(h=>h[0]===3),weapon==='candy-hammer','only hammer wave hits behind');
+ assert.ok(extra.every(h=>Math.abs(h[1]-hits[0][1]*(custom?.73:.35))<1e-8));
+ assert.equal(run('state.projectiles.length'),0);
+ run('hitBuildTarget=routeHit');
+ fresh(['splash-water']);run(`state.weaponId='${weapon}';fireAtNearest()`);
+ assert.equal(run('state.vfx.filter(v=>v.kind==="weapon-wave").length'),0,'ordinary swing does not explode');
+}
+fresh(['wind-blade']);run("state.weaponId='candy-sword';GAME_DATA.hitJuice.enabled=false;globalThis.baseHit=hitBuildTarget;globalThis.followHits=[];hitBuildTarget=(t,n,...rest)=>{followHits.push(n);return baseHit(t,n,...rest)};fireAtNearest()");
+assert.equal(run('followHits.length'),2);assert.equal(run('followHits[1]/followHits[0]'),run('GAME_DATA.schoolRules.windBladeDamage'));
+run('hitBuildTarget=baseHit');
+fresh(['wind-blade']);run("state.weaponId='candy-sword';state.enemies=[book(30,0,1)];followHits=[];hitBuildTarget=(t,n,...rest)=>{followHits.push(n);return baseHit(t,n,...rest)};fireAtNearest()");assert.equal(run('state.enemies[0].alive'),false);assert.equal(run('followHits.length'),1,'dead targets are not chased');run('hitBuildTarget=baseHit');
+for(const weaponId of ['candy-hammer','candy-sword']) for(const previewLevel of [0,1]) {
+ const demo=createRun({preview:{data:json('SurvivorData.defaults()'),spec:{kind:'card',id:'splash-water',level:1,fromLevel:0,previewLevel,weaponId}}});
+ demo('for(let i=0;i<10;i++)stepPreview(.033)');
+ assert.equal(demo('state.upgrades["splash-water"]'),previewLevel);
+ assert.equal(demo('state.vfx.filter(v=>v.kind==="weapon-wave").length'),previewLevel);
+ assert.ok(demo('state.enemies[0].hp<100000'),'zero-level comparison still attacks');
+ assert.equal(demo('state.enemies[1].hp<100000'),previewLevel>0,'same outer target only receives the unlocked wave');
+ assert.ok(demo('state.enemies[1].homeX-(previewOrigin.x-PREVIEW_COMPOSITION.originX)>previewWaveGeometry().reach+17'));
+}
+fresh();run("globalThis.noteCard=JSON.parse(JSON.stringify(UPGRADES.find(c=>c.id==='splash-water')));noteCard.descriptionMelee='我的敘述'");
+assert.equal(run('SurvivorWeapons.cardNote(noteCard,activeWeapon())'),'我的敘述');
+run("noteCard=JSON.parse(JSON.stringify(UPGRADES.find(c=>c.id==='splash-water')));noteCard.effects=[{feature:'big-water',power:1}]");assert.ok(!run('SurvivorWeapons.cardNote(noteCard,activeWeapon())').includes('震波'));
+console.log('PASS: one finisher wave per target, Maker damage/radius, sword single-target follow-up and true zero-level comparison');
