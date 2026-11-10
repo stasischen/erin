@@ -1,5 +1,11 @@
 # 目前交接
 
+## PR105 原固定候選雲端補驗（2026-11-10；等待 Dot 回覆）
+
+已沿用原 PR105 exchange THREAD `20261108-205749-bbb3`。前次 Dot 結果 [#6763507738](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6763507738) 綁 `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／`20261031d`，結論 partial：E→N→W 與可辨 +90°未證實；14張私有 PNG ZIP 已逐檔核對，原圖不入 repo。家長已接受面具石像外觀；已結案的 Mac 補驗不重開。
+
+因 Erin 規則允許使用既有固定尺寸 iframe lab v2，已在原 thread 送出只補 Rolling Eye 的要求 [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，固定原候選 1024×461，剩餘最多兩次有意識操作；需記實際 frame 尺寸、DPR 與外層／Fullscreen 分別值，正常 UI 確認 E→N→W 和 +90°。未授權改程式或候選。留言已讀回，尚未有新 Dot 結果；PR105 保持 Draft。
+
 ## PR105 Boss4 單次本機補驗結果（2026-11-10）
 
 家長已接受面具石像外觀，僅視覺接受；玩法功能驗收仍獨立。固定 Dot request 是 lingo-agent-exchange PR #2 留言 [#6721779744](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6721779744)，固定 PR105/source/version 為候選 `cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1`／`20261031d`。Dot 原留言 [#6763507738](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6763507738) 於 2026-11-10T09:12:47Z 收件，`event_id dot-erin-boss4-cloud-ui-cc7702e-20261110-attempt1`；同一 event 在 exchange PR #2 只找到一份結果，並由 Erin 主控在本次交接中採納一次。原卡此前只有較早的 0/3 viewport 受阻結果，沒有重複採納本次結果。
@@ -22,7 +28,7 @@ Mac 唯一額外正常 UI 試玩也已消耗：固定候選選「翻滾巨眼」
 
 Mask Statue 已由 Dot 在固定候選實際查看；遊戲入口「王的試煉」→最右側「面具石像」，紫灰像素石像與中央金黃色面具／眼部；美術判斷仍由家長完成。固定預覽與[原圖](https://stasischen.github.io/erin-preview/pr-105/cc7702eeb3dc4aaed2f1805a6c891c39f211a1f1/games/survivor/art/characters/mask-statue.png)。同卡 PR 留言已更新並讀回：[技術狀態](https://github.com/stasischen/erin/pull/105#issuecomment-6721803084)。
 
-下一步只在原 Dot QA 路徑具備受支援的 1024×461 viewport 後，沿原固定候選最多正常操作三次補測；不重派、不重測、不更換執行器或候選。PR105 保持 Draft；未 approve、merge 或部署。Boss5 仍等待 Boss4 結束與家長指示，未啟動。
+2026-11-10 已在原 exchange THREAD 派送 request #6769369201，使用既有固定尺寸 iframe lab v2 補驗原候選1024×461；只剩餘最多兩次雲端操作。等待 Dot 結果；PR105 保持 Draft，未 approve、merge 或部署。Boss5 仍等待 Boss4 結束與家長指示，未啟動。
 
 ## 校正：共享 Lingo coordinator 正在每 60 秒輪詢；Erin 尚未接入（2026-10-29T10:08:20Z）
 
