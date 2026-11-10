@@ -5,17 +5,17 @@
   "repo": "erin",
   "risk": "low",
   "title": "王的試煉：雙刃刺客",
-  "state": "peer_review",
+  "state": "done",
   "branch": "codex/survivor-boss3",
   "pr": 104,
   "brief": "coord/tasks/specs/survivor-boss-gallery-3.md",
-  "next": "受測/公開source13851b6／20261028b的Mac雙方123PASS/161hash、Dot normalauto52.56/reload、CUSTOM A12格stun/redmanual/twins/13.01隔離、B四五刀/shadow/wall/kunai可見鏈路均作用域收件。A格式重發實質未變、A/B非code/wholePR批准；全部UIreset-save-reload恢復/manual1/52.56及13.01在，無pending。此提交只coord且161受測檔不變，交既有非作者Mac全PR最終判定/鐵則/限制；通過才match-head merge與正式Pages核b。尚未merge，下一卡未開，詳latest。",
+  "next": "PR104已非作者獨審approve並精確HEAD merge commit合併，merge a0b10ad63774bc9db8950cfdff6094c169a8d5d9，正式Pages40604882840 success、freshChrome首頁/遊戲確認20261028b，merge161hash全符受測13851b6；完整123PASS與Dot normal/A/B作用域證據見grok.md/latest。done狀態本機待下個授權分支提交，不直接動main。等家長先試玩或指示boss4，未開下一卡。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "waitingFor": null,
-  "updated": "2026-10-27T23:46:36.237698+00:00",
+  "updated": "2026-10-27T23:55:15.800798+00:00",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-weakpoint"

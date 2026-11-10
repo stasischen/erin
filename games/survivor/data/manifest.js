@@ -12,5 +12,6 @@ globalThis.SurvivorDataManifest = Object.freeze([
   "data/gallery-frostfire.js",
   "data/gallery-winged.js",
   "data/gallery-assassin.js",
+  "data/gallery-bosses.js",
   "data/stages.js"
 ]);

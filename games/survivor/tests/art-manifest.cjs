@@ -4,11 +4,13 @@ const run=createRun(), plain=code=>JSON.parse(run('JSON.stringify('+code+')'));
 assert.equal(run('SurvivorArt.validate(SurvivorArtManifest)'),true);
 assert.equal(run("SurvivorArt.lookup('__proto__')"),null);
 const data=plain('SurvivorArtManifest');
+const stoneFrames={'character/stone-hands':0,'character/stone-hand-left':1,'character/stone-hand-right':2};
 for(const [id,a] of Object.entries(data.assets)) {
-  if(['character/gatekeeper','character/frost-twin','character/fire-twin','character/winged','character/assassin'].includes(id)) {assert.equal(a.sheet,'art/characters/'+id.split('/')[1]+'.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
+  if(['character/gatekeeper','character/frost-twin','character/fire-twin','character/winged','character/assassin','character/rolling-eye','character/mask-statue'].includes(id)) {assert.equal(a.sheet,'art/characters/'+id.split('/')[1]+'.png');assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
+  else if(Object.hasOwn(stoneFrames,id)){assert.equal(a.sheet,'art/characters/stone-hands.png');assert.deepEqual(a.frameSize,[16,16]);assert.ok(fs.existsSync(path.join(__dirname,'..',a.sheet)));}
   else assert.equal(a.sheet,null);
   const d=plain(`SurvivorArt.lookup(${JSON.stringify(id)},'run',99)`);
-  assert.equal(d.frame,id==='sample/player-directions'?1:0);assert.deepEqual(d.frameSize,a.frameSize);
+  assert.equal(d.frame,Object.hasOwn(stoneFrames,id)?stoneFrames[id]:id==='sample/player-directions'?1:0);assert.deepEqual(d.frameSize,a.frameSize);
 }
 run(`globalThis.testArt=JSON.parse(JSON.stringify(SurvivorArtManifest));
  testArt.assets['character/player'].animations.active={frames:[2,4,6],fps:10,loop:false};`);

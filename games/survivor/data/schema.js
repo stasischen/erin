@@ -19,7 +19,7 @@
   };
   const BOSS_MOVE_BOUNDS={...BOUNDS,distance:[0,600,5],recovery:[0,3,.1],cooldown:[0,8,.1]};
   const POSTURE_BOUNDS={window:[.05,.4,.01],maximum:[20,200,5],dodgeGain:[0,100,1],recoveryGain:[0,100,1],interruptGain:[0,100,1],decay:[0,30,1],stunSeconds:[1,5,.1],chargeBonus:[0,2,.1],damageMultiplier:[1,5,.1],heal:[0,20,1]};
-  const WEAKPOINT_CONDITIONS={'recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
+  const WEAKPOINT_CONDITIONS={'beam-active':'眼面朝外的光束預警／出手','windup':'招式預警時','recovery':'收招時','after-move':'指定招式收招後','behind':'Boss 背對主角','wall-stun':'撞牆暈眩','posture-break':'架勢崩潰','environment':'環境引出','bait':'誘餌引出'};
   const WEAKPOINT_BOUNDS={armorMultiplier:[.15,.25,.01],criticalMultiplier:[1,6,.1],warning:[.1,1.5,.05],closing:[.1,1,.05]};
   const BOSS_COMBAT_BOUNDS={nearDistance:[100,300,10],farDistance:[350,900,10],pursuitDistance:[400,1200,10],pursuitMultiplier:[1,4,.1],healthPerUpgrade:[0,1000,10],leapRecovery:[.6,3,.1],leapPush:[0,100,5],trackingSeconds:[.6,2,.1],lockSeconds:[.5,2,.1],phaseWordsSpeed:[100,450,10],phaseChalkSpeed:[100,450,10]};
   const WEAPON_BOUNDS = {interval:[.2,2,.05],arcDegrees:[30,180,5],radius:[30,150,5],damageMultiplier:[.5,3,.1],push:[0,60,1],spinEvery:[2,10,1],damageReduction:[0,.5,.01]};
@@ -293,10 +293,11 @@
       for(const [key,b] of Object.entries(WEAKPOINT_BOUNDS))result[key]=num(value[key],b[0],b[1],'弱點 '+key);
       const seen=new Set();
       result.parts=value.parts.map(p=>{
-        blockObject(p,['id','anchor','radiusScale','angleDegrees','arcDegrees','mode','duration','conditions'],'弱點部位');
+        blockObject(p,['id','anchor','radiusScale','angleDegrees','arcDegrees','mode','duration','conditions','requiresMatch'],'弱點部位');
         if(typeof p.id!=='string'||!/^[a-z][a-z0-9-]{0,23}$/.test(p.id)||seen.has(p.id))fail('弱點部位 id 不正確或重複');seen.add(p.id);
         if(!Array.isArray(p.conditions)||!p.conditions.length||p.conditions.length>7)fail('弱點需要一到七個開啟條件');
         const part={id:p.id,anchor:choice(p.anchor,['weakpoint'],'美術錨點'),radiusScale:num(p.radiusScale,.25,1.5,'弱點半徑倍率'),angleDegrees:num(p.angleDegrees,-180,180,'弱點方向'),arcDegrees:num(p.arcDegrees,20,360,'弱點角度'),mode:choice(p.mode,['any','all'],'弱點條件組合'),duration:num(p.duration,.5,8,'弱點開啟秒數')};
+        if(p.requiresMatch!==undefined){if(typeof p.requiresMatch!=='boolean')fail('弱點條件持續需為開關');part.requiresMatch=p.requiresMatch;}
         if(part.duration<=result.closing)fail('弱點開啟時間需長於關閉提示');
         part.conditions=p.conditions.map(c=>{
           blockObject(c,['type','moveId'],'弱點條件');
@@ -309,7 +310,7 @@
     };
     const trialEffects=(effect,base,timing)=>{
       const result={};
-      for(const key of ['sequence','relocate','projectiles','slide']) {
+      for(const key of ['sequence','relocate','projectiles','slide','limb','gridRoll','beam','charge']) {
         if(!base[key]){if(effect[key]!==undefined)fail('此招式沒有 '+key+' 積木');continue;}
         const value=effect[key];if(!value||typeof value!=='object')fail('缺少 '+key+' 積木');
         if(key==='sequence'){
@@ -320,6 +321,16 @@
           if(result[key].vanish+result[key].flash>timing.windup+1e-8)fail('換位後需留足完整白閃預警');
         }else if(key==='projectiles'){
           blockObject(value,['count','speed','life','radius','artId'],'苦無彈幕');result[key]={count:num(value.count,1,15,'苦無數量',true),speed:num(value.speed,60,400,'苦無速度'),life:num(value.life,.5,5,'苦無壽命'),radius:num(value.radius,3,12,'苦無半徑'),artId:choice(value.artId,['move/kunai'],'苦無美術')};
+        }else if(key==='gridRoll'){
+          blockObject(value,['cell'],'格步翻滾');result[key]={cell:num(value.cell,60,120,'格距')};
+        }else if(key==='beam'){
+          blockObject(value,['width','range'],'直線光束');result[key]={width:num(value.width,3,20,'光束半寬'),range:num(value.range,100,800,'光束最長距離')};
+        }else if(key==='limb'){
+          blockObject(value,['side','reach','lift'],'交替肢體');
+          if(value.side!==base.limb.side)fail('肢體左右識別不可改變');
+          result[key]={side:value.side,reach:num(value.reach,60,300,'肢體觸及距離'),lift:num(value.lift,20,120,'舉手高度')};
+        }else if(key==='charge'){
+          blockObject(value,['wallStun'],'直線衝撞');if(typeof value.wallStun!=='boolean')fail('撞牆暈眩需為開關');result[key]={wallStun:value.wallStun};
         }else {blockObject(value,['speed'],'側滑');result[key]={speed:num(value.speed,0,300,'側滑速度')};}
       }
       return result;
@@ -531,10 +542,23 @@
         return result;
       });
       if(input.gallery !== undefined) {
-        const base=data.gallery, g={...input.gallery},legacy=g.schemaVersion===1;
+        const base=data.gallery;
+        if(!input.gallery || typeof input.gallery!=='object' || Array.isArray(input.gallery))fail('王的試煉資料格式錯誤');
+        const g={...input.gallery},legacy=g.schemaVersion===1;
+        if(![1,2].includes(g.schemaVersion) || !Array.isArray(g.bosses))fail('王的試煉資料格式錯誤');
         if(legacy)g.arenaRadius=Math.max(200,Math.min(300,num(g.arenaRadius,420,1200,'舊競技場半徑')*200/620));
-        if(Array.isArray(g.bosses)&&[1,3].includes(g.bosses.length)&&g.bosses.length<base.bosses.length&&g.bosses.every((b,i)=>b.id===base.bosses[i].id))g.bosses=[...g.bosses,...JSON.parse(JSON.stringify(base.bosses.slice(g.bosses.length)))];
-        if(!g || ![1,2].includes(g.schemaVersion) || !Array.isArray(g.bosses) || g.bosses.length!==base.bosses.length) fail('王的試煉資料格式錯誤');
+        // 歷史名單按 ID 遷移，不把陣列順序當身份，也不以任意缺項冒充舊存檔。
+        const known=new Set(base.bosses.map(b=>b.id)),saved=new Map();
+        for(const b of g.bosses){
+          if(!b || typeof b!=='object' || Array.isArray(b) || !known.has(b.id) || saved.has(b.id))fail('試煉魔王識別錯誤');
+          saved.set(b.id,b);
+        }
+        const historical=[['gatekeeper'],['gatekeeper','frostfire','winged'],['gatekeeper','frostfire','winged','assassin'],['gatekeeper','frostfire','winged','assassin','stone-hands'],['gatekeeper','frostfire','winged','assassin','stone-hands','rolling-eye']];
+        const complete=saved.size===known.size;
+        const recognized=historical.some(ids=>ids.length===saved.size&&ids.every(id=>known.has(id)&&saved.has(id)));
+        if(!complete&&!recognized)fail('試煉魔王名單不完整');
+        // 只有缺少的新預設才補入；既有值仍走下方嚴格驗證，不用預設掩蓋壞值。
+        g.bosses=base.bosses.map(b=>saved.has(b.id)?saved.get(b.id):copy(b));
         const result={schemaVersion:2};
         for(const [k,lo,hi] of [['arenaRadius',200,300],['entrySeconds',1,5],['wallStun',1,5],['hazardLimit',1,32],['summonLimit',1,16]]) result[k]=num(g[k],lo,hi,k,k.endsWith('Limit'));
         const h=g.hazard;if(!h)fail('地面危險區資料缺少');
@@ -556,6 +580,20 @@
           });
           const config=weakpoint(b.weakpoint,original.weakpoint,boss.moves.map(m=>m.id));
           if(config!==undefined)boss.weakpoint=config;
+          const grid=boss.moves.find(m=>m.blocks.moves[0].effect.gridRoll),beam=boss.moves.find(m=>m.blocks.moves[0].effect.beam);
+          if(grid){
+            if(!beam||!config||config.parts.length!==1)fail('翻滾眼需保留光束與單一眼部弱點');
+            if(grid.weight!==1||grid.minPhase!==1||grid.ai.minDistance!==0||grid.ai.maxDistance<600)fail('格步翻滾為必要移動，不能停用或限制可達距離');
+            if(![0,1].includes(beam.weight))fail('光束啟用需為 0 或 1');
+            const part=config.parts[0],timing=beam.blocks.moves[0].timing;
+            if(part.id!=='eye'||part.anchor!=='weakpoint'||part.requiresMatch!==true||part.conditions.length!==1||part.conditions[0].type!=='beam-active')fail('眼部條件需與實際光束階段一致');
+            if(config.warning+.1>timing.windup||part.duration<timing.windup+timing.active)fail('光束需先完成眼部開啟預警，眼部顯露時間需覆蓋出手');
+          }
+          if(b.id==='mask-statue'){
+            const charge=boss.moves[0],part=config&&config.parts[0];
+            if(boss.moves.length!==1||charge.id!=='charge'||charge.weight!==1||charge.minPhase!==1||!charge.ai.offscreen||charge.blocks.moves[0].effect.speed<300||!charge.blocks.moves[0].effect.charge?.wallStun)fail('面具石像需保留畫面外選招的直線衝撞');
+            if(!config||config.armorMultiplier>.2||!part||part.id!=='back'||part.angleDegrees!==180||part.arcDegrees>140||part.mode!=='all'||part.requiresMatch!==true||!part.conditions.some(c=>c.type==='behind')||!part.conditions.some(c=>c.type==='wall-stun'))fail('面具石像背後弱點需只在背後且撞牆暈眩時開啟');
+          }
           return boss;
         });data.gallery=result;
       }

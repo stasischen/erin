@@ -348,3 +348,37 @@ Object.assign(SurvivorArtManifest.environment,{
   'caramel-lava':{base:'#302923',patch:'#46392a',path:'#74563a',edge:'#806344',leaf:'#927b52',landmark:'#a08357',light:'#b99d6c',late:'#503429'}
 });
 SurvivorArtManifest.effectMaterials={shadow:'rgba(12,24,36,.18)',shine:'rgba(255,255,255,.6)',surfaceAlpha:.24,ribbonAlpha:.65};
+
+// Original 16px torso and two distinct hand frames, no external artwork.
+(()=>{
+ const clone=id=>JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));
+ for(const [id,frame] of [['stone-hands',0],['stone-hand-left',1],['stone-hand-right',2]]){
+  const art=clone('character/gatekeeper');art.sheet='art/characters/stone-hands.png';
+  delete art.renderId;
+  art.anchors={weakpoint:[.5,.5]};art.palette=['#9cabb1','#35434c','#b9e7cf'];
+  art.placeholder={body:'#9cabb1',outline:'#35434c',eyes:'#b9e7cf'};
+  for(const animation of Object.values(art.animations))animation.frames=[frame];
+  SurvivorArtManifest.assets['character/'+id]=art;
+ }
+ for(const id of ['left-slam','right-slam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
+ const mask=clone('character/stone-hands');mask.sheet='art/characters/mask-statue.png';
+ mask.source={kind:'original hand-authored 16px Mask Statue sprite'};
+ mask.placeholder={outline:'#383349',body:'#5e5a75',eyes:'#ffe08a'};mask.palette=['#383349','#5e5a75','#9a95b0','#c9936b','#ffa94d','#ffe08a'];
+ SurvivorArtManifest.assets['character/mask-statue']=mask;
+ SurvivorArtManifest.assets['move/charge']={...clone('move/gatekeeper-charge'),sheet:null,mode:'procedural'};
+})();
+
+// Original seven-frame Eye: six closed orientations and the actual visible iris.
+(()=>{
+ const clone=id=>JSON.parse(JSON.stringify(SurvivorArtManifest.assets[id]));
+ const art=clone('character/gatekeeper');art.sheet='art/characters/rolling-eye.png';
+ delete art.renderId;
+ art.source={generator:'tools/gallery4-art.py',kind:'original literal 16px Eye frames'};
+ art.anchors={weakpoint:[.5,.5]};art.palette=['#30364f','#9a83b8','#bdf4df'];
+ art.placeholder={outline:'#30364f',body:'#9a83b8',eyes:'#bdf4df'};
+ for(const a of Object.values(art.animations))a.frames=[0];
+ for(let i=0;i<6;i++)art.animations['face'+i]={frames:[i],fps:0,loop:false};
+ art.animations['eye_open']={frames:[6],fps:0,loop:false};art.animations.idle.frames=[6];
+ SurvivorArtManifest.assets['character/rolling-eye']=art;
+ for(const id of ['grid-roll','eye-beam'])SurvivorArtManifest.assets['move/'+id]={...clone('move/gatekeeper-shield'),sheet:null,mode:'procedural'};
+})();
