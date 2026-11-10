@@ -54,7 +54,7 @@ run('work=SurvivorData.defaults();work.gallery.bosses[1].moves[0].weight=0;work.
 assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[1].moves[0].weight'),0);
 assert.equal(run('SurvivorData.validate(work).data.gallery.bosses[2].moves[0].blocks.moves[0].timing.windup'),2);
 // 真實接合：兩個可打到的身體，獨立血量／架勢，擊倒一隻後另一隻強化。
-run("startTrial('frostfire');state.player.damageDisabled=true");
+run("startTrial('frostfire','candy-sword');state.player.damageDisabled=true");
 assert.equal(run('trialBodies().length'),2);
 assert.equal(run('trialBodies().every(b=>!canAttackTarget(b))'),true);
 run('state.trial.entry=0;state.bossIntro=0;globalThis.a=state.trial.actors[0];globalThis.b=state.trial.actors[1];a.x=state.player.x-40;a.y=state.player.y;b.x=state.player.x+40;b.y=state.player.y;updateCamera()');
@@ -71,10 +71,10 @@ run('updateTrial(.05)');assert.equal(run('a.phase'),2);
 run('hitBuildTarget(a,99999)');assert.equal(run('state.mode'),'trial-menu');
 // 每招經過完整共用狀態機；落點鎖住，不出現一般波次。
 for(const boss of ['frostfire','winged']){
- run(`startTrial('${boss}');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true`);
+ run(`startTrial('${boss}','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true`);
  const ids=json('state.trial.definition.moves.map(m=>m.id)');
  for(const id of ids){
-  run(`startTrial('${boss}');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
+  run(`startTrial('${boss}','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
    globalThis.actor=state.trial.actors[0];actor.hp=actor.maxHp*.4;actor.phase=2;state.bossPhase=2;
    actor.x=state.trial.arena.x;actor.y=state.trial.arena.y;state.player.x=actor.x+160;state.player.y=actor.y;updateCamera();
    globalThis.s=state.trial.definition.moves.find(m=>m.id==='${id}').blocks.moves[0];
@@ -86,13 +86,13 @@ for(const boss of ['frostfire','winged']){
 }
 // 三種視野上以真實更新／渲染跑完整場景（獨立審查仍需實際操作）。
 for(const boss of ['frostfire','winged'])for(const [width,height] of [[740,360],[1024,461],[1180,820]]){
- run(`startTrial('${boss}');state.player.damageDisabled=true;globalThis.view=worldViewport(${width},${height});state.width=view.width;state.height=view.height;Math.random=()=>.5;for(let i=0;i<500;i++){tick(.05);if(i%25===0)render();}`);
+ run(`startTrial('${boss}','candy-sword');state.player.damageDisabled=true;globalThis.view=worldViewport(${width},${height});state.width=view.width;state.height=view.height;Math.random=()=>.5;for(let i=0;i<500;i++){tick(.05);if(i%25===0)render();}`);
  assert.equal(run('state.enemies.length'),0);assert.equal(run('state.miniboss'),null);
  assert.equal(run('trialBodies().every(b=>Math.hypot(b.x-state.trial.arena.x,b.y-state.trial.arena.y)<=state.trial.arena.radius-b.r+.01)'),true);
 }
 console.log('PASS: frostfire / winged rules, gaps / beams / volley / homing / migration, independent actors / posture / death / enrage, all move lifecycles and three viewports');
 // 不同傷害入口都必須命中第二隻王；不能提前結算整場。
-run(`startTrial('frostfire');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
+run(`startTrial('frostfire','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
  globalThis.a=state.trial.actors[0];globalThis.b=state.trial.actors[1];
  a.x=state.player.x-110;a.y=state.player.y;b.x=state.player.x+110;b.y=state.player.y;updateCamera();
  state.projectiles.push({x:b.x,y:b.y,vx:0,vy:0,r:8,rangeLeft:100,damage:20,alive:true,hitList:[],schools:[],pierce:0});tick(.01)`);
@@ -100,14 +100,14 @@ assert.equal(run('a.hp===a.maxHp'),true);assert.equal(run('b.hp<b.maxHp'),true);
 run('globalThis.beforeA=a.hp;globalThis.beforeB=b.hp;state.bomb={x:state.player.x,y:state.player.y,radius:200,damage:10,knockback:0,schools:[],timer:0};updateBomb(.01)');
 assert.equal(run('a.hp<beforeA&&b.hp<beforeB'),true);
 // 半血換招會打斷當前攻擊，只發出一次 phase-changed 事件。
-run(`startTrial('winged');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
+run(`startTrial('winged','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=true;
  globalThis.actor=state.trial.actors[0];actor.hp=actor.maxHp*.49;updateTrial(.05)`);
 assert.equal(run('state.trial.events.filter(e=>e.type==="phase-changed").length'),1);
 run('updateTrial(.05)');assert.equal(run('state.trial.events.filter(e=>e.type==="phase-changed").length'),0);
 // 落點預警中絕不傷害，落地只依鎖定落點判定，無追蹤瞬移。
 for(const id of ['dive','icefall','meteor']){
  const boss=id==='dive'?'winged':'frostfire';
- run(`startTrial('${boss}');state.trial.entry=0;state.bossIntro=0;globalThis.actor=state.trial.actors[0];
+ run(`startTrial('${boss}','candy-sword');state.trial.entry=0;state.bossIntro=0;globalThis.actor=state.trial.actors[0];
   actor.hp=actor.maxHp*.4;actor.phase=2;actor.x=state.player.x-100;actor.y=state.player.y;
   globalThis.s=state.trial.definition.moves.find(m=>m.id==='${id}').blocks.moves[0];
   actor.moves=[{id:'${id}',owner:actor.actorId,kind:'${id}',ai:{phase:'windup',left:.1},angle:0,origin:{x:actor.x,y:actor.y},target:{x:state.player.x,y:state.player.y},duration:s.timing.active,elapsed:0,pulse:0}];state.bossMoves=actor.moves;globalThis.hp=state.player.health;
@@ -119,7 +119,7 @@ for(const id of ['dive','icefall','meteor']){
  assert.equal(run('state.player.health<hp'),true,id+' impact hits');
 }
 // 主王暈眩不會阻止辨認副王的完美閃避；獎勵只加在正確的王身上。
-run(`startTrial('frostfire');state.trial.entry=0;state.bossIntro=0;globalThis.a=state.trial.actors[0];globalThis.b=state.trial.actors[1];
+run(`startTrial('frostfire','candy-sword');state.trial.entry=0;state.bossIntro=0;globalThis.a=state.trial.actors[0];globalThis.b=state.trial.actors[1];
  a.posture.stun=2;b.x=state.player.x-50;b.y=state.player.y;
  b.moves=[{id:'cross',owner:'fire',ai:{phase:'windup',left:.1},angle:0,duration:1.4}];
  globalThis.threat=teacherDodgeThreat();teacherPerfectDodge(threat)`);
@@ -143,7 +143,7 @@ run('work.gallery.bosses[2].moves[0].ai.minDistance=191');
 assert.equal(run('SurvivorData.validate(work).valid'),false);
 // 模擬下一卡的小場地：直徑 400／600，不改正式場地或 Maker 半徑下限。
 for(const radius of [200,300])for(const boss of ['frostfire','winged'])for(const [w,h] of [[740,360],[1024,461],[1180,820]]){
- run(`globalThis.savedRadius=GAME_DATA.gallery.arenaRadius;GAME_DATA.gallery.arenaRadius=${radius};startTrial('${boss}');GAME_DATA.gallery.arenaRadius=savedRadius;
+ run(`globalThis.savedRadius=GAME_DATA.gallery.arenaRadius;GAME_DATA.gallery.arenaRadius=${radius};startTrial('${boss}','candy-sword');GAME_DATA.gallery.arenaRadius=savedRadius;
   globalThis.view=worldViewport(${w},${h});state.width=view.width;state.height=view.height;state.player.damageDisabled=true;updateCamera()`);
  assert.equal(run('trialBodies().every(b=>Math.hypot(b.x-state.trial.arena.x,b.y-state.trial.arena.y)<=state.trial.arena.radius-b.r+.01)'),true,'entry inside small arena');
  run('for(let i=0;i<650;i++){tick(.05);if(i%25===0)render()}');
@@ -163,7 +163,7 @@ for(const radius of [200,300])for(const boss of ['frostfire','winged'])for(const
 }
 // 休息與狀態機冷卻期間追近；超出 AI 距離帶時等待而不出招。
 for(const cooldown of [false,true]){
- run(`startTrial('winged');state.trial.entry=0;state.bossIntro=0;globalThis.actor=state.trial.actors[0];actor.x=state.player.x-300;actor.y=state.player.y;
+ run(`startTrial('winged','candy-sword');state.trial.entry=0;state.bossIntro=0;globalThis.actor=state.trial.actors[0];actor.x=state.player.x-300;actor.y=state.player.y;
   actor.rest=2;state.bossRest=2;
   actor.moves=${cooldown?"[{id:'feathers',ai:{phase:'cooldown',left:2},angle:0,duration:.3}]":"[]"};state.bossMoves=actor.moves;
   globalThis.beforeDistance=Math.hypot(actor.x-state.player.x,actor.y-state.player.y);withTrialBody(actor,()=>updateTrialActor(.05))`);

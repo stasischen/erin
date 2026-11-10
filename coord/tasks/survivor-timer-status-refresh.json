@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-timer-status-refresh",
+  "title": "續玩後立即恢復計時文字",
+  "owner": "codex",
+  "state": "doing",
+  "repo": "erin",
+  "branch": "codex/survivor-upgrade-balance",
+  "pr": 113,
+  "brief": "coord/tasks/specs/survivor-timer-status-refresh.md",
+  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a：公開manifest/digest及123/123 payload bytes/SHA吻合；Chrome頁載入、暫停續玩、自然Lv.2選卡後恢復計時已核實。先前檢查器重複加候選prefix的原始回應已保留並標invalid_url_mapping，不是產品失敗。此次補驗交付；PR113總體review、Dot既有partial與完整局限制仍待原owner按原卡處理，不合併或部署。",
+  "reviewers": [
+    "independent-subagent"
+  ],
+  "risk": "low",
+  "updated": "2026-11-09T05:07:09Z",
+  "updatedBy": "codex"
+}

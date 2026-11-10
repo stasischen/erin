@@ -33,7 +33,7 @@ assert.equal(run('rules.resolve(config,opened.state,context.body,context.source,
 assert.equal(run('rules.resolve(null,null,context.body,context.source,0,{}).multiplier'),1);
 function fresh(trial=false){
  run(`GAME_DATA.boss.weakpoint=SurvivorData.defaults().boss.weakpoint;GAME_DATA.hitJuice.enabled=false;resetGame();state.mode='playing';state.spawnTimer=999;state.shotTimer=999;state.player.damageDisabled=true;
- ${trial?"startTrial('gatekeeper');state.trial.entry=0;":"summonTeacher();"}state.bossIntro=0;state.bossPhasePause=0;state.bossRest=999;state.boss.x=state.player.x+70;state.boss.y=state.player.y;state.boss.speed=0;state.boss.facingAngle=0;updateCamera();`);
+ ${trial?"startTrial('gatekeeper','candy-sword');state.trial.entry=0;":"summonTeacher();"}state.bossIntro=0;state.bossPhasePause=0;state.bossRest=999;state.boss.x=state.player.x+70;state.boss.y=state.player.y;state.boss.speed=0;state.boss.facingAngle=0;updateCamera();`);
 }
 fresh();run('globalThis.hp=state.boss.hp;hitBuildTarget(state.boss,100)');close(run('hp-state.boss.hp'),20);assert.equal(run('state.effects.filter(e=>e.kind===\'number\').at(-1).text'),'20');
 // 命中以前已開啟的弱點才有3倍；打滿架勢的同一擊仍是命中前護甲。

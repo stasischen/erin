@@ -282,7 +282,7 @@ Object.defineProperties(globalThis.Survivor.engine.boss, {
   updateBoss: { enumerable: true, get: () => updateBoss }
 });
 
-// ✏️ Erin 設定在 data/defaults.js 的 bossZone，Maker「魔王」也能改。
+// ✏️ Erin 設定在 data/boss.js 的 bossZone，Maker「魔王」也能改。
 // 老師出場時的戰場（鏡頭）中心固定下來，不追著主角跑；接縫共用 wrapped 距離。
 function startBossZone() {
   const config = GAME_DATA.bossZone;

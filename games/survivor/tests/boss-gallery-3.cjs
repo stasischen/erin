@@ -21,7 +21,7 @@ for(const [x,y,want]of [[1,0,{x:-72,y:0}],[-1,0,{x:72,y:0}],[0,1,{x:0,y:-72}],[0
 assert.equal(run('Math.hypot(...Object.values(blocks.behind({x:182,y:0},{x:-1,y:0},72,28,{x:0,y:0,radius:200})))<=172+.001'),true);
 assert.deepEqual(json('blocks.slide({x:0,y:0,r:28},Math.PI/2,130,.5,{x:0,y:0,radius:200})'),{x:Math.cos(Math.PI/2)*65,y:65});
 function fresh(id='blade-combo',phase=1){
- run(`startTrial('assassin');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=false;state.player.invincible=0;
+ run(`startTrial('assassin','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.damageDisabled=false;state.player.invincible=0;
   globalThis.b=state.boss;b.x=state.trial.arena.x-70;b.y=state.trial.arena.y;state.player.x=b.x+70;state.player.y=b.y;
   state.bossPhase=${phase};b.phase=${phase};b.hp=b.maxHp*${phase===2?.49:1};b.rest=999;state.bossRest=999;
   globalThis.s=state.trial.definition.moves.find(m=>m.id==='${id}').blocks.moves[0];
@@ -68,13 +68,13 @@ for(const edit of ["custom.moves[0].blocks.moves[0].effect.sequence.count=9","cu
 assert.deepEqual(json("blocks.record({assassin:20},'assassin',10,true)"),{assassin:10});
 for(const time of [0,-1,NaN,Infinity,20,30])assert.deepEqual(json(`blocks.record({assassin:20},'assassin',${time},true)`),{assassin:20});
 assert.deepEqual(json("blocks.record({assassin:20},'assassin',10,false)"),{assassin:20});
-for(const id of ['gatekeeper','frostfire','winged','assassin']){run(`startTrial('${id}');state.trial.elapsed=21.25;finishRun(true)`);assert.equal(run(`loadTrialRecords().${id}`),21.25);}
-run("startTrial('assassin');state.trial.elapsed=25;finishRun(true);startTrial('assassin');state.trial.elapsed=10;finishRun(false)");assert.equal(run('loadTrialRecords().assassin'),21.25);
-run("startTrial('assassin');state.trial.elapsed=19.5;finishRun(true)");assert.equal(run('loadTrialRecords().assassin'),19.5);
+for(const id of ['gatekeeper','frostfire','winged','assassin']){run(`startTrial('${id}','candy-sword');state.trial.elapsed=21.25;finishRun(true)`);assert.equal(run(`loadTrialRecords().${id}`),21.25);}
+run("startTrial('assassin','candy-sword');state.trial.elapsed=25;finishRun(true);startTrial('assassin','candy-sword');state.trial.elapsed=10;finishRun(false)");assert.equal(run('loadTrialRecords().assassin'),21.25);
+run("startTrial('assassin','candy-sword');state.trial.elapsed=19.5;finishRun(true)");assert.equal(run('loadTrialRecords().assassin'),19.5);
 const reloaded=createRun({saved:run.storage});assert.equal(reloaded('loadTrialRecords().assassin'),19.5);assert.equal(reloaded('loadTrialRecords().winged'),21.25);
-run("trialMenu('自訂',SurvivorData.defaults());startTrial('assassin');state.trial.elapsed=3;finishRun(true)");assert.equal(run('loadTrialRecords(true).assassin'),3);assert.equal(run('loadTrialRecords().assassin'),19.5);
-const maker=createRun({saved:run.storage,maker:true});maker("startTrial('assassin');state.trial.elapsed=2;finishRun(true)");assert.equal(maker('loadTrialRecords(true).assassin'),2);assert.equal(maker('loadTrialRecords().assassin'),19.5);
-const bad=createRun({saved:{'erin-survivor-trial-best-seconds-v1':'{"assassin":-4,"winged":"1"}'},storageFails:true});assert.equal(bad('Object.keys(loadTrialRecords()).length'),0);bad("startTrial('assassin');state.trial.elapsed=4;finishRun(true)");assert.equal(bad('loadTrialRecords().assassin'),4);
+run("trialMenu('自訂',SurvivorData.defaults());startTrial('assassin','candy-sword');state.trial.elapsed=3;finishRun(true)");assert.equal(run('loadTrialRecords(true).assassin'),3);assert.equal(run('loadTrialRecords().assassin'),19.5);
+const maker=createRun({saved:run.storage,maker:true});maker("startTrial('assassin','candy-sword');state.trial.elapsed=2;finishRun(true)");assert.equal(maker('loadTrialRecords(true).assassin'),2);assert.equal(maker('loadTrialRecords().assassin'),19.5);
+const bad=createRun({saved:{'erin-survivor-trial-best-seconds-v1':'{"assassin":-4,"winged":"1"}'},storageFails:true});assert.equal(bad('Object.keys(loadTrialRecords()).length'),0);bad("startTrial('assassin','candy-sword');state.trial.elapsed=4;finishRun(true)");assert.equal(bad('loadTrialRecords().assassin'),4);
 // 計時只取playing的活動dt，入口／暫停不計；慢動作不能讓最佳時間變短。
 fresh();run('state.trial.entry=1;state.bossIntro=1;tick(.2)');assert.equal(run('state.trial.elapsed'),0);
 run("state.trial.entry=0;state.bossIntro=0;state.mode='paused';tick(.5)");assert.equal(run('state.trial.elapsed'),0);
@@ -90,7 +90,7 @@ console.log('PASS: common sequence large/small dt / 4-5 beats / phase snapshot /
 // 另只把測試的Boss滿條提高到200，讓五刀完整走完，獨立證明全部五次資源足夠。
 for(const maximum of [100,200]){
  const r=createRun();
- r(`startTrial('assassin');state.trial.entry=0;state.bossIntro=0;state.player.invincible=0;
+ r(`startTrial('assassin','candy-sword');state.trial.entry=0;state.bossIntro=0;state.player.invincible=0;
   state.boss.hp=state.boss.maxHp*.49;state.boss.phase=2;state.bossPhase=2;state.boss.rest=0;state.bossRest=0;
   GAME_DATA.boss.posture.maximum=${maximum};Math.random=()=>0;
   globalThis.first=null;globalThis.credits=[];globalThis.resource=[];

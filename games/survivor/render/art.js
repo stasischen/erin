@@ -60,7 +60,7 @@
     const sync=clip.syncToPhase===undefined?['windup','active','recovery'].includes(name.split('_')[0]):clip.syncToPhase;
     const effectiveClip={fps:0,loop:['idle','run'].includes(name.split('_')[0]),...clip};
     const frame=selectFrame(frames,effectiveClip,time,context.phaseDuration,sync||!!(a.vfx&&a.vfx.progressMode==='phase'));
-    return {id,animation:name,sheet:clip.sheet===undefined?a.sheet:clip.sheet,mode:a.mode,frame,
+    return {id,animation:name,sheet:clip.sheet===undefined?a.sheet:clip.sheet,mode:a.mode,frame,renderId:a.renderId,
       frameSize:a.frameSize.slice(),pivot:a.pivot.slice(),hitboxAnchor:a.hitboxAnchor.slice(),anchors:copy(a.anchors||{}),
       directions:a.directions||1,...facing,row:mapped?0:facing.row,layout:copy(clip.layout||a.layout),
       displaySize:copy(a.displaySize),scale:a.scale===undefined?1:a.scale,outline:copy(a.outline),
@@ -190,12 +190,30 @@
     if(options&&id.startsWith('move/')){for(const region of options.regions||[{}])draw(id,{...options,...region});fallback();return;}
     if(draw(id,options))return;return fallback();
   }
+  function drawCharacter(id,options={}) {
+    const art=lookup(id,options.animation||'idle',options.elapsed||options.time||0,root.SurvivorArtManifest,options);
+    if(!art)return false;
+    if(art.sheet&&!art.renderId)return draw(id,{...options,time:options.elapsed===undefined?options.time:options.elapsed,tint:options.flash?'#ffffff':options.tint});
+    const clay=root.SurvivorClay;
+    if(!clay)return false;
+    const renderId=art.renderId||id;
+    if(renderId==='character/player')return !!(clay.drawPlayer&&clay.drawPlayer(options.context,{...options,animation:art.animation}));
+    return renderId.startsWith('character/')&&!!(clay.drawMonster&&clay.drawMonster(options.context,renderId.slice(10),{...options,animation:art.animation}));
+  }
+  const portraits={};
+  function portrait(id) {
+    if(portraits[id])return portraits[id];
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+    const context=canvas.getContext('2d');context.translate(64,116);context.scale(.8,.8);context.imageSmoothingEnabled=true;
+    if(!drawCharacter(id,{context,animation:'idle',elapsed:0}))return lookup(id)?.sheet;
+    return portraits[id]=canvas.toDataURL();
+  }
   function iconHtml(id) {
     const art=lookup(id);if(!art||!art.sheet)return null;
     const frame=picture(id);if(!frame)return null;
     return '<img class="pixel-icon" data-survivor-art="'+id+'" src="'+frame.toDataURL()+'" alt="" aria-hidden="true" draggable="false">';
   }
-  root.SurvivorArt={lookup,validate,bounds,picture,draw,paint,iconHtml,direction,resolveDirection,frameRect,sheetPaths,vfxPlan,phaseContext,shapeOptions};
+  root.SurvivorArt={lookup,validate,bounds,picture,draw,paint,drawCharacter,portrait,iconHtml,direction,resolveDirection,frameRect,sheetPaths,vfxPlan,phaseContext,shapeOptions};
   root.Survivor=root.Survivor||{};if(typeof window!=='undefined')window.Survivor=root.Survivor;
   root.Survivor.render=root.Survivor.render||{};root.Survivor.render.art=root.SurvivorArt;root.Survivor['art-manifest']={data:root.SurvivorArtManifest};
 })(globalThis);

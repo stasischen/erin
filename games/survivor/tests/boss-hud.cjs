@@ -117,7 +117,7 @@ for (const kind of ['teacher', 'miniboss']) {
 }
 for (const won of [false, true]) {
   const run = createRun();
-  run("startTrial('assassin')");
+  run("startTrial('assassin','candy-sword')");
   assert.equal(run.elements.bossHud.hidden, false);
   run('finishRun(' + won + ')');
   assert.equal(run.elements.bossHud.hidden, true, 'existing trial end still clears HUD');

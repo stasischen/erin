@@ -11,7 +11,7 @@ function setup(saved = {}) {
   const storage = { ...saved };
   const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { innerWidth: 800, innerHeight: 600, addEventListener(name, callback) { (windowListeners[name] ||= []).push(callback); } }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
   vm.runInContext(fs.readFileSync(`${__dirname}/../icons.js`, "utf8"), context);
-  vm.runInContext(fs.readFileSync(`${__dirname}/../data/defaults.js`, "utf8"), context);
+  require('./load-defaults.cjs').load(context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/schema.js`, "utf8"), context);
   require('./load-game.cjs').load(context, process.env.SURVIVOR_SOURCE);
   context.windowListeners = windowListeners; context.elements = elements; context.storage = storage; context.drawCalls = drawCalls;

@@ -21,7 +21,7 @@ function makeElite(enemy) {
   enemy.teleport = null;
 }
 function spawnChocobear() {
-  if (state.enemies.length >= ENEMY_LIMIT) return false;
+  if (state.enemies.length >= SurvivorWaves.limit()) return false;
   const b = GAME_DATA.chocobear, position = b.position==='zone'?bossZoneSpawn(b.radius+16):offscreenSpawn(b.radius + 16,SurvivorPacing.side(b.position));
   if (!position) return false;
   const hp = b.hp * currentStage().enemyHealthScale;
@@ -64,7 +64,7 @@ function encounterDefeated(enemy) {
 }
 function updateEncounters(dt) {
   const c = GAME_DATA.elites, b = GAME_DATA.chocobear;
-  while(state.jellyQueue.length && state.enemies.filter(e=>e.alive).length<ENEMY_LIMIT) {
+  while(state.jellyQueue.length && state.enemies.filter(e=>e.alive).length<SurvivorWaves.limit()) {
     const child=state.jellyQueue.shift();spawnEnemy({small:true,typeId:child.typeId,position:child});
   }
   if (!PREVIEW_MODE && c.enabled && !state.boss) {
@@ -75,7 +75,7 @@ function updateEncounters(dt) {
     }
   }
   // 分裂的小怪也在畫面外進場；滿額／無安全位置時保留佇列。
-  while (state.splitQueue.length && state.enemies.length < ENEMY_LIMIT) {
+  while (state.splitQueue.length && state.enemies.length < SurvivorWaves.limit()) {
     if (!spawnEnemy({small:true,typeId:state.splitQueue[0]})) break;
     state.splitQueue.shift();
   }

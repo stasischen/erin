@@ -13,18 +13,19 @@ globalThis.SurvivorEffectBlocks = (() => {
   ];
   const ref = name => ({ref:name}), arg = name => ({input:name});
   const op = (name,...args) => ({op:name,args});
+  const growthCount=op('max',1,op('ceil',op('divide',arg('level'),2)));
   // 共用拼圖：保留 feature id 作舊作品的穩定連結，所有數值在作品內共用。
   recipes.push(
     {feature:'thunder-attack',rules:[{trigger:'onChain',actions:[{type:'chain',
       radius:op('multiply',ref('build.chainRadius'),op('add',1,op('multiply',arg('transformed'),ref('schoolRules.thunderFormRange')))),
-      count:1, multiplier:op('multiply',ref('build.chainDamage'),op('add',1,op('multiply',op('max',0,op('subtract',arg('level'),1)),ref('build.chainGrowth'))))}]}]},
+      count:growthCount, multiplier:op('multiply',ref('build.chainDamage'),op('add',1,op('multiply',op('max',0,op('subtract',arg('level'),1)),ref('build.chainGrowth'))))}]}]},
     {feature:'thunder-super',rules:[{trigger:'onChain',actions:[{type:'chain-modifier',extra:ref('schoolRules.superconductorJumps'),multiplier:1}]}]},
     {feature:'thunder-skill',rules:[{trigger:'onSkillBlast',conditions:[{type:'radius',radius:arg('radius'),includeTargetRadius:true}],actions:[
       {type:'stun',duration:op('multiply',ref('build.stunSeconds'),arg('level'))},
       {type:'damage',amount:op('multiply',arg('damage'),ref('build.skillDamageMultiplier'),arg('level'))}]}]},
     {feature:'thunder-counter',rules:[{trigger:'onHurt',conditions:[{type:'radius',radius:ref('build.counterRadius'),strict:true}],actions:[
       {type:'damage',amount:op('multiply',arg('level'),ref('build.counterDamage'))}]}]},
-    {feature:'thunder-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.cloudSeconds'),conditions:[{type:'randomTarget',count:1}],actions:[
+    {feature:'thunder-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.cloudSeconds'),conditions:[{type:'randomTarget',count:growthCount}],actions:[
       {type:'damage',amount:op('multiply',ref('build.ultimateDamage'),op('add',1,op('multiply',op('subtract',arg('level'),1),ref('build.ultimateGrowth'))))}]}]},
     {feature:'fusion-dash',rules:[{trigger:'onDashTrail',actions:[{type:'field',school:'thunder',spacing:ref('build.trailSpacing'),radius:ref('build.fieldRadius'),
       radiusGrowth:ref('build.fieldRadiusGrowth'),seconds:ref('build.fieldSeconds'),interval:ref('build.fieldInterval'),limit:ref('build.fieldLimit'),
@@ -80,7 +81,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'wind-ultimate',rules:[{trigger:'onUltimate',interval:ref('build.tornadoTick'),
       conditions:[{type:'radius',strict:true,includeTargetRadius:true,radius:ref('build.fieldRadius')}],actions:[
       {type:'damage',amount:op('multiply',ref('build.ultimateDamage'),op('add',1,op('multiply',op('subtract',arg('level'),1),ref('build.ultimateGrowth'))))},
-      {type:'orbit',radius:ref('build.tornadoRadius'),speed:ref('build.tornadoSpeed')}]}]},
+      {type:'orbit',radius:ref('build.tornadoRadius'),speed:ref('build.tornadoSpeed'),count:growthCount}]}]},
     {feature:'wind-blade',rules:[{trigger:'onShot',actions:[{type:'pierce',count:1}]},
       {trigger:'onShotHit',conditions:[{type:'bladeEligible'},{type:'radius',radius:ref('schoolRules.windBladeRange')}],actions:[
         {type:'blade',multiplier:ref('schoolRules.windBladeDamage'),range:ref('schoolRules.windBladeRange')}]},
@@ -100,14 +101,14 @@ globalThis.SurvivorEffectBlocks = (() => {
       {type:'size-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.waterSizePerLevel')))},
       {type:'damage-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.damagePerLevel')))}]}]},
     {feature:'rapid-water',rules:[{trigger:'onShot',actions:[{type:'interval-multiplier',multiplier:op('subtract',1,op('multiply',arg('level'),ref('tuning.fireRateReduction')))}]}]},
-    {feature:'multi-water',rules:[{trigger:'onShot',actions:[{type:'spread',count:op('add',1,arg('level')),angle:ref('tuning.extraShotAngle'),extraArc:op('multiply',arg('level'),ref('tuning.extraShotAngle'))}]}]},
+    {feature:'multi-water',rules:[{trigger:'onShot',actions:[{type:'spread',coverage:growthCount,count:op('add',1,arg('level')),angle:ref('tuning.extraShotAngle'),extraArc:op('multiply',arg('level'),ref('tuning.extraShotAngle'))}]}]},
     {feature:'onion-dash',rules:[{trigger:'onMove',actions:[{type:'move-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.moveSpeedPerLevel')))}]}]},
     {feature:'bubble-shield',rules:[{trigger:'onHealth',actions:[{type:'health',amount:op('multiply',arg('level'),op('ceil',op('divide',ref('tuning.playerHealth'),ref('build.shieldHealthDivisor'))))}]},
       {trigger:'onUpgrade',actions:[{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),ref('build.shieldHealthDivisor')))}]}]},
     {feature:'gem-magnet',rules:[{trigger:'onPickup',actions:[{type:'pickup-multiplier',multiplier:op('add',1,op('multiply',arg('level'),ref('tuning.magnetPerLevel')))}]}]},
     {feature:'piercing-water',rules:[{trigger:'onShot',actions:[{type:'pierce',count:arg('level'),size:op('add',1,op('multiply',arg('level'),.1))}]}]},
     {feature:'splash-water',rules:[{trigger:'onShotHit',conditions:[{type:'radius',strict:true,radius:op('add',ref('tuning.splashBaseRadius'),op('multiply',arg('level'),ref('tuning.splashPerLevel')))}],actions:[{type:'damage',amount:op('multiply',arg('damage'),ref('build.supportSplashDamage'))}]}]},
-    {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:1}]}]}
+    {feature:'auto-heal',rules:[{trigger:'onHealTick',interval:op('multiply',ref('tuning.autoHealSeconds'),op('power',ref('build.healIntervalMultiplier'),op('subtract',arg('level'),1))),conditions:[{type:'healthMissing'}],actions:[{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),20))}]}]}
   );
   // 中立道具：保留一次掛載、原有次序及世界單位，亂數／計數由事件傳入。
   const nr = key => ref('neutralRules.'+key);
@@ -132,7 +133,7 @@ globalThis.SurvivorEffectBlocks = (() => {
     {feature:'item-clover',rules:[{trigger:'onAcquire',conditions:[{type:'firstClover'}],actions:[{type:'reroll',amount:1}]},
       {trigger:'onOffer',actions:[{type:'rare-multiplier',multiplier:nr('luckyRareMultiplier')}]}]},
     {feature:'item-rear',rules:[{trigger:'onShot',conditions:[{type:'volleyPresent'}],actions:[{type:'rear-shot',count:1,angle:Math.PI,multiplier:1}]}]},
-    {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:1}]}]}
+    {feature:'item-cookie',rules:[{trigger:'onDeath',conditions:[{type:'countMultiple',every:nr('cookieKills')}],actions:[{type:'kill-count',amount:1},{type:'heal',amount:op('ceil',op('divide',ref('tuning.playerHealth'),20))}]}]}
   );
   // 主角與敵人共用 trigger / conditions / actions；接合層只提供事件。
   recipes.push({feature:'posture',rules:[
@@ -206,7 +207,9 @@ globalThis.SurvivorEffectBlocks = (() => {
   }
   function select(rule,targets,draw) {
     const random=(rule.conditions||[]).find(c=>c.type==='randomTarget');
-    return random ? (targets.length ? [targets[Math.floor(draw*targets.length)]] : []) : targets.slice();
+    if(!random)return targets.slice();
+    const start=Math.floor(draw*targets.length);
+    return Array.from({length:Math.min(targets.length,random.count)},(_,i)=>targets[(start+i)%targets.length]);
   }
   function drop(number,owned,data) {
     const rule=event('water-drop','onShot',data);

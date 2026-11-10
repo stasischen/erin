@@ -98,7 +98,7 @@ for(const side of [-1,1])for(const sample of [0,.5,.999]){
 }
 
 // Mask Statue uses the shared charge block, wall-stun signal, and rear-only weakpoint.
-run("globalThis.mask=GAME_DATA.gallery.bosses.find(b=>b.id==='mask-statue');startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;globalThis.mb=state.boss;globalThis.mt=state.trial;mb.x=mt.arena.x-mt.arena.radius+mb.r+100;mb.y=mt.arena.y;state.player.x=mt.arena.x-mt.arena.radius+5;state.player.y=mt.arena.y;state.player.damageDisabled=true;state.bossRest=0");
+run("globalThis.mask=GAME_DATA.gallery.bosses.find(b=>b.id==='mask-statue');startTrial('mask-statue','water-ball');state.trial.entry=0;state.bossIntro=0;globalThis.mb=state.boss;globalThis.mt=state.trial;mb.x=mt.arena.x-mt.arena.radius+mb.r+100;mb.y=mt.arena.y;state.player.x=mt.arena.x-mt.arena.radius+5;state.player.y=mt.arena.y;state.player.damageDisabled=true;state.bossRest=0");
 assert.equal(run('trialUsesBlocks(mt.definition)'),true);
 assert.equal(run("mask.moves[0].blocks.moves[0].effect.charge.wallStun"),true);
 assert.equal(run("mask.weakpoint.parts[0].requiresMatch"),true,'mask weakpoint must require live behind and wall-stun conditions');
@@ -127,7 +127,7 @@ assert.equal(run("resolveBossWeakpoint(mb,{source:state.player}).kind"),'armor',
 for(let i=0;i<60&&(run('mb.posture.stun>0')||!run('mb.moves.length'));i++)run('updateTrial(.05);updateBossWeakpoints(.05)');
 assert.equal(run("mb.moves[0]?.id"),'charge','single-move statue must be able to charge again after the stun');
 // Completing a charge without a wall and interrupting it with an ordinary stun both clear no-repeat history.
-run("mask.weakpoint.parts[0].duration=2;startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;globalThis.mt=state.trial;globalThis.mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.player.damageDisabled=true;state.bossRest=0");
+run("mask.weakpoint.parts[0].duration=2;startTrial('mask-statue','water-ball');state.trial.entry=0;state.bossIntro=0;globalThis.mt=state.trial;globalThis.mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.player.damageDisabled=true;state.bossRest=0");
 for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
 assert.ok(run("mb.moves[0]?.id==='charge'"),'no-wall trial did not start charge');
 for(let i=0;i<120&&run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
@@ -136,14 +136,14 @@ for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)'
 assert.equal(run("mb.moves[0]?.id"),'charge','charge must be selectable again after a no-wall completion');
 run("state.bossMoves[0].ai.phase='active';mb.posture.stun=.5;updateTrial(.05)");
 assert.equal(run("mb.previous.includes('charge')"),false,'ordinary stun interruption left charge excluded by no-repeat history');
-run("startTrial('mask-statue');state.trial.entry=0;state.bossIntro=0;mt=state.trial;mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.bossRest=0");
+run("startTrial('mask-statue','water-ball');state.trial.entry=0;state.bossIntro=0;mt=state.trial;mb=state.boss;mt.arena.radius=10000;mb.x=mt.arena.x;mb.y=mt.arena.y;state.player.x=mb.x+500;state.player.y=mb.y;state.bossRest=0");
 for(let i=0;i<120&&!run("mb.moves[0]?.id==='charge'");i++)run('updateTrial(.05)');
 assert.ok(run("mb.moves[0]?.id==='charge'"));run('mb.posture.stun=.5;updateTrial(.05)');
 assert.equal(run("mb.previous.includes('charge')"),false,'ordinary stun interruption left charge excluded by no-repeat history');
 run('mask.weakpoint.parts[0].duration=2');
 console.log('PASS: Mask Statue common charge warning, wall stun, rear weakpoint, front armor and art-manifest entries');
 function hands(side=-1){
- run(`startTrial('stone-hands');state.trial.entry=0;state.bossIntro=0;globalThis.handBoss=state.boss;handBoss.x=state.trial.arena.x-100;handBoss.y=state.trial.arena.y;state.player.x=state.trial.arena.x;state.player.y=state.trial.arena.y;state.player.invincible=0;state.player.damageDisabled=false;handBoss.rest=0;state.bossRest=0;Math.random=()=>${side===1?.999:0};updateTrial(0);globalThis.handMove=handBoss.moves[0];globalThis.handSpec=stone.moves.find(m=>m.id===handMove.id).blocks.moves[0];`);
+ run(`startTrial('stone-hands','water-ball');state.trial.entry=0;state.bossIntro=0;globalThis.handBoss=state.boss;handBoss.x=state.trial.arena.x-100;handBoss.y=state.trial.arena.y;state.player.x=state.trial.arena.x;state.player.y=state.trial.arena.y;state.player.invincible=0;state.player.damageDisabled=false;handBoss.rest=0;state.bossRest=0;Math.random=()=>${side===1?.999:0};updateTrial(0);globalThis.handMove=handBoss.moves[0];globalThis.handSpec=stone.moves.find(m=>m.id===handMove.id).blocks.moves[0];`);
 }
 hands();
 assert.equal(run('handMove.ai.phase'),'windup');assert.equal(run('state.trial.events[0].type'),'limb-warning');
@@ -178,7 +178,7 @@ run('beforeHp=handBoss.hp;hitBuildTarget(handBoss,10)');near(run('beforeHp-handB
 assert.equal(run('handBoss.moves.length'),0);
 // Starting another encounter never reuses the cancelled target or hand side.
 hands();assert.equal(run('handBoss.lastLimb'),undefined);assert.equal(run('handBoss.moves.length'),1);
-run("trialMenu();startTrial('stone-hands')");assert.equal(run('state.boss.lastLimb'),undefined);assert.equal(run('state.boss.moves.length'),0);
+run("trialMenu();startTrial('stone-hands')");assert.equal(run("state.pendingTrial"),'stone-hands');assert.equal(run('state.boss'),null);assert.equal(run('state.bossMoves.length'),0);
 // Explicit schema bounds and preserved real new-Boss edits.
 for(const edit of ['b.moves[0].blocks.moves[0].effect.limb.side=1','b.moves[0].blocks.moves[0].effect.limb.reach=301','b.moves[0].blocks.moves[0].effect.limb.lift=19',"b.weakpoint.parts[0].requiresMatch='yes'"]){
  run("work=SurvivorData.defaults();globalThis.b=work.gallery.bosses.find(b=>b.id==='stone-hands');"+edit);assert.equal(run('SurvivorData.validate(work).valid'),false,edit);
@@ -297,7 +297,9 @@ function setup(options={}){
   const location={href:'',search:options.search||''}, state={keys:new Set(),mode:'ready'},window={addEventListener(){}};
   const calls=[];
   const context=vm.createContext({SurvivorPreview:{stop(){},refresh(){},mount(host,data,spec){calls.push({kind:'preview',data,spec});}},SurvivorPractice:{close(){},refresh(){},mount(){},unmount(){},open(data,container,onClose,id){calls.push({kind:'practice',data,id});}},console,window,location,state,MAKER_MODE:!!options.maker,URLSearchParams,drawBlob(){},updateActionControls(){},showOverlay(mode){state.mode=mode;},document:{createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),querySelectorAll:()=>tabs},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(options.fails)throw Error('full');storage[k]=v;}}});
-  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of ['render/monsters.js','icons.js','data/defaults.js','data/manifest.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of vm.runInContext('SurvivorDataManifest',context))vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
+  for(const file of ['data/schema.js','engine/timing.js','engine/effect-blocks.js','maker/widgets.js','maker/cards-weapons.js','maker/actors.js','maker/stages.js','maker/rules.js','maker/maker.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${file}`,'utf8'),context);
   function nodes(node=ids.editor){return node.children.flatMap(c=>[c,...nodes(c)]);}
   function tab(name){tabs.find(n=>n.dataset.tab===name).fire('click');}
   function click(text,exact=true){const n=nodes().find(n=>n.tag==='button'&&(exact?n._text===text:n._text.includes(text)));assert.ok(n,text);n.fire('click');}
@@ -337,7 +339,7 @@ function setup(options={}){
  for(const label of ['形狀半徑','招式移速','追擊速度','第二階段速度倍率','AI 第二階段加權','AI 選招權重'])assert.equal(nodes(eyeSection()).some(n=>n.tag==='input'&&n.attrs['aria-label']===label),false,label+' must not be a visible inert control');
  eyeField('光束啟用 0 關 1 開',0);eyeField('格步翻滾格距',100);eyeField('光束半寬',6);eyeField('光束最長距離',120);ui.ids.save.fire('click');
  const effective=JSON.parse(ui.storage['erin-survivor-maker-v1']),actual=createRun();
- actual('trialDraft='+JSON.stringify(effective.gallery)+";startTrial('rolling-eye');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.observed=[]");
+ actual('trialDraft='+JSON.stringify(effective.gallery)+";startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.observed=[]");
  for(let i=0;i<1000;i++)actual("updateTrial(.02);updateBossWeakpoints(.02);observed.push(...state.trial.events)");
  assert.equal(actual("observed.some(e=>e.type==='beam-warning')"),false);assert.ok(actual("observed.filter(e=>e.type==='grid-warning').length>3"));
  actual("globalThis.spec=state.trial.definition.moves.find(m=>m.blocks.moves[0].effect.beam).blocks.moves[0];globalThis.region=SurvivorTrialBlocks.boundedBeam({x:0,y:0},{x:200,y:0},spec.effect.beam.width,spec.effect.beam.range,{x:0,y:0,radius:300})");
@@ -369,7 +371,7 @@ function setup(options={}){
   }
  }
  // Actual initialization + selection: no continuous pursuit during entry/rest/windup.
- eyeRun("startTrial('rolling-eye');globalThis.actor=state.boss;globalThis.initial={x:actor.x,y:actor.y};globalThis.events=[];state.player.damageDisabled=true");
+ eyeRun("startTrial('rolling-eye','water-ball');globalThis.actor=state.boss;globalThis.initial={x:actor.x,y:actor.y};globalThis.events=[];state.player.damageDisabled=true");
  for(let i=0;i<400&&!eyeRun('actor.moves.length');i++)eyeRun('updateTrial(.02);updateBossWeakpoints(.02);events.push(...state.trial.events)');
  assert.equal(eyeRun('actor.moves[0].id'),'grid-roll');
  assert.deepEqual(read('({x:actor.x,y:actor.y})'),read('initial'));
@@ -399,7 +401,7 @@ function setup(options={}){
  }
  assert.ok(rolls>0);assert.equal(sawBeam&&sawOpen&&sawActive,true);
  // Independent cancellation setup: actual roll is interrupted, harmless coast ends at its original cell.
- eyeRun("startTrial('rolling-eye');actor=state.boss;state.player.damageDisabled=true");
+ eyeRun("startTrial('rolling-eye','water-ball');actor=state.boss;state.player.damageDisabled=true");
  for(let i=0;i<500&&!eyeRun('!!actor.gridTransit');i++)eyeRun('updateTrial(.02);updateBossWeakpoints(.02)');
  eyeRun('updateTrial(.1);globalThis.destination=JSON.stringify(actor.gridTransit.target);globalThis.beforeCancel={x:actor.x,y:actor.y};stunTarget(actor,1)');
  for(let i=0;i<50&&eyeRun('!!actor.gridTransit');i++)eyeRun('updateTrial(.02);updateBossWeakpoints(.02)');
@@ -416,7 +418,7 @@ function setup(options={}){
  eyeRun("work=SurvivorData.defaults();b=work.gallery.bosses.find(b=>b.id==='rolling-eye');b.moves[0].blocks.moves[0].effect.gridRoll.cell=100;b.moves[1].blocks.moves[0].effect.beam.width=6;b.moves[1].blocks.moves[0].effect.beam.range=420;globalThis.saved=SurvivorData.save(work)");
  assert.equal(eyeRun('saved.valid'),true);assert.deepEqual(read('SurvivorData.load().data.gallery'),read('saved.data.gallery'));
  for(const custom of [false,true]){
-  eyeRun(`trialDraft=${custom?'SurvivorData.defaults().gallery':'null'};startTrial('rolling-eye');state.trial.elapsed=23;finishRun(true)`);
+  eyeRun(`trialDraft=${custom?'SurvivorData.defaults().gallery':'null'};startTrial('rolling-eye','water-ball');state.trial.elapsed=23;finishRun(true)`);
   assert.equal(eyeRun(`loadTrialRecords(${custom})['rolling-eye']`),23);
  }
  console.log('PASS: real sixth Eye pure cell bounds, natural warned roll/outward eye/beam, slow-frame warning, cancellation-to-cell, displacement immunity, strict schema/save/load and separate records');
@@ -425,7 +427,7 @@ function setup(options={}){
 
 {
  const e=createRun(),j=code=>JSON.parse(e('JSON.stringify('+code+')'));
- e("startTrial('rolling-eye');globalThis.eyeBody=state.boss;state.player.damageDisabled=true;globalThis.openSeen=false;globalThis.usedAnimations=[];globalThis.oldPicture=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')usedAnimations.push(animation);return oldPicture(id,animation,...args);}");
+ e("startTrial('rolling-eye','water-ball');globalThis.eyeBody=state.boss;state.player.damageDisabled=true;globalThis.openSeen=false;globalThis.usedAnimations=[];globalThis.oldPicture=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')usedAnimations.push(animation);return oldPicture(id,animation,...args);}");
  for(let i=0;i<1800&&!e('trialGridExposure(eyeBody)');i++)e('updateTrial(.02);updateBossWeakpoints(.02)');
  assert.equal(e('trialGridExposure(eyeBody)'),true);
  e('globalThis.point=bossWeakpointPoints(eyeBody,bossWeakpointConfig(eyeBody)).weakpoint;trialEyePicture(eyeBody)');
@@ -435,7 +437,7 @@ function setup(options={}){
  e('globalThis.phaseBefore=JSON.stringify(eyeBody.weakpoints);hitBuildTarget(eyeBody,10,{point:{...point,r:0}});updateBossWeakpoints(.5)');
  assert.equal(e('eyeBody.feedbackFrozen'),true);assert.equal(e('JSON.stringify(eyeBody.weakpoints)'),e('phaseBefore'),'target hit-stop must freeze actual critical window');
  // Independent fresh instance for cancellation expiry, no previous hit-stop contamination.
- const c=createRun();c("startTrial('rolling-eye');globalThis.eb=state.boss;state.player.damageDisabled=true");
+ const c=createRun();c("startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.damageDisabled=true");
  for(let i=0;i<1800&&!c('trialGridExposure(eb)');i++)c('updateTrial(.02);updateBossWeakpoints(.02)');
  c('stunTarget(eb,1);updateBossWeakpoints(.01)');assert.equal(c('eb.weakpoints.eye.phase'),'closing');
  assert.equal(c('trialGridExposure(eb)'),true);
@@ -456,7 +458,7 @@ function setup(options={}){
 
 
 {
- const r=createRun();r("startTrial('rolling-eye');globalThis.eb=state.boss;state.player.invincible=0;state.player.damageDisabled=false");
+ const r=createRun();r("startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.invincible=0;state.player.damageDisabled=false");
  for(let i=0;i<400&&!r('eb.moves.length');i++)r('updateTrial(.02);updateBossWeakpoints(.02)');
  r('state.player.x=eb.moves[0].target.x;state.player.y=eb.moves[0].target.y;globalThis.hp=state.player.health;globalThis.warned=state.trial.events.some(e=>e.type===\'grid-warning\')');
  assert.equal(r('warned'),true);
@@ -464,7 +466,7 @@ function setup(options={}){
  let rollHit=false;
  for(let i=0;i<100&&!rollHit;i++){r('updateTrial(.02);updateBossWeakpoints(.02)');rollHit=r('state.player.health<hp');}
  assert.equal(rollHit,true,'actual warned roll must damage inside its swept path');
- const l=createRun();l("startTrial('rolling-eye');globalThis.eb=state.boss;state.player.damageDisabled=true");
+ const l=createRun();l("startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.damageDisabled=true");
  for(let i=0;i<1800&&!l("eb.moves[0]?.id==='eye-beam'");i++)l('updateTrial(.02);updateBossWeakpoints(.02)');
  l('globalThis.beam=eb.moves[0];globalThis.g=beam.region;state.player.x=g.origin.x+Math.cos(g.angle)*g.shape.length*.5;state.player.y=g.origin.y+Math.sin(g.angle)*g.shape.length*.5;state.player.invincible=0;state.player.damageDisabled=false;globalThis.hp=state.player.health');
  assert.equal(l("state.trial.events.some(e=>e.type==='beam-warning')"),true);
@@ -490,7 +492,7 @@ function setup(options={}){
   assert.equal(t.face,expected);near(t.angle,angle*Math.PI/2);
  }
  function begin(beamEnabled){
-  r(`resetGame();globalThis.work=SurvivorData.defaults();globalThis.b=work.gallery.bosses.find(b=>b.id==='rolling-eye');b.moves[0].blocks.moves[0].effect.gridRoll.cell=60;b.moves[1].weight=${beamEnabled};globalThis.valid=SurvivorData.validate(work);trialDraft=valid.data.gallery;startTrial('rolling-eye');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.animations=[];globalThis.originalPicture=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')animations.push(animation);return originalPicture(id,animation,...args);}`);
+  r(`resetGame();globalThis.work=SurvivorData.defaults();globalThis.b=work.gallery.bosses.find(b=>b.id==='rolling-eye');b.moves[0].blocks.moves[0].effect.gridRoll.cell=60;b.moves[1].weight=${beamEnabled};globalThis.valid=SurvivorData.validate(work);trialDraft=valid.data.gallery;startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.animations=[];globalThis.originalPicture=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')animations.push(animation);return originalPicture(id,animation,...args);}`);
   assert.equal(r('valid.valid'),true);
  }
  // Opposite and perpendicular moves deliberately invalidate a simple roll counter.
@@ -541,7 +543,7 @@ function setup(options={}){
  near(r(`SurvivorTrialBlocks.gridTwist(${JSON.stringify(pose)})`),Math.PI/2);
  assert.equal(r(`SurvivorTrialBlocks.gridOutward(${JSON.stringify(pose)})`),false);
  function begin(){
-  r("globalThis.work=SurvivorData.defaults();work.gallery.bosses.find(b=>b.id==='rolling-eye').moves[0].blocks.moves[0].effect.gridRoll.cell=60;trialDraft=SurvivorData.validate(work).data.gallery;startTrial('rolling-eye');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.frames=[];globalThis.pictureBefore=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')frames.push(animation);return pictureBefore(id,animation,...args);}");
+  r("globalThis.work=SurvivorData.defaults();work.gallery.bosses.find(b=>b.id==='rolling-eye').moves[0].blocks.moves[0].effect.gridRoll.cell=60;trialDraft=SurvivorData.validate(work).data.gallery;startTrial('rolling-eye','water-ball');globalThis.eb=state.boss;state.player.damageDisabled=true;globalThis.frames=[];globalThis.pictureBefore=SurvivorArt.picture;SurvivorArt.picture=function(id,animation,...args){if(id==='character/rolling-eye')frames.push(animation);return pictureBefore(id,animation,...args);}");
  }
  function actualRoll(dx,dy){
   const before=read('eb.gridOrientation');

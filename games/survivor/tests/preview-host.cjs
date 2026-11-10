@@ -10,7 +10,7 @@ class Observer {
  constructor(fn){this.fn=fn;observers.push(this);}observe(frame){this.frame=frame;}disconnect(){this.disconnected=true;}
 }
 const context=vm.createContext({URL,document:{currentScript:{src:'http://localhost/erin/games/survivor/preview.js'},createElement:()=>new Node()},setTimeout:fn=>{pending=fn;return 1;},clearTimeout:()=>{pending=null;},IntersectionObserver:Observer});
-for(const f of ['data/defaults.js','data/schema.js','preview.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${f}`,'utf8'),context);
+for(const f of [...require('./load-defaults.cjs').files,'data/schema.js','preview.js'])vm.runInContext(fs.readFileSync(`${__dirname}/../${f}`,'utf8'),context);
 const api=context.SurvivorPreview,data=context.SurvivorData.defaults(),a=new Node(),b=new Node();
 api.mount(a,data,{kind:'card',id:data.cards[0].id});
 const frame=a.children[1];assert.equal(frame.src,'http://localhost/erin/games/survivor/preview.html?v='+require('../version.json').version);

@@ -55,16 +55,17 @@ function trialAnimation() {
 }
 let trialDraft=null,trialReturnToMaker=false;
 function trialSettings() {return state.trial?state.trial.config:trialDraft||GAME_DATA.gallery;}
-function startTrial(id) {
+function startTrial(id,weaponId=null) {
   const definition=trialSettings().bosses.find(b=>b.id===id);if(!definition)return;
   if(globalThis.SurvivorPreview)SurvivorPreview.stop();
-  resetGame();
+  resetGame();enterRunMode(true);
+  if(!weaponId){state.pendingTrial=id;document.getElementById('trialPanel').hidden=true;showWeaponChoices();return;}
   const arena={x:trialSettings().arenaRadius+200,y:trialSettings().arenaRadius+200,radius:trialSettings().arenaRadius};
   state.trial={definition,config:trialSettings(),arena,slow:1,hazards:[],entry:trialSettings().entrySeconds,elapsed:0,custom:MAKER_MODE||!!trialDraft,previous:[],events:[]};
   state.player.x=arena.x;state.player.y=arena.y;
   state.boss={...SurvivorTrialRules.entry(arena,definition.radius),r:definition.radius,hp:definition.hp,maxHp:definition.hp,posture:SurvivorPosture.initial(),recoveryLeft:0,wobble:0,flash:0};
   initTrialEncounter();
-  state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId='candy-sword';
+  state.bossIntro=state.trial.entry;state.bossRest=.5;state.mode='playing';state.weaponId=weaponId;
   state.practiceHit=null;state.player.damageDisabled=false;
   overlay.classList.add('hidden');document.getElementById('trialPanel').hidden=true;
   state.lastTime=performance.now();updateHud();updateCamera();updateActionControls();scheduleFrame();
@@ -89,6 +90,18 @@ function trialMenu(message='王的試煉',data=null) {
     const best=document.createElement('small');best.textContent=records[b.id]?`最佳 ${records[b.id].toFixed(2)} 秒`:'最佳 —';button.appendChild(best);
     button.onclick=()=>startTrial(b.id);choices.appendChild(button);
   }
+}
+// Menu uses the manifest frame adapter; while the sheet loads, show a tagged placeholder.
+function trialMenuImage(id){
+ const image=document.createElement('img');image.alt='';image.dataset.survivorArt=id;
+ const frame=SurvivorArt.picture(id,'idle',0);
+ if(frame){image.src=frame.toDataURL();return image;}
+ const art=SurvivorArt.lookup(id),canvas=document.createElement('canvas');
+ canvas.width=art.frameSize[0];canvas.height=art.frameSize[1];
+ const colors=SurvivorArtManifest.assets[id].placeholder||{outline:'#35434c',body:'#9cabb1',eyes:'#b9e7cf'},g=canvas.getContext('2d');
+ g.scale(canvas.width/16,canvas.height/16);g.fillStyle=colors.outline;g.fillRect(4,1,8,14);
+ g.fillStyle=colors.body;g.fillRect(5,2,6,5);g.fillRect(3,8,10,4);g.fillStyle=colors.eyes;g.fillRect(6,5,4,1);
+ image.src=canvas.toDataURL();return image; // Never expose a raw multi-frame sheet while it loads.
 }
 window.openSurvivorTrials=data=>trialMenu('王的試煉',data);
 function closeTrialMenu() {document.getElementById('trialPanel').hidden=true;resetGame();trialDraft=null;if(trialReturnToMaker&&window.openSurvivorMaker){trialReturnToMaker=false;window.openSurvivorMaker();}else showOverlay('ready');}
@@ -190,17 +203,4 @@ function confirmTrialMenu(leave) {
   document.getElementById('trialConfirm').hidden=true;
   if(leave)trialMenu();
   else {showOverlay('paused');document.getElementById('trialEntry').focus?.();}
-}
-
-// Menu uses the same manifest frame adapter as battle; its onload hook refreshes tagged images.
-function trialMenuImage(id){
- const image=document.createElement('img');image.alt='';image.dataset.survivorArt=id;
- const frame=SurvivorArt.picture(id,'idle',0);
- if(frame){image.src=frame.toDataURL();return image;}
- const art=SurvivorArt.lookup(id),canvas=document.createElement('canvas');
- canvas.width=art.frameSize[0];canvas.height=art.frameSize[1];
- const colors=SurvivorArtManifest.assets[id].placeholder||{outline:'#35434c',body:'#9cabb1',eyes:'#b9e7cf'},g=canvas.getContext('2d');
- g.scale(canvas.width/16,canvas.height/16);g.fillStyle=colors.outline;g.fillRect(4,1,8,14);
- g.fillStyle=colors.body;g.fillRect(5,2,6,5);g.fillRect(3,8,10,4);g.fillStyle=colors.eyes;g.fillRect(6,5,4,1);
- image.src=canvas.toDataURL();return image; // Loading/error stays a manifest-derived placeholder, never the raw sheet.
 }

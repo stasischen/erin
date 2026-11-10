@@ -10,7 +10,7 @@ function setup(saved = {}) {
   const storage = { ...saved };
   const context = vm.createContext({ console, Math: Object.create(Math), Set, performance: { now: () => 0 }, requestAnimationFrame() { return 1; }, cancelAnimationFrame() {}, navigator: {}, window: { innerWidth: 800, innerHeight: 600, addEventListener(name, callback) { (windowListeners[name] ||= []).push(callback); } }, document: { getElementById: (id) => elements[id] || (elements[id] = element()), querySelector: () => element(), createElement: element, addEventListener() {} }, localStorage: { getItem: (key) => storage[key] || null, setItem: (key, value) => storage[key] = value } });
   vm.runInContext(fs.readFileSync(`${__dirname}/../icons.js`, "utf8"), context);
-  vm.runInContext(fs.readFileSync(`${__dirname}/../data/defaults.js`, "utf8"), context);
+  require('./load-defaults.cjs').load(context);
   vm.runInContext(fs.readFileSync(`${__dirname}/../data/schema.js`, "utf8"), context);
   require('./load-game.cjs').load(context, process.env.SURVIVOR_SOURCE);
   context.windowListeners = windowListeners; context.elements = elements; context.storage = storage;
@@ -47,7 +47,7 @@ assert.equal(run('skillButton["aria-disabled"]'),'true');
 assert.equal(run('state.mode'),'playing');
 // 擷取實際 Canvas 命令：雷雲與落雷固定在目標的世界座標，不依鏡頭頂端重算。
 run(`state.cameraX=700;state.cameraY=600;state.ultimateVisual={school:'thunder',x:1100,y:900,life:.4};
- globalThis.points=[];ctx.moveTo=(x,y)=>points.push([x,y]);ctx.lineTo=(x,y)=>points.push([x,y]);render();`);
-assert.equal(run('points.some(([x,y])=>x===1100 && y===820)'),true);
+ globalThis.points=[];const bolt=SurvivorMaterials.bolt;SurvivorMaterials.bolt=(x,y,x2,y2,...rest)=>{points.push([x,y],[x2,y2]);return bolt(x,y,x2,y2,...rest)};render();`);
+assert.equal(run('points.some(([x,y])=>x===1100 && y===848)'),true);
 assert.equal(run('points.some(([x,y])=>x===1100 && y===900)'),true);
 console.log('PASS: offscreen/wrapped spawns across sizes, corners, edges, random extremes; large viewport reserve; paused build/tree; cooldown ring; scrolled lightning');

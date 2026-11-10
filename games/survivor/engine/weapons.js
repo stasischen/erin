@@ -8,7 +8,7 @@ globalThis.SurvivorWeapons = (() => {
     const shape=charged ? (weapon.chargeShape==='spin'?'sector':weapon.chargeShape) : attack.dash ? 'line' : finisher ? weapon.comboShape : weapon.baseShape;
     const thrust=shape==='line', spin=shape==='spin';
     const scale=charged ? weapon.chargeSize : finisher || thrust ? weapon.comboSize : 1;
-    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size,
+    return { type:'weapon-swung', weaponId:weapon.id, number, angle, shape, spin, charged, thrust, stun:charged?weapon.chargeStun:0, heavy:charged || finisher || !!attack.dash, reverse:sword && number===2, width:weapon.thrustWidth*powers.size*(1+Math.min(.5,powers.extraArc||0)),
       recovery:finisher && !charged ? weapon.finisherRecovery : 0, step:thrust ? weapon.stepDistance : 0,
       arc:spin ? Math.PI * 2 : Math.min(charged ? Math.PI : Math.PI * 2, weapon.arcDegrees * Math.PI / 180 + powers.extraArc),
       radius:weapon.radius * powers.size * scale, damage:powers.damage * weapon.damageMultiplier * (charged ? weapon.chargeMultiplier : finisher || attack.dash ? weapon.comboMultiplier : 1), push:weapon.push + powers.push + (charged || thrust ? weapon.comboPush : 0) };
@@ -27,15 +27,12 @@ globalThis.SurvivorWeapons = (() => {
     return SurvivorSchools.segmentDistance(dx,dy,Math.cos(edge)*event.radius,Math.sin(edge)*event.radius) <= radius;
   }
   function aim(weapon,dx,dy,faceX,faceY) {return weapon.direction==='facing'?Math.atan2(faceY,faceX):Math.atan2(dy,dx);}
-  function cardNote(card, weapon) {
-    if (weapon.kind !== 'melee') return card.description;
-    return (weapon.id==='candy-sword' && card.descriptionSword) || card.descriptionMelee || card.description;
-  }
-  return { swing, intersects, receivedDamage, cardNote, aim };
+  const {cardNote,cardPresentation,upgradeSummary}=SurvivorUpgradeInfo;
+  return { swing, intersects, receivedDamage, cardNote, cardPresentation, upgradeSummary, aim };
 })();
 
 // 接合層：一次揮擊產生一次事件；先取命中清單，再結算，特效不參與判定。
-function activeWeapon() { return GAME_DATA.weapons.find(w => w.id === state.weaponId) || GAME_DATA.weapons[0]; }
+function activeWeapon() { return SurvivorLoadout.definition(state.weaponId); }
 function swingAtNearest(dash = false, command = null) {return withImpactBatch(()=>swingWithImpacts(dash,command));}
 function swingWithImpacts(dash,command) {
   const target = closestEnemy(), weapon = activeWeapon();
@@ -51,6 +48,8 @@ function swingWithImpacts(dash,command) {
     size:properties.size * (transformed('water') ? 1+r.waterFormSize : 1) * cardBlock('big-water','onShot').actions[0].multiplier * cardBlock('wind-attack','onShot').actions[0].multiplier * cardBlock('piercing-water','onShot').actions[0].size * (boosted ? UPGRADE_TUNING.dashAttackSize : 1),
     damage:effectiveDamage()*properties.damage*(boosted ? UPGRADE_TUNING.dashAttackDamage : 1),push:properties.push
   },{...sequence.event,dash});
+  const coverage=cardBlock('multi-water','onShot').actions[0].coverage;
+  if(coverage>=3){event.arc=Math.PI*2;event.spin=true;event.thrust=false;event.shape='spin';}
   const targets = combatTargets();
   const hits = targets.filter(t=>SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,event));
   // 目標太遠不空揮，也不消耗蓄電、第四下或衝刺強化。
@@ -63,12 +62,12 @@ function swingWithImpacts(dash,command) {
   if (boosted) state.dashAttack = 0;
   const feedbackEvent={...event,feedbackId:event.charged?'charge':dash?'dash':event.heavy?'combo':'primary'};
   const feedback=weaponFeedback(feedbackEvent);
-  const visual = {...event,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
+  const visual = {...event,elementCharged:properties.charged,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24};
   skillVisual('hammer-swing',state.player.x,state.player.y,visual); queueImpact(0,feedback.sound===undefined?'shoot':feedback.sound,-2);
   // 後射對應後方小扇形；同一揮擊每個目標最多結算一次。
-  if (effectLevel('item-rear') && !event.spin && !event.charged) {
-    const rear={...event,angle:event.angle+Math.PI};
-    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
+  if ((effectLevel('item-rear') || coverage>=2) && !event.spin && (!event.charged || coverage>=2)) {
+    const rear={...event,angle:event.angle+Math.PI,...(coverage>=2?{thrust:false,shape:'sector',arc:weapon.arcDegrees*Math.PI/180}:{})};
+    skillVisual('hammer-swing',state.player.x,state.player.y,{...rear,elementCharged:properties.charged,...(feedback.slash?{}:{slash:false}),colors:look.colors.slice(),boosted,life:.24});
     for(const t of targets) if(!hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,rear)) hits.push(t);
   }
   for (const t of hits) {
@@ -86,19 +85,16 @@ function swingWithImpacts(dash,command) {
       schoolEffect(school,t,t.x,t.y,event.damage,hits);
       if(state.mode!=='playing') return;
     }
-    if(effectLevel('splash-water')) {
-      const splash=cardBlock('splash-water','onShotHit',{damage:event.damage}), radius=splash.conditions[0].radius;
-      skillVisual('splash',t.x,t.y,{radius});
-      for(const other of combatTargets()) if(other!==t && !hits.includes(other) && cardBlockMatches(splash.conditions[0],other,t.x,t.y)) {hitBuildTarget(other,splash.actions[0].amount,{source:t});if(state.mode!=='playing')return;}
-    }
     triggerMakerEffects('hit',t.x,t.y);
     if(state.mode!=='playing') return;
   }
+  SurvivorLoadout.wave(event);if(state.mode!=='playing')return;
   if(event.step && state.mode==='playing') {state.player.x+=Math.cos(event.angle)*event.step;state.player.y+=Math.sin(event.angle)*event.step;clampToMap(state.player);updateCamera();}
   // 風刃變成一次近距離追斬；不額外發射遠程水球。
   if(effectLevel('wind-blade')) {
     const blade=cardBlock('wind-blade','onMeleeHit');
-    const other=combatTargets().find(t=>!hits.includes(t) && Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y))<=event.radius+t.r && hits.some(h=>cardBlockMatches(blade.conditions[0],t,h.x,h.y)));
+    const targets=combatTargets().filter(t=>canAttackTarget(t) && (weapon.id!=='candy-sword' || Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y))<=event.radius+t.r));
+    const other=(weapon.id==='candy-sword' && targets.find(t=>hits.includes(t) && SurvivorWeapons.intersects(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y),t.r,event))) || targets.find(t=>!hits.includes(t) && Math.hypot(deltaX(t.x,state.player.x),deltaY(t.y,state.player.y))<=event.radius+t.r && hits.some(h=>cardBlockMatches(blade.conditions[0],t,h.x,h.y)));
     if(other) {skillVisual('gust',state.player.x,state.player.y,{x2:other.x,y2:other.y,color:BUILD_TUNING.wind.color});hitBuildTarget(other,event.damage*blade.actions[0].multiplier);}
   }
 }

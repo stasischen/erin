@@ -1,10 +1,11 @@
 // 純規則：輸入事件、持有能力、數值與抽樣值；輸出新計數和可序列化事件。
 globalThis.SurvivorNeutral = (() => {
-  const block=(id,trigger,rules,context={})=>SurvivorEffectBlocks.event('item-'+id,trigger,{neutralRules:rules},context);
-  function reward(current, type, powers, rules, draw, cardId) {
+  const block=(id,trigger,rules,context={},baseHealth=20)=>SurvivorEffectBlocks.event('item-'+id,trigger,{neutralRules:rules,tuning:{playerHealth:baseHealth}},context);
+  // Older pure callers omit baseHealth and retain their one-point reward.
+  function reward(current, type, powers, rules, draw, cardId, baseHealth=20) {
     const next = {kills:current.kills, gems:current.gems}, events = [];
     if (type === 'death') {
-      if (powers.cookie) { const rule=block('cookie','onDeath',rules);next.kills+=rule.actions[0].amount; if (SurvivorEffectBlocks.matches(rule.conditions[0],{number:next.kills})) events.push({type:'heal', amount:rule.actions[1].amount}); }
+      if (powers.cookie) { const rule=block('cookie','onDeath',rules,{},baseHealth);next.kills+=rule.actions[0].amount; if (SurvivorEffectBlocks.matches(rule.conditions[0],{number:next.kills})) events.push({type:'heal', amount:rule.actions[1].amount}); }
       if (powers.candy && SurvivorEffectBlocks.matches(block('candy','onDeath',rules).conditions[0],{draw})) events.push({type:'bomb-dropped'});
     }
     if (type === 'pickup' && powers.bank) {
@@ -38,7 +39,7 @@ function neutralPowers() {
 function neutralDamageMultiplier() { return SurvivorNeutral.damage(state.neutral ? state.neutral.gems : 0,neutralPowers(),GAME_DATA.neutralRules); }
 function neutralEvent(type,x,y,cardId) {
   if (!state.neutral) return;
-  const result = SurvivorNeutral.reward(state.neutral,type,{...neutralPowers(),cloverAcquired:type==='acquire' && state.upgrades[cardId]===1 && UPGRADES.some(c=>c.id===cardId && c.effects.some(e=>e.feature==='item-clover'))},GAME_DATA.neutralRules,Math.random(),cardId);
+  const result = SurvivorNeutral.reward(state.neutral,type,{...neutralPowers(),cloverAcquired:type==='acquire' && state.upgrades[cardId]===1 && UPGRADES.some(c=>c.id===cardId && c.effects.some(e=>e.feature==='item-clover'))},GAME_DATA.neutralRules,Math.random(),cardId,GAME_DATA.tuning.playerHealth);
   Object.assign(state.neutral,result.next);
   for (const event of result.events) {
     if (event.type==='bomb-dropped') {const bomb=cardBlock('item-candy','onDeath').actions[0];if(state.neutral.bombs.length<bomb.limit)state.neutral.bombs.push({x,y,timer:bomb.delay});}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-upgrade-balance",
+  "title": "升級選擇與數值平衡",
+  "owner": "codex",
+  "state": "blocked",
+  "repo": "erin",
+  "branch": "codex/survivor-upgrade-balance",
+  "pr": 113,
+  "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
+  "waitingFor": "整張 PR113 仍需非作者正式獨立審查。Dot 對 cf14 固定候選已完成三指定尺寸 iframe lab v2 實測及自然選卡續玩，結果為 partial；三武器槽位上限沒有在自然局測到，圖片 bytes 亦未交付。Mac 既有 survival-loadout.cjs 自動測試已覆蓋三槽／第四把限制；不重送已完成的尺寸和選卡項。",
+  "next": "已採納 Dot comments 6769295694 與 6769500536：指定 1024×461、740×360、1180×820 的 iframe 實測均 PASS（innerWidth/innerHeight/DPR=各指定值/1），畫面滿版、HUD不互疊，740自然選卡可續玩；1331×894自然局的兩次選卡亦不重測。Dot 未自然填滿三槽後試第四把，圖片只有文字／hash沒有bytes；Mac survival-loadout.cjs 已覆蓋三槽和第四把候選邏輯。PR113仍Draft、無正式獨立審查；完成審查與其他gate並合併後，按家長已選順序由最新main開點子1、再做2、4、5。",
+  "reviewers": [
+    "luna",
+    "grok"
+  ],
+  "risk": "low",
+  "updated": "2026-11-10T14:10:00Z",
+  "updatedBy": "codex"
+}
