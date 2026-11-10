@@ -311,12 +311,12 @@ PR113仍為Draft，這次只補 Mac 移動／自然局證據；未重跑 `test.c
 本次補驗已結案，整張 PR113 仍為Draft。Dot既有雲端 `partial_pass` 固定來源為 `5607ab95ef2a1fb6bdda9528dc6713b58654c4c9`，不覆蓋目前遊戲候選 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`；目前候選仍缺Dot三尺寸及卡片功能的雲端實玩結果。GitHub PR #113 當前狀態沒有正式review（`reviewDecision`空、`reviews`為空）。因此不可把本次Mac實測或家長接受截圖限制寫成整張PR通過；依原流程處理剩餘審查，不重送已結案的補驗請求。PR113完成後，再按家長已選順序從最新main開點子1、2、4、5。
 
 
-## Dot 雲端實玩（2026-11-10，partial）
+## Dot 雲端實玩（2026-11-10，三尺寸通過；槽位與圖片交付未完成）
 
-固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`；Dot 回覆 comment [6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694)，event `dot-erin-cf14-cloud-ui-20261110-v1`。
+固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。初次 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694)，event `dot-erin-cf14-cloud-ui-20261110-v1`；尺寸補測 result [#6769500536](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769500536)，request [#6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)。
 
-已完成：實際 frame/document 1331×894、DPR 1、無 iframe、外層 window 1363×1023、Fullscreen=false；此尺寸未見遊戲黑邊或 HUD 互疊。Dot 正常開始生存、方向移動、觀察自動攻擊，自然升至 Lv2／Lv3，各選一張並續玩；實際取得水球 Lv2、旋轉餅乾 Lv1。這是部分雲端玩法證據，不是指定尺寸或完整 PR gate。
+**已完成的雲端自然操作：** 初次在1331×894、DPR1、無iframe、Fullscreen=false的直接頁面移動、觀察自動攻擊，自然Lv2/Lv3各選一張後續玩，取得水球Lv2和旋轉餅乾Lv1。補測沒有重做這些項目；在1024×461及1180×820實際移動、自動攻擊，在740×360自然選「彩虹吸管」並續玩。
 
-未完成：1024×461、740×360、1180×820；三武器自然填滿後阻止第四把；原始圖片交付（Dot 報告九張 JPEG 及 SHA，但留言沒有 bytes）。Dot 的 DevTools 操作遭平台政策禁止，未繞過。
+**三尺寸實量與版面：** 三頁均由既有lab v2使用真實固定iframe，非縮放或裁切。1024×461 frame inner/box/CSS canvas/game-shell均為1024×461，DPR1；外層viewport1331×894、client1316×894。740×360 frame均為740×360、DPR1；外層1331×894、client1331×894。1180×820 frame均為1180×820、DPR1；外層1331×894、client1316×894。三個均Fullscreen=false、canvas位置(0,0)、遊戲畫面填滿frame且未見黑邊或HUD重疊。
 
-只針對缺項在同一原 thread 追加請求 comment [6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)，指示使用既有固定尺寸 iframe lab v2，量 frame innerWidth／innerHeight／DPR，分開記外層 viewport／frame box／Fullscreen，補三尺寸及可行的三槽上限驗證；不重做已完成的1331×894自然兩次選卡流程。等待補測結果。
+**未完成：** Dot沒有在自然局填滿三槽並嘗試第四把，故雲端槽位上限未測；原房有13張JPEG的文字記錄，但沒有圖片bytes／附件，不算收到可檢視圖像。Mac既有 `games/survivor/tests/survival-loadout.cjs` 覆蓋三槽、第四把排除、每種武器與等級限制；此測試在既有完整套件中通過，不冒稱Dot雲端測過。結果是部分雲端驗收，不是整體PR approval；整體仍待非作者獨立審查。已完成的三尺寸及選卡流程不重派、不重測。

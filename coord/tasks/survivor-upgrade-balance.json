@@ -8,13 +8,13 @@
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "Dot 使用既有固定尺寸 iframe lab v2 完成目前候選 cf14 的三尺寸與三槽上限補驗；需記 frame 實際 innerWidth／innerHeight／DPR，分開外層 viewport 和原生 fullscreen。另需整張 PR113 的正式獨立審查。Dot 已回覆部分自然玩法結果，尚未提供指定尺寸或三槽上限證據。",
-  "next": "已採納 Dot 對固定來源 cf14／版本20261105a 的 partial 雲端結果：在1331×894完成移動、自動攻擊、兩次自然選卡與續玩；不重測這些完成項。請只用既有固定尺寸 iframe lab v2 補1024×461、740×360、1180×820及自然取得三把後確認第四把不能再取得；補測請求在原THREAD comment 6769368844，等待結果。9張圖片僅有文字與hash、未附bytes，不算已交付原圖。整張PR113仍Draft且無正式獨立審查。PR113 gate完成並合併後，按家長已選順序從最新main開點子1，再做2、4、5。",
+  "waitingFor": "整張 PR113 仍需非作者正式獨立審查。Dot 對 cf14 固定候選已完成三指定尺寸 iframe lab v2 實測及自然選卡續玩，結果為 partial；三武器槽位上限沒有在自然局測到，圖片 bytes 亦未交付。Mac 既有 survival-loadout.cjs 自動測試已覆蓋三槽／第四把限制；不重送已完成的尺寸和選卡項。",
+  "next": "已採納 Dot comments 6769295694 與 6769500536：指定 1024×461、740×360、1180×820 的 iframe 實測均 PASS（innerWidth/innerHeight/DPR=各指定值/1），畫面滿版、HUD不互疊，740自然選卡可續玩；1331×894自然局的兩次選卡亦不重測。Dot 未自然填滿三槽後試第四把，圖片只有文字／hash沒有bytes；Mac survival-loadout.cjs 已覆蓋三槽和第四把候選邏輯。PR113仍Draft、無正式獨立審查；完成審查與其他gate並合併後，按家長已選順序由最新main開點子1、再做2、4、5。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-10T14:07:01Z",
+  "updated": "2026-11-10T14:10:00Z",
   "updatedBy": "codex"
 }

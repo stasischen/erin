@@ -1,16 +1,16 @@
 # 目前交接
 
-## PR113 最新候選 Dot 雲端驗收（2026-11-10；部分完成，補測等待中）
+## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
 
-PR #113 仍為 Draft；雲端實測固定遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`，原測試請求綁 PR HEAD `d4e876104fa2dd6b54fa8509dff475d4dbf629c2`。其後分支只新增 `coord/` 紀錄、未改遊戲來源。Dot 的 partial 結果在原交換房 comment [6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694)，事件 `dot-erin-cf14-cloud-ui-20261110-v1`，已讀回並採納；沒有套用舊候選 `5607ab95…`。
+PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
 
-Dot 在實際 1331×894（DPR 1、無 iframe、Fullscreen=false）正常操作：確認角色移動與自動攻擊，自然到 Lv2、Lv3 各選一張並續玩；水球升至 Lv2、取得旋轉餅乾 Lv1。這些是已完成的部分，後續不重測。三個指定尺寸仍全未測；沒有自然填滿三武器並測第四把，故三槽上限未證實。Dot 表示 DevTools 被平台政策禁止，沒有繞過；雖保存9張原圖，但 comment 只有雜湊、沒有圖片 bytes，故圖片未交付。
+只補未完成範圍的 lab v2 result [#6769500536](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769500536)，request [#6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)。實際 frame 均與指定值相符，DPR均為1：1024×461（外層1331×894/client1316×894）、740×360（外層1331×894/client1331×894）、1180×820（外層1331×894/client1316×894）；三者原生 fullscreen皆false。三個遊戲frame的canvas與game-shell均填滿frame且位置(0,0)，未見遊戲黑邊或HUD互疊。740×360自然升級選「彩虹吸管」後續玩，1024×461及1180×820實際移動、自動攻擊通過；先前已採納的兩次自然選卡不重做。
 
-已在同一原 thread 請 Dot 只補缺項，改用既有固定尺寸 iframe lab v2：comment [6769368844](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769368844)。要求實測 frame innerWidth／innerHeight／DPR，與外層 viewport、frame box、原生 fullscreen 分開；補三尺寸畫面／HUD和正常操作，並在自然條件可行時確認三武器上限。現在等待這份補測結果；Mac 已有完整自動化測試及既有實玩證據不重跑。整張 PR113 仍缺正式獨立審查，不能據此批准或合併。
+仍未以雲端自然局驗證三武器槽填滿後不能拿第四把；Mac既有 `games/survivor/tests/survival-loadout.cjs` 覆蓋三槽、保證合法武器與升級上限，測試已在先前完整套件通過。Dot保存13張外層JPEG但留言沒有圖片bytes／附件，所以不算圖像交付。三尺寸PASS不等於完整PR approval；仍需非作者整體獨立審查，PR保持Draft。
 
-家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot 已交付第1項「本局結算摘要」精簡規格：時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用既有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待 PR113 gate 完成並合併後才從最新 main 開第1項，之後依序做2、4、5。
+家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot已交付第1項「本局結算摘要」精簡規格：時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用既有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待PR113 gate完成並合併後才從最新main開第1項，之後依序做2、4、5。
 
-PR105 維持 Draft；既有雲端結果仍 partial，1024×461 的 Rolling Eye E→N→W 與 +90°尚未證實。Dot 已收同一 PR105 原 thread 的固定 lab v2 補測請求 [6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，只測缺項、不重看已接受的面具石像，也不重開已結案的 Mac 補驗；等待結果。
+PR105維持Draft；既有固定候選Dot result仍partial，E→N→W與+90°未證實。已在原THREAD送出使用固定尺寸lab v2的補測 request [#6769369201](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769369201)，目前等待Dot回覆；不重看已接受的面具石像，也不重開Mac補驗。
 ---
 
 
