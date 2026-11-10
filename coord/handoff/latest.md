@@ -2,7 +2,7 @@
 
 ## PR113 最新候選 Dot 雲端驗收（2026-11-10；等待回覆）
 
-PR #113 仍為 Draft，HEAD `d4e876104fa2dd6b54fa8509dff475d4dbf629c2`；固定遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。核對原交換房後，未找到綁定此遊戲來源的既有 QA request；已在同一個 exchange PR #2 貼上三尺寸與實際升級流程驗收要求（comment [6769159773](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769159773)，本機 thread `20261110-215444-2f95`）。目前只確認 GitHub 已收下留言並讀回，尚未確認 Dot 收件或回覆；舊 `5607ab95…` 的 partial 不套用到 `cf14…`。Mac 已有完整測試與部分實玩證據不重跑；尚缺目前候選 Dot 三尺寸及功能實測、整張 PR 的正式獨立審查。
+PR #113 仍為 Draft；派送時 HEAD `d4e876104fa2dd6b54fa8509dff475d4dbf629c2`，目前 HEAD `fbcabc5840664cf3708e1b836757e83f4739468e`（只新增 `coord/` 交接紀錄，遊戲來源不變）；固定遊戲來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。核對原交換房後，未找到綁定此遊戲來源的既有 QA request；已在同一個 exchange PR #2 貼上三尺寸與實際升級流程驗收要求（comment [6769159773](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769159773)，本機 thread `20261110-215444-2f95`）。目前只確認 GitHub 已收下留言並讀回，尚未確認 Dot 收件或回覆；舊 `5607ab95…` 的 partial 不套用到 `cf14…`。Mac 已有完整測試與部分實玩證據不重跑；尚缺目前候選 Dot 三尺寸及功能實測、整張 PR 的正式獨立審查。
 
 家長已選玩法點子 **1 → 2 → 4 → 5**，第3項不做。Dot 已交付第1項「本局結算摘要」精簡規格，顯示時間、到達關卡／等級、小怪擊倒數、最後配裝／卡片、新最長紀錄；沿用現有畫面／重開操作與存檔，不加傷害排行或新存檔欄位，無待家長決定項目。依原約定，待 PR113 gate 完成並合併後才從最新 main 開第1項，之後依序做2、4、5。
 
