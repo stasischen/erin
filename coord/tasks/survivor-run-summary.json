@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "survivor-run-summary",
+  "title": "本局結算摘要",
+  "owner": "codex",
+  "state": "doing",
+  "repo": "erin",
+  "branch": "codex/survivor-run-summary",
+  "pr": null,
+  "brief": "coord/tasks/specs/survivor-run-summary.md",
+  "next": "PR113 已合併，家長已選玩法點子 1→2→4→5；Dot 已提供本卡規格且無待家長決定項。固定遊戲來源 SHA 為 07d10ea810b6ed0b9b36717b73d6d4c3b89433f8；請 Dot 回傳允許檔案內的精確 patch，Luna 獨立審查後再機械套用。此時尚無程式 patch，未開始測試或發布。",
+  "reviewers": [
+    "luna",
+    "grok"
+  ],
+  "risk": "low",
+  "updated": "2026-11-11T00:40:00Z",
+  "updatedBy": "codex"
+}

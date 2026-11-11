@@ -12,3 +12,11 @@
 | 6 boss5.md | [survivor-boss-gallery-5](survivor-boss-gallery-5.json) | `codex/survivor-boss5` | 同上 |
 
 這張表是路線摘要，進度以 JSON、PR 和 `coord/handoff/latest.md` 核對。另有家長授權的 `coord-workflow-alignment` 流程維護；不代表第 2 張已開工。舊任務卡不在本輪自動重排或重開，避免把歷史 peer_review 誤當新任務。
+
+## 家長授權玩法點子（依序一次一張）
+
+| 順序 | 正式卡 | 分支 | 狀態 |
+|---|---|---|---|
+| 1 | [survivor-run-summary](survivor-run-summary.json) | `codex/survivor-run-summary` | Dot patch 準備中 |
+
+家長已選順序 1 → 2 → 4 → 5；第 3 項跳過。後續卡待前卡合併與回報後再建立，不混入本卡。
