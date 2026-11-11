@@ -6,15 +6,15 @@
   "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-run-summary",
-  "pr": null,
+  "pr": 114,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "候選仍是 Git HEAD 49b73359f24bbffaba977459af4baf2c0b2ae614 上未提交的 Luna patch 與 version.cjs 產生的 20261111a 版本／快取同步檔；本輪程式檔 hash 與前次一致，沒有改程式。前次完整 node games/survivor/tools/test.cjs --layout 與版本同步檢查通過；本輪不重跑。先前 Chrome 自然死亡摘要／重開三尺寸已驗。新增一局正確 /erin/ 隔離頁的普通 Chrome 生存局：以方向鍵走位與一般升級選卡，自然死亡於147秒、首王原定150秒登場前；第1關糖果森林、Lv.17、288擊倒、新最長紀錄，最後可見戰鬥HUD為16／180 HP；進入結算摘要後實際終局HP未核實，未完成首關通關轉場。原始操作摘要留在本機 ~/.local/share/erin/logs/survivor-run-summary-stage-transition-20261111.md。正常 UI 路徑可到首王前，但本次存活差約3秒；下一個最小步驟是再做一局有界普通操作，提早選恢復卡並在首王預警時持續走位，不注入狀態。零擊倒自然局仍因生存模式自動攻擊而未達；末關勝利、長配裝仍只有隔離 VM fixture，Dot 雲端固定預覽未驗。",
+  "next": "PR #114 為草稿，固定候選 SHA 36f6ec9686d41a4a12138353439a955964f7cfce、遊戲版本 20261111a。Dot 的精確 patch 已經 Luna 獨立審查並套用；Mac node games/survivor/tools/test.cjs --layout、run-summary VM fixture、版本同步與 diff check 均通過，相同遊戲檔候選已做本機 Chrome 真實遊玩和三尺寸查看。下一步等 PR 預覽就緒，請 Dot 在固定預覽完整試玩並交付證據，同時安排獨立 session 審完整 PR；幾項罕見終局仍只有 VM fixture，本局 147 秒記錄已更正為最後可見 HUD 16／180、實際終局 HP 未核實。兩道 gate 通過後才決定是否合併；點子 2、4、5 依家長選定順序等本卡完成後接續。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T13:47:54Z",
+  "updated": "2026-11-11T13:50:36Z",
   "updatedBy": "codex",
   "waitingFor": null
 }
