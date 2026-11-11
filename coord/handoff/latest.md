@@ -8,6 +8,12 @@ Mac Chrome 本機實際遊玩自然死亡結算：136秒、473擊倒，摘要顯
 
 仍未在 Chrome 逐項實測零擊倒、第一關通關後死亡、最後關勝利、存檔失敗及長卡配裝等邊界情境；自動化有涵蓋其中部分，整體套件全通過。下一步補足可行的 Chrome 邊界驗證並記錄，完成後才按流程送獨立審查／PR；不接點子2。
 
+### 邊界情境補驗（2026-11-11）
+
+候選檔案在本輪檢查時仍與上一輪一致：`run-lifecycle.js`、`levelup.js`、`style.css`、`run-summary.cjs` 的 SHA256 分別為 `c59e24e3…`、`31e0b24d…`、`ad22af28…`、`7589b015…`；`index.html` 含版本同步修改。Git HEAD 此時為 `af5a62c613cf398bd70c9d32c3604c6eba6e756d`（僅含 coord 紀錄），遊戲 patch 與 `20261111a` 版本／快取同步檔仍未提交。未重跑完整 `--layout`。
+
+追加 `node games/survivor/tests/run-summary.cjs`，exit 0，僅為隔離 Node VM fixture（不代表 Chrome 或自然遊玩）：驗到零擊倒死亡、首關勝利轉場後第二關死亡、最後關 Boss 勝利、儲存失敗仍可結算／重開、所有升級卡的長清單、重複終局、連續重開及 Maker／preview／trial 隔離。Chrome 實際未做出零擊倒局：生存模式保持自動攻擊，設定裡的手動切換按鈕為 hidden 且 `aria-checked=false`，這次約30秒已有19擊倒；這只記錄本次無法由可見操作觸發該場景，不代表測到產品缺陷。首關轉場、末關勝利、儲存失敗、長配裝仍只有 VM fixture 證據，沒有 Chrome 自然局證據；Dot 雲端固定預覽仍未驗。未修改程式、未重跑 `--layout`、未合併或部署。
+
 ## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
 
 PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
