@@ -5,7 +5,7 @@
 ## 固定來源與角色
 
 - 最新 main 基底：`07d10ea810b6ed0b9b36717b73d6d4c3b89433f8`。
-- 任務分支：`codex/survivor-run-summary`。精確 patch 的 base 以公開任務卡提交後的 branch HEAD 為準；遊戲初始版本為 `20261105a`。
+- 任務分支：`codex/survivor-run-summary`。唯一精確 patch base 是 `07d10ea810b6ed0b9b36717b73d6d4c3b89433f8`；公開任務卡提交只含 `coord/` 文件，不改遊戲檔。套用前核對允許檔案的前映像與固定來源一致。遊戲版本為 `20261105a`。
 - 作者 Dot 只回傳綁定 base SHA、路徑及 SHA256 的精確 patch，不寫 repo、不 push、不開 PR。Luna 獨立審查後精確套用；Mac 主控執行版本同步、完整測試、Git／PR／預覽；Dot 再驗固定預覽。作者不得自審或合併。
 - 估計約 150–300 行程式與測試；若超過 300 行，先說明必要性並停下，不擴大範圍。
 
