@@ -8,13 +8,13 @@
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "Dot 回件已於 2026-11-11T02:48:34Z 收到，原房留言 https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6785496589；對話板 THREAD 20261111-103725-4dd0，github.after=6785496589、mirrored=2。patch SHA-256 d8c87d4540d89218950799e0ad96112f04fd92ff9c00812ff3fb8d3ce765d375，16612 bytes，五檔 allowlist；四個既有檔案前映像已逐位元核對固定 base 07d10ea810b6ed0b9b36717b73d6d4c3b89433f8，新增測試原不存在。尚未獨立審查、套用、跑測試或發布。取得既有 Luna session／route 後續接，不重派 Dot。",
+  "next": "Dot 精確 patch 已由新 Luna 獨立審查通過並原樣套用；五檔 postimage 與 patch SHA/bytes 一致。獨立審查及 node --check（三檔）、git diff --check 通過；遊戲版本已機械同步為 20261111a，version.cjs --write 與檢查通過。尚未跑 VM、Chrome E2E 或完整 node games/survivor/tools/test.cjs --layout。Mac 解鎖後先真實 Chrome 操作結算／重開與三尺寸可讀性，再跑完整套件；不合併、不發布。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T02:53:32Z",
+  "updated": "2026-11-11T04:19:02Z",
   "updatedBy": "codex",
-  "waitingFor": "Dot 的精確 patch 已收件，但目前 Codex app／本機 AgentBoard 沒有可接續的同卡 Luna 獨立審查／機械套用 session，且 Erin 派工設定沒有 Luna route。需家長提供既有 Luna session／派工入口，或授權建立新的獨立 Luna session。"
+  "waitingFor": "Mac Studio 目前鎖定，CUA 無法進入真實 Chrome；需家長手動解鎖後，主控才能繼續本卡的 Chrome 端對端操作與完整 --layout。"
 }
