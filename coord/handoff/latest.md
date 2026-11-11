@@ -2,9 +2,9 @@
 
 ## 點子 1：本局結算摘要 Mac 驗證（2026-11-11；仍在製作中）
 
-`survivor-run-summary` 使用分支 `codex/survivor-run-summary`，固定基底 `07d10ea810b6ed0b9b36717b73d6d4c3b89433f8`。Dot 綁定基底的 patch 已由 Luna 獨立核准並原樣套用；版本同步至 `20261111a`。`node games/survivor/tools/test.cjs --layout` exit 0、`git diff --check` 通過，版本工具同步與檢查通過。
+`survivor-run-summary` 使用分支 `codex/survivor-run-summary`，固定基底 `07d10ea810b6ed0b9b36717b73d6d4c3b89433f8`。**本輪 Mac 測試對象**是原工作樹在 Git HEAD `0562b5ff5da9912fd45d14f7d5726ac3de774486` 上，包含未提交的 Luna patch 和 `version.cjs` 產生的 `20261111a` 版本／快取同步檔；不是乾淨的 `0562b5f`，也不是後續僅包含 coord 文件的 `267f722`。Luna 綁定基底的 patch 已由 Luna 獨立核准並原樣套用；`node games/survivor/tools/test.cjs --layout` exit 0、`git diff --check` 與版本同步檢查通過。
 
-Mac Chrome 本機實際遊玩自然死亡結算：136秒、473擊倒，摘要顯示關卡／等級、配裝及新紀錄；點重新開始後回到第1波、摘要隱藏、秒數與擊倒歸零。結算版面已在1024×461、740×360、1180×820檢視；740×360長摘要能在內層捲動，重玩按鈕在下方需捲到。首個本機 URL 未模擬 `/erin/` 前綴，造成 service worker／圖示404；之後改用 `/erin/` 對應路徑再次確認開場及戰鬥載入。未合併、未發布、未建立PR。
+Mac Chrome 本機實際遊玩自然死亡結算：136秒、473擊倒，摘要顯示關卡／等級、配裝及新紀錄；點重新開始後回到第1波、摘要隱藏、秒數與擊倒歸零。結算版面已在1024×461、740×360、1180×820檢視；740×360長摘要能在內層捲動，重玩按鈕在下方需捲到。首個本機 URL 未模擬 `/erin/` 前綴，造成 service worker／圖示404；之後改用正確 `/erin/` 對應路徑確認開場及戰鬥載入。**Dot 雲端固定預覽尚未驗證。**遊戲程式與版本同步檔仍未提交；本輪測試只證明上述本機工作樹候選，不代表任何 Git commit 本身已測。未合併、未發布、未建立PR。
 
 仍未在 Chrome 逐項實測零擊倒、第一關通關後死亡、最後關勝利、存檔失敗及長卡配裝等邊界情境；自動化有涵蓋其中部分，整體套件全通過。下一步補足可行的 Chrome 邊界驗證並記錄，完成後才按流程送獨立審查／PR；不接點子2。
 

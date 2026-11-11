@@ -8,13 +8,13 @@
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "Dot 精確 patch 已由 Luna 獨立審查通過並原樣套用；遊戲版本 20261111a，版本同步檢查通過。node games/survivor/tools/test.cjs --layout exit 0（全套通過），git diff --check 通過。Mac Chrome 真實生存局死亡結算顯示 136 秒／473 擊倒／新紀錄及配裝，重新開始後摘要隱藏、秒數與擊倒歸零；1024×461、740×360、1180×820 均已檢視，740×360 長摘要可捲動。另以正確 /erin/ 本機路徑確認開場及戰鬥載入。尚未逐項真實操作首關勝利、最終通關、零擊倒、存檔失敗及長配裝等卡片邊界情境；自動化已覆蓋其中部分。接著補完可行的 Chrome 情境與記錄，再決定是否送 PR；目前不合併、不發布。",
+  "next": "本輪 Mac 測試對象是原工作樹在 Git HEAD 0562b5ff5da9912fd45d14f7d5726ac3de774486 上，含未提交 Luna patch 與 version.cjs 產生的 20261111a 版本／快取同步檔；不是乾淨的 0562b5f，也不是後續只含 coord 文件的 267f722。Luna patch 已獨立審查通過並原樣套用。node games/survivor/tools/test.cjs --layout exit 0（全套通過），git diff --check 通過，版本同步檢查通過。Mac Chrome 真實生存局死亡結算顯示 136 秒／473 擊倒／新紀錄及配裝，重新開始後摘要隱藏、秒數與擊倒歸零；1024×461、740×360、1180×820 均已檢視，740×360 長摘要可捲動。正確 /erin/ 本機路徑已確認開場與戰鬥載入；首個缺少此前綴的 URL 曾使 service worker／圖示 404，修正測試路徑後不再是該環境阻礙。Dot 雲端固定預覽未驗。尚未逐項真實操作首關勝利、最終通關、零擊倒、存檔失敗及長配裝等卡片邊界情境；自動化已覆蓋其中部分。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T11:44:33Z",
+  "updated": "2026-11-11T11:49:10Z",
   "updatedBy": "codex",
   "waitingFor": null
 }
