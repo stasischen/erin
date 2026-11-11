@@ -8,12 +8,12 @@
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "PR113 已合併，家長已選玩法點子 1→2→4→5；Dot 已提供本卡規格且無待家長決定項。固定遊戲來源 SHA 為 07d10ea810b6ed0b9b36717b73d6d4c3b89433f8；請 Dot 回傳允許檔案內的精確 patch，Luna 獨立審查後再機械套用。此時尚無程式 patch，未開始測試或發布。",
+  "next": "固定來源：07d10ea810b6ed0b9b36717b73d6d4c3b89433f8（版本20261105a）。已於 Erin Dot 房 #2 投遞 patch 請求，對話板 20261111-103725-4dd0、GitHub 留言 6785355941。等待 Dot 回傳精確 patch；Luna 獨立審查、Mac 機械套用、完整測試與預覽尚未開始。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T02:37:35Z",
+  "updated": "2026-11-11T02:38:14Z",
   "updatedBy": "codex"
 }

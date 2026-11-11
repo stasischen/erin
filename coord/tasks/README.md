@@ -17,6 +17,6 @@
 
 | 順序 | 正式卡 | 分支 | 狀態 |
 |---|---|---|---|
-| 1 | [survivor-run-summary](survivor-run-summary.json) | `codex/survivor-run-summary` | Dot patch 準備中 |
+| 1 | [survivor-run-summary](survivor-run-summary.json) | `codex/survivor-run-summary` | 等待 Dot patch |
 
 家長已選順序 1 → 2 → 4 → 5；第 3 項跳過。後續卡待前卡合併與回報後再建立，不混入本卡。
