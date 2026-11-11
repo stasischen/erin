@@ -8,13 +8,13 @@
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "本輪 Mac 測試對象是原工作樹在 Git HEAD 0562b5ff5da9912fd45d14f7d5726ac3de774486 上，含未提交 Luna patch 與 version.cjs 產生的 20261111a 版本／快取同步檔；不是乾淨的 0562b5f，也不是後續只含 coord 文件的 267f722。Luna patch 已獨立審查通過並原樣套用。node games/survivor/tools/test.cjs --layout exit 0（全套通過），git diff --check 通過，版本同步檢查通過。Mac Chrome 真實生存局死亡結算顯示 136 秒／473 擊倒／新紀錄及配裝，重新開始後摘要隱藏、秒數與擊倒歸零；1024×461、740×360、1180×820 均已檢視，740×360 長摘要可捲動。正確 /erin/ 本機路徑已確認開場與戰鬥載入；首個缺少此前綴的 URL 曾使 service worker／圖示 404，修正測試路徑後不再是該環境阻礙。追加執行 node games/survivor/tests/run-summary.cjs PASS，但這是隔離 VM fixture，不是 Chrome E2E：覆蓋零擊倒死亡、首關勝利轉場後第二關死亡、最後關 Boss 勝利、儲存失敗、完整長配裝、重複終局／重開與模式隔離。Chrome 中正常生存模式仍強制自動攻擊；可見設定開關隱藏且 aria-checked=false，這次未能自然做出零擊倒局。Chrome 尚未自然實測首關轉場／最後勝利／儲存失敗／長配裝；Dot 雲端固定預覽未驗。",
+  "next": "候選仍是 Git HEAD 49b73359f24bbffaba977459af4baf2c0b2ae614 上未提交的 Luna patch 與 version.cjs 產生的 20261111a 版本／快取同步檔；本輪程式檔 hash 與前次一致，沒有改程式。前次完整 node games/survivor/tools/test.cjs --layout 與版本同步檢查通過；本輪不重跑。先前 Chrome 自然死亡摘要／重開三尺寸已驗。新增一局正確 /erin/ 隔離頁的普通 Chrome 生存局：以方向鍵走位與一般升級選卡，自然死亡於147秒、首王原定150秒登場前；第1關糖果森林、Lv.17、288擊倒、新最長紀錄，死亡時16／180 HP，未完成首關通關轉場。原始操作摘要留在本機 ~/.local/share/erin/logs/survivor-run-summary-stage-transition-20261111.md。正常 UI 路徑可到首王前，但本次存活差約3秒；下一個最小步驟是再做一局有界普通操作，提早選恢復卡並在首王預警時持續走位，不注入狀態。零擊倒自然局仍因生存模式自動攻擊而未達；末關勝利、長配裝仍只有隔離 VM fixture，Dot 雲端固定預覽未驗。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T12:33:22Z",
+  "updated": "2026-11-11T13:41:36Z",
   "updatedBy": "codex",
   "waitingFor": null
 }

@@ -14,6 +14,10 @@ Mac Chrome 本機實際遊玩自然死亡結算：136秒、473擊倒，摘要顯
 
 追加 `node games/survivor/tests/run-summary.cjs`，exit 0，僅為隔離 Node VM fixture（不代表 Chrome 或自然遊玩）：驗到零擊倒死亡、首關勝利轉場後第二關死亡、最後關 Boss 勝利、儲存失敗仍可結算／重開、所有升級卡的長清單、重複終局、連續重開及 Maker／preview／trial 隔離。Chrome 實際未做出零擊倒局：生存模式保持自動攻擊，設定裡的手動切換按鈕為 hidden 且 `aria-checked=false`，這次約30秒已有19擊倒；這只記錄本次無法由可見操作觸發該場景，不代表測到產品缺陷。首關轉場、末關勝利、儲存失敗、長配裝仍只有 VM fixture 證據，沒有 Chrome 自然局證據；Dot 雲端固定預覽仍未驗。未修改程式、未重跑 `--layout`、未合併或部署。
 
+### 首關普通 Chrome 局補驗（2026-11-11）
+
+候選仍為 Git HEAD `49b73359f24bbffaba977459af4baf2c0b2ae614` 加未提交 Luna patch／`20261111a` 版本快取同步檔；本輪檢查 patch 檔案 hash 未漂移。於正確 `/erin/` 隔離頁、1024×461，用一般開始、方向鍵走位與可見升級選卡實玩一局。自然死亡於147秒，第1關糖果森林、Lv.17、288擊倒、新最長紀錄，死亡時16／180 HP；首王預定150秒登場，所以未觸發第一關勝利轉場。本輪未注入時間／血量／敵人，也未改數值或程式；完整操作摘記在本機 `~/.local/share/erin/logs/survivor-run-summary-stage-transition-20261111.md`，沒有保存截圖檔。下一個最小動作是另一局有界普通操作，較早選恢復卡並在首王預警時持續走位；零擊倒自然局因自動攻擊仍未達，末關 Chrome 勝利／長配裝與 Dot 雲端固定預覽仍未驗。未重跑完整 `--layout` 或 VM fixture。
+
 ## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
 
 PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
