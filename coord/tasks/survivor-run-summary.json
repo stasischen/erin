@@ -3,18 +3,18 @@
   "id": "survivor-run-summary",
   "title": "本局結算摘要",
   "owner": "codex",
-  "state": "blocked",
+  "state": "doing",
   "repo": "erin",
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "Dot 精確 patch 已由新 Luna 獨立審查通過並原樣套用；五檔 postimage 與 patch SHA/bytes 一致。獨立審查及 node --check（三檔）、git diff --check 通過；遊戲版本已機械同步為 20261111a，version.cjs --write 與檢查通過。尚未跑 VM、Chrome E2E 或完整 node games/survivor/tools/test.cjs --layout。Mac 解鎖後先真實 Chrome 操作結算／重開與三尺寸可讀性，再跑完整套件；不合併、不發布。",
+  "next": "Dot 精確 patch 已由 Luna 獨立審查通過並原樣套用；遊戲版本 20261111a，版本同步檢查通過。node games/survivor/tools/test.cjs --layout exit 0（全套通過），git diff --check 通過。Mac Chrome 真實生存局死亡結算顯示 136 秒／473 擊倒／新紀錄及配裝，重新開始後摘要隱藏、秒數與擊倒歸零；1024×461、740×360、1180×820 均已檢視，740×360 長摘要可捲動。另以正確 /erin/ 本機路徑確認開場及戰鬥載入。尚未逐項真實操作首關勝利、最終通關、零擊倒、存檔失敗及長配裝等卡片邊界情境；自動化已覆蓋其中部分。接著補完可行的 Chrome 情境與記錄，再決定是否送 PR；目前不合併、不發布。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T04:19:02Z",
+  "updated": "2026-11-11T11:44:33Z",
   "updatedBy": "codex",
-  "waitingFor": "Mac Studio 目前鎖定，CUA 無法進入真實 Chrome；需家長手動解鎖後，主控才能繼續本卡的 Chrome 端對端操作與完整 --layout。"
+  "waitingFor": null
 }

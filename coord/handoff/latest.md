@@ -1,5 +1,13 @@
 # 目前交接
 
+## 點子 1：本局結算摘要 Mac 驗證（2026-11-11；仍在製作中）
+
+`survivor-run-summary` 使用分支 `codex/survivor-run-summary`，固定基底 `07d10ea810b6ed0b9b36717b73d6d4c3b89433f8`。Dot 綁定基底的 patch 已由 Luna 獨立核准並原樣套用；版本同步至 `20261111a`。`node games/survivor/tools/test.cjs --layout` exit 0、`git diff --check` 通過，版本工具同步與檢查通過。
+
+Mac Chrome 本機實際遊玩自然死亡結算：136秒、473擊倒，摘要顯示關卡／等級、配裝及新紀錄；點重新開始後回到第1波、摘要隱藏、秒數與擊倒歸零。結算版面已在1024×461、740×360、1180×820檢視；740×360長摘要能在內層捲動，重玩按鈕在下方需捲到。首個本機 URL 未模擬 `/erin/` 前綴，造成 service worker／圖示404；之後改用 `/erin/` 對應路徑再次確認開場及戰鬥載入。未合併、未發布、未建立PR。
+
+仍未在 Chrome 逐項實測零擊倒、第一關通關後死亡、最後關勝利、存檔失敗及長卡配裝等邊界情境；自動化有涵蓋其中部分，整體套件全通過。下一步補足可行的 Chrome 邊界驗證並記錄，完成後才按流程送獨立審查／PR；不接點子2。
+
 ## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
 
 PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
