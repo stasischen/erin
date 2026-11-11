@@ -10,7 +10,7 @@ Mac Chrome 真實遊玩已確認自然結算與重玩清空；1024×461、740×3
 
 PR #114 Draft 候選 head `5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669`、版本 `20261111a` 已追加到 Erin 公開測試站。Pages 部署 run `43034668569` success，發布分支提交 `deb5109d49189b5611139d011ffa57598b05a131`。固定遊玩 URL：https://stasischen.github.io/erin-preview/pr-114/5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669/games/survivor/ ；manifest SHA-256 `84f666a5710915fb61e503051d225439f8408971ff3efab34b4f445f7e718315`，公開 manifest 所列123個 payload 均 HTTP 200 且 bytes/hash 相符。
 
-本機公開隔離 smoke 通過：125個 stage 檔案核對，920個 runtime requests，正式站 storage sentinel 與 `/erin/` Service Worker／cache sentinel 保持；這不是 Dot 實際試玩。Dot 固定候選三尺寸功能驗收已送 Erin room #2 [留言 6797976578](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6797976578)，board `20261111-220619-289d`，等待實際 frame 尺寸、操作和摘要／重玩結果。獨立初審 session `01a1cae2-070e-71f2-b7e1-899f631d60d9` 已核對最新 PR head `de3856b4b201cacd8028f4e5eae86c2004da4439`，確認 `5c62ff8` 後只有 coord 狀態文件更新；初審完整遊戲 diff與 Mac --layout 暫無可重現問題，最終 verdict 等 Dot 實玩。
+本機公開隔離 smoke 通過：125個 stage 檔案核對，920個 runtime requests，正式站 storage sentinel 與 `/erin/` Service Worker／cache sentinel 保持；這不是 Dot 實際試玩。Dot 固定候選三尺寸功能驗收已送 Erin room #2 [留言 6797976578](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6797976578)，board `20261111-220619-289d`，等待實際 frame 尺寸、操作和摘要／重玩結果。獨立初審 session `01a1cae2-070e-71f2-b7e1-899f631d60d9` 已核對產品候選 `5c62ff8` 與後續 coord-only 差異，確認沒有遊戲檔變更；初審完整遊戲 diff與 Mac --layout 暫無可重現問題，最終 verdict 等 Dot 實玩。PR最新head以GitHub頁為準。
 
 追加預覽前檢查發現既有測試站12份舊manifest共24筆共享根 `README.md`／`index.html` hash與當前根檔不符。這些舊差異在本次追加前已存在；PR114只新增 `pr-114/<完整SHA>/`，沒有修改舊候選或共用根檔。本次生成器的固定候選manifest及全部123個payload都與公開內容相符。私有預覽稽核工具已在本機更新 storage call 所在檔名和現行生存開局／Maker流程，沒有進 Erin repo。
 
