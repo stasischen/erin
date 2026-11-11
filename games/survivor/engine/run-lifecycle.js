@@ -1,4 +1,6 @@
 function resetGame() {
+  state.runSummary = null;
+  renderRunSummary(null);
   state.trial=null;
   if (typeof cancelManualAttack === "function") cancelManualAttack();
   state.specialCooldown=0; state.manualTiming=null; state.manualRecovery=0; state.manualDashUsed=false; state.manualLeap=null;
@@ -62,8 +64,28 @@ function startGame() {
   playSound("click");
 }
 
+// Copy only final values; never retain live loadout/card objects or persist a new key.
+function snapshotRunSummary() {
+  const whole = n => Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  const item = (name, level) => `${name} Lv${whole(level)}`;
+  const primary = SurvivorLoadout.definition(state.loadout?.[0]?.weaponId || state.weaponId);
+  const ability = slot => item(SurvivorAbilityCatalog.get(slot.id)?.name || '未命名能力', slot.level);
+  return {
+    seconds: whole(state.elapsed), stage: whole(state.stageIndex) + 1,
+    stageName: SurvivorRoutes.name(), level: whole(state.level),
+    kills: whole(state.schoolCombat?.kills), newRecord: whole(state.elapsed) > bestRecord,
+    weapons: (state.loadout || []).map(slot => item(SurvivorWeaponCatalog.get(slot.weaponId)?.name || '未命名武器', slot.level)),
+    secrets: (state.abilities?.secrets || []).map(ability),
+    active: state.abilities?.active ? [ability(state.abilities.active)] : [],
+    cards: UPGRADES.filter(card => upgradeLevel(card.id) > 0).map(card =>
+      item(SurvivorUpgradeInfo.cardPresentation(card, primary).name || '未命名卡片', upgradeLevel(card.id)))
+  };
+}
+
 function finishRun(won) {
   if(state.trial) {saveTrialRecord(state.trial.definition.id,state.trial.elapsed,won,state.trial.custom);trialMenu(won?"挑戰成功！":"再試一次！");return;}
+  const summarize = SURVIVAL_MODE && !MAKER_MODE && !PREVIEW_MODE;
+  if (summarize && (state.runSummary || state.mode === 'transition')) return;
   if (won && !PREVIEW_MODE && state.stageIndex < STAGES.length - 1) {
     // 換場保留本局成長與血量，清空上一關的攻擊、警示、怪物與操作輸入。
     const progress = { survivalRoute:state.survivalRoute, abilities:state.abilities, skillCooldown:state.skillCooldown, loadout:state.loadout, weaponId: state.weaponId, swingCount: state.swingCount, stageIndex: state.stageIndex+1, elapsed: state.elapsed, level: state.level, xp: state.xp, upgrades: state.upgrades, schoolRun: state.schoolRun, schoolCombat: state.schoolCombat, neutral: state.neutral, rerolls:state.rerollsRemaining, health: state.player.health };
@@ -74,6 +96,7 @@ function finishRun(won) {
     updateHud(); updateActionControls(); return;
   }
   clearBossMoves(); state.bossZone = null; state.bossShake = 0;
+  if (summarize) state.runSummary = snapshotRunSummary(); // Compare before updating bestRecord.
   bestRecord = Math.max(bestRecord, Math.floor(state.elapsed));
   try { localStorage.setItem(RECORD_KEY, String(bestRecord)); } catch (_) { /* 無法儲存紀錄時不影響結算 */ }
   playSound(won ? "win" : "over");
