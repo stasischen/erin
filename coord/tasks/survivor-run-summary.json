@@ -3,17 +3,18 @@
   "id": "survivor-run-summary",
   "title": "本局結算摘要",
   "owner": "codex",
-  "state": "doing",
+  "state": "blocked",
   "repo": "erin",
   "branch": "codex/survivor-run-summary",
   "pr": null,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "固定來源：07d10ea810b6ed0b9b36717b73d6d4c3b89433f8（版本20261105a）。已於 Erin Dot 房 #2 投遞 patch 請求，對話板 20261111-103725-4dd0、GitHub 留言 6785355941。等待 Dot 回傳精確 patch；Luna 獨立審查、Mac 機械套用、完整測試與預覽尚未開始。",
+  "next": "Dot 回件已於 2026-11-11T02:48:34Z 收到，原房留言 https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6785496589；對話板 THREAD 20261111-103725-4dd0，github.after=6785496589、mirrored=2。patch SHA-256 d8c87d4540d89218950799e0ad96112f04fd92ff9c00812ff3fb8d3ce765d375，16612 bytes，五檔 allowlist；四個既有檔案前映像已逐位元核對固定 base 07d10ea810b6ed0b9b36717b73d6d4c3b89433f8，新增測試原不存在。尚未獨立審查、套用、跑測試或發布。取得既有 Luna session／route 後續接，不重派 Dot。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T02:38:14Z",
-  "updatedBy": "codex"
+  "updated": "2026-11-11T02:53:32Z",
+  "updatedBy": "codex",
+  "waitingFor": "Dot 的精確 patch 已收件，但目前 Codex app／本機 AgentBoard 沒有可接續的同卡 Luna 獨立審查／機械套用 session，且 Erin 派工設定沒有 Luna route。需家長提供既有 Luna session／派工入口，或授權建立新的獨立 Luna session。"
 }
