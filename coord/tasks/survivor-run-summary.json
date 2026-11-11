@@ -8,13 +8,13 @@
   "branch": "codex/survivor-run-summary",
   "pr": 114,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "PR #114 草稿候選 SHA 5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669、版本 20261111a 已部署至固定測試 URL；Pages run 43034668569 success，公開 manifest SHA 84f666a5710915fb61e503051d225439f8408971ff3efab34b4f445f7e718315，123/123 payload bytes/hash 相符。本機公開隔離 smoke 也通過（125檔、920 runtime requests、正式 storage/SW sentinel 保持）。Dot 固定候選三尺寸實玩請求已送 Erin room #2 留言 6797976578，board 20261111-220619-289d；等待真實 frame 尺寸、操作與結算證據。非作者獨立初審 session 01a1cae2-070e-71f2-b7e1-899f631d60d9 已建立，最終判定等 Dot gate。歷史測試站有12份舊manifest共24筆共享 README/index 雜湊不符目前根檔；PR114未改任何舊檔，僅新增自己的候選路徑。點子2、4、5依指定順序待本卡合併與回報後接續。",
+  "next": "PR #114 目前 head 為 de3856b4b201cacd8028f4e5eae86c2004da4439；其產品程式固定候選為父提交 5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669，後續只增加 coord 卡片／handoff 狀態。版本 20261111a 的固定預覽已 Pages 部署成功，manifest 與 123/123 payload bytes/hash 相符；Dot 三尺寸自然試玩請求在 Erin room #2 留言 6797976578、board 20261111-220619-289d，等待回覆。獨立審查 session 01a1cae2-070e-71f2-b7e1-899f631d60d9 已檢查完整程式 diff、完成 Mac --layout 與版本同步測試，初審暫無可重現問題；最新 coord-only head 已核對，最終判定仍等 Dot 證據。公開預覽部署 smoke 通過；歷史測試站12份舊manifest的24筆 README/index 根檔hash不符在本次前已存在，本PR未改任何舊檔。兩道 gate 完成後才可合併；點子2、4、5依序待本卡完成與回報。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T14:07:50Z",
+  "updated": "2026-11-11T14:10:09Z",
   "updatedBy": "codex",
   "waitingFor": null
 }
