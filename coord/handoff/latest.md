@@ -6,7 +6,13 @@ PR #114 為草稿，分支 `codex/survivor-run-summary` 的固定遊戲候選是
 
 Mac Chrome 真實遊玩已確認自然結算與重玩清空；1024×461、740×360、1180×820 已檢視，740×360 長清單可捲動且重玩按鈕需捲到。另一局自然死亡於147秒，首王150秒登場前未完成首關轉場；最後可見戰鬥HUD為16／180 HP，進入結算摘要後實際終局HP未核實。零擊倒、跨關死亡、最終勝利、儲存失敗及長配裝等部分邊界仍只有VM fixture證據；不把 fixture 當 Chrome 實玩。
 
-下一步等 PR 固定預覽就緒，交 Dot 雲端電腦完整試玩並核對候選 SHA；同時安排非作者獨立 session 審查完整PR。Dot預覽與獨立審查通過後才可合併。家長已指定玩法順序1→2→4→5；仍一次只做一張，點子2、4、5等本卡合併及回報後接續。
+### PR #114 固定預覽已部署，等待 Dot 實玩（2026-11-11）
+
+PR #114 Draft 候選 head `5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669`、版本 `20261111a` 已追加到 Erin 公開測試站。Pages 部署 run `43034668569` success，發布分支提交 `deb5109d49189b5611139d011ffa57598b05a131`。固定遊玩 URL：https://stasischen.github.io/erin-preview/pr-114/5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669/games/survivor/ ；manifest SHA-256 `84f666a5710915fb61e503051d225439f8408971ff3efab34b4f445f7e718315`，公開 manifest 所列123個 payload 均 HTTP 200 且 bytes/hash 相符。
+
+本機公開隔離 smoke 通過：125個 stage 檔案核對，920個 runtime requests，正式站 storage sentinel 與 `/erin/` Service Worker／cache sentinel 保持；這不是 Dot 實際試玩。Dot 固定候選三尺寸功能驗收已送 Erin room #2 [留言 6797976578](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6797976578)，board `20261111-220619-289d`，等待實際 frame 尺寸、操作和摘要／重玩結果。獨立初審 session `01a1cae2-070e-71f2-b7e1-899f631d60d9` 正在唯讀審完整PR，不先給最終通過。
+
+追加預覽前檢查發現既有測試站12份舊manifest共24筆共享根 `README.md`／`index.html` hash與當前根檔不符。這些舊差異在本次追加前已存在；PR114只新增 `pr-114/<完整SHA>/`，沒有修改舊候選或共用根檔。本次生成器的固定候選manifest及全部123個payload都與公開內容相符。私有預覽稽核工具已在本機更新 storage call 所在檔名和現行生存開局／Maker流程，沒有進 Erin repo。
 
 ### 邊界情境補驗（2026-11-11）
 

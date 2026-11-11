@@ -8,13 +8,13 @@
   "branch": "codex/survivor-run-summary",
   "pr": 114,
   "brief": "coord/tasks/specs/survivor-run-summary.md",
-  "next": "PR #114 為草稿，固定候選 SHA 36f6ec9686d41a4a12138353439a955964f7cfce、遊戲版本 20261111a。Dot 的精確 patch 已經 Luna 獨立審查並套用；Mac node games/survivor/tools/test.cjs --layout、run-summary VM fixture、版本同步與 diff check 均通過，相同遊戲檔候選已做本機 Chrome 真實遊玩和三尺寸查看。下一步等 PR 預覽就緒，請 Dot 在固定預覽完整試玩並交付證據，同時安排獨立 session 審完整 PR；幾項罕見終局仍只有 VM fixture，本局 147 秒記錄已更正為最後可見 HUD 16／180、實際終局 HP 未核實。兩道 gate 通過後才決定是否合併；點子 2、4、5 依家長選定順序等本卡完成後接續。",
+  "next": "PR #114 草稿候選 SHA 5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669、版本 20261111a 已部署至固定測試 URL；Pages run 43034668569 success，公開 manifest SHA 84f666a5710915fb61e503051d225439f8408971ff3efab34b4f445f7e718315，123/123 payload bytes/hash 相符。本機公開隔離 smoke 也通過（125檔、920 runtime requests、正式 storage/SW sentinel 保持）。Dot 固定候選三尺寸實玩請求已送 Erin room #2 留言 6797976578，board 20261111-220619-289d；等待真實 frame 尺寸、操作與結算證據。非作者獨立初審 session 01a1cae2-070e-71f2-b7e1-899f631d60d9 已建立，最終判定等 Dot gate。歷史測試站有12份舊manifest共24筆共享 README/index 雜湊不符目前根檔；PR114未改任何舊檔，僅新增自己的候選路徑。點子2、4、5依指定順序待本卡合併與回報後接續。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-11T13:50:36Z",
+  "updated": "2026-11-11T14:07:50Z",
   "updatedBy": "codex",
   "waitingFor": null
 }
