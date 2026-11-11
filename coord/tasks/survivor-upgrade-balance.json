@@ -3,18 +3,18 @@
   "id": "survivor-upgrade-balance",
   "title": "升級選擇與數值平衡",
   "owner": "codex",
-  "state": "blocked",
+  "state": "review",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-upgrade-balance.md",
-  "waitingFor": "整張 PR113 仍需非作者正式獨立審查。Dot 對 cf14 固定候選已完成三指定尺寸 iframe lab v2 實測及自然選卡續玩，結果為 partial；三武器槽位上限沒有在自然局測到，圖片 bytes 亦未交付。Mac 既有 survival-loadout.cjs 自動測試已覆蓋三槽／第四把限制；不重送已完成的尺寸和選卡項。",
-  "next": "已採納 Dot comments 6769295694 與 6769500536：指定 1024×461、740×360、1180×820 的 iframe 實測均 PASS（innerWidth/innerHeight/DPR=各指定值/1），畫面滿版、HUD不互疊，740自然選卡可續玩；1331×894自然局的兩次選卡亦不重測。Dot 未自然填滿三槽後試第四把，圖片只有文字／hash沒有bytes；Mac survival-loadout.cjs 已覆蓋三槽和第四把候選邏輯。PR113仍Draft、無正式獨立審查；完成審查與其他gate並合併後，按家長已選順序由最新main開點子1、再做2、4、5。",
+  "waitingFor": "等待 Erin／家長對已合併版本的整體玩法作最終驗收。Dot 對指定三尺寸與自然選卡的回報為 partial：沒有自然測到三槽後選第四把，且截圖只有文字／hash、未交圖片 bytes；Mac 自動化涵蓋三槽規則，但不等同雲端目視驗收。PR113 的 Draft／待獨立審查已解除。",
+  "next": "PR #113 已於 2026-11-10 合併；獨立審查及 Mac test.cjs --layout 已通過。Dot 對 cf14 固定候選回報：1024×461、740×360、1180×820 iframe 尺寸與畫面/HUD檢查通過，740自然選卡可續玩；三槽後第四把未自然驗證，截圖 bytes 未交付，Mac survival-loadout.cjs 自動案例只覆蓋邏輯。請 Erin／家長實玩後決定整體接受度；未收到驗收前不標整卡完成。之後按已選順序先開玩法點子1，再做2、4、5。",
   "reviewers": [
     "luna",
     "grok"
   ],
   "risk": "low",
-  "updated": "2026-11-10T14:10:00Z",
+  "updated": "2026-11-11T00:37:46Z",
   "updatedBy": "codex"
 }

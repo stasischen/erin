@@ -3,16 +3,16 @@
   "id": "survivor-timer-status-refresh",
   "title": "續玩後立即恢復計時文字",
   "owner": "codex",
-  "state": "doing",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-upgrade-balance",
   "pr": 113,
   "brief": "coord/tasks/specs/survivor-timer-status-refresh.md",
-  "next": "固定候選 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／20261105a：公開manifest/digest及123/123 payload bytes/SHA吻合；Chrome頁載入、暫停續玩、自然Lv.2選卡後恢復計時已核實。先前檢查器重複加候選prefix的原始回應已保留並標invalid_url_mapping，不是產品失敗。此次補驗交付；PR113總體review、Dot既有partial與完整局限制仍待原owner按原卡處理，不合併或部署。",
+  "next": "本卡範圍已完成並隨 PR #113 於 2026-11-10 合併。固定來源 cf14bc06f25fcb3cd8b93bd6842950b9b8749350／版本 20261105a；非作者 Mac Chrome 同秒暫停／選卡與 Boss 倒數案例、完整 node games/survivor/tools/test.cjs --layout（exit 0／136 PASS）、version 與 diff check 均通過，詳 coord/reviews/survivor-timer-status-refresh/independent.md。此狀態只結束計時文字小修卡，不代表 PR113 整體玩法驗收完成；該項限制見 survivor-upgrade-balance 卡。",
   "reviewers": [
     "independent-subagent"
   ],
   "risk": "low",
-  "updated": "2026-11-09T05:07:09Z",
+  "updated": "2026-11-11T00:37:46Z",
   "updatedBy": "codex"
 }
