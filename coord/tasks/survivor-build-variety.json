@@ -3,18 +3,18 @@
   "id": "survivor-build-variety",
   "title": "小怪獸：流派與四欄位，讓每場玩法不同",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-build-variety",
   "pr": null,
   "brief": "coord/inbox/done/20261025T084309Z-parent-variety.md",
-  "next": "請 Grok 審查目前分支相對 main 的差異；工程驗證全通過，詳見 docs/survivor-build-variety-validation.md。erin-watch 代辦 commit、push 與 PR。通過後請 Erin 在電腦及 iPad 試玩三流派首張卡、混搭、四欄／老師血條版面與手感，再確認暫名及初值。沙盒禁止啟動伺服器且瀏覽器拒絕本機檔案網址，本輪未完成實機／視覺驗證。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T08:52:27Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-landscape"

@@ -3,17 +3,17 @@
   "id": "survivor-soulknight-backlog",
   "title": "小怪獸：元氣騎士靈感備忘（只寫文件）",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-soulknight-backlog",
   "pr": null,
   "brief": "coord/inbox/done/20261025T160425Z-parent-soulknight-backlog.md",
-  "next": "請 Grok 審查 Soul Knight 備忘的 17 項靈感、5 個 ⭐ 推薦與重疊說明；只改文件，採用與順序待 Erin 和家長決定。commit、push、PR 由 erin-watch 代辦。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T16:06:28.096100Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex"
 }

@@ -3,18 +3,18 @@
   "id": "survivor-stage-6-share",
   "title": "割草遊戲階段 6：發表會",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-stage-6-share",
   "pr": null,
   "brief": "docs/survivor-game-plan.md",
-  "next": "請 Grok 核對 docs/survivor-share-timeline.md 的原話、來源與歸屬；通過後交 Erin 準備分享，發表後記錄下次想改的原話。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "risk": "low",
   "waitingFor": null,
-  "updated": "2026-10-25T06:51:17Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-5-polish"

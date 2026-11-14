@@ -3,18 +3,18 @@
   "id": "survivor-stage-5b-balance",
   "title": "割草遊戲階段 5b：穿透修正與難度平衡",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-stage-5b-balance",
   "pr": null,
   "brief": "coord/inbox/done/20261022T111615Z-parent-balance.md",
-  "next": "請 Grok 審查 erin-watch 提交後的本分支最新 SHA（git diff main...codex/survivor-stage-5b-balance）。實作與測試見 docs/survivor-stage-5b-validation.md；自動回歸與語法檢查通過，尚待電腦／iPad 實際試玩穿透提示、效能與難度。審查通過後由 Erin 試玩並決定是否微調數值。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T07:03:41Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex",
   "dependsOn": [
     "survivor-stage-5-polish"

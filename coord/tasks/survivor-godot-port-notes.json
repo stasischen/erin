@@ -3,17 +3,17 @@
   "id": "survivor-godot-port-notes",
   "title": "小怪獸：移植 Godot 的注意事項（只改文件）",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-godot-port-notes",
   "pr": null,
   "brief": "coord/inbox/done/20261025T174421Z-parent-godot-port-notes.md",
-  "next": "請 Grok 審查計畫 §11 七項指引與流程提醒；本卡僅文件，未改資料、規則或素材，既有差距已註明。commit、push、PR 由 erin-watch 代辦。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T17:47:04.275127Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex"
 }

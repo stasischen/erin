@@ -3,17 +3,17 @@
   "id": "survivor-synergy-backlog",
   "title": "小怪獸：連攜 Synergy 設計備忘（只寫文件）",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-synergy-backlog",
   "pr": null,
   "brief": "coord/inbox/done/20261025T174028Z-parent-synergy-backlog.md",
-  "next": "請 Grok 審查連攜架構、八種標籤、五個連攜、抽卡變化與重疊說明；只寫文件，採用待 Erin 和家長決定。commit、push、PR 由 erin-watch 代辦。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T17:41:54.706281Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex"
 }

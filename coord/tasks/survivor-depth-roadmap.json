@@ -3,17 +3,17 @@
   "id": "survivor-depth-roadmap",
   "title": "小怪獸：深度路線圖（只改文件）",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-depth-roadmap",
   "pr": null,
   "brief": "coord/inbox/done/20261025T181815Z-parent-depth-roadmap.md",
-  "next": "請 Grok 審查 §12 十項目標、既有基礎、連攜連結及 a–e 順序；本卡僅文件，§11 無資料、規則或素材變更。commit、push、PR 由 erin-watch 代辦。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T18:19:42.754976Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex"
 }

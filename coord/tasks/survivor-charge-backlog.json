@@ -3,17 +3,17 @@
   "id": "survivor-charge-backlog",
   "title": "小怪獸：聚氣機制備忘（只寫文件）",
   "owner": "codex",
-  "state": "peer_review",
+  "state": "done",
   "repo": "erin",
   "branch": "codex/survivor-charge-backlog",
   "pr": null,
   "brief": "coord/inbox/done/20261025T143015Z-parent-charge-backlog.md",
-  "next": "請 Grok 審查七種聚氣提案、站定聚氣推薦標記與既有點子重疊說明；只改文件，是否採用與製作順序待 Erin 和家長決定。",
+  "next": "已合併",
   "reviewers": [
     "grok"
   ],
   "waitingFor": null,
   "risk": "low",
-  "updated": "2026-10-25T14:31:37.844181Z",
+  "updated": "2026-11-14T05:07:14Z",
   "updatedBy": "codex"
 }
