@@ -304,3 +304,12 @@ button { transition:background-color .15s, border-color .15s; }
 @keyframes low-health-pulse { from { opacity:.45; } to { opacity:1; } }
 @media (prefers-reduced-motion: reduce) { .game-shell.low-health::after { animation:none; opacity:.8; } }
 .hud .status .boss-eta { display:block; text-align:center; font-size:13px; line-height:1.2; font-weight:800; color:#ffd9e4; text-shadow:0 1px 3px #080719; }
+
+/* Only the summary list scrolls here; the existing card still scrolls to its replay controls. */
+.run-summary[hidden] { display:none; }
+.run-summary { max-height:180px; max-height:min(38vh,180px); overflow:auto; margin:10px 0; padding:10px; text-align:left; border:1px solid #7887ae70; border-radius:10px; overflow-wrap:anywhere; touch-action:pan-x pan-y; overscroll-behavior:contain; }
+.run-summary h3, .run-summary h4 { font-size:14px; margin:4px 0; }
+.message-card .run-summary p, .run-summary ul { font-size:13px; line-height:1.5; margin:4px 0 8px; }
+.run-summary ul { padding-left:20px; }
+.message-card .run-summary .run-record { color:#ffe39a; font-weight:800; }
+.run-summary:focus-visible { outline:2px solid #a5e5ff; outline-offset:2px; }

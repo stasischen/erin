@@ -19,9 +19,30 @@ function cardRequirements(card) {
 }
 
 
+function renderRunSummary(summary) {
+  const host = document.getElementById('runSummary');
+  if (!host) return;
+  host.hidden = !summary;
+  host.innerHTML = '';
+  host.scrollTop = 0;
+  if (!summary) return;
+  const group = (title, items, empty) => `<h4>${title}</h4><ul>${items.length
+    ? items.map(text => `<li>${upgradeEscape(text)}</li>`).join('')
+    : `<li>${empty}</li>`}</ul>`;
+  host.innerHTML = `<h3>本局摘要</h3><p>本局時間：${summary.seconds} 秒<br>` +
+    `到達：第 ${summary.stage} 關 · ${upgradeEscape(summary.stageName)} · 等級 ${summary.level}<br>` +
+    `小怪擊倒：${summary.kills}（含精英／大熊，不含關卡 Boss）</p>` +
+    (summary.newRecord ? '<p class="run-record">新最長紀錄！</p>' : '') +
+    group('最後武器', summary.weapons, '本局尚未取得武器') +
+    group('秘技', summary.secrets, '本局尚未取得秘技') +
+    group('大招', summary.active, '泡泡炸彈（基礎，尚未選擇大招）') +
+    group('已取得升級卡', summary.cards, '本局尚未取得升級卡');
+}
+
 function showOverlay(mode) {
   const trialPanel=document.getElementById('trialPanel');if(trialPanel)trialPanel.hidden=true;
   state.mode = mode;
+  renderRunSummary(!MAKER_MODE && !PREVIEW_MODE && !state.trial && ['over', 'won'].includes(mode) ? state.runSummary : null);
   SurvivorRoutes.menu(mode);
   if (mode !== "paused") updateBossHealthHud();
   const pauseBuild=document.getElementById("pauseBuild");
@@ -32,6 +53,7 @@ function showOverlay(mode) {
   state.keys.clear(); state.pointerId = null; state.joy = null;
   updateActionControls();
   overlay.classList.remove("hidden"); messageCard.hidden = false; upgradePanel.hidden = true; settingsPanel.hidden = true;
+  if (state.runSummary && (mode === 'over' || mode === 'won')) messageCard.scrollTop = 0;
   if (mode === "paused") { SurvivorIcons.set(iconEl, "pause"); titleEl.textContent = "先休息一下"; textEl.textContent = "準備好了再繼續玩。"; startButton.textContent = "繼續遊戲"; statusEl.textContent = "已暫停"; SurvivorIcons.set(pauseButton, "settings"); }
   else if (mode === "over") { SurvivorIcons.set(iconEl, "over"); titleEl.textContent = "再試一次！"; textEl.textContent = `水星人的血條用完了。這次撐了 ${Math.floor(state.elapsed)} 秒。${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "重新開始"; statusEl.textContent = "本局結束"; SurvivorIcons.set(pauseButton, "settings"); }
   else if (mode === "won") { SurvivorIcons.set(iconEl, "win"); titleEl.textContent = "打敗" + GAME_DATA.boss.name + "了！"; textEl.textContent = `${GAME_DATA.boss.name}的血條清空，這一局勝利！${bestRecord ? ` 最佳紀錄：${bestRecord} 秒。` : ""}`; startButton.textContent = "再玩一次"; statusEl.textContent = "勝利！"; SurvivorIcons.set(pauseButton, "settings"); }

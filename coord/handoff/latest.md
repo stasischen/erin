@@ -1,5 +1,29 @@
 # 目前交接
 
+## 點子 1：本局結算摘要 Mac 驗證（2026-11-11；仍在製作中）
+
+PR #114 為草稿，分支 `codex/survivor-run-summary` 的固定遊戲候選是 `36f6ec9686d41a4a12138353439a955964f7cfce`，版本 `20261111a`。共用結算摘要實作及測試共188行新增，版本／快取同步檔一併納入；Dot 原始 patch 經 Luna 獨立審查並精確套用。`node games/survivor/tools/test.cjs --layout`、`node games/survivor/tests/run-summary.cjs`、版本同步檢查與 `git diff --check` 均通過；候選已提交並推送，尚未合併、發布或完成預覽驗收。
+
+Mac Chrome 真實遊玩已確認自然結算與重玩清空；1024×461、740×360、1180×820 已檢視，740×360 長清單可捲動且重玩按鈕需捲到。另一局自然死亡於147秒，首王150秒登場前未完成首關轉場；最後可見戰鬥HUD為16／180 HP，進入結算摘要後實際終局HP未核實。零擊倒、跨關死亡、最終勝利、儲存失敗及長配裝等部分邊界仍只有VM fixture證據；不把 fixture 當 Chrome 實玩。
+
+### PR #114 固定預覽已部署，等待 Dot 實玩（2026-11-11）
+
+PR #114 Draft 候選 head `5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669`、版本 `20261111a` 已追加到 Erin 公開測試站。Pages 部署 run `43034668569` success，發布分支提交 `deb5109d49189b5611139d011ffa57598b05a131`。固定遊玩 URL：https://stasischen.github.io/erin-preview/pr-114/5c62ff8e88b73e65afbc7e29b1bfbdbe5345d669/games/survivor/ ；manifest SHA-256 `84f666a5710915fb61e503051d225439f8408971ff3efab34b4f445f7e718315`，公開 manifest 所列123個 payload 均 HTTP 200 且 bytes/hash 相符。
+
+本機公開隔離 smoke 通過：125個 stage 檔案核對，920個 runtime requests，正式站 storage sentinel 與 `/erin/` Service Worker／cache sentinel 保持；這不是 Dot 實際試玩。Dot 固定候選三尺寸功能驗收已送 Erin room #2 [留言 6797976578](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6797976578)，board `20261111-220619-289d`，等待實際 frame 尺寸、操作和摘要／重玩結果。獨立初審 session `01a1cae2-070e-71f2-b7e1-899f631d60d9` 已核對產品候選 `5c62ff8` 與後續 coord-only 差異，確認沒有遊戲檔變更；初審完整遊戲 diff與 Mac --layout 暫無可重現問題，最終 verdict 等 Dot 實玩。PR最新head以GitHub頁為準。
+
+追加預覽前檢查發現既有測試站12份舊manifest共24筆共享根 `README.md`／`index.html` hash與當前根檔不符。這些舊差異在本次追加前已存在；PR114只新增 `pr-114/<完整SHA>/`，沒有修改舊候選或共用根檔。本次生成器的固定候選manifest及全部123個payload都與公開內容相符。私有預覽稽核工具已在本機更新 storage call 所在檔名和現行生存開局／Maker流程，沒有進 Erin repo。
+
+### 邊界情境補驗（2026-11-11）
+
+候選檔案在本輪檢查時仍與上一輪一致：`run-lifecycle.js`、`levelup.js`、`style.css`、`run-summary.cjs` 的 SHA256 分別為 `c59e24e3…`、`31e0b24d…`、`ad22af28…`、`7589b015…`；`index.html` 含版本同步修改。Git HEAD 此時為 `af5a62c613cf398bd70c9d32c3604c6eba6e756d`（僅含 coord 紀錄），遊戲 patch 與 `20261111a` 版本／快取同步檔仍未提交。未重跑完整 `--layout`。
+
+追加 `node games/survivor/tests/run-summary.cjs`，exit 0，僅為隔離 Node VM fixture（不代表 Chrome 或自然遊玩）：驗到零擊倒死亡、首關勝利轉場後第二關死亡、最後關 Boss 勝利、儲存失敗仍可結算／重開、所有升級卡的長清單、重複終局、連續重開及 Maker／preview／trial 隔離。Chrome 實際未做出零擊倒局：生存模式保持自動攻擊，設定裡的手動切換按鈕為 hidden 且 `aria-checked=false`，這次約30秒已有19擊倒；這只記錄本次無法由可見操作觸發該場景，不代表測到產品缺陷。首關轉場、末關勝利、儲存失敗、長配裝仍只有 VM fixture 證據，沒有 Chrome 自然局證據；Dot 雲端固定預覽仍未驗。未修改程式、未重跑 `--layout`、未合併或部署。
+
+### 首關普通 Chrome 局補驗（2026-11-11）
+
+候選仍為 Git HEAD `49b73359f24bbffaba977459af4baf2c0b2ae614` 加未提交 Luna patch／`20261111a` 版本快取同步檔；本輪檢查 patch 檔案 hash 未漂移。於正確 `/erin/` 隔離頁、1024×461，用一般開始、方向鍵走位與可見升級選卡實玩一局。自然死亡於147秒，第1關糖果森林、Lv.17、288擊倒、新最長紀錄，最後可見戰鬥HUD為16／180 HP；進入結算摘要後實際終局HP未核實；首王預定150秒登場，所以未觸發第一關勝利轉場。本輪未注入時間／血量／敵人，也未改數值或程式；完整操作摘記在本機 `~/.local/share/erin/logs/survivor-run-summary-stage-transition-20261111.md`，沒有保存截圖檔。下一個最小動作是另一局有界普通操作，較早選恢復卡並在首王預警時持續走位；零擊倒自然局因自動攻擊仍未達，末關 Chrome 勝利／長配裝與 Dot 雲端固定預覽仍未驗。未重跑完整 `--layout` 或 VM fixture。
+
 ## PR113 最新候選 Dot 雲端驗收（2026-11-10；三尺寸已實測，部分 gate 未完成）
 
 PR #113 仍為 Draft；遊戲固定來源 `cf14bc06f25fcb3cd8b93bd6842950b9b8749350`、版本 `20261105a`。原始雲端實玩 result [#6769295694](https://github.com/stasischen/lingo-agent-exchange/pull/2#issuecomment-6769295694) 已採納；Dot 在1331×894/DPR1正常移動、自動攻擊、自然到Lv2與Lv3各選一張後續玩，取得水球Lv2與旋轉餅乾Lv1。此完成部分不重測。
