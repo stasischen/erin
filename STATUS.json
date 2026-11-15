@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-14T06:06:23.909961Z",
+ "generated": "2026-11-15T06:43:19.724369Z",
  "stale_days": 3,
  "counts": {
   "needs_user": 1,
@@ -8,8 +8,8 @@
   "stale": 6,
   "doing": 1,
   "todo": 2,
-  "done_24h": 99,
-  "done_older": 4,
+  "done_24h": 0,
+  "done_older": 103,
   "done": 103,
   "parse_errors": 0,
   "total": 109
@@ -158,7 +158,30 @@
    "updated": "2026-10-27T08:57:37Z"
   }
  ],
- "done_24h": [
+ "done_24h": [],
+ "done_older": [
+  {
+   "id": "coord-workflow-alignment",
+   "title": "協作流程整理：公開紀錄、正式佇列與 GROKBOT 交接",
+   "owner": "codex",
+   "state": "done",
+   "waitingFor": null,
+   "risk": "medium",
+   "next": "PR #101 已合併、Pages 成功，遊戲仍為 20261027e；主控回報並等家長決定 artv2 是否開工。",
+   "pr": 101,
+   "updated": "2026-10-27T09:15:58Z"
+  },
+  {
+   "id": "survivor-art-manifest-v2",
+   "title": "美術清單 v2：方向、動畫、顯示與特效",
+   "owner": "codex",
+   "state": "done",
+   "waitingFor": null,
+   "risk": "low",
+   "next": "PR #102 已獨立重審、merge 並確認 Pages 20261027g；等家長試玩及決定是否開始 survivor-weakpoint。",
+   "pr": 102,
+   "updated": "2026-10-27T10:38:40Z"
+  },
   {
    "id": "survivor-attack-mode-backlog",
    "title": "小怪獸：攻擊模式重新設計備忘（不實作）",
@@ -1128,6 +1151,17 @@
    "updated": "2026-11-14T05:07:14Z"
   },
   {
+   "id": "survivor-trial-hotfix",
+   "title": "王的試煉：場地、追近與首階段衝鋒",
+   "owner": "codex",
+   "state": "done",
+   "waitingFor": null,
+   "risk": "low",
+   "next": "PR #100 已合併且 Pages 上線 20261027e；主控回報並等家長決定下一張。",
+   "pr": 100,
+   "updated": "2026-10-27T08:57:37Z"
+  },
+  {
    "id": "survivor-view-fullscreen",
    "title": "小怪獸：全螢幕固定面積視野",
    "owner": "codex",
@@ -1181,6 +1215,17 @@
    "next": "已合併",
    "pr": null,
    "updated": "2026-11-14T05:07:14Z"
+  },
+  {
+   "id": "survivor-weakpoint",
+   "title": "共用弱點積木與護甲傷害",
+   "owner": "codex",
+   "state": "done",
+   "waitingFor": null,
+   "risk": "low",
+   "next": "PR103已獨立審查／merge，Pages確認20261027i；Mac完整114PASS與三尺寸UI通過。等家長試玩及指示boss3；Dot雲端尺寸lab與隔離草稿授權另行準備。",
+   "pr": 103,
+   "updated": "2026-10-27T13:30:24Z"
   },
   {
    "id": "survivor-weapon-backlog",
@@ -1247,52 +1292,6 @@
    "next": "已合併",
    "pr": null,
    "updated": "2026-11-14T05:07:14Z"
-  }
- ],
- "done_older": [
-  {
-   "id": "coord-workflow-alignment",
-   "title": "協作流程整理：公開紀錄、正式佇列與 GROKBOT 交接",
-   "owner": "codex",
-   "state": "done",
-   "waitingFor": null,
-   "risk": "medium",
-   "next": "PR #101 已合併、Pages 成功，遊戲仍為 20261027e；主控回報並等家長決定 artv2 是否開工。",
-   "pr": 101,
-   "updated": "2026-10-27T09:15:58Z"
-  },
-  {
-   "id": "survivor-art-manifest-v2",
-   "title": "美術清單 v2：方向、動畫、顯示與特效",
-   "owner": "codex",
-   "state": "done",
-   "waitingFor": null,
-   "risk": "low",
-   "next": "PR #102 已獨立重審、merge 並確認 Pages 20261027g；等家長試玩及決定是否開始 survivor-weakpoint。",
-   "pr": 102,
-   "updated": "2026-10-27T10:38:40Z"
-  },
-  {
-   "id": "survivor-trial-hotfix",
-   "title": "王的試煉：場地、追近與首階段衝鋒",
-   "owner": "codex",
-   "state": "done",
-   "waitingFor": null,
-   "risk": "low",
-   "next": "PR #100 已合併且 Pages 上線 20261027e；主控回報並等家長決定下一張。",
-   "pr": 100,
-   "updated": "2026-10-27T08:57:37Z"
-  },
-  {
-   "id": "survivor-weakpoint",
-   "title": "共用弱點積木與護甲傷害",
-   "owner": "codex",
-   "state": "done",
-   "waitingFor": null,
-   "risk": "low",
-   "next": "PR103已獨立審查／merge，Pages確認20261027i；Mac完整114PASS與三尺寸UI通過。等家長試玩及指示boss3；Dot雲端尺寸lab與隔離草稿授權另行準備。",
-   "pr": 103,
-   "updated": "2026-10-27T13:30:24Z"
   }
  ],
  "source": {
