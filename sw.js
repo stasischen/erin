@@ -1,7 +1,7 @@
 // 版號由 games/survivor/version.json 管理；執行 tools/version.cjs --write 同步。
 // /erin/ 底下的檔案一律先問網路並更新快取，確保 ?v= 新版會立即生效；
 // 只有離線時才忽略查詢字串，退回已快取的同名檔案。
-const CACHE_NAME = 'erin-games-20261126a';
+const CACHE_NAME = 'erin-games-20261127a';
 const ROOT = '/erin/';
 const PRECACHE_URLS = [
   'games/survivor/data/gallery-assassin.js',
@@ -140,6 +140,7 @@ const PRECACHE_URLS = [
   'games/breakout/', 'games/breakout/style.css', 'games/breakout/game.js',
   'games/block-grid/', 'games/block-grid/style.css', 'games/block-grid/game.js',
   'games/bubble-pop/', 'games/bubble-pop/style.css', 'games/bubble-pop/game.js',
+  'games/block-fill/', 'games/block-fill/style.css', 'games/block-fill/game.js',
   'games/survivor/preview.html', 'games/survivor/preview.js', 'games/survivor/preview-engine.js',
   'games/survivor/icons.js', 'games/survivor/data/defaults.js', 'games/survivor/data/schema.js',
   'games/survivor/maker/', 'games/survivor/maker/index.html', 'games/survivor/maker/style.css', 'games/survivor/maker/maker.js'

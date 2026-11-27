@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>滿格方塊</title>
+    <link rel="stylesheet" href="style.css?v=20261127a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#1e212b" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>滿格方塊</h1>
+        </div>
+        <p class="topbar-subtitle">把方塊放好，湊滿一排或一列就消除；滿了放不下，就死了！</p>
+      </header>
+
+      <section class="game-layout">
+        <section class="play-panel">
+          <div class="board-wrap">
+            <div id="board" class="board" aria-label="遊戲棋盤"></div>
+            <div id="overlay" class="overlay">
+              <p id="overlayTitle" class="overlay-title">滿格方塊</p>
+              <p id="overlayText" class="overlay-text">拖下面的方塊到棋盤上放好，湊滿一排或一列就消除。</p>
+              <p class="overlay-best">最佳分數 <span id="overlayBest">0</span></p>
+            </div>
+          </div>
+
+          <div id="tray" class="tray" aria-label="待放方塊"></div>
+
+          <section class="controls">
+            <button id="startBtn" type="button">開始</button>
+            <button id="restartBtn" type="button">重新開始</button>
+          </section>
+        </section>
+
+        <aside class="side-panel">
+          <section class="stat-card">
+            <h2>分數</h2>
+            <p id="score" class="stat-value">0</p>
+          </section>
+          <section class="stat-card">
+            <h2>最佳</h2>
+            <p id="best" class="stat-value">0</p>
+          </section>
+          <section class="stat-card">
+            <h2>消除</h2>
+            <p id="lines" class="stat-value">0</p>
+          </section>
+          <section class="stat-card howto">
+            <h2>玩法</h2>
+            <p>把下方 3 個方塊拖到棋盤上（或點一下方塊再點棋盤）。放一格得 1 分；湊滿一整排或一整列就消除，一次消越多條分數越高。3 個都放完會再補 3 個新的。當剩下的方塊全都放不下，遊戲就結束了。</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <div id="floatPiece" class="float-piece" hidden></div>
+    <script src="game.js?v=20261127a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>
