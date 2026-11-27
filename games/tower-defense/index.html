@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>塔防</title>
+    <link rel="stylesheet" href="style.css?v=20261126a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#dff4ff" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>塔防</h1>
+        </div>
+        <p class="topbar-subtitle">蓋塔守住彎路，別讓敵人走到終點！</p>
+      </header>
+
+      <section class="hud" aria-label="遊戲狀態">
+        <div class="hud-item">波次 <span id="wave">0</span></div>
+        <div class="hud-item">命 <span id="lives">20</span></div>
+        <div class="hud-item">金幣 <span id="gold">0</span></div>
+        <div class="hud-item">最佳波次 <span id="best">0</span></div>
+        <div class="hud-item">敵人 <span id="enemyCount">0</span></div>
+      </section>
+
+      <section class="board-wrap">
+        <canvas id="gameCanvas" width="576" height="384" aria-label="塔防地圖"></canvas>
+        <div id="overlay" class="overlay">
+          <div class="overlay-card">
+            <h2 id="overlayTitle">塔防大作戰</h2>
+            <p id="overlayText">點空格蓋塔，守住 S 形彎路。<br />最佳波次：<span id="overlayBest">0</span></p>
+            <button id="overlayBtn" type="button">開始遊戲</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="cellPanel" class="cell-panel" aria-live="polite">
+        <p id="panelText">先點地圖上的一個空格，再選要蓋的塔。</p>
+        <div id="buildButtons" class="panel-buttons"></div>
+        <div id="towerButtons" class="panel-buttons hidden">
+          <button id="upgradeBtn" type="button">升級</button>
+          <button id="sellBtn" type="button">賣出</button>
+          <button id="closePanelBtn" type="button">關閉</button>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="控制列">
+        <button id="nextWaveBtn" type="button">開始下一波</button>
+        <button id="pauseBtn" type="button">暫停</button>
+        <button id="speedBtn" type="button">速度 ×1</button>
+        <button id="restartBtn" type="button">重新開始</button>
+      </section>
+
+      <section class="help">
+        <p>玩法：點空格選塔建造；點已經蓋好的塔可以升級（最高 Lv3）或賣出（返還已投入金幣的 70%）。敵人走到終點會扣命，Boss 會扣 3 條命。命歸零就結束囉！</p>
+        <p>箭塔便宜快射、炮塔範圍傷害、冰塔讓敵人緩速 45%、狙擊塔射程遠又痛。</p>
+      </section>
+    </main>
+
+    <script src="game.js?v=20261126a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>

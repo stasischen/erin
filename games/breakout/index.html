@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>打磚塊</title>
+    <link rel="stylesheet" href="style.css?v=20261126a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#0b0620" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>打磚塊</h1>
+        </div>
+        <p class="topbar-subtitle">打掉所有橢圓磚塊，過完 5 關！</p>
+      </header>
+
+      <section class="hud" aria-label="遊戲狀態">
+        <div class="hud-item hud-item--score">分數 <span id="score">0</span></div>
+        <div class="hud-item">最佳 <span id="best">0</span></div>
+        <div class="hud-item">命 <span id="lives">3</span></div>
+        <div class="hud-item">關卡 <span id="level">1 / 5</span></div>
+        <div class="hud-item hud-item--combo">連擊 <span id="combo">×0</span></div>
+        <div class="hud-item">磚塊 <span id="bricksLeft">0</span></div>
+      </section>
+
+      <section class="stage">
+        <canvas id="game" width="800" height="600" aria-label="打磚塊遊戲畫面"></canvas>
+        <div id="overlay" class="overlay">
+          <p id="overlayTitle" class="overlay-title">打磚塊</p>
+          <p id="overlayText" class="overlay-text">移動球拍反彈小球，打掉所有橢圓磚塊！<br />點按畫面或按空白鍵發射小球。</p>
+          <p id="overlayBest" class="overlay-best">最佳分數：0</p>
+        </div>
+      </section>
+
+      <section class="controls">
+        <button id="startBtn" type="button">開始遊戲</button>
+        <button id="restartBtn" type="button">重新開始</button>
+        <button id="fireBtn" type="button">發射 / 雷射</button>
+      </section>
+
+      <section class="help">
+        <p>操作：滑鼠移動、手指拖曳、或鍵盤 ← → 移動球拍；點按 / 空白鍵發射小球，雷射模式時點按會發射雷射。</p>
+        <p>道具：<b>寬</b> 加寬球拍、<b>球</b> 多一顆球、<b>慢</b> 小球變慢、<b>雷</b> 雷射球拍、<b>命</b> 額外一條命（很稀有！）。接住掉下來的道具就會生效。</p>
+        <p>連擊：小球碰到球拍之前連續打磚，連擊數越高，每塊磚分數越高；球一碰到球拍，連擊就會重置。</p>
+      </section>
+    </main>
+
+    <script src="game.js?v=20261126a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>

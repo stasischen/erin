@@ -1,0 +1,147 @@
+/* 方塊格子 style.css — 純 CSS，不引用任何外部圖片或字型，可離線使用 */
+:root {
+  --bg-a: #10284f;
+  --bg-b: #214f74;
+  --panel: #fff3d8;
+  --ink: #2b1a31;
+  --line: #172f58;
+  --shadow: rgba(13, 25, 48, 0.32);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(160deg, var(--bg-a), var(--bg-b) 55%, #2f6b66);
+  background-size: 34px 34px, 34px 34px, auto;
+}
+
+.game-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 12px;
+  touch-action: manipulation;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 4px solid #101f3f;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.38), transparent 42%), linear-gradient(180deg, #ffdc73, #ff8a56);
+  color: #3b2107;
+  padding: 12px 18px;
+  box-shadow: inset 0 -5px 0 rgba(95,48,18,.16), 0 10px 0 #102748, 0 18px 28px var(--shadow);
+}
+.topbar h1 { margin: 0; line-height: 1; font-size: clamp(24px, 4vw, 36px); }
+.eyebrow { margin: 0 0 4px; color: #17476f; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+.topbar-subtitle { max-width: 320px; margin: 0; color: #4b2f13; font-size: 14px; font-weight: 900; text-align: right; }
+
+.game-layout {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: auto 240px;
+  justify-content: center;
+  gap: 12px;
+  align-items: start;
+}
+
+.play-panel, .side-panel {
+  border: 4px solid #142848;
+  border-radius: 16px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.5), transparent 44%), linear-gradient(180deg, #b5d7ff, #6fa4df);
+  box-shadow: inset 0 -6px 0 rgba(31,70,120,.25), 0 10px 0 #0f2543, 0 18px 30px var(--shadow);
+}
+
+.board-wrap { position: relative; width: 300px; margin: 0 auto; }
+#board {
+  display: block;
+  width: 300px;
+  height: 600px;
+  background: #10182e;
+  border: 4px solid #101f3f;
+  border-radius: 10px;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; text-align: center; padding: 16px;
+  background: rgba(10, 18, 38, 0.72); color: #fff7d8;
+  border-radius: 10px;
+}
+.overlay.hidden { display: none; }
+.overlay-title { margin: 0; font-size: 34px; font-weight: 900; }
+.overlay-text { margin: 0; font-size: 16px; font-weight: 700; white-space: pre-line; }
+.overlay-best { margin: 0; font-size: 14px; font-weight: 900; }
+
+.controls { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.controls button { flex: 1; }
+
+button {
+  min-height: 52px; /* 平板好按的大小 */
+  border: 3px solid #101f3f;
+  background: linear-gradient(180deg, rgba(255,255,255,.38), transparent 42%), linear-gradient(180deg, #ffdc73, #ff8a56);
+  border-radius: 12px;
+  padding: 9px 10px;
+  font-family: inherit; font-size: 16px; font-weight: 800; color: #351c07;
+  cursor: pointer; box-shadow: 0 5px 0 #743e20;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+button:active { transform: translateY(2px); box-shadow: 0 3px 0 #743e20; }
+button:disabled { cursor: not-allowed; opacity: 0.62; filter: saturate(0.55); }
+
+.touch-controls {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.touch-controls button { min-height: 60px; font-size: 17px; }
+
+.side-panel { display: flex; flex-direction: column; gap: 10px; }
+.hud { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hud-item {
+  border: 2px solid rgba(23,47,88,.68); border-radius: 10px;
+  background: linear-gradient(180deg, #244d85, #183253); color: #fff7d8;
+  padding: 7px; font-size: 12px; font-weight: 900;
+  display: flex; flex-direction: column; gap: 5px; min-height: 58px; justify-content: space-between;
+}
+.hud-item--score { background: linear-gradient(180deg, #ff6d8f, #b63d62); border-color: #622544; }
+.hud-item span {
+  display: block; background: #fff7d8; border: 2px solid rgba(16,31,63,.85); border-radius: 8px;
+  color: #1d3052; padding: 3px 6px; text-align: center; font-size: 16px; line-height: 1.1;
+}
+
+.preview-card, .result, .help {
+  border: 3px solid #101f3f; border-radius: 12px; background: var(--panel);
+  padding: 10px; box-shadow: inset 0 -5px 0 rgba(99,62,22,.1), 0 5px 0 #102748;
+}
+.preview-card canvas { display: block; margin: 4px auto 0; background: #10182e; border-radius: 8px; }
+.label {
+  display: inline-block; border: 2px solid #102748; border-radius: 8px;
+  background: #61d8a0; color: #102748; padding: 4px 8px; font-size: 12px; font-weight: 900;
+}
+.result p, .help p { margin: 0; font-weight: 700; }
+.help p + p { margin-top: 6px; }
+
+@media (max-width: 720px) {
+  .game-layout { grid-template-columns: 1fr; }
+  .side-panel { order: 2; }
+  .topbar-subtitle, .eyebrow { display: none; }
+  .board-wrap { width: min(300px, 90vw); }
+  #board { width: 100%; height: auto; aspect-ratio: 1 / 2; }
+  .hud { grid-template-columns: repeat(4, 1fr); }
+  .preview-card canvas { max-width: 100%; }
+}

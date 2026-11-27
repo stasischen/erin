@@ -1,0 +1,251 @@
+/* 記憶翻牌 — 樣式（純 CSS，不使用任何外部圖片或字型） */
+:root {
+  --bg-a: #10284f;
+  --bg-b: #214f74;
+  --panel: #fff3d8;
+  --ink: #2b1a31;
+  --line: #172f58;
+  --shadow: rgba(13, 25, 48, 0.32);
+  --card-back-a: #ff8a56;
+  --card-back-b: #ffdc73;
+  --card-front: #fffdf4;
+  --matched: #b9f2cd;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(160deg, var(--bg-a), var(--bg-b) 55%, #2f6b66);
+  background-size: 34px 34px, 34px 34px, auto;
+}
+
+.game-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px;
+  touch-action: manipulation;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 4px solid #101f3f;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 42%),
+    linear-gradient(180deg, #ffdc73, #ff8a56);
+  color: #3b2107;
+  padding: 12px 18px;
+  box-shadow:
+    inset 0 -5px 0 rgba(95, 48, 18, 0.16),
+    0 10px 0 #102748,
+    0 18px 28px var(--shadow);
+}
+
+.topbar h1 { margin: 0; line-height: 1; font-size: clamp(24px, 5vw, 36px); }
+.eyebrow { margin: 0 0 4px; color: #17476f; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+.topbar-subtitle { max-width: 320px; margin: 0; color: #4b2f13; font-size: 14px; font-weight: 900; text-align: right; }
+
+.panel {
+  margin-top: 12px;
+  border: 4px solid #142848;
+  border-radius: 16px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 44%),
+    linear-gradient(180deg, #b5d7ff, #6fa4df);
+  box-shadow:
+    inset 0 -6px 0 rgba(31, 70, 120, 0.25),
+    0 10px 0 #0f2543,
+    0 18px 30px var(--shadow);
+}
+
+.difficulty-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.difficulty-label { font-weight: 900; }
+
+button {
+  min-height: 48px;
+  border: 3px solid #101f3f;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 42%),
+    linear-gradient(180deg, #ffdc73, #ff8a56);
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  color: #351c07;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #743e20;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button:active { transform: translateY(2px); box-shadow: 0 3px 0 #743e20; }
+
+.diff-btn { min-height: 44px; font-size: 15px; padding: 8px 12px; opacity: 0.75; }
+.diff-btn.is-active {
+  opacity: 1;
+  outline: 3px solid #102748;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 42%),
+    linear-gradient(180deg, #61d8a0, #2fae72);
+  color: #06281a;
+}
+
+.hud {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.hud-item {
+  border: 2px solid rgba(23, 47, 88, 0.68);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #244d85, #183253);
+  color: #fff7d8;
+  padding: 7px;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+.hud-item span {
+  display: block;
+  margin-top: 4px;
+  background: #fff7d8;
+  border: 2px solid rgba(16, 31, 63, 0.85);
+  border-radius: 8px;
+  color: #1d3052;
+  padding: 3px 6px;
+  font-size: 18px;
+}
+
+.moves-note { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #173a5e; }
+.best-record { margin: 6px 0 0; font-size: 14px; font-weight: 900; color: #7a2d00; }
+
+/* === 牌面棋盤：欄數由 game.js 切換 class（cols-4 / cols-6） === */
+.board {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+.board.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.board.cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* 翻牌：用 3D 旋轉，內層 .card-inner 翻轉 */
+.card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  min-height: 0;
+  perspective: 600px;
+  cursor: pointer;
+}
+.card:active { transform: none; box-shadow: none; }
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease;
+}
+.card.is-flipped .card-inner,
+.card.is-matched .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 3px solid #101f3f;
+  border-radius: 12px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  user-select: none;
+}
+.card-back {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 42%),
+    linear-gradient(160deg, var(--card-back-b), var(--card-back-a));
+  color: #7a2d00;
+  font-size: clamp(20px, 5vw, 32px);
+  font-weight: 900;
+  box-shadow: 0 4px 0 #743e20;
+}
+.card-front {
+  background: var(--card-front);
+  font-size: clamp(26px, 7vw, 44px);
+  transform: rotateY(180deg);
+}
+.board.cols-6 .card-front { font-size: clamp(20px, 5vw, 36px); }
+.card.is-matched { cursor: default; }
+.card.is-matched .card-front {
+  background: var(--matched);
+  border-color: #1d7a3f;
+}
+
+.controls { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.controls button { flex: 1; }
+
+.help {
+  margin-top: 12px;
+  border: 3px solid #101f3f;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.44), transparent 48%),
+    var(--panel);
+  padding: 10px;
+  font-weight: 700;
+  box-shadow: inset 0 -5px 0 rgba(99, 62, 22, 0.1), 0 5px 0 #102748;
+}
+.help p { margin: 0; }
+
+/* === 完成畫面 === */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 24, 43, 0.55);
+  z-index: 20;
+  padding: 16px;
+}
+.overlay.hidden { display: none; }
+.overlay-card {
+  width: min(420px, 100%);
+  border: 4px solid #101f3f;
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 22px;
+  text-align: center;
+  box-shadow: 0 10px 0 #102748, 0 18px 30px var(--shadow);
+}
+.overlay-card h2 { margin: 0 0 8px; font-size: 24px; }
+.overlay-card p { margin: 6px 0; font-weight: 700; font-size: 17px; }
+.overlay-card .stars { font-size: 40px; color: #e8930c; letter-spacing: 4px; margin: 4px 0; }
+.overlay-card .win-best { font-size: 14px; color: #7a2d00; }
+.overlay-card button { margin-top: 12px; width: 100%; }
+
+@media (max-width: 640px) {
+  .game-shell { padding: 8px; }
+  .topbar-subtitle, .eyebrow { display: none; }
+  .panel { padding: 10px; }
+  .board { gap: 7px; }
+  .hud { gap: 6px; }
+  .hud-item span { font-size: 16px; }
+  .diff-btn { flex: 1; padding: 8px 6px; font-size: 14px; }
+}

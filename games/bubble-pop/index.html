@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>球球消除</title>
+    <link rel="stylesheet" href="style.css?v=20261126a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#ffeef5" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>球球消除</h1>
+        </div>
+        <p class="topbar-subtitle">拖曳瞄準，放開發射，三顆同色就消除！</p>
+      </header>
+
+      <section class="hud" aria-label="遊戲狀態">
+        <div class="hud-item hud-item--score">分數 <span id="score">0</span></div>
+        <div class="hud-item">關卡 <span id="level">1</span></div>
+        <div class="hud-item">最佳 <span id="best">0</span></div>
+        <div class="hud-item">推下倒數 <span id="pushCount">6</span></div>
+      </section>
+
+      <section class="stage-wrap">
+        <canvas id="gameCanvas" width="450" height="700" aria-label="球球消除遊戲畫面"></canvas>
+        <div id="overlay" class="overlay">
+          <div class="overlay-card">
+            <h2 id="overlayTitle">球球消除</h2>
+            <p id="overlayText">拖曳瞄準、放開發射。<br />三顆以上同色相連就會消除，<br />失去支撐的球會掉下來加分！</p>
+            <p id="overlayBest" class="overlay-best"></p>
+            <button id="startBtn" type="button">開始遊戲</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="操作區">
+        <div class="next-box">
+          <span class="next-label">下一顆（點它交換）</span>
+          <button id="nextBall" class="next-ball" type="button" aria-label="交換目前與下一顆球"></button>
+        </div>
+        <button id="swapBtn" type="button">交換球</button>
+        <button id="restartBtn" type="button">重新開始</button>
+      </section>
+
+      <p id="message" class="message" aria-live="polite">按「開始遊戲」出發！</p>
+
+      <section class="help">
+        <p>玩法：拖曳畫面瞄準（虛線會預覽碰牆反彈的路線），放開就發射。每射 6 球都沒有消除，頂部會推下一列；球越過紅色警戒線就結束。棋盤全清就進下一關！</p>
+      </section>
+    </main>
+
+    <script src="game.js?v=20261126a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>
