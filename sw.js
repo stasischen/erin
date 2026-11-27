@@ -146,8 +146,12 @@ const PRECACHE_URLS = [
 ].map((path) => ROOT + path);
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)));
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // An upgrade must not fill the new offline cache from stale HTTP responses.
+    await cache.addAll(PRECACHE_URLS.map((url) => new Request(url, { cache: 'reload' })));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
