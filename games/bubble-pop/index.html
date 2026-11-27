@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
-    <meta name="theme-color" content="#ffeef5" />
+    <meta name="theme-color" content="#171233" />
   </head>
   <body>
     <main class="game-shell">
@@ -24,12 +24,13 @@
       <section class="hud" aria-label="遊戲狀態">
         <div class="hud-item hud-item--score">分數 <span id="score">0</span></div>
         <div class="hud-item">關卡 <span id="level">1</span></div>
-        <div class="hud-item">最佳 <span id="best">0</span></div>
+        <div class="hud-item">最高分 <span id="best">0</span></div>
+        <div class="hud-item">已消除 <span id="popped">0</span></div>
         <div class="hud-item">推下倒數 <span id="pushCount">6</span></div>
       </section>
 
       <section class="stage-wrap">
-        <canvas id="gameCanvas" width="450" height="700" aria-label="球球消除遊戲畫面"></canvas>
+        <canvas id="gameCanvas" width="420" height="640" aria-label="球球消除遊戲畫面"></canvas>
         <div id="overlay" class="overlay">
           <div class="overlay-card">
             <h2 id="overlayTitle">球球消除</h2>
@@ -46,7 +47,8 @@
           <button id="nextBall" class="next-ball" type="button" aria-label="交換目前與下一顆球"></button>
         </div>
         <button id="swapBtn" type="button">交換球</button>
-        <button id="restartBtn" type="button">重新開始</button>
+        <button id="pauseBtn" type="button">暫停</button>
+        <button id="restartBtn" type="button">重開</button>
       </section>
 
       <p id="message" class="message" aria-live="polite">按「開始遊戲」出發！</p>

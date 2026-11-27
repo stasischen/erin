@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
-    <meta name="theme-color" content="#dff4ff" />
+    <meta name="theme-color" content="#0F3D3E" />
   </head>
   <body>
     <main class="game-shell">
@@ -25,7 +25,7 @@
         <div class="difficulty-row" role="group" aria-label="選擇難度">
           <span class="difficulty-label">難度：</span>
           <button type="button" class="diff-btn is-active" data-difficulty="easy">簡單（12 張）</button>
-          <button type="button" class="diff-btn" data-difficulty="normal">普通（16 張）</button>
+          <button type="button" class="diff-btn" data-difficulty="medium">普通（16 張）</button>
           <button type="button" class="diff-btn" data-difficulty="hard">困難（24 張）</button>
         </div>
 
@@ -33,6 +33,7 @@
           <div class="hud-item">時間 <span id="timeText">0 秒</span></div>
           <div class="hud-item">翻牌次數 <span id="movesText">0</span></div>
           <div class="hud-item">已配對 <span id="pairsText">0 / 6</span></div>
+          <div class="hud-item">連續配對 <span id="streakText">0</span></div>
         </section>
         <p class="moves-note">翻牌次數：每翻兩張算 1 次</p>
         <p class="best-record" id="bestText" aria-live="polite">最佳紀錄：尚無紀錄</p>
@@ -55,6 +56,7 @@
         <p class="stars" id="winStars" aria-label="星等評分">★★★</p>
         <p>用時：<span id="winTime">0</span> 秒</p>
         <p>翻牌次數：<span id="winMoves">0</span> 次（每翻兩張算 1 次）</p>
+        <p>最高連續配對：<span id="winStreak">0</span></p>
         <p id="winBest" class="win-best"></p>
         <button type="button" id="playAgainBtn">再玩一次</button>
       </div>

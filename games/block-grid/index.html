@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
-    <meta name="theme-color" content="#1b2a4a" />
+    <meta name="theme-color" content="#1e212b" />
   </head>
   <body>
     <main class="game-shell">
@@ -40,11 +40,13 @@
 
           <section class="touch-controls" aria-label="觸控按鈕">
             <button id="leftBtn" type="button" aria-label="往左移動">← 左</button>
-            <button id="rotateBtn" type="button" aria-label="旋轉">↻ 旋轉</button>
+            <button id="rotateBtn" type="button" aria-label="旋轉">⟳ 旋轉</button>
             <button id="rightBtn" type="button" aria-label="往右移動">右 →</button>
             <button id="holdBtn" type="button" aria-label="暫存方塊">暫存</button>
             <button id="softBtn" type="button" aria-label="軟降">↓ 軟降</button>
-            <button id="hardBtn" type="button" aria-label="硬降">⤓ 硬降</button>
+            <button id="hardBtn" type="button" aria-label="硬降">⤓ 落下</button>
+            <button id="pauseTouchBtn" type="button" aria-label="暫停">⏸ 暫停</button>
+            <button id="restartTouchBtn" type="button" aria-label="重新開始">↺ 重開</button>
           </section>
         </section>
 
@@ -71,7 +73,7 @@
           </section>
 
           <section class="help">
-            <p>鍵盤：← → 移動、↓ 軟降、↑ 或 X 旋轉、空白鍵硬降、C 暫存、P 暫停。</p>
+            <p>鍵盤：← → 移動、↓ 軟降、↑ 或 X 旋轉、空白鍵硬降、C 暫存、P 或 Esc 暫停。</p>
             <p>平板：用棋盤下方的觸控按鈕也可以玩。</p>
           </section>
         </aside>

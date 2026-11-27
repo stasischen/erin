@@ -189,6 +189,60 @@ canvas {
 .help p { margin: 4px 0; }
 .help b { color: var(--neon-yellow); }
 
+.records {
+  margin-top: 10px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: rgba(23, 16, 56, 0.85);
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.records h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.records-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.records-item {
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.records-item span {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--neon-yellow);
+}
+
+.records-title {
+  margin: 10px 0 4px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.recent-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.recent-list li { margin: 2px 0; }
+
 @media (max-width: 640px) {
   .game-shell { padding: 8px; }
   .topbar-subtitle { display: none; }

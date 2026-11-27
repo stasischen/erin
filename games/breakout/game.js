@@ -1,7 +1,9 @@
 "use strict";
 /* ============================================================
    打磚塊（霓虹橢圓磚版）— 純 vanilla JS，不連任何後端
-   成績只存在 localStorage，key：erin-breakout-best
+   成績只存在 localStorage，key：erin-breakout-best（最佳成績）、
+   erin-breakout-records（每場紀錄，欄位比照原版：score / level /
+   bricks_broken / cleared / played_at）
    ============================================================ */
 
 /* ===== 可以自己改的地方（設定區）===== */
@@ -46,6 +48,9 @@ const el = {
   overlayTitle: document.getElementById("overlayTitle"),
   overlayText: document.getElementById("overlayText"),
   overlayBest: document.getElementById("overlayBest"),
+  recordBest: document.getElementById("recordBest"),
+  recordGames: document.getElementById("recordGames"),
+  recentList: document.getElementById("recentList"),
 };
 
 /* ---------- 關卡設計：每關列數／欄數／兩擊磚比例不同 ---------- */
@@ -86,6 +91,7 @@ let powerups = [];
 let lasers = [];
 let particles = [];
 let keys = { left: false, right: false };
+let bricksBroken = 0; // 本場累計打破的磚塊數（寫入每場紀錄用）
 let effects = { wideUntil: 0, slowUntil: 0, laserUntil: 0, lastLaserAt: -99 };
 let levelClearTimer = 0;
 
@@ -135,6 +141,7 @@ function buildLevel(idx) {
 
 function startGame() {
   score = 0;
+  bricksBroken = 0;
   lives = 設定.起始命數;
   levelIdx = 0;
   gameTime = 0;
@@ -176,16 +183,73 @@ function saveBest() {
   }
 }
 
+/* ---------- 成績紀錄（localStorage，取代原版後端 getRecords／saveResult） ---------- */
+const 紀錄Key = "erin-breakout-records";
+
+function loadRecords() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(紀錄Key) || "[]");
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(r => r && Number.isFinite(Number(r.score)) && Number.isFinite(Number(r.level)))
+      .map(r => ({
+        score: Number(r.score),
+        level: Number(r.level),
+        bricks_broken: Number(r.bricks_broken) || 0,
+        cleared: !!r.cleared,
+        played_at: typeof r.played_at === "string" ? r.played_at : "",
+      }));
+  } catch (e) { return []; }
+}
+
+let records = loadRecords();
+
+function renderRecords() {
+  const recordBestScore = records.reduce((m, r) => Math.max(m, r.score), 0);
+  el.recordBest.textContent = String(Math.max(best, recordBestScore));
+  el.recordGames.textContent = String(records.length);
+  el.recentList.innerHTML = "";
+  const recent = records.slice(-5).reverse(); // 最近 5 場，最新在前
+  if (recent.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "還沒有紀錄，先玩一場吧！";
+    el.recentList.appendChild(li);
+    return;
+  }
+  for (const r of recent) {
+    const li = document.createElement("li");
+    li.textContent = r.score + " 分 · 第 " + r.level + " 關" + (r.cleared ? " · 通關" : "");
+    el.recentList.appendChild(li);
+  }
+}
+
+/* 每場結束寫入一筆紀錄（分數、到達關卡、打破磚數、是否通關、時間） */
+function saveRecord(cleared) {
+  records.push({
+    score: score,
+    level: levelIdx + 1,
+    bricks_broken: bricksBroken,
+    cleared: !!cleared,
+    played_at: new Date().toISOString(),
+  });
+  try { localStorage.setItem(紀錄Key, JSON.stringify(records)); } catch (e) { /* 隱私模式等情況就略過 */ }
+  renderRecords();
+}
+
+function finishGame(cleared) {
+  saveBest();
+  saveRecord(cleared);
+}
+
 function gameOver() {
   state = "gameover";
-  saveBest();
+  finishGame(false);
   showOverlay("遊戲結束", "你的分數：" + score + " 分（第 " + (levelIdx + 1) + " 關）<br />按「重新開始」再玩一次！");
   updateHud();
 }
 
 function winGame() {
   state = "win";
-  saveBest();
+  finishGame(true);
   showOverlay("🎉 全部通關！", "你打完了全部 " + 設定.總關卡數 + " 關！<br />總分數：" + score + " 分。按「重新開始」再挑戰更高分！");
   updateHud();
 }
@@ -263,6 +327,7 @@ function hitBrick(brick, ball) {
     return;
   }
   brick.dead = true;
+  bricksBroken++;
   combo++; // 連擊：球還沒回到球拍前，每打破一塊就 +1
   const gain = 設定.每磚基本分 * Math.max(1, combo);
   score += gain;
@@ -617,6 +682,7 @@ function loop(ts) {
 /* 初始畫面：先排好第一關當背景，顯示開始說明與最佳分數 */
 buildLevel(0);
 resetBallOnPaddle();
+renderRecords();
 showOverlay("打磚塊", "移動球拍反彈小球，打掉所有橢圓磚塊！<br />點按畫面或按空白鍵發射小球，過完 " + 設定.總關卡數 + " 關就通關。");
 updateHud();
 requestAnimationFrame(loop);

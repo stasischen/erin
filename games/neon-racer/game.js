@@ -21,11 +21,14 @@ const canvas = document.getElementById('gameCanvas');
 const stageEl = document.getElementById('stage');
 const distanceEl = document.getElementById('distance');
 const scoreEl = document.getElementById('score');
+const coinsEl = document.getElementById('coins');
+const bestScoreHudEl = document.getElementById('bestScoreHud');
 const speedEl = document.getElementById('speed');
 const startOverlay = document.getElementById('startOverlay');
 const overOverlay = document.getElementById('overOverlay');
 const finalDistanceEl = document.getElementById('finalDistance');
 const finalScoreEl = document.getElementById('finalScore');
+const finalCoinsEl = document.getElementById('finalCoins');
 const bestDistanceStartEl = document.getElementById('bestDistanceStart');
 const bestScoreStartEl = document.getElementById('bestScoreStart');
 const bestDistanceOverEl = document.getElementById('bestDistanceOver');
@@ -54,18 +57,20 @@ scene.add(headLight.target);
 const MAT = {
   road: new THREE.MeshStandardMaterial({ color: 0x14142e, roughness: 0.9 }),
   ground: new THREE.MeshStandardMaterial({ color: 0x0a0a24, roughness: 1 }),
-  edgePink: new THREE.MeshBasicMaterial({ color: 0xff2e88 }),
-  edgeCyan: new THREE.MeshBasicMaterial({ color: 0x22e6ff }),
+  edgeCyan: new THREE.MeshBasicMaterial({ color: 0x00e5ff }), // 主色：青色霓虹 #00E5FF
+  edgeCyanDim: new THREE.MeshBasicMaterial({ color: 0x0099bb }),
   dash: new THREE.MeshBasicMaterial({ color: 0xd8fbff }),
   pole: new THREE.MeshStandardMaterial({ color: 0x222244, roughness: 0.7 }),
-  lampPink: new THREE.MeshBasicMaterial({ color: 0xff7ac0 }),
   lampCyan: new THREE.MeshBasicMaterial({ color: 0x8ff6ff }),
+  lampBlue: new THREE.MeshBasicMaterial({ color: 0x00e5ff }),
   building: new THREE.MeshStandardMaterial({ color: 0x101030, roughness: 0.95 }),
-  buildingGlow: new THREE.MeshBasicMaterial({ color: 0x3555ff }),
+  buildingGlow: new THREE.MeshBasicMaterial({ color: 0x00bcd4 }),
   tire: new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 }),
   coin: new THREE.MeshStandardMaterial({ color: 0xffc21f, emissive: 0xff9d00, emissiveIntensity: 1.2, metalness: 0.7, roughness: 0.25 }),
 };
-const 車道X = [-4, 0, 4]; // 三個車道的左右位置
+const 車道數 = 3;
+const 車道X = [-4, 0, 4]; // 三車道的中心位置（左／中／右），對手車與金幣都依這三個位置生成
+const 車道分隔線X = [-2, 2]; // 三車道之間的兩條分隔虛線位置
 const 道路半寬 = 6;
 
 // ---------- 道路：用一段段路塊循環回收（物件池概念，不一直新增） ----------
@@ -87,19 +92,19 @@ function makeRoadChunk(index) {
   road.position.y = -0.1;
   group.add(road);
 
-  // 兩側霓虹路緣：一邊粉紅、一邊青色
-  const leftEdge = new THREE.Mesh(edgeGeo, MAT.edgePink);
+  // 兩側霓虹路緣：主色青色霓虹 #00E5FF（左側亮青、右側深青，方便分辨方向）
+  const leftEdge = new THREE.Mesh(edgeGeo, MAT.edgeCyan);
   leftEdge.position.set(-道路半寬 - 0.15, 0.05, 0);
   group.add(leftEdge);
-  const rightEdge = new THREE.Mesh(edgeGeo, MAT.edgeCyan);
+  const rightEdge = new THREE.Mesh(edgeGeo, MAT.edgeCyanDim);
   rightEdge.position.set(道路半寬 + 0.15, 0.05, 0);
   group.add(rightEdge);
 
-  // 車道虛線（隔一段才畫，做出虛線感）
-  if (index % 2 === 0) {
-    for (const x of [-2, 2]) {
+  // 三車道分隔虛線：每段路塊在兩條分隔線上各放兩小段，車道邊界清楚可見
+  for (const x of 車道分隔線X) {
+    for (const z of [-5, 5]) {
       const dash = new THREE.Mesh(dashGeo, MAT.dash);
-      dash.position.set(x, 0.04, 0);
+      dash.position.set(x, 0.04, z);
       group.add(dash);
     }
   }
@@ -109,7 +114,7 @@ function makeRoadChunk(index) {
     const pole = new THREE.Mesh(poleGeo, MAT.pole);
     pole.position.set(side * (道路半寬 + 1.6), 2.3, -路塊長度 / 2 + 2);
     group.add(pole);
-    const lamp = new THREE.Mesh(lampGeo, (index + (side > 0 ? 1 : 0)) % 2 === 0 ? MAT.lampPink : MAT.lampCyan);
+    const lamp = new THREE.Mesh(lampGeo, (index + (side > 0 ? 1 : 0)) % 2 === 0 ? MAT.lampBlue : MAT.lampCyan);
     lamp.position.set(side * (道路半寬 + 1.6), 4.7, -路塊長度 / 2 + 2);
     group.add(lamp);
   }
@@ -206,15 +211,71 @@ function makeCar(bodyColor, glowColor) {
   return car;
 }
 
-// 玩家車
-const playerCar = makeCar(0xff2e88, 0x22e6ff);
+// 玩家車：紅色跑車造型（低扁寬車身、楔形車頭、大尾翼、青色車底光）
+function makeSportsCar() {
+  const car = new THREE.Group();
+  const redMat = new THREE.MeshStandardMaterial({ color: 0xe10600, metalness: 0.55, roughness: 0.3 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x11182e, metalness: 0.6, roughness: 0.2 });
+
+  // 低扁寬車身
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.42, 3.9), redMat);
+  body.position.y = 0.48;
+  car.add(body);
+
+  // 楔形車頭（前方較低，微微前傾）
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.26, 1.0), redMat);
+  nose.position.set(0, 0.4, -2.15);
+  nose.rotation.x = 0.1;
+  car.add(nose);
+
+  // 駕駛艙（比一般車更小、更靠後，跑車比例）
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.4, 1.5), darkMat);
+  cabin.position.set(0, 0.88, 0.45);
+  car.add(cabin);
+
+  // 大尾翼＋兩支支架
+  const wing = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.09, 0.55), darkMat);
+  wing.position.set(0, 1.12, 1.95);
+  car.add(wing);
+  for (const x of [-0.7, 0.7]) {
+    const strut = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.12), darkMat);
+    strut.position.set(x, 0.9, 1.95);
+    car.add(strut);
+  }
+
+  // 車底青色霓虹光條（主色 #00E5FF）
+  const underGlow = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.08, 4.1), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+  underGlow.position.y = 0.2;
+  car.add(underGlow);
+
+  // 四顆輪子
+  for (const [x, z] of [[-1.0, -1.35], [1.0, -1.35], [-1.0, 1.35], [1.0, 1.35]]) {
+    const wheel = new THREE.Mesh(wheelGeo, MAT.tire);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(x, 0.36, z);
+    car.add(wheel);
+  }
+
+  // 車頭燈與尾燈（尾燈維持紅色功能色）
+  for (const x of [-0.65, 0.65]) {
+    const head = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xeaffff }));
+    head.position.set(x, 0.52, -2.62);
+    car.add(head);
+    const tail = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff2244 }));
+    tail.position.set(x, 0.62, 1.97);
+    car.add(tail);
+  }
+  return car;
+}
+
+const playerCar = makeSportsCar();
 scene.add(playerCar);
 
 // 其他車輛（物件池：先全部做好，之後只改位置重複使用）
-const trafficColors = [0x22e6ff, 0xffd94a, 0x7c5cff, 0x37ff9a, 0xff7a3c, 0xf4f4ff];
+const trafficColors = [0x00e5ff, 0xffd94a, 0x7c5cff, 0x37ff9a, 0xff7a3c, 0xf4f4ff];
 const traffic = [];
 for (let i = 0; i < 車流量; i++) {
-  const mesh = makeCar(trafficColors[i % trafficColors.length], 0xff2e88);
+  const mesh = makeCar(trafficColors[i % trafficColors.length], 0x00e5ff);
   scene.add(mesh);
   traffic.push({ mesh, lane: 0, ownSpeed: 10, active: true });
 }
@@ -237,6 +298,7 @@ let playerZ = 0;
 let speed = 0;
 let distance = 0; // 公尺
 let score = 0;
+let coinsCollected = 0; // 本局撿到的金幣枚數（HUD「金幣」）
 
 function loadBest() {
   try {
@@ -295,6 +357,7 @@ function resetGame() {
   speed = 起始速度;
   distance = 0;
   score = 0;
+  coinsCollected = 0;
   for (let i = 0; i < roadChunks.length; i++) roadChunks[i].position.z = -i * 路塊長度;
   traffic.forEach((car, i) => placeTraffic(car, 60 + i * 22, 90 + i * 22));
   coins.forEach((coin, i) => placeCoin(coin, 30 + i * 14, 55 + i * 14));
@@ -313,12 +376,15 @@ function gameOver() {
   saveBest();
   finalDistanceEl.textContent = Math.floor(distance);
   finalScoreEl.textContent = score;
+  finalCoinsEl.textContent = coinsCollected;
   overOverlay.classList.remove('hidden');
 }
 
 function updateHud() {
   distanceEl.textContent = Math.floor(distance);
   scoreEl.textContent = score;
+  coinsEl.textContent = coinsCollected;
+  bestScoreHudEl.textContent = Math.max(best.score, score); // 最佳：已存最佳與本局分數取大者
   speedEl.textContent = Math.round(speed * 3.6); // 公尺／秒換成 km/h 顯示
 }
 
@@ -412,6 +478,7 @@ function update(dt) {
     const dx = Math.abs(coin.mesh.position.x - playerX);
     if (dz < 2 && dx < 1.5) {
       score += 金幣分數;
+      coinsCollected += 1;
       placeCoin(coin, 120, 280); // 撿到後直接在前方重生，等於回收再利用
     }
   }
