@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
-    <meta name="theme-color" content="#06283d" />
+    <meta name="theme-color" content="#0a0a12" />
   </head>
   <body>
     <main class="game-shell">
@@ -18,7 +18,7 @@
           <p class="eyebrow">Erin's Arcade</p>
           <h1>怪海倖存者</h1>
         </div>
-        <p class="topbar-subtitle">在怪海裡活下去！只要移動，武器會自動攻擊。</p>
+        <p class="topbar-subtitle">你只負責走位，武器會自動攻擊。</p>
       </header>
 
       <section class="stage-wrap">
@@ -44,14 +44,15 @@
         <div id="startScreen" class="overlay">
           <div class="panel">
             <h2>怪海倖存者</h2>
-            <p>深海怪物一波波湧來，你只要專心移動走位，<br />四種武器會自動幫你打怪！</p>
+            <p>你只負責走位，武器會自動攻擊。怪物會從四面八方湧來，撿經驗寶石升級、三選一強化自己，活得越久越好</p>
+            <p class="weapon-line">🔮 飛彈・🌀 飛刀・⚡ 閃電・🔥 火環</p>
             <p class="howto">
               電腦：WASD 或方向鍵移動<br />
               平板／手機：在畫面上拖曳，用虛擬搖桿移動<br />
               撿經驗寶石升級，每次升級三選一變強！
             </p>
             <p id="bestOnStart" class="best-line"></p>
-            <button id="startBtn" class="big-btn">開始遊戲</button>
+            <button id="startBtn" class="big-btn">▶ 開始生存</button>
           </div>
         </div>
 
@@ -74,7 +75,7 @@
         </div>
       </section>
 
-      <p class="foot-note">武器：追蹤飛彈・環繞飛刀・連鎖閃電・火焰光環｜每 75 秒會出現菁英怪或大 Boss，小心！</p>
+      <p class="foot-note">🔮 飛彈・🌀 飛刀・⚡ 閃電・🔥 火環</p>
     </main>
 
     <script src="game.js?v=20261126a"></script>

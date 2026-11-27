@@ -1,13 +1,16 @@
 /* 球球消除：馬卡龍配色、純 CSS，不引用任何外部圖片或字型（可離線玩） */
 :root {
-  --pink: #ffb7c5;
-  --cream: #ffe29a;
-  --mint: #b5ead7;
-  --blue: #aec6ff;
-  --lavender: #d5aaff;
+  /* 球色對齊原版實作色碼（馬卡龍色）；場地為深靛藍夜空 #171233 */
+  --pink: #ffb3c6;
+  --cream: #ffd98e;
+  --mint: #a8e6c1;
+  --blue: #a5cdf5;
+  --lavender: #d3b8f2;
   --ink: #4a3350;
   --panel: #fff7ef;
   --danger: #ff4d6d;
+  --field: #171233;
+  --field-text: #f5f2ff;
 }
 
 * {
@@ -20,10 +23,10 @@ body {
   font-family: "Trebuchet MS", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at 18% 12%, rgba(255, 183, 197, 0.55), transparent 42%),
-    radial-gradient(circle at 84% 20%, rgba(174, 198, 255, 0.5), transparent 44%),
-    radial-gradient(circle at 50% 92%, rgba(181, 234, 215, 0.55), transparent 48%),
-    linear-gradient(165deg, #fff3f8, #fdf6e3 55%, #eef7ff);
+    radial-gradient(circle at 18% 12%, rgba(255, 179, 198, 0.28), transparent 42%),
+    radial-gradient(circle at 84% 20%, rgba(165, 205, 245, 0.25), transparent 44%),
+    radial-gradient(circle at 50% 92%, rgba(168, 230, 193, 0.22), transparent 48%),
+    linear-gradient(165deg, #1d1740, var(--field) 55%, #120d2a);
 }
 
 .game-shell {
@@ -71,7 +74,7 @@ body {
 .hud {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -107,8 +110,8 @@ body {
   border: 4px solid var(--ink);
   border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(180deg, #fffafd, #ffeef5 58%, #eaf6ff);
-  box-shadow: 0 8px 0 rgba(74, 51, 80, 0.75), 0 18px 30px rgba(74, 51, 80, 0.2);
+  background: var(--field);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.45), 0 18px 30px rgba(0, 0, 0, 0.35);
 }
 
 canvas {
@@ -226,13 +229,14 @@ button:active {
   min-height: 22px;
   font-size: 15px;
   font-weight: 800;
+  color: var(--field-text);
 }
 
 .help {
   margin-top: 8px;
   border: 2px dashed rgba(74, 51, 80, 0.45);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 247, 239, 0.94);
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 700;

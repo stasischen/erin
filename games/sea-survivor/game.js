@@ -8,7 +8,7 @@
    下面的 CONFIG 就是「可以自己改的地方」：
    - spawnIntervalStart / spawnIntervalMin：敵人生成間隔（秒），越小怪越多
    - spawnRampPerSecond：生成間隔隨時間變快的速度
-   - bossInterval：每幾秒出現一隻菁英／Boss（預設 75 秒）
+   - eliteInterval / bossInterval：菁英怪每 22 秒、頭目每 60 秒出現（原版文案寫 75 秒，以程式常數 60 秒為準，見 DESIGN.md）
    - maxEnemies / maxProjectiles / maxGems：數量上限（平板效能用，別調太高）
    - playerBaseHp / playerBaseSpeed：玩家的血量與移動速度
    武器與被動的每一級數值在 WEAPONS / PASSIVES 裡面改：
@@ -18,7 +18,8 @@ const CONFIG = {
   spawnIntervalStart: 1.1, // 一開始每幾秒生一隻怪
   spawnIntervalMin: 0.28, // 生成間隔最快到幾秒
   spawnRampPerSecond: 0.006, // 每過 1 秒，生成間隔縮短多少
-  bossInterval: 75, // 每幾秒出現菁英／Boss
+  eliteInterval: 22, // 菁英怪間隔（秒）eliteT
+  bossInterval: 60, // 頭目間隔（秒）bossT
   maxEnemies: 120, // 敵人數量上限（效能）
   maxProjectiles: 220, // 子彈數量上限（效能）
   maxGems: 300, // 經驗寶石數量上限（效能）
@@ -31,9 +32,9 @@ const CONFIG = {
 /* 武器定義：index 0 是 Lv1，index 4 是 Lv5（最高級）
    ★ 可以自己改的地方：每一級的 dmg（傷害）、interval（攻擊間隔）、count（數量） */
 const WEAPONS = {
-  missile: {
-    name: "追蹤魔法飛彈",
-    icon: "🚀",
+  bolt: {
+    name: "魔法飛彈",
+    icon: "🔮",
     desc: "自動發射飛彈，追蹤最近的敵人",
     levels: [
       { dmg: 12, count: 1, interval: 0.9 },
@@ -43,9 +44,9 @@ const WEAPONS = {
       { dmg: 26, count: 4, interval: 0.6 },
     ],
   },
-  blades: {
-    name: "環繞飛刀",
-    icon: "🗡️",
+  orbit: {
+    name: "旋轉飛刀",
+    icon: "🌀",
     desc: "飛刀繞著你旋轉，碰到敵人造成傷害",
     levels: [
       { dmg: 8, count: 2, radius: 62, rotSpeed: 2.6 },
@@ -56,7 +57,7 @@ const WEAPONS = {
     ],
   },
   lightning: {
-    name: "連鎖閃電",
+    name: "閃電鏈",
     icon: "⚡",
     desc: "定期電擊最近的敵人，還會跳傳到附近敵人",
     levels: [
@@ -86,15 +87,15 @@ const WEAPONS = {
 const PASSIVES = {
   power: { name: "攻擊力強化", icon: "💪", desc: "所有武器傷害 +15%", perLevel: 0.15 },
   speed: { name: "移動速度強化", icon: "👟", desc: "移動速度 +8%", perLevel: 0.08 },
-  magnet: { name: "拾取範圍強化", icon: "🧲", desc: "經驗寶石的磁吸範圍 +35%", perLevel: 0.35 },
-  regen: { name: "每秒回血", icon: "💗", desc: "每秒回復 +0.8 點血量", perLevel: 0.8 },
+  magnet: { name: "經驗磁鐵", icon: "🧲", desc: "拾取範圍 +45%", perLevel: 0.45 },
+  vitality: { name: "生命精華", icon: "💗", desc: "生命上限 +25，並立即回復 25", hpPerLevel: 25 },
 };
 const PASSIVE_MAX = 5;
 const WEAPON_MAX = 5;
 
 /* 敵人種類 ★ 可以自己改的地方：hp 血量、speed 速度、dmg 碰撞傷害、xp 掉落經驗 */
 const ENEMY_TYPES = {
-  normal: { emoji: "🦀", hp: 22, speed: 62, dmg: 10, radius: 15, xp: 1 },
+  basic: { emoji: "🦀", hp: 22, speed: 62, dmg: 10, radius: 15, xp: 1 },
   fast: { emoji: "🦐", hp: 12, speed: 118, dmg: 7, radius: 12, xp: 1 },
   tank: { emoji: "🦈", hp: 95, speed: 36, dmg: 16, radius: 26, xp: 3 },
   elite: { emoji: "🐙", hp: 650, speed: 44, dmg: 22, radius: 38, xp: 18 },
@@ -128,7 +129,7 @@ document.getElementById("restartBtn").addEventListener("click", startGame);
 // ---------- 遊戲狀態 ----------
 let state = "menu"; // menu | playing | levelup | over
 let player, enemies, projectiles, gems, effects, bolts;
-let kills, elapsed, spawnTimer, bossTimer, bossCount, lastTime, rafId;
+let kills, elapsed, spawnTimer, eliteTimer, bossTimer, lastTime, rafId;
 let keys = {};
 let joy = { active: false, id: null, ox: 0, oy: 0, dx: 0, dy: 0 };
 let viewW = 800, viewH = 600;
@@ -138,9 +139,9 @@ function resetState() {
     x: 0, y: 0,
     hp: CONFIG.playerBaseHp, maxHp: CONFIG.playerBaseHp,
     level: 1, xp: 0, xpNeed: xpNeedFor(1),
-    weapons: { missile: 1, blades: 0, lightning: 0, aura: 0 }, // 一開始有 Lv1 飛彈
-    passives: { power: 0, speed: 0, magnet: 0, regen: 0 },
-    timers: { missile: 0, lightning: 0 },
+    weapons: { bolt: 1, orbit: 0, lightning: 0, aura: 0 }, // 一開始有 Lv1 飛彈
+    passives: { power: 0, speed: 0, magnet: 0, vitality: 0 },
+    timers: { bolt: 0, lightning: 0 },
     bladeAngle: 0,
     invuln: 0,
     face: 1,
@@ -153,13 +154,13 @@ function resetState() {
   kills = 0;
   elapsed = 0;
   spawnTimer = 0.5;
+  eliteTimer = CONFIG.eliteInterval;
   bossTimer = CONFIG.bossInterval;
-  bossCount = 0;
 }
 
 function xpNeedFor(level) {
-  // ★ 可以自己改的地方：升級需要的經驗（等級越高需要越多）
-  return 5 + (level - 1) * 4;
+  // ★ 可以自己改的地方：升級需要的經驗（起始 10，等級越高需要越多；每級 +4 為現行實作的成長幅度）
+  return 10 + (level - 1) * 4;
 }
 
 // ---------- 最佳紀錄（localStorage） ----------
@@ -295,7 +296,7 @@ function pickEnemyType() {
   const r = Math.random();
   if (elapsed > 90 && r < 0.16) return "tank";
   if (r < 0.42) return "fast";
-  return "normal";
+  return "basic";
 }
 
 // ---------- 戰鬥 ----------
@@ -319,14 +320,14 @@ function damageEnemy(e, dmg) {
 }
 
 function fireMissiles(dt) {
-  const lv = player.weapons.missile;
+  const lv = player.weapons.bolt;
   if (lv <= 0) return;
-  const w = WEAPONS.missile.levels[lv - 1];
-  player.timers.missile -= dt;
-  if (player.timers.missile > 0) return;
+  const w = WEAPONS.bolt.levels[lv - 1];
+  player.timers.bolt -= dt;
+  if (player.timers.bolt > 0) return;
   const target = nearestEnemy(player.x, player.y, 640);
   if (!target) return;
-  player.timers.missile = w.interval;
+  player.timers.bolt = w.interval;
   for (let i = 0; i < w.count && projectiles.length < CONFIG.maxProjectiles; i++) {
     const ang = Math.atan2(target.y - player.y, target.x - player.x) + (i - (w.count - 1) / 2) * 0.22;
     projectiles.push({
@@ -360,10 +361,10 @@ function updateWeapons(dt) {
   fireMissiles(dt);
   fireLightning(dt);
 
-  // 環繞飛刀：持續旋轉，接觸敵人造成傷害（每隻怪有短冷卻，避免一幀多段）
-  const blv = player.weapons.blades;
+  // 旋轉飛刀：持續旋轉，接觸敵人造成傷害（每隻怪有短冷卻，避免一幀多段）
+  const blv = player.weapons.orbit;
   if (blv > 0) {
-    const w = WEAPONS.blades.levels[blv - 1];
+    const w = WEAPONS.orbit.levels[blv - 1];
     player.bladeAngle += w.rotSpeed * dt;
     for (let i = 0; i < w.count; i++) {
       const a = player.bladeAngle + (Math.PI * 2 * i) / w.count;
@@ -402,9 +403,6 @@ function update(dt) {
   player.y += mv.y * spd * dt;
   if (mv.x !== 0) player.face = mv.x > 0 ? 1 : -1;
 
-  // 回血被動
-  const regen = player.passives.regen * PASSIVES.regen.perLevel;
-  if (regen > 0) player.hp = Math.min(player.maxHp, player.hp + regen * dt);
   if (player.invuln > 0) player.invuln -= dt;
 
   // 生成敵人：間隔隨時間縮短
@@ -415,11 +413,15 @@ function update(dt) {
     spawnTimer = interval;
   }
 
-  // 菁英／Boss：奇數次菁英、偶數次 Boss
+  // 菁英怪與頭目分開計時：菁英每 22 秒、頭目每 60 秒
+  eliteTimer -= dt;
+  if (eliteTimer <= 0) {
+    spawnEnemy("elite");
+    eliteTimer = CONFIG.eliteInterval;
+  }
   bossTimer -= dt;
   if (bossTimer <= 0) {
-    bossCount += 1;
-    spawnEnemy(bossCount % 2 === 1 ? "elite" : "boss");
+    spawnEnemy("boss");
     bossTimer = CONFIG.bossInterval;
   }
 
@@ -561,7 +563,7 @@ function buildChoices() {
   while (choices.length < 3) {
     choices.push(choices.length % 2 === 0
       ? { kind: "heal", icon: "🍖", name: "大補血", desc: "回復 40% 血量" }
-      : { kind: "maxhp", icon: "❤️", name: "生命上限 +20", desc: "最大血量 +20 並回復 20" });
+      : { kind: "maxhp", icon: "❤️", name: "生命精華", desc: "生命上限 +25，並立即回復 25" });
     if (choices.length >= 3) break;
   }
   return choices;
@@ -585,9 +587,13 @@ function openLevelUp() {
 
 function applyChoice(c) {
   if (c.kind === "weapon") player.weapons[c.key] += 1;
-  else if (c.kind === "passive") player.passives[c.key] += 1;
+  else if (c.kind === "passive") {
+    player.passives[c.key] += 1;
+    // 生命精華（vitality）：每選一次，生命上限 +25 並立即回復 25
+    if (c.key === "vitality") { player.maxHp += PASSIVES.vitality.hpPerLevel; player.hp = Math.min(player.maxHp, player.hp + PASSIVES.vitality.hpPerLevel); }
+  }
   else if (c.kind === "heal") player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.4);
-  else if (c.kind === "maxhp") { player.maxHp += 20; player.hp = Math.min(player.maxHp, player.hp + 20); }
+  else if (c.kind === "maxhp") { player.maxHp += 25; player.hp = Math.min(player.maxHp, player.hp + 25); }
   levelupScreen.classList.add("hidden");
   state = "playing";
   lastTime = performance.now();
@@ -607,19 +613,19 @@ function updateHud() {
 // ---------- 繪圖 ----------
 function draw() {
   const camX = player.x - viewW / 2, camY = player.y - viewH / 2;
-  // 海面底色
-  ctx.fillStyle = "#07304a";
+  // 競技場底色（void black）
+  ctx.fillStyle = "#0a0a12";
   ctx.fillRect(0, 0, viewW, viewH);
   // 格線（跟著世界捲動）
   const grid = 64;
-  ctx.strokeStyle = "rgba(140, 210, 255, 0.13)";
+  ctx.strokeStyle = "rgba(34, 211, 238, 0.13)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let x = -((camX % grid) + grid) % grid; x < viewW; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, viewH); }
   for (let y = -((camY % grid) + grid) % grid; y < viewH; y += grid) { ctx.moveTo(0, y); ctx.lineTo(viewW, y); }
   ctx.stroke();
   // 波紋裝飾（用世界座標固定的小弧線，位置由格子雜湊決定，不亂跳）
-  ctx.strokeStyle = "rgba(160, 225, 255, 0.18)";
+  ctx.strokeStyle = "rgba(34, 211, 238, 0.18)";
   const cell = 180;
   const x0 = Math.floor(camX / cell), x1 = Math.floor((camX + viewW) / cell);
   const y0 = Math.floor(camY / cell), y1 = Math.floor((camY + viewH) / cell);
@@ -671,24 +677,24 @@ function draw() {
       const bw = e.radius * 2;
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fillRect(ex - bw / 2, ey - e.radius - 12, bw, 5);
-      ctx.fillStyle = (e.type === "elite" || e.type === "boss") ? "#c084fc" : "#ff5a6e";
+      ctx.fillStyle = (e.type === "elite" || e.type === "boss") ? "#22d3ee" : "#ef4444";
       ctx.fillRect(ex - bw / 2, ey - e.radius - 12, bw * Math.max(0, e.hp / e.maxHp), 5);
     }
     if (e.type === "elite" || e.type === "boss") {
       ctx.font = "bold 12px sans-serif";
-      ctx.fillStyle = "#e9d5ff";
+      ctx.fillStyle = "#a5f3fc";
       ctx.fillText(e.type === "boss" ? "BOSS" : "菁英", ex, ey - e.radius - 20);
     }
   }
 
-  // 環繞飛刀
-  const blv = player.weapons.blades;
+  // 旋轉飛刀
+  const blv = player.weapons.orbit;
   if (blv > 0) {
-    const w = WEAPONS.blades.levels[blv - 1];
+    const w = WEAPONS.orbit.levels[blv - 1];
     ctx.font = "20px sans-serif";
     for (let i = 0; i < w.count; i++) {
       const a = player.bladeAngle + (Math.PI * 2 * i) / w.count;
-      ctx.fillText("🗡️", sx(player.x + Math.cos(a) * w.radius), sy(player.y + Math.sin(a) * w.radius));
+      ctx.fillText("🌀", sx(player.x + Math.cos(a) * w.radius), sy(player.y + Math.sin(a) * w.radius));
     }
   }
 
@@ -696,8 +702,8 @@ function draw() {
   ctx.font = "15px sans-serif";
   for (const p of projectiles) ctx.fillText("🔮", sx(p.x), sy(p.y));
 
-  // 連鎖閃電線條
-  ctx.strokeStyle = "rgba(160, 220, 255, 0.9)";
+  // 閃電鏈線條
+  ctx.strokeStyle = "rgba(34, 211, 238, 0.9)";
   ctx.lineWidth = 2.5;
   for (const b of bolts) {
     ctx.beginPath();

@@ -7,15 +7,22 @@
 
 /* ---------- 可以自己改的地方（設定區） ---------- */
 
-// 球的五種馬卡龍顏色，想換顏色改這裡就好
-const COLORS = ["#ffb7c5", "#ffe29a", "#b5ead7", "#aec6ff", "#d5aaff"];
+// 球的五種顏色：對齊原版實作使用的馬卡龍色碼（見 DESIGN.md）
+const COLORS = ["#ffb3c6", "#ffd98e", "#a8e6c1", "#a5cdf5", "#d3b8f2"];
+
+// 場地底色：深靛藍夜空（原版）
+const FIELD_COLOR = "#171233";
 
 // 棋盤欄數（固定 15 欄，球直徑＝欄寬）
 const COLS = 15;
 
-// 每顆球的分數：消除一顆的得分、掉落一顆的額外得分
+// 每顆球的分數：消除一顆的得分、掉落一顆的額外得分（原版：掉落 ×15）
 const POP_SCORE = 10;
-const DROP_SCORE = 20;
+const DROP_SCORE = 15;
+
+// 棋盤全清獎勵：100 ＋ 關卡 × 50（原版）
+const CLEAR_BONUS_BASE = 100;
+const CLEAR_BONUS_PER_LEVEL = 50;
 
 // 每射幾球都沒有消除，頂部就推下一列
 const PUSH_EVERY = 6;
@@ -29,8 +36,8 @@ const LEVEL_ROWS_MAX = 20;
 // 半列要填幾欄（左半邊）：15 欄的一半取 7 欄
 const HALF_ROW_COLS = Math.floor(COLS / 2);
 
-// 發射球飛行速度（像素／秒）、瞄準線預覽長度（像素）
-const FLY_SPEED = 760;
+// 發射球飛行速度（像素／秒，原版 BALL_SPEED=820）、瞄準線預覽長度（像素）
+const BALL_SPEED = 820;
 const GUIDE_LENGTH = 330;
 
 // 最佳成績存 localStorage 的 key（存 {score, level}）
@@ -39,21 +46,24 @@ const BEST_KEY = "erin-bubble-pop-best";
 /* ---------- 幾何（通常不用改） ---------- */
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const W = canvas.width;            // 450
-const BALL_D = W / COLS;           // 球直徑 = 欄寬 = 30
-const R = BALL_D / 2;              // 半徑 15
-const ROW_H = Math.round(BALL_D * 0.866); // 六角交錯列高 ≈ 26
+const W = canvas.width;            // 420（原版棋盤寬）
+const H = canvas.height;           // 640（原版棋盤高）
+// 格位間距（pitch）：欄寬 = 420 / 15 = 28；球半徑 R=13.33（原版），
+// 球直徑 26.66 略小於間距，球與球之間留一點點間隙。
+const BALL_D = W / COLS;           // 28
+const R = 13.33;                   // 球半徑（原版）
+const ROW_H = Math.round(BALL_D * 0.866); // 六角交錯列高 ≈ 24
 const TOP_Y = 8;                   // 棋盤頂部（天花板）高度
-// 紅色警戒線位置：初始盤面最多 20 列，要讓 20 列時最低的球還在警戒線之上，
-// 所以警戒線放在第 21 列下方；列數少的關卡也用同一條線，空間比較寬裕。
-const DANGER_Y = TOP_Y + 21 * ROW_H;      // 554
-const LAUNCHER = { x: W / 2, y: 652 };    // 底部中央發射器位置
+// 紅色警戒線位置：原版 DEAD_Y=556，任何球越過就結束（固定值，不隨列高計算）
+const DEAD_Y = 556;
+const LAUNCHER = { x: W / 2, y: 588 };    // 底部中央發射器位置
 const MAX_AIM_ANGLE = 1.25;               // 瞄準角度上限（離垂直方向 ±約 72 度）
 
 /* ---------- DOM ---------- */
 const scoreEl = document.getElementById("score");
 const levelEl = document.getElementById("level");
 const bestEl = document.getElementById("best");
+const poppedEl = document.getElementById("popped");
 const pushEl = document.getElementById("pushCount");
 const messageEl = document.getElementById("message");
 const overlayEl = document.getElementById("overlay");
@@ -62,6 +72,7 @@ const overlayTextEl = document.getElementById("overlayText");
 const overlayBestEl = document.getElementById("overlayBest");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
+const pauseBtn = document.getElementById("pauseBtn");
 const swapBtn = document.getElementById("swapBtn");
 const nextBallEl = document.getElementById("nextBall");
 
@@ -69,8 +80,10 @@ const nextBallEl = document.getElementById("nextBall");
 let grid = [];          // grid[r][c] = 顏色 index，沒有球是 -1
 let parityFlip = 0;     // 推下列時切換，讓既有球的左右位置不跳動（見 pushDownOneRow）
 let score = 0;
+let poppedCount = 0;    // 本局累計已消除球數（消除＋掉落，HUD「已消除」）
 let level = 1;
 let state = "ready";    // "ready" | "playing" | "over"
+let paused = false;     // 暫停中（state 仍為 "playing"）
 let currentColor = 0;
 let nextColor = 1;
 let shotsSincePop = 0;  // 連續幾球沒有消除（到 PUSH_EVERY 就推下一列）
@@ -96,10 +109,10 @@ function colsInRow(r) {
   return rowParity(r) === 1 ? COLS - 1 : COLS;
 }
 
-// 格子中心座標
+// 格子中心座標（橫向以格位間距 BALL_D 為準，偏移列右移半格）
 function cellCenter(r, c) {
   return {
-    x: R + c * BALL_D + (rowParity(r) === 1 ? R : 0),
+    x: BALL_D / 2 + c * BALL_D + (rowParity(r) === 1 ? BALL_D / 2 : 0),
     y: TOP_Y + R + r * ROW_H,
   };
 }
@@ -190,6 +203,7 @@ function updateHud() {
   scoreEl.textContent = String(score);
   levelEl.textContent = String(level);
   bestEl.textContent = String(Math.max(best.score, score));
+  poppedEl.textContent = String(poppedCount);
   pushEl.textContent = String(PUSH_EVERY - shotsSincePop);
   nextBallEl.style.background = COLORS[nextColor];
 }
@@ -215,7 +229,10 @@ function hideOverlay() {
 /* ---------- 遊戲流程 ---------- */
 function startGame() {
   score = 0;
+  poppedCount = 0;
   level = 1;
+  paused = false;
+  pauseBtn.textContent = "暫停";
   buildLevel(level);
   state = "playing";
   hideOverlay();
@@ -223,8 +240,19 @@ function startGame() {
   updateHud();
 }
 
+// 暫停／繼續
+function togglePause() {
+  if (state !== "playing") return;
+  paused = !paused;
+  aiming = false;
+  pauseBtn.textContent = paused ? "繼續" : "暫停";
+  setMessage(paused ? "已暫停，按「繼續」回到遊戲。" : "繼續遊戲！拖曳瞄準，放開發射。");
+}
+
 function gameOver(reason) {
   state = "over";
+  paused = false;
+  pauseBtn.textContent = "暫停";
   saveBest();
   updateHud();
   showOverlay("遊戲結束", reason + "<br />你的分數：" + score + "，到第 " + level + " 關。");
@@ -241,7 +269,7 @@ function nextLevel() {
 
 // 交換目前發射球與下一顆預覽球
 function swapBalls() {
-  if (state !== "playing" || flying) return;
+  if (state !== "playing" || paused || flying) return;
   const t = currentColor;
   currentColor = nextColor;
   nextColor = t;
@@ -250,12 +278,12 @@ function swapBalls() {
 
 /* ---------- 發射與飛行 ---------- */
 function shoot() {
-  if (state !== "playing" || flying) return;
+  if (state !== "playing" || paused || flying) return;
   flying = {
     x: LAUNCHER.x,
     y: LAUNCHER.y,
-    vx: Math.sin(aimAngle) * FLY_SPEED,
-    vy: -Math.cos(aimAngle) * FLY_SPEED,
+    vx: Math.sin(aimAngle) * BALL_SPEED,
+    vy: -Math.cos(aimAngle) * BALL_SPEED,
     color: currentColor,
   };
   currentColor = nextColor;
@@ -357,6 +385,7 @@ function resolveLanded(cell) {
       addSparkles(r, c, grid[r][c]);
       grid[r][c] = -1;
       score += POP_SCORE;
+      poppedCount += 1;
     }
     // 失去與頂部連接支撐的球掉落，額外加分
     const supported = connectedToTop();
@@ -367,6 +396,7 @@ function resolveLanded(cell) {
           falling.push({ x: p.x, y: p.y, vy: 60, color: grid[r][c] });
           grid[r][c] = -1;
           score += DROP_SCORE;
+          poppedCount += 1;
         }
       }
     }
@@ -377,8 +407,12 @@ function resolveLanded(cell) {
   while (grid.length > 0 && grid[grid.length - 1].every((v) => v === -1)) grid.pop();
 
   if (boardIsEmpty()) {
+    // 全清獎勵：100 ＋ 關卡 × 50（以全清當下的關卡計算）
+    const bonus = CLEAR_BONUS_BASE + level * CLEAR_BONUS_PER_LEVEL;
+    score += bonus;
     updateHud();
     nextLevel();
+    setMessage("棋盤全清！獎勵 " + bonus + " 分，進入第 " + level + " 關（" + rowsForLevel(level) + " 列）。");
     return;
   }
 
@@ -401,7 +435,7 @@ function resolveLanded(cell) {
 function checkGameOver() {
   for (let r = 0; r < grid.length; r++) {
     for (let c = 0; c < colsInRow(r); c++) {
-      if (grid[r][c] !== -1 && cellCenter(r, c).y + R > DANGER_Y) {
+      if (grid[r][c] !== -1 && cellCenter(r, c).y + R > DEAD_Y) {
         gameOver("有球越過紅色警戒線了！");
         return;
       }
@@ -440,7 +474,7 @@ function update(dt) {
 
   if (!flying) return;
   // 分小步移動，避免高速穿過球
-  const steps = Math.max(1, Math.ceil((FLY_SPEED * dt) / (R / 2)));
+  const steps = Math.max(1, Math.ceil((BALL_SPEED * dt) / (R / 2)));
   const sdt = dt / steps;
   for (let i = 0; i < steps; i++) {
     flying.x += flying.vx * sdt;
@@ -533,11 +567,11 @@ function computeGuidePoints() {
 /* ---------- 繪圖 ---------- */
 function drawBall(x, y, colorIdx) {
   ctx.beginPath();
-  ctx.arc(x, y, R - 1, 0, Math.PI * 2);
+  ctx.arc(x, y, R, 0, Math.PI * 2);
   ctx.fillStyle = COLORS[colorIdx];
   ctx.fill();
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(74, 51, 80, 0.35)";
+  ctx.strokeStyle = "rgba(23, 18, 51, 0.35)";
   ctx.stroke();
   // 高光
   ctx.beginPath();
@@ -547,10 +581,12 @@ function drawBall(x, y, colorIdx) {
 }
 
 function draw() {
-  ctx.clearRect(0, 0, W, canvas.height);
+  // 場地底色：深靛藍夜空
+  ctx.fillStyle = FIELD_COLOR;
+  ctx.fillRect(0, 0, W, H);
 
   // 頂部天花板
-  ctx.fillStyle = "#d5aaff";
+  ctx.fillStyle = "#d3b8f2";
   ctx.fillRect(0, 0, W, TOP_Y);
 
   // 棋盤上的球
@@ -568,13 +604,13 @@ function draw() {
   ctx.lineWidth = 3;
   ctx.setLineDash([10, 6]);
   ctx.beginPath();
-  ctx.moveTo(0, DANGER_Y);
-  ctx.lineTo(W, DANGER_Y);
+  ctx.moveTo(0, DEAD_Y);
+  ctx.lineTo(W, DEAD_Y);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = "#ff4d6d";
   ctx.font = "bold 13px sans-serif";
-  ctx.fillText("警戒線", 8, DANGER_Y - 6);
+  ctx.fillText("警戒線", 8, DEAD_Y - 6);
   ctx.restore();
 
   // 掉落中的球
@@ -584,7 +620,7 @@ function draw() {
   if (state === "playing" && !flying) {
     const pts = computeGuidePoints();
     ctx.save();
-    ctx.strokeStyle = "rgba(74, 51, 80, 0.65)";
+    ctx.strokeStyle = "rgba(245, 242, 255, 0.7)";
     ctx.lineWidth = 3;
     ctx.setLineDash([2, 9]);
     ctx.lineCap = "round";
@@ -598,8 +634,8 @@ function draw() {
   // 發射器底座
   ctx.save();
   ctx.translate(LAUNCHER.x, LAUNCHER.y + 26);
-  ctx.fillStyle = "#aec6ff";
-  ctx.strokeStyle = "rgba(74, 51, 80, 0.6)";
+  ctx.fillStyle = "#a5cdf5";
+  ctx.strokeStyle = "rgba(245, 242, 255, 0.6)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(-34, 22);
@@ -629,7 +665,7 @@ let lastTime = 0;
 function loop(timestamp) {
   const dt = Math.min(0.033, lastTime ? (timestamp - lastTime) / 1000 : 0.016);
   lastTime = timestamp;
-  update(dt);
+  if (!paused) update(dt);
   draw();
   requestAnimationFrame(loop);
 }
@@ -653,7 +689,7 @@ function aimAt(pos) {
 }
 
 canvas.addEventListener("pointerdown", (event) => {
-  if (state !== "playing" || flying) return;
+  if (state !== "playing" || paused || flying) return;
   event.preventDefault();
   aiming = true;
   canvas.setPointerCapture(event.pointerId);
@@ -668,7 +704,7 @@ canvas.addEventListener("pointermove", (event) => {
 function endAim(event) {
   if (!aiming) return;
   aiming = false;
-  if (state === "playing" && !flying) shoot();
+  if (state === "playing" && !paused && !flying) shoot();
 }
 
 canvas.addEventListener("pointerup", endAim);
@@ -681,11 +717,13 @@ window.addEventListener("keydown", (event) => {
   else if (event.key === "ArrowRight") aimAngle = Math.min(MAX_AIM_ANGLE, aimAngle + 0.06);
   else if (event.key === " ") { event.preventDefault(); shoot(); }
   else if (event.key === "s" || event.key === "S") swapBalls();
+  else if (event.key === "p" || event.key === "P") togglePause();
 });
 
 /* ---------- 按鈕 ---------- */
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
+pauseBtn.addEventListener("click", togglePause);
 swapBtn.addEventListener("click", swapBalls);
 nextBallEl.addEventListener("click", swapBalls);
 

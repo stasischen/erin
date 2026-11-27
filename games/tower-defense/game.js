@@ -63,6 +63,9 @@ const WAVE_COUNT_PER_WAVE = 2;
 
 // 最佳波次的 localStorage key（不要改，改了舊紀錄會讀不到）
 const BEST_KEY = "erin-tower-defense-best";
+// 成績紀錄的 localStorage key（erin 版無後端，成績只存本機，欄位比照原版 scores 表）
+const RECORDS_KEY = "erin-tower-defense-records";
+const RECENT_LIMIT = 8;
 
 // ===== 路徑（S 形彎路）：可以自己改路徑點（單位是格子座標，x 向右、y 向下）=====
 const WAYPOINTS = [
@@ -80,6 +83,7 @@ const els = {
   enemyCount: $("enemyCount"), overlay: $("overlay"), overlayTitle: $("overlayTitle"),
   overlayText: $("overlayText"), overlayBest: $("overlayBest"), overlayBtn: $("overlayBtn"),
   panelText: $("panelText"), buildButtons: $("buildButtons"), towerButtons: $("towerButtons"),
+  bestWave: $("bestWave"), bestKills: $("bestKills"), playCount: $("playCount"), recentList: $("recentList"),
   upgradeBtn: $("upgradeBtn"), sellBtn: $("sellBtn"), closePanelBtn: $("closePanelBtn"),
   nextWaveBtn: $("nextWaveBtn"), pauseBtn: $("pauseBtn"), speedBtn: $("speedBtn"), restartBtn: $("restartBtn"),
 };
@@ -132,12 +136,72 @@ function saveBest() {
   }
 }
 
+// 成績紀錄（比照原版 getBest：最佳波次／擊殺、遊玩場次、最近 8 筆；資料存 localStorage）
+let records = { plays: 0, recent: [] };
+try {
+  const raw = localStorage.getItem(RECORDS_KEY);
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.recent)) {
+      records.plays = parseInt(parsed.plays, 10) || parsed.recent.length;
+      records.recent = parsed.recent.slice(0, RECENT_LIMIT);
+    }
+  }
+} catch (e) { records = { plays: 0, recent: [] }; }
+let bestKills = 0;
+for (const r of records.recent) {
+  if (r.wave > best) best = r.wave;
+  if (r.kills > bestKills) bestKills = r.kills;
+}
+function persistRecords() {
+  try { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); } catch (e) { /* 離線/隱私模式時忽略 */ }
+}
+function renderRecords() {
+  if (els.bestWave) els.bestWave.textContent = best;
+  if (els.bestKills) els.bestKills.textContent = bestKills;
+  if (els.playCount) els.playCount.textContent = records.plays;
+  if (!els.recentList) return;
+  els.recentList.innerHTML = "";
+  if (records.recent.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "還沒有戰績，先玩一場吧！";
+    els.recentList.appendChild(li);
+    return;
+  }
+  for (const r of records.recent) {
+    const li = document.createElement("li");
+    const when = r.created_at ? new Date(r.created_at) : null;
+    const dateText = when && !isNaN(when.getTime()) ? when.toLocaleString("zh-Hant") + "：" : "";
+    li.textContent = dateText + "第 " + r.wave + " 波，擊殺 " + r.kills + "，漏怪 " + r.leaks + "，賺 " + r.gold_earned + " 金幣，蓋塔 " + r.towers_built + " 座";
+    els.recentList.appendChild(li);
+  }
+}
+function saveScoreRecord() {
+  const entry = {
+    wave: state.wave,
+    kills: state.stats.kills,
+    leaks: state.stats.leaks,
+    gold_earned: state.stats.goldEarned,
+    towers_built: state.stats.towersBuilt,
+    created_at: new Date().toISOString(),
+  };
+  records.plays += 1;
+  records.recent.unshift(entry);
+  records.recent = records.recent.slice(0, RECENT_LIMIT);
+  if (entry.wave > best) best = entry.wave;
+  if (entry.kills > bestKills) bestKills = entry.kills;
+  saveBest();
+  persistRecords();
+  renderRecords();
+}
+
 const state = {
   running: false, over: false, paused: false, speed: 1,
   gold: START_GOLD, lives: START_LIVES, wave: 0,
   towers: [], enemies: [], projectiles: [],
   spawnQueue: [], spawnTimer: 0, waveActive: false,
   selected: null, // {col,row} 或 {tower}
+  stats: { kills: 0, leaks: 0, goldEarned: 0, towersBuilt: 0 }, // 本場戰績（存檔時寫入紀錄）
 };
 
 function towerStats(tower) {
@@ -201,6 +265,8 @@ function damageEnemy(enemy, rawDamage, now) {
   if (enemy.hp <= 0 && !enemy.dead) {
     enemy.dead = true;
     state.gold += enemy.reward;
+    state.stats.kills += 1;
+    state.stats.goldEarned += enemy.reward;
   }
   void now;
 }
@@ -223,6 +289,7 @@ function update(dt, now) {
     e.x = p.x; e.y = p.y;
     if (e.dist >= pathTotal && !e.dead) {
       e.dead = true; e.leaked = true;
+      state.stats.leaks += 1;
       state.lives -= (e.type === "boss" ? BOSS_LIVES_COST : 1);
       if (state.lives <= 0) { state.lives = 0; gameOver(); }
     }
@@ -277,6 +344,7 @@ function update(dt, now) {
     state.waveActive = false;
     const bonus = WAVE_CLEAR_BONUS_BASE + state.wave * WAVE_CLEAR_BONUS_PER_WAVE;
     state.gold += bonus;
+    state.stats.goldEarned += bonus;
     els.panelText.textContent = "第 " + state.wave + " 波守住了！獎勵 " + bonus + " 金幣。按「開始下一波」繼續。";
   }
   updateHud();
@@ -384,6 +452,9 @@ function updateHud() {
   els.lives.textContent = state.lives;
   els.gold.textContent = state.gold;
   els.best.textContent = best;
+  if (els.bestWave) els.bestWave.textContent = best;
+  if (els.bestKills) els.bestKills.textContent = bestKills;
+  if (els.playCount) els.playCount.textContent = records.plays;
   els.enemyCount.textContent = state.enemies.length + state.spawnQueue.length;
   els.nextWaveBtn.disabled = !state.running || state.over || state.waveActive;
   els.nextWaveBtn.textContent = state.wave === 0 ? "開始第一波" : "開始下一波";
@@ -435,6 +506,7 @@ function buildTower(typeKey) {
   state.gold -= def.cost;
   const tower = { type: typeKey, col: sel.col, row: sel.row, level: 1, invested: def.cost, cooldown: 0, target: null };
   state.towers.push(tower);
+  state.stats.towersBuilt += 1;
   state.selected = { tower };
   updateHud(); updatePanel();
 }
@@ -492,6 +564,7 @@ function startGame() {
   state.gold = START_GOLD; state.lives = START_LIVES; state.wave = 0;
   state.towers = []; state.enemies = []; state.projectiles = [];
   state.spawnQueue = []; state.waveActive = false; state.selected = null;
+  state.stats = { kills: 0, leaks: 0, goldEarned: 0, towersBuilt: 0 };
   els.speedBtn.textContent = "速度 ×1";
   els.pauseBtn.textContent = "暫停";
   els.overlay.classList.add("hidden");
@@ -501,7 +574,7 @@ function startGame() {
 
 function gameOver() {
   state.over = true; state.waveActive = false;
-  saveBest();
+  saveScoreRecord();
   els.overlayTitle.textContent = "遊戲結束";
   els.overlayText.innerHTML = "";
   const line1 = document.createElement("span"); line1.textContent = "你守到了第 " + state.wave + " 波！";
@@ -529,5 +602,6 @@ function loop(timestamp) {
 }
 
 els.overlayBest.textContent = best;
+renderRecords();
 updateHud(); updatePanel();
 requestAnimationFrame(loop);

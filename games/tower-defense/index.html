@@ -29,6 +29,19 @@
         <div class="hud-item">敵人 <span id="enemyCount">0</span></div>
       </section>
 
+      <section class="records" aria-label="紀錄">
+        <div class="records-best">
+          <h2>最佳紀錄</h2>
+          <p>最佳波次 <span id="bestWave">0</span> ・ 最佳擊殺 <span id="bestKills">0</span> ・ 遊玩場次 <span id="playCount">0</span></p>
+        </div>
+        <div class="records-recent">
+          <h2>最近戰績</h2>
+          <ul id="recentList" class="recent-list">
+            <li>還沒有戰績，先玩一場吧！</li>
+          </ul>
+        </div>
+      </section>
+
       <section class="board-wrap">
         <canvas id="gameCanvas" width="576" height="384" aria-label="塔防地圖"></canvas>
         <div id="overlay" class="overlay">

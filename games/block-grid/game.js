@@ -8,20 +8,28 @@
 ============================================================
 */
 
-// 棋盤大小：標準是 10 欄 × 20 列
+// 棋盤大小（原版常數）：10 欄 × 20 列，BUFFER=2 為出生緩衝列數
 const COLS = 10;
 const ROWS = 20;
+const BUFFER = 2;
 const CELL = 30; // 每格像素（主棋盤）；預覽區會另外縮小
 
-// 消行計分表：一次消 1/2/3/4 行的基礎分（會再乘以等級）
-const SCORE_TABLE = [0, 100, 300, 500, 800];
+// 消行計分表（原版常數 CLEAR_POINTS）：一次消 1/2/3/4 行的基礎分（會再乘以等級）
+const CLEAR_POINTS = [0, 100, 300, 500, 800];
 
-// 下落速度：起始間隔（毫秒，越小越快）與每升一級加快多少
-const FALL_START_MS = 800; // 第 1 級的下落間隔
-const FALL_STEP_MS = 70; // 每升一級減少的毫秒數
-const FALL_MIN_MS = 80; // 最快下限，避免快到玩不了
+// 下落間隔（原版公式）：max(70, round(820 × 0.8^(level-1))) 毫秒
+const FALL_BASE_MS = 820;
+const FALL_MIN_MS = 70;
 
-// 升級條件：每消幾行升一級
+// 鎖定延遲與消行間隔（原版常數）
+const LOCK_MS = 420; // 方塊接觸地面後，過這麼久才鎖定
+const CLEAR_MS = 170; // 消行後到下一塊出現的間隔
+const MAX_LOCK_RESETS = 12; // 同一塊重置鎖定計時的上限（lockResets < 12 才可重置）
+
+// 旋轉踢牆表（原版完整 8 段，依序嘗試 [dx, dy]）
+const WALL_KICKS = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, -1]];
+
+// 升級條件：每消幾行升一級（level = floor(lines / 10) + 1）
 const LINES_PER_LEVEL = 10;
 
 // 額外加分：軟降每下一格 +1 分、硬降每下一格 +2 分
@@ -30,13 +38,13 @@ const HARD_DROP_POINTS = 2;
 
 // 方塊顏色：7 種四格方塊各一個固定顏色
 const COLORS = {
-I: "#00c2d1",
-O: "#f5c542",
-T: "#a259d9",
-S: "#3ecf6e",
-Z: "#ef476f",
-L: "#ff8c42",
-J: "#3d7bd9",
+I: "#22d3ee",
+O: "#facc15",
+T: "#e879f9",
+S: "#4ade80",
+Z: "#f87171",
+J: "#60a5fa",
+L: "#fb923c",
 };
 
 // 最佳分數的 localStorage 鍵名（規格指定，不要隨意改，改了舊紀錄會讀不到）
@@ -95,6 +103,10 @@ let gameOver = false;
 let dropTimer = null;
 let lastTime = 0;
 let dropCounter = 0;
+let lockCounter = 0; // 方塊接觸地面後累計的鎖定計時（毫秒）
+let lockResets = 0; // 目前方塊已重置鎖定計時的次數
+let pendingSpawn = false; // 消行後等待 CLEAR_MS 再出下一塊
+let clearTimer = 0;
 
 function loadBest() {
 try {
@@ -113,7 +125,7 @@ try { localStorage.setItem(BEST_KEY, String(best));} catch (e) { /* 存不了也
 }
 
 function fallInterval() {
-return Math.max(FALL_MIN_MS, FALL_START_MS - (level - 1) * FALL_STEP_MS);
+return Math.max(FALL_MIN_MS, Math.round(FALL_BASE_MS * Math.pow(0.8, level - 1)));
 }
 
 function emptyGrid() {
@@ -165,6 +177,9 @@ ensureQueue();
 current = makePiece(queue.shift());
 ensureQueue();
 canHold = true;
+lockCounter = 0;
+lockResets = 0;
+dropCounter = 0;
 // 出生位置若一開始就撞到東西，代表堆到頂了，遊戲結束
 if (collides(current.matrix, current.x, current.y)) {
 // 再往上一格試試，給一點緩衝
@@ -178,6 +193,7 @@ draw();
 }
 
 function lockPiece() {
+if (!current) return;
 for (let r = 0; r < current.matrix.length; r++) {
 for (let c = 0; c < current.matrix[r].length; c++) {
 if (!current.matrix[r][c]) continue;
@@ -187,8 +203,20 @@ if (y < 0) { endGame(); return;} // 有格子鎖在棋盤上方 = 堆到頂
 grid[y][x] = COLORS[current.type];
 }
 }
-clearLines();
-if (!gameOver) spawnPiece();
+const cleared = clearLines();
+current = null;
+lockCounter = 0;
+lockResets = 0;
+if (!gameOver) {
+if (cleared > 0) {
+// 消行後等 CLEAR_MS 再出下一塊
+pendingSpawn = true;
+clearTimer = 0;
+draw();
+} else {
+spawnPiece();
+}
+}
 }
 
 function clearLines() {
@@ -202,10 +230,20 @@ r++; // 同一列再檢查一次（上面整排掉下來了）
 }
 }
 if (cleared > 0) {
-score += SCORE_TABLE[cleared] * level; // 計分表 × 等級
+score += CLEAR_POINTS[cleared] * level; // 計分表 × 等級
 lines += cleared;
 level = Math.floor(lines / LINES_PER_LEVEL) + 1;
 updateHud();
+}
+return cleared;
+}
+
+// 方塊接觸地面時，移動／旋轉成功可重置鎖定計時，但同一塊最多重置 MAX_LOCK_RESETS 次以內（lockResets < 12）
+function tryLockReset() {
+if (!current) return;
+if (lockResets < MAX_LOCK_RESETS && collides(current.matrix, current.x, current.y + 1)) {
+lockCounter = 0;
+lockResets++;
 }
 }
 
@@ -213,6 +251,7 @@ function move(dx) {
 if (!current || paused || gameOver ||!running) return;
 if (!collides(current.matrix, current.x + dx, current.y)) {
 current.x += dx;
+tryLockReset();
 draw();
 }
 }
@@ -233,12 +272,13 @@ function rotate() {
 if (!current || paused || gameOver ||!running) return;
 if (current.type === "O") return; // O 方塊旋轉沒差別
 const rotated = rotateMatrix(current.matrix);
-// 簡化踢牆：原地不行就試左右挪 1、2 格，都不行就不轉（不會轉出界或重疊）
-const kicks = [0, -1, 1, -2, 2];
-for (const k of kicks) {
-if (!collides(rotated, current.x + k, current.y)) {
+// 踢牆：依原版完整 8 段表 [dx, dy] 依序嘗試，都不行就不轉
+for (const kick of WALL_KICKS) {
+if (!collides(rotated, current.x + kick[0], current.y + kick[1])) {
 current.matrix = rotated;
-current.x += k;
+current.x += kick[0];
+current.y += kick[1];
+tryLockReset();
 draw();
 return;
 }
@@ -251,10 +291,9 @@ if (!collides(current.matrix, current.x, current.y + 1)) {
 current.y += 1;
 score += SOFT_DROP_POINTS;
 updateHud();
-} else {
-lockPiece();
-}
 dropCounter = 0;
+}
+// 已接觸地面時不立即鎖定，改由 tick 的 LOCK_MS 鎖定延遲計時處理
 draw();
 }
 
@@ -282,6 +321,9 @@ spawnPiece(); // spawnPiece 會把 canHold 重設，要在之後再鎖住
 const swap = holdType;
 holdType = curType;
 current = makePiece(swap);
+lockCounter = 0;
+lockResets = 0;
+dropCounter = 0;
 if (collides(current.matrix, current.x, current.y)) { endGame(); draw(); return;}
 }
 canHold = false; // 每個方塊落地前只能換一次
@@ -317,7 +359,7 @@ if (matrix[r][c]) drawCell(ctx, ox + c, oy + r, size, color, alpha);
 function draw() {
 // 主棋盤
 boardCtx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-boardCtx.fillStyle = "#10182e";
+boardCtx.fillStyle = "#14161c";
 boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
 // 格線
 boardCtx.strokeStyle = "rgba(255,255,255,0.07)";
@@ -357,12 +399,12 @@ drawMatrix(ctx, matrix, ox, oy, size, COLORS[type], 1);
 function drawPreviews() {
 // 暫存槽
 holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
-holdCtx.fillStyle = "#10182e";
+holdCtx.fillStyle = "#14161c";
 holdCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
 if (holdType) drawMini(holdCtx, holdCanvas, holdType, holdCanvas.height / 2, 20);
 // 接下來 3 個
 nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-nextCtx.fillStyle = "#10182e";
+nextCtx.fillStyle = "#14161c";
 nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
 ensureQueue();
 for (let i = 0; i < 3; i++) {
@@ -399,6 +441,10 @@ running = true;
 paused = false;
 gameOver = false;
 dropCounter = 0;
+lockCounter = 0;
+lockResets = 0;
+pendingSpawn = false;
+clearTimer = 0;
 lastTime = 0;
 updateHud();
 hideOverlay();
@@ -441,24 +487,40 @@ if (!running) return;
 dropTimer = requestAnimationFrame(tick);
 if (paused || gameOver) { lastTime = timestamp; return;}
 if (!lastTime) lastTime = timestamp;
-dropCounter += timestamp - lastTime;
+const dt = timestamp - lastTime;
 lastTime = timestamp;
-if (dropCounter >= fallInterval()) {
-dropCounter = 0;
-if (current) {
-if (!collides(current.matrix, current.x, current.y + 1)) {
-current.y += 1;
-} else {
-lockPiece();
+// 消行後先等 CLEAR_MS，再出下一塊
+if (pendingSpawn) {
+clearTimer += dt;
+if (clearTimer >= CLEAR_MS) {
+pendingSpawn = false;
+spawnPiece();
 }
+return;
+}
+if (!current) return;
+// 方塊接觸地面：累計鎖定延遲，滿 LOCK_MS 才鎖定
+if (collides(current.matrix, current.x, current.y + 1)) {
+lockCounter += dt;
+dropCounter = 0;
+if (lockCounter >= LOCK_MS) {
+lockPiece();
 draw();
 }
+return;
+}
+lockCounter = 0;
+dropCounter += dt;
+if (dropCounter >= fallInterval()) {
+dropCounter = 0;
+current.y += 1;
+draw();
 }
 }
 
 // ---- 控制：鍵盤 ----
 document.addEventListener("keydown", function (e) {
-if (e.key === "p" || e.key === "P") { togglePause(); return;}
+if (e.key === "p" || e.key === "P" || e.key === "Escape") { togglePause(); return;}
 if (!running || paused || gameOver) return;
 switch (e.key) {
 case "ArrowLeft": e.preventDefault(); move(-1); break;
@@ -502,6 +564,8 @@ bindHoldButton("softBtn", softDrop);
 bindTapButton("rotateBtn", rotate);
 bindTapButton("hardBtn", hardDrop);
 bindTapButton("holdBtn", hold);
+bindTapButton("pauseTouchBtn", togglePause);
+bindTapButton("restartTouchBtn", startGame);
 
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);

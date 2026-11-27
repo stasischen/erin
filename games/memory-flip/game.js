@@ -17,7 +17,7 @@ const EMOJI_POOL = [
 // pairs = 有幾對牌；cols = 棋盤一列放幾張（簡單 4×3、普通 4×4、困難 6×4）
 const DIFFICULTIES = {
 easy: { label: "簡單", pairs: 6, cols: 4},
-normal: { label: "普通", pairs: 8, cols: 4},
+medium: { label: "普通", pairs: 8, cols: 4},
 hard: { label: "困難", pairs: 12, cols: 6},
 };
 
@@ -42,6 +42,7 @@ const boardEl = document.getElementById("board");
 const timeTextEl = document.getElementById("timeText");
 const movesTextEl = document.getElementById("movesText");
 const pairsTextEl = document.getElementById("pairsText");
+const streakTextEl = document.getElementById("streakText");
 const bestTextEl = document.getElementById("bestText");
 const restartBtn = document.getElementById("restartBtn");
 const diffButtons = Array.from(document.querySelectorAll(".diff-btn"));
@@ -49,6 +50,7 @@ const winOverlay = document.getElementById("winOverlay");
 const winStarsEl = document.getElementById("winStars");
 const winTimeEl = document.getElementById("winTime");
 const winMovesEl = document.getElementById("winMoves");
+const winStreakEl = document.getElementById("winStreak");
 const winBestEl = document.getElementById("winBest");
 const playAgainBtn = document.getElementById("playAgainBtn");
 
@@ -58,6 +60,8 @@ difficulty: "easy",
 firstCard: null, // 已翻開的第一張牌（等第二張）
 lockBoard: false, // 翻錯等待翻回期間鎖住棋盤，避免連點第三張
 matchedPairs: 0,
+streak: 0, // 目前連續配對數：配對失敗時歸零
+bestStreak: 0, // 本局最高連續配對數
 moves: 0, // 翻牌次數：每翻兩張算 1 次
 seconds: 0,
 timerId: 0,
@@ -164,12 +168,15 @@ stopTimer();
 state.firstCard = null;
 state.lockBoard = false;
 state.matchedPairs = 0;
+state.streak = 0;
+state.bestStreak = 0;
 state.moves = 0;
 state.seconds = 0;
 state.timerStarted = false;
 
 timeTextEl.textContent = "0 秒";
 movesTextEl.textContent = "0";
+if (streakTextEl) streakTextEl.textContent = "0";
 pairsTextEl.textContent = "0 / " + setting.pairs;
 winOverlay.classList.add("hidden");
 
@@ -237,6 +244,9 @@ if (first.dataset.emoji === card.dataset.emoji) {
 // 配對成功：兩張都留住
 first.classList.add("is-matched");
 card.classList.add("is-matched");
+state.streak += 1;
+if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+if (streakTextEl) streakTextEl.textContent = String(state.streak);
 state.matchedPairs += 1;
 pairsTextEl.textContent =
 state.matchedPairs + " / " + DIFFICULTIES[state.difficulty].pairs;
@@ -244,7 +254,9 @@ if (state.matchedPairs === DIFFICULTIES[state.difficulty].pairs) {
 finishGame();
 }
 } else {
-// 配對失敗：短暫停留後翻回去
+// 配對失敗：連續配對中斷，短暫停留後翻回去
+state.streak = 0;
+if (streakTextEl) streakTextEl.textContent = "0";
 state.lockBoard = true;
 setTimeout(function () {
 first.classList.remove("is-flipped");
@@ -266,6 +278,7 @@ winStarsEl.textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
 winStarsEl.setAttribute("aria-label", "星等評分：" + stars + " 星");
 winTimeEl.textContent = String(state.seconds);
 winMovesEl.textContent = String(state.moves);
+if (winStreakEl) winStreakEl.textContent = String(state.bestStreak);
 winBestEl.textContent = isNewBest
 ? "🏆 新紀錄！這是這個難度的最佳成績！"
 : "";

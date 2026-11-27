@@ -1,12 +1,13 @@
 :root {
-  --deep: #06283d;
-  --deep-2: #0a3a56;
-  --panel: #dff4ff;
-  --ink: #0b2237;
-  --accent: #ffb340;
-  --hp: #ff5a6e;
+  --deep: #0a0a12;
+  --deep-2: #12121f;
+  --panel: #12121f;
+  --ink: #f2f2fa;
+  --accent: #22d3ee;
+  --arcane: #22d3ee;
+  --hp: #ef4444;
   --xp: #4ade80;
-  --line: #041a29;
+  --line: #262640;
 }
 
 * {
@@ -23,7 +24,7 @@ body {
   min-height: 100vh;
   font-family: "Trebuchet MS", "Noto Sans TC", "PingFang TC", sans-serif;
   color: var(--ink);
-  background: linear-gradient(160deg, var(--deep), var(--deep-2) 60%, #0d5560);
+  background: linear-gradient(160deg, var(--deep), var(--deep-2) 60%, #0a0a12);
   overscroll-behavior: none;
 }
 
@@ -44,10 +45,10 @@ body {
   gap: 12px;
   border: 3px solid var(--line);
   border-radius: 14px;
-  background: linear-gradient(180deg, #ffe29a, #ffb340);
-  color: #3b2107;
+  background: linear-gradient(180deg, #12121f, #0a0a12);
+  color: var(--ink);
   padding: 8px 16px;
-  box-shadow: 0 6px 0 #041a29;
+  box-shadow: 0 6px 0 #05050a;
 }
 
 .topbar h1 {
@@ -62,7 +63,7 @@ body {
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #7a4a00;
+  color: var(--arcane);
 }
 
 .topbar-subtitle {
@@ -79,7 +80,7 @@ body {
   border: 4px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
-  background: #07304a;
+  background: #0a0a12;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   touch-action: none;
   user-select: none;
@@ -112,7 +113,7 @@ body {
 }
 
 .hud-label {
-  background: rgba(4, 26, 41, 0.78);
+  background: rgba(10, 10, 18, 0.78);
   color: #eaf7ff;
   border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
@@ -124,9 +125,9 @@ body {
 .bar {
   position: relative;
   height: 16px;
-  border: 2px solid rgba(4, 26, 41, 0.9);
+  border: 2px solid rgba(10, 10, 18, 0.9);
   border-radius: 999px;
-  background: rgba(4, 26, 41, 0.72);
+  background: rgba(10, 10, 18, 0.72);
   overflow: hidden;
 }
 
@@ -142,12 +143,12 @@ body {
 }
 
 .bar-hp .bar-fill {
-  background: linear-gradient(180deg, #ff8b99, var(--hp));
+  background: linear-gradient(180deg, #f87171, var(--hp));
 }
 
 .bar-xp .bar-fill {
   width: 0%;
-  background: linear-gradient(180deg, #a7f3c9, var(--xp));
+  background: linear-gradient(180deg, #86efac, var(--xp));
 }
 
 .bar-text {
@@ -196,7 +197,7 @@ body {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(3, 18, 30, 0.66);
+  background: rgba(10, 10, 18, 0.66);
   z-index: 10;
   padding: 12px;
 }
@@ -213,7 +214,8 @@ body {
   text-align: center;
   border: 4px solid var(--line);
   border-radius: 16px;
-  background: linear-gradient(180deg, #ffffff, var(--panel));
+  background: linear-gradient(180deg, #12121f, var(--panel));
+  color: var(--ink);
   padding: 20px 18px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
 }
@@ -230,16 +232,21 @@ body {
 }
 
 .howto {
-  background: #fff7d8;
-  border: 2px dashed #d5963d;
+  background: rgba(34, 211, 238, 0.08);
+  border: 2px dashed var(--arcane);
   border-radius: 10px;
   padding: 8px;
   font-size: 13px !important;
 }
 
+.weapon-line {
+  font-weight: 800;
+  color: var(--arcane);
+}
+
 .best-line {
   font-weight: 800;
-  color: #0a5c36;
+  color: var(--xp);
   min-height: 1.4em;
 }
 
@@ -252,20 +259,20 @@ body {
   min-height: 52px;
   border: 3px solid var(--line);
   border-radius: 12px;
-  background: linear-gradient(180deg, #ffdc73, #ff8a56);
-  color: #351c07;
+  background: linear-gradient(180deg, #22d3ee, #0e7490);
+  color: #0a0a12;
   font-family: inherit;
   font-size: 19px;
   font-weight: 900;
   padding: 10px 28px;
   cursor: pointer;
-  box-shadow: 0 5px 0 #743e20;
+  box-shadow: 0 5px 0 #05050a;
   touch-action: manipulation;
 }
 
 .big-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 3px 0 #743e20;
+  box-shadow: 0 3px 0 #05050a;
 }
 
 .choice-row {
@@ -278,7 +285,7 @@ body {
 .choice-btn {
   border: 3px solid var(--line);
   border-radius: 12px;
-  background: #fff7d8;
+  background: #1a1a2e;
   padding: 12px 8px;
   font-family: inherit;
   cursor: pointer;
@@ -287,13 +294,13 @@ body {
   gap: 6px;
   align-items: center;
   min-height: 118px;
-  box-shadow: 0 4px 0 #9a6a1d;
+  box-shadow: 0 4px 0 #05050a;
   touch-action: manipulation;
 }
 
 .choice-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 #9a6a1d;
+  box-shadow: 0 2px 0 #05050a;
 }
 
 .choice-icon {
@@ -310,12 +317,12 @@ body {
 .choice-desc {
   font-size: 12px;
   line-height: 1.45;
-  color: #43586c;
+  color: #a8a8c0;
 }
 
 .foot-note {
   margin: 0;
-  color: #cfeeff;
+  color: #a5e8f5;
   font-size: 13px;
   text-align: center;
 }
