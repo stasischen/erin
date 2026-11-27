@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-15T06:43:19.724369Z",
+ "generated": "2026-11-27T03:56:10.126162Z",
  "stale_days": 3,
  "counts": {
   "needs_user": 1,
@@ -1297,7 +1297,7 @@
  "source": {
   "repo": "https://github.com/stasischen/erin.git",
   "branch": "main",
-  "commit": "06edf80ae1f28048b1a2e14cd2e4530fc1caad31",
+  "commit": "28baafe7b21fa547d203b665a1b1aa744e22efd8",
   "tasks": "coord/tasks"
  }
 }
