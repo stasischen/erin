@@ -137,28 +137,29 @@ function saveBest() {
 }
 
 // 成績紀錄（比照原版 getBest：最佳波次／擊殺、遊玩場次、最近 8 筆；資料存 localStorage）
-let records = { plays: 0, recent: [] };
+let records = { plays: 0, bestKills: 0, recent: [] };
 try {
   const raw = localStorage.getItem(RECORDS_KEY);
   if (raw) {
     const parsed = JSON.parse(raw);
     if (parsed && Array.isArray(parsed.recent)) {
       records.plays = parseInt(parsed.plays, 10) || parsed.recent.length;
+      records.bestKills = Number.isSafeInteger(parsed.bestKills) && parsed.bestKills >= 0 ? parsed.bestKills : 0;
       records.recent = parsed.recent.slice(0, RECENT_LIMIT);
     }
   }
-} catch (e) { records = { plays: 0, recent: [] }; }
-let bestKills = 0;
+} catch (e) { records = { plays: 0, bestKills: 0, recent: [] }; }
+// Older saves lack bestKills; recover the best value still present in recent history.
 for (const r of records.recent) {
   if (r.wave > best) best = r.wave;
-  if (r.kills > bestKills) bestKills = r.kills;
+  if (Number.isSafeInteger(r.kills) && r.kills > records.bestKills) records.bestKills = r.kills;
 }
 function persistRecords() {
   try { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); } catch (e) { /* 離線/隱私模式時忽略 */ }
 }
 function renderRecords() {
   if (els.bestWave) els.bestWave.textContent = best;
-  if (els.bestKills) els.bestKills.textContent = bestKills;
+  if (els.bestKills) els.bestKills.textContent = records.bestKills;
   if (els.playCount) els.playCount.textContent = records.plays;
   if (!els.recentList) return;
   els.recentList.innerHTML = "";
@@ -188,8 +189,7 @@ function saveScoreRecord() {
   records.plays += 1;
   records.recent.unshift(entry);
   records.recent = records.recent.slice(0, RECENT_LIMIT);
-  if (entry.wave > best) best = entry.wave;
-  if (entry.kills > bestKills) bestKills = entry.kills;
+  if (entry.kills > records.bestKills) records.bestKills = entry.kills;
   saveBest();
   persistRecords();
   renderRecords();
@@ -453,7 +453,7 @@ function updateHud() {
   els.gold.textContent = state.gold;
   els.best.textContent = best;
   if (els.bestWave) els.bestWave.textContent = best;
-  if (els.bestKills) els.bestKills.textContent = bestKills;
+  if (els.bestKills) els.bestKills.textContent = records.bestKills;
   if (els.playCount) els.playCount.textContent = records.plays;
   els.enemyCount.textContent = state.enemies.length + state.spawnQueue.length;
   els.nextWaveBtn.disabled = !state.running || state.over || state.waveActive;
