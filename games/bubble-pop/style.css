@@ -1,0 +1,270 @@
+/* 球球消除：馬卡龍配色、純 CSS，不引用任何外部圖片或字型（可離線玩） */
+:root {
+  --pink: #ffb7c5;
+  --cream: #ffe29a;
+  --mint: #b5ead7;
+  --blue: #aec6ff;
+  --lavender: #d5aaff;
+  --ink: #4a3350;
+  --panel: #fff7ef;
+  --danger: #ff4d6d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 183, 197, 0.55), transparent 42%),
+    radial-gradient(circle at 84% 20%, rgba(174, 198, 255, 0.5), transparent 44%),
+    radial-gradient(circle at 50% 92%, rgba(181, 234, 215, 0.55), transparent 48%),
+    linear-gradient(165deg, #fff3f8, #fdf6e3 55%, #eef7ff);
+}
+
+.game-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px;
+  touch-action: manipulation;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff, var(--pink));
+  padding: 10px 16px;
+  box-shadow: 0 6px 0 rgba(74, 51, 80, 0.75), 0 14px 24px rgba(74, 51, 80, 0.18);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a5a94;
+}
+
+.topbar-subtitle {
+  margin: 0;
+  max-width: 190px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.hud {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hud-item {
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 4px 0 rgba(74, 51, 80, 0.55);
+}
+
+.hud-item span {
+  display: block;
+  margin-top: 3px;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid rgba(74, 51, 80, 0.35);
+  padding: 2px 4px;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.hud-item--score {
+  background: var(--cream);
+}
+
+.stage-wrap {
+  position: relative;
+  margin-top: 12px;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fffafd, #ffeef5 58%, #eaf6ff);
+  box-shadow: 0 8px 0 rgba(74, 51, 80, 0.75), 0 18px 30px rgba(74, 51, 80, 0.2);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none; /* 平板拖曳瞄準時不要捲動畫面 */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(74, 51, 80, 0.45);
+  padding: 16px;
+  z-index: 5;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-card {
+  width: min(100%, 340px);
+  text-align: center;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 20px 18px;
+  box-shadow: 0 8px 0 rgba(74, 51, 80, 0.6);
+}
+
+.overlay-card h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.overlay-card p {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.overlay-best {
+  color: #8a5a94;
+}
+
+.controls {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.next-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 6px 10px;
+  box-shadow: 0 4px 0 rgba(74, 51, 80, 0.55);
+}
+
+.next-label {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.next-ball {
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(74, 51, 80, 0.5);
+  padding: 0;
+  box-shadow: inset -5px -6px 0 rgba(74, 51, 80, 0.12), inset 5px 5px 0 rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+}
+
+button {
+  min-height: 46px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff, var(--mint));
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(74, 51, 80, 0.7);
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 rgba(74, 51, 80, 0.7);
+}
+
+#startBtn {
+  background: linear-gradient(180deg, #fff, var(--cream));
+  font-size: 18px;
+  padding: 10px 22px;
+}
+
+.message {
+  margin: 12px 2px 0;
+  min-height: 22px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.help {
+  margin-top: 8px;
+  border: 2px dashed rgba(74, 51, 80, 0.45);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.help p {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .game-shell {
+    padding: 8px;
+  }
+
+  .topbar-subtitle {
+    display: none;
+  }
+
+  .hud {
+    gap: 6px;
+  }
+
+  .hud-item span {
+    font-size: 15px;
+  }
+
+  .controls button {
+    flex: 1;
+  }
+
+  .next-box {
+    flex: 0 0 auto;
+  }
+}

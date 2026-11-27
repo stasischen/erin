@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>霓虹賽車</title>
+    <link rel="stylesheet" href="style.css?v=20261126a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#070722" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>霓虹賽車</h1>
+        </div>
+        <p class="topbar-subtitle">夜間高速公路，閃避車流、撿金幣！</p>
+      </header>
+
+      <section class="play-panel">
+        <section class="stage" id="stage">
+          <canvas id="gameCanvas" width="960" height="540" aria-label="霓虹賽車遊戲畫面"></canvas>
+
+          <section class="hud" aria-label="遊戲狀態">
+            <div class="hud-item">距離 <span><span id="distance">0</span> 公尺</span></div>
+            <div class="hud-item">分數 <span id="score">0</span></div>
+            <div class="hud-item">速度 <span><span id="speed">0</span> km/h</span></div>
+          </section>
+
+          <div id="startOverlay" class="overlay">
+            <div class="overlay-card">
+              <h2>霓虹賽車</h2>
+              <p>在霓虹高速公路上閃避車流，撿金幣拿高分！</p>
+              <p class="best-line">最佳紀錄：距離 <span id="bestDistanceStart">0</span> 公尺 ・ 分數 <span id="bestScoreStart">0</span></p>
+              <p class="help-text">鍵盤：← → 轉向、↑ 加速<br />觸控：按住左／右鈕轉向，按住「加速」鈕衝刺</p>
+              <button id="startBtn" class="big-btn">開始遊戲</button>
+            </div>
+          </div>
+
+          <div id="overOverlay" class="overlay hidden">
+            <div class="overlay-card">
+              <h2>撞車了！</h2>
+              <p>本局距離：<span id="finalDistance">0</span> 公尺</p>
+              <p>本局分數：<span id="finalScore">0</span></p>
+              <p class="best-line">最佳紀錄：距離 <span id="bestDistanceOver">0</span> 公尺 ・ 分數 <span id="bestScoreOver">0</span></p>
+              <button id="restartBtn" class="big-btn">再玩一次</button>
+            </div>
+          </div>
+
+          <section class="touch-controls" aria-label="觸控控制按鈕">
+            <button id="leftBtn" class="touch-btn" aria-label="向左轉">◀ 左</button>
+            <button id="boostBtn" class="touch-btn boost-btn" aria-label="加速">加速</button>
+            <button id="rightBtn" class="touch-btn" aria-label="向右轉">右 ▶</button>
+          </section>
+        </section>
+
+        <section class="controls">
+          <button id="startBtn2">開始／重新開始</button>
+        </section>
+        <p class="help">操作：← → 轉向、↑ 加速（按住不放衝更快）。撞到其他車輛就會結束，沿路撿金幣可以加分喔！</p>
+      </section>
+    </main>
+
+    <script type="module" src="game.js?v=20261126a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>

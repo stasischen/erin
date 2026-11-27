@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>怪海倖存者</title>
+    <link rel="stylesheet" href="style.css?v=20261126a" />
+    <link rel="manifest" href="../../manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Erin 的遊戲" />
+    <meta name="theme-color" content="#06283d" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Erin's Arcade</p>
+          <h1>怪海倖存者</h1>
+        </div>
+        <p class="topbar-subtitle">在怪海裡活下去！只要移動，武器會自動攻擊。</p>
+      </header>
+
+      <section class="stage-wrap">
+        <canvas id="gameCanvas" aria-label="怪海倖存者遊戲畫面"></canvas>
+
+        <!-- HUD：血條、經驗條、時間、擊殺 -->
+        <div class="hud" aria-label="遊戲狀態">
+          <div class="hud-row">
+            <span class="hud-label">等級 <span id="levelText">1</span></span>
+            <span class="hud-label">時間 <span id="timeText">0:00</span></span>
+            <span class="hud-label">擊殺 <span id="killText">0</span></span>
+          </div>
+          <div class="bar bar-hp"><div id="hpFill" class="bar-fill"></div><span id="hpText" class="bar-text"></span></div>
+          <div class="bar bar-xp"><div id="xpFill" class="bar-fill"></div><span class="bar-text">經驗</span></div>
+        </div>
+
+        <!-- 虛擬搖桿（觸控拖曳時出現） -->
+        <div id="joystick" class="joystick hidden">
+          <div id="joystickKnob" class="joystick-knob"></div>
+        </div>
+
+        <!-- 開始畫面 -->
+        <div id="startScreen" class="overlay">
+          <div class="panel">
+            <h2>怪海倖存者</h2>
+            <p>深海怪物一波波湧來，你只要專心移動走位，<br />四種武器會自動幫你打怪！</p>
+            <p class="howto">
+              電腦：WASD 或方向鍵移動<br />
+              平板／手機：在畫面上拖曳，用虛擬搖桿移動<br />
+              撿經驗寶石升級，每次升級三選一變強！
+            </p>
+            <p id="bestOnStart" class="best-line"></p>
+            <button id="startBtn" class="big-btn">開始遊戲</button>
+          </div>
+        </div>
+
+        <!-- 升級三選一 -->
+        <div id="levelupScreen" class="overlay hidden">
+          <div class="panel">
+            <h2>升級！選一個強化</h2>
+            <div id="choiceRow" class="choice-row"></div>
+          </div>
+        </div>
+
+        <!-- 結束畫面 -->
+        <div id="overScreen" class="overlay hidden">
+          <div class="panel">
+            <h2>被怪海吞沒了…</h2>
+            <p id="overStats" class="over-stats"></p>
+            <p id="bestOnOver" class="best-line"></p>
+            <button id="restartBtn" class="big-btn">再玩一次</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="foot-note">武器：追蹤飛彈・環繞飛刀・連鎖閃電・火焰光環｜每 75 秒會出現菁英怪或大 Boss，小心！</p>
+    </main>
+
+    <script src="game.js?v=20261126a"></script>
+    <script src="../../register-sw.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,198 @@
+/* 打磚塊：霓虹風格，純 CSS，不使用任何外部圖片或字型 */
+:root {
+  --bg: #0b0620;
+  --panel: #171038;
+  --ink: #f4f0ff;
+  --muted: #b9aef5;
+  --neon-pink: #ff2d95;
+  --neon-cyan: #22e6ff;
+  --neon-yellow: #ffe93d;
+  --line: #3b2a8f;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 45, 149, 0.22), transparent 42%),
+    radial-gradient(circle at 85% 12%, rgba(34, 230, 255, 0.18), transparent 40%),
+    linear-gradient(180deg, #0b0620, #150a38 60%, #0b0620);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: rgba(23, 16, 56, 0.85);
+  box-shadow: 0 0 18px rgba(255, 45, 149, 0.25), inset 0 0 24px rgba(34, 230, 255, 0.06);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 36px);
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 0 8px var(--neon-pink), 0 0 22px var(--neon-pink);
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+}
+
+.topbar-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: right;
+}
+
+.hud {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hud-item {
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+.hud-item span {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.hud-item--score span { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(255, 233, 61, 0.7); }
+.hud-item--combo span { color: var(--neon-pink); text-shadow: 0 0 10px rgba(255, 45, 149, 0.8); }
+
+.stage {
+  position: relative;
+  margin-top: 10px;
+  border: 2px solid var(--neon-cyan);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 22px rgba(34, 230, 255, 0.35), 0 14px 30px rgba(0, 0, 0, 0.5);
+  background: #07031a;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  touch-action: none; /* 平板觸控拖曳球拍時不要捲動頁面 */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(7, 3, 26, 0.72);
+  pointer-events: none;
+}
+
+.overlay.hidden { display: none; }
+
+.overlay-title {
+  margin: 0;
+  font-size: clamp(30px, 7vw, 52px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #fff;
+  text-shadow: 0 0 10px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+}
+
+.overlay-text { margin: 0; font-size: 15px; line-height: 1.7; color: var(--ink); }
+.overlay-best { margin: 0; font-size: 14px; font-weight: 700; color: var(--neon-yellow); }
+
+.controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  flex: 1;
+  min-width: 120px;
+  min-height: 48px;
+  border: 2px solid var(--neon-cyan);
+  border-radius: 12px;
+  background: #1d1450;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(34, 230, 255, 0.3);
+  touch-action: manipulation;
+}
+
+.controls button:active { transform: translateY(2px); }
+
+#startBtn {
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 14px rgba(255, 45, 149, 0.45);
+}
+
+.help {
+  margin-top: 10px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: rgba(23, 16, 56, 0.85);
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.help p { margin: 4px 0; }
+.help b { color: var(--neon-yellow); }
+
+@media (max-width: 640px) {
+  .game-shell { padding: 8px; }
+  .topbar-subtitle { display: none; }
+  .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud-item span { font-size: 16px; }
+  .help { font-size: 12px; }
+}
