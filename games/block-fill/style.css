@@ -1,0 +1,76 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  background: linear-gradient(160deg, #14161c, #1e212b);
+  color: #f3f4f6;
+  min-height: 100vh;
+}
+.game-shell { max-width: 880px; margin: 0 auto; padding: 20px 16px 40px; }
+.topbar { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 20px; margin-bottom: 16px; }
+.eyebrow { margin: 0; color: #f5b83d; letter-spacing: 0.14em; font-size: 12px; text-transform: uppercase; }
+.topbar h1 { margin: 2px 0 0; font-size: 30px; }
+.topbar-subtitle { margin: 0; color: #aeb4c2; }
+.game-layout { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.play-panel { flex: 1 1 340px; max-width: 460px; }
+.board-wrap { position: relative; }
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  background: #232733;
+  padding: 8px;
+  border-radius: 14px;
+  aspect-ratio: 1;
+  touch-action: none;
+}
+.cell { background: #2e3342; border-radius: 6px; }
+.cell.filled { box-shadow: inset 0 -3px 0 rgba(0,0,0,0.25); }
+.cell.ghost-ok { outline: 2px solid #fff; outline-offset: -2px; opacity: 0.95; }
+.cell.ghost-bad { background: #7f1d1d !important; }
+.overlay {
+  position: absolute; inset: 0;
+  background: rgba(10, 10, 18, 0.82);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; border-radius: 14px; padding: 20px;
+}
+.overlay.hidden { display: none; }
+.overlay-title { font-size: 30px; margin: 0 0 8px; color: #f5b83d; }
+.overlay-text { margin: 0 0 8px; color: #d6dae3; max-width: 300px; }
+.overlay-best { margin: 0; color: #aeb4c2; }
+.tray { display: flex; gap: 10px; margin-top: 12px; }
+.tray-slot {
+  flex: 1; min-height: 92px;
+  background: #232733; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid transparent;
+  touch-action: none; cursor: grab;
+}
+.tray-slot.selected { border-color: #f5b83d; }
+.tray-slot.dim { opacity: 0.45; cursor: default; }
+.tray-slot.stuck { opacity: 0.35; }
+.mini { display: grid; gap: 2px; }
+.mini-cell { width: 18px; height: 18px; border-radius: 4px; }
+.mini-cell.on { box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25); }
+.controls { display: flex; gap: 10px; margin-top: 14px; }
+.controls button {
+  flex: 1; padding: 12px; font-size: 16px; border: none; border-radius: 10px;
+  background: #f5b83d; color: #1e212b; font-weight: 700; cursor: pointer;
+}
+.controls button#restartBtn { background: #39415a; color: #f3f4f6; }
+.side-panel { flex: 1 1 200px; display: flex; flex-direction: column; gap: 12px; max-width: 300px; }
+.stat-card { background: #232733; border-radius: 12px; padding: 12px 16px; }
+.stat-card h2 { margin: 0 0 4px; font-size: 14px; color: #aeb4c2; font-weight: 600; }
+.stat-value { margin: 0; font-size: 28px; font-weight: 800; color: #f5b83d; }
+.howto p { margin: 0; color: #d6dae3; line-height: 1.6; font-size: 14px; }
+.float-piece {
+  position: fixed; z-index: 50; display: grid; gap: 4px;
+  pointer-events: none; opacity: 0.92;
+}
+.float-cell { border-radius: 6px; }
+.float-cell.on { box-shadow: inset 0 -3px 0 rgba(0,0,0,0.25); }
+@media (max-width: 640px) {
+  .side-panel { max-width: none; flex-direction: row; flex-wrap: wrap; }
+  .stat-card { flex: 1 1 28%; }
+  .howto { flex: 1 1 100%; }
+}
